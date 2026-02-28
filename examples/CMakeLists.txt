@@ -14,3 +14,6 @@ pmm_add_example(persistence_demo persistence_demo.cpp)
 
 # ─── Примеры Фазы 4 ───────────────────────────────────────────────────────────
 pmm_add_example(stress_test      stress_test.cpp)
+
+# ─── Примеры Фазы 6 ───────────────────────────────────────────────────────────
+pmm_add_example(benchmark        benchmark.cpp)

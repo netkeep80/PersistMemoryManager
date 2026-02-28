@@ -19,3 +19,6 @@ pmm_add_test(test_persistence test_persistence.cpp)
 
 # ─── Тесты Фазы 5 ─────────────────────────────────────────────────────────────
 pmm_add_test(test_pptr test_pptr.cpp)
+
+# ─── Тесты Фазы 6 ─────────────────────────────────────────────────────────────
+pmm_add_test(test_performance test_performance.cpp)

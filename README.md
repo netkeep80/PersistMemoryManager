@@ -12,6 +12,7 @@
 - **pptr<T>** — персистный типизированный указатель, sizeof == sizeof(void*)
 - **Выравнивание** — поддержка alignment от 8 до 4096 байт
 - **Диагностика** — validate(), dump_stats(), get_stats()
+- **Высокая производительность** — отдельный список свободных блоков, allocate 100K ≤ 7 мс
 
 ## Быстрый старт
 
@@ -134,17 +135,21 @@ mgr2->validate(); // → true
 
 - **Слияние блоков (coalescing)** — при освобождении блока автоматически объединяются соседние свободные блоки, что снижает фрагментацию до нуля при полном освобождении памяти
 
-## Стресс-тест (Фаза 4)
+## Стресс-тест и бенчмарк
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target stress_test
+cmake --build build
 ./build/examples/stress_test
+./build/examples/benchmark
 ```
 
-Результаты на типичном железе:
-- **100 000 последовательных аллокаций** — все 100 000 блоков выделены успешно
-- **1 000 000 чередующихся операций** — ~28 мс (~0,028 мкс на операцию)
+Результаты на типичном железе (Фаза 6):
+- **100 000 последовательных аллокаций** — ~7 мс (цель ≤ 100 мс: ✅)
+- **100 000 деаллокаций** — ~0.8 мс (цель ≤ 100 мс: ✅)
+- **1 000 000 чередующихся операций** — ~14 мс (~0,014 мкс на операцию)
+
+Ускорение по сравнению с Фазой 4: ~2 200× для последовательных аллокаций.
 
 ## Структура репозитория
 
@@ -156,6 +161,7 @@ PersistMemoryManager/
 │   ├── basic_usage.cpp             # Базовое использование (Фаза 1)
 │   ├── persistence_demo.cpp        # Демонстрация персистентности (Фаза 3)
 │   ├── stress_test.cpp             # Стресс-тест 100K/1M операций (Фаза 4)
+│   ├── benchmark.cpp               # Бенчмарк производительности (Фаза 6)
 │   └── CMakeLists.txt
 ├── tests/
 │   ├── test_allocate.cpp           # Тесты выделения (Фаза 1)
@@ -163,6 +169,7 @@ PersistMemoryManager/
 │   ├── test_coalesce.cpp           # Тесты слияния блоков (Фаза 2)
 │   ├── test_persistence.cpp        # Тесты персистентности (Фаза 3)
 │   ├── test_pptr.cpp               # Тесты персистного указателя pptr<T> (Фаза 5)
+│   ├── test_performance.cpp        # Тесты производительности (Фаза 6)
 │   └── CMakeLists.txt
 ├── docs/
 │   ├── architecture.md             # Архитектура
@@ -173,6 +180,7 @@ PersistMemoryManager/
 ├── phase2.md                       # Фаза 2: Слияние блоков
 ├── phase3.md                       # Фаза 3: Персистентность
 ├── phase4.md                       # Фаза 4: Тесты и документация
+├── phase6.md                       # Фаза 6: Оптимизация производительности
 ├── tz.md                           # Техническое задание
 ├── CMakeLists.txt
 └── LICENSE
@@ -222,7 +230,17 @@ PersistMemoryManager/
 - `deallocate_typed(pptr<T>)` — освобождение памяти
 - 14 тестов в `tests/test_pptr.cpp`
 
-Подробнее: [plan.md](plan.md) | [phase1.md](phase1.md) | [phase2.md](phase2.md) | [phase3.md](phase3.md) | [phase4.md](phase4.md) | [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md)
+### Фаза 6 — Оптимизация производительности
+
+- Отдельный двусвязный список свободных блоков (`first_free_offset` в заголовке)
+- `allocate()` обходит только свободные блоки — O(f) вместо O(n)
+- При паттерне «выделить всё подряд»: O(N) вместо O(N²)
+- `rebuild_free_list()` — восстановление при загрузке образа через `load()`
+- 8 тестов производительности в `tests/test_performance.cpp`
+- Бенчмарк в `examples/benchmark.cpp`
+- Результат: allocate 100K блоков ~7 мс (цель ≤ 100 мс ✅, ускорение ~2200×)
+
+Подробнее: [plan.md](plan.md) | [phase1.md](phase1.md) | [phase2.md](phase2.md) | [phase3.md](phase3.md) | [phase4.md](phase4.md) | [phase6.md](phase6.md) | [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md)
 
 ## Лицензия
 

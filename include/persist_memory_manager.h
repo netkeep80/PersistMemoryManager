@@ -10,6 +10,7 @@
  * Фаза 2: Слияние соседних свободных блоков (coalescing).
  * Фаза 3: Персистентность (save/load образа из файла).
  * Фаза 5: Персистный типизированный указатель pptr<T>.
+ * Фаза 6: Оптимизация производительности (отдельный список свободных блоков).
  *
  * Использование:
  * @code
@@ -42,7 +43,7 @@
  * mgr->deallocate_typed( p );
  * @endcode
  *
- * @version 0.4.0 (Фаза 5)
+ * @version 0.5.0 (Фаза 6)
  */
 
 #pragma once
@@ -144,18 +145,24 @@ namespace detail
  * базовому адресу.
  *
  * Предусловие: ptr[] выровнен на kDefaultAlignment.
- * Постусловие: sizeof(BlockHeader) кратен kDefaultAlignment.
+ * Постусловие: sizeof(BlockHeader) кратен 8.
  */
 struct BlockHeader
 {
-    std::uint64_t  magic;       ///< Магическое число для проверки корректности
-    std::ptrdiff_t prev_offset; ///< Смещение предыдущего блока (-1 = нет)
-    std::ptrdiff_t next_offset; ///< Смещение следующего блока (-1 = нет)
+    std::uint64_t magic; ///< Магическое число для проверки корректности
+    std::ptrdiff_t prev_offset; ///< Смещение предыдущего блока в общем списке (-1 = нет)
+    std::ptrdiff_t next_offset; ///< Смещение следующего блока в общем списке (-1 = нет)
     std::size_t total_size; ///< Полный размер блока, включая заголовок и выравнивание
     std::size_t  user_size; ///< Размер пользовательских данных (байт)
     std::size_t  alignment; ///< Выравнивание пользовательских данных
     bool         used;      ///< true — блок занят, false — свободен
     std::uint8_t _pad[7];   ///< Выравнивание до 8 байт (совместимость ABI)
+    /// Смещение предыдущего свободного блока в списке свободных (-1 = нет).
+    /// Используется только при used == false.
+    std::ptrdiff_t free_prev_offset;
+    /// Смещение следующего свободного блока в списке свободных (-1 = нет).
+    /// Используется только при used == false.
+    std::ptrdiff_t free_next_offset;
     // После заголовка следуют пользовательские данные, выровненные на alignment
 };
 
@@ -182,10 +189,12 @@ struct ManagerHeader
     std::size_t   alloc_count; ///< Количество занятых блоков
     /// Смещение до первого блока в связном списке всех блоков
     std::ptrdiff_t first_block_offset;
-    std::uint8_t   _pad[8]; ///< Резерв для будущего расширения
+    /// Смещение до первого свободного блока в отдельном списке свободных блоков.
+    /// Позволяет выделению памяти сразу находить свободный блок, не обходя занятые.
+    std::ptrdiff_t first_free_offset;
 };
 
-static_assert( sizeof( ManagerHeader ) % 16 == 0, "ManagerHeader must be 16-byte aligned" );
+static_assert( sizeof( ManagerHeader ) % 8 == 0, "ManagerHeader must be 8-byte aligned" );
 
 // ─── Вспомогательные функции ──────────────────────────────────────────────────
 
@@ -323,6 +332,61 @@ inline std::size_t required_block_size( std::size_t user_size, std::size_t align
     std::size_t max_padding = alignment - 1;
     std::size_t min_total   = sizeof( BlockHeader ) + max_padding + user_size;
     return std::max( min_total, kMinBlockSize );
+}
+
+/**
+ * @brief Вставить свободный блок в начало списка свободных блоков.
+ *
+ * @param base  Начало управляемой области.
+ * @param hdr   Заголовок менеджера.
+ * @param blk   Свободный блок для вставки.
+ *
+ * Предусловие: blk->used == false.
+ */
+inline void free_list_insert( std::uint8_t* base, ManagerHeader* hdr, BlockHeader* blk )
+{
+    std::ptrdiff_t blk_off = block_offset( base, blk );
+
+    blk->free_prev_offset = kNoBlock;
+    blk->free_next_offset = hdr->first_free_offset;
+
+    if ( hdr->first_free_offset != kNoBlock )
+    {
+        BlockHeader* old_head      = block_at( base, hdr->first_free_offset );
+        old_head->free_prev_offset = blk_off;
+    }
+
+    hdr->first_free_offset = blk_off;
+}
+
+/**
+ * @brief Удалить блок из списка свободных блоков (при аллокации).
+ *
+ * @param base  Начало управляемой области.
+ * @param hdr   Заголовок менеджера.
+ * @param blk   Блок для удаления из списка свободных.
+ */
+inline void free_list_remove( std::uint8_t* base, ManagerHeader* hdr, BlockHeader* blk )
+{
+    if ( blk->free_prev_offset != kNoBlock )
+    {
+        BlockHeader* prev_free      = block_at( base, blk->free_prev_offset );
+        prev_free->free_next_offset = blk->free_next_offset;
+    }
+    else
+    {
+        // blk был головой списка
+        hdr->first_free_offset = blk->free_next_offset;
+    }
+
+    if ( blk->free_next_offset != kNoBlock )
+    {
+        BlockHeader* next_free      = block_at( base, blk->free_next_offset );
+        next_free->free_prev_offset = blk->free_prev_offset;
+    }
+
+    blk->free_prev_offset = kNoBlock;
+    blk->free_next_offset = kNoBlock;
 }
 
 } // namespace detail
@@ -503,6 +567,7 @@ class PersistMemoryManager
         hdr->free_count         = 0;
         hdr->alloc_count        = 0;
         hdr->first_block_offset = detail::kNoBlock;
+        hdr->first_free_offset  = detail::kNoBlock;
 
         // Вычисляем позицию первого (и пока единственного) свободного блока
         std::size_t    hdr_end = detail::align_up( sizeof( detail::ManagerHeader ), kDefaultAlignment );
@@ -523,9 +588,12 @@ class PersistMemoryManager
         blk->user_size           = 0;
         blk->alignment           = kDefaultAlignment;
         blk->used                = false;
+        blk->free_prev_offset    = detail::kNoBlock;
+        blk->free_next_offset    = detail::kNoBlock;
         std::memset( blk->_pad, 0, sizeof( blk->_pad ) );
 
         hdr->first_block_offset = blk_off;
+        hdr->first_free_offset  = blk_off;
         hdr->block_count        = 1;
         hdr->free_count         = 1;
         hdr->used_size          = hdr_end + sizeof( detail::BlockHeader );
@@ -555,7 +623,10 @@ class PersistMemoryManager
         {
             return nullptr;
         }
-        return reinterpret_cast<PersistMemoryManager*>( base );
+        // Перестраиваем список свободных блоков после загрузки образа
+        auto* mgr = reinterpret_cast<PersistMemoryManager*>( base );
+        mgr->rebuild_free_list();
+        return mgr;
     }
 
     /**
@@ -600,16 +671,16 @@ class PersistMemoryManager
 
         std::size_t needed = detail::required_block_size( user_size, alignment );
 
-        // Линейный поиск первого подходящего свободного блока
-        std::ptrdiff_t offset = hdr->first_block_offset;
+        // Поиск первого подходящего блока по списку свободных блоков (O(f) вместо O(n))
+        std::ptrdiff_t offset = hdr->first_free_offset;
         while ( offset != detail::kNoBlock )
         {
             detail::BlockHeader* blk = detail::block_at( base, offset );
-            if ( !blk->used && blk->total_size >= needed )
+            if ( blk->total_size >= needed )
             {
                 return allocate_from_block( blk, user_size, alignment );
             }
-            offset = blk->next_offset;
+            offset = blk->free_next_offset;
         }
 
         return nullptr; // Не хватает памяти
@@ -654,6 +725,9 @@ class PersistMemoryManager
         {
             hdr->used_size -= freed;
         }
+
+        // Добавляем блок в список свободных
+        detail::free_list_insert( base, hdr, blk );
 
         // Фаза 2: слияние соседних свободных блоков
         coalesce( blk );
@@ -966,6 +1040,38 @@ class PersistMemoryManager
     const detail::ManagerHeader* header() const { return reinterpret_cast<const detail::ManagerHeader*>( this ); }
 
     /**
+     * @brief Перестроить список свободных блоков, обходя все блоки.
+     *
+     * Вызывается при загрузке образа (load) для восстановления списка свободных блоков.
+     * Гарантирует корректность first_free_offset и free_prev/next_offset полей.
+     */
+    void rebuild_free_list()
+    {
+        std::uint8_t*          base = base_ptr();
+        detail::ManagerHeader* hdr  = header();
+
+        hdr->first_free_offset = detail::kNoBlock;
+
+        std::ptrdiff_t offset = hdr->first_block_offset;
+        while ( offset != detail::kNoBlock )
+        {
+            detail::BlockHeader* blk = detail::block_at( base, offset );
+            if ( !blk->used )
+            {
+                blk->free_prev_offset = detail::kNoBlock;
+                blk->free_next_offset = detail::kNoBlock;
+                detail::free_list_insert( base, hdr, blk );
+            }
+            else
+            {
+                blk->free_prev_offset = detail::kNoBlock;
+                blk->free_next_offset = detail::kNoBlock;
+            }
+            offset = blk->next_offset;
+        }
+    }
+
+    /**
      * @brief Выполнить слияние свободного блока с соседними свободными блоками.
      *
      * Алгоритм:
@@ -992,6 +1098,10 @@ class PersistMemoryManager
             detail::BlockHeader* next_blk = detail::block_at( base, blk->next_offset );
             if ( !next_blk->used )
             {
+                // Удаляем оба блока из списка свободных перед слиянием
+                detail::free_list_remove( base, hdr, blk );
+                detail::free_list_remove( base, hdr, next_blk );
+
                 // Поглощаем next_blk: увеличиваем размер blk
                 blk->total_size += next_blk->total_size;
 
@@ -1008,6 +1118,9 @@ class PersistMemoryManager
 
                 hdr->block_count--;
                 hdr->free_count--;
+
+                // Вставляем объединённый блок обратно в список свободных
+                detail::free_list_insert( base, hdr, blk );
             }
         }
 
@@ -1017,6 +1130,10 @@ class PersistMemoryManager
             detail::BlockHeader* prev_blk = detail::block_at( base, blk->prev_offset );
             if ( !prev_blk->used )
             {
+                // Удаляем оба блока из списка свободных перед слиянием
+                detail::free_list_remove( base, hdr, prev_blk );
+                detail::free_list_remove( base, hdr, blk );
+
                 // Поглощаем blk: увеличиваем размер prev_blk
                 prev_blk->total_size += blk->total_size;
 
@@ -1033,6 +1150,9 @@ class PersistMemoryManager
 
                 hdr->block_count--;
                 hdr->free_count--;
+
+                // Вставляем объединённый блок обратно в список свободных
+                detail::free_list_insert( base, hdr, prev_blk );
             }
         }
     }
@@ -1051,6 +1171,9 @@ class PersistMemoryManager
     {
         std::uint8_t*          base = base_ptr();
         detail::ManagerHeader* hdr  = header();
+
+        // Удаляем блок из списка свободных (он будет занят или заменён остатком)
+        detail::free_list_remove( base, hdr, blk );
 
         // Минимальный размер остатка для создания нового свободного блока
         std::size_t min_remainder = sizeof( detail::BlockHeader ) + kMinBlockSize;
@@ -1072,6 +1195,8 @@ class PersistMemoryManager
             new_blk->used                = false;
             new_blk->prev_offset         = blk_off;
             new_blk->next_offset         = blk->next_offset;
+            new_blk->free_prev_offset    = detail::kNoBlock;
+            new_blk->free_next_offset    = detail::kNoBlock;
             std::memset( new_blk->_pad, 0, sizeof( new_blk->_pad ) );
 
             // Обновляем next указатель у следующего блока
@@ -1086,12 +1211,17 @@ class PersistMemoryManager
 
             hdr->block_count++;
             hdr->free_count++;
+
+            // Добавляем остаток в список свободных
+            detail::free_list_insert( base, hdr, new_blk );
         }
 
         // Помечаем блок как занятый
-        blk->used      = true;
-        blk->user_size = user_size;
-        blk->alignment = alignment;
+        blk->used             = true;
+        blk->user_size        = user_size;
+        blk->alignment        = alignment;
+        blk->free_prev_offset = detail::kNoBlock;
+        blk->free_next_offset = detail::kNoBlock;
 
         hdr->alloc_count++;
         hdr->free_count--;
