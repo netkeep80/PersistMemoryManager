@@ -10,3 +10,6 @@ endfunction()
 # ─── Тесты Фазы 1 ─────────────────────────────────────────────────────────────
 pmm_add_test(test_allocate   test_allocate.cpp)
 pmm_add_test(test_deallocate test_deallocate.cpp)
+
+# ─── Тесты Фазы 2 ─────────────────────────────────────────────────────────────
+pmm_add_test(test_coalesce   test_coalesce.cpp)

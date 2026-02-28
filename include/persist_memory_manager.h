@@ -7,6 +7,7 @@
  * в управляемой области памяти для возможности персистентности между запусками.
  *
  * Фаза 1: Базовая структура, allocate и deallocate.
+ * Фаза 2: Слияние соседних свободных блоков (coalescing).
  *
  * Использование:
  * @code
@@ -23,7 +24,7 @@
  * }
  * @endcode
  *
- * @version 0.1.0 (Фаза 1)
+ * @version 0.2.0 (Фаза 2)
  */
 
 #pragma once
@@ -484,10 +485,14 @@ class PersistMemoryManager
     /**
      * @brief Освободить ранее выделенный блок памяти.
      *
+     * После пометки блока свободным выполняется слияние с соседними свободными
+     * блоками (coalescing) для снижения фрагментации.
+     *
      * @param ptr Указатель, возвращённый из allocate(). nullptr игнорируется.
      *
      * Предусловие:  ptr == nullptr или ptr был получен из allocate() этого менеджера.
-     * Постусловие: блок помечен как свободный, статистика обновлена.
+     * Постусловие: блок помечен как свободный, соседние свободные блоки объединены,
+     *              статистика обновлена.
      */
     void deallocate( void* ptr )
     {
@@ -516,6 +521,9 @@ class PersistMemoryManager
         {
             hdr->used_size -= freed;
         }
+
+        // Фаза 2: слияние соседних свободных блоков
+        coalesce( blk );
     }
 
     /**
@@ -694,6 +702,78 @@ class PersistMemoryManager
     detail::ManagerHeader* header() { return reinterpret_cast<detail::ManagerHeader*>( this ); }
 
     const detail::ManagerHeader* header() const { return reinterpret_cast<const detail::ManagerHeader*>( this ); }
+
+    /**
+     * @brief Выполнить слияние свободного блока с соседними свободными блоками.
+     *
+     * Алгоритм:
+     * 1. Если есть следующий блок и он свободен — объединить с ним.
+     * 2. Если есть предыдущий блок и он свободен — объединить с ним.
+     *
+     * Объединение: размер первого блока увеличивается на размер второго,
+     * второй блок исключается из связного списка.
+     *
+     * Предусловие:  blk != nullptr, blk->used == false.
+     * Постусловие: blk (или его предшественник) содержит объединённое
+     *              свободное пространство; счётчики блоков обновлены.
+     *
+     * @param blk Свободный блок, с которого начинается слияние.
+     */
+    void coalesce( detail::BlockHeader* blk )
+    {
+        std::uint8_t*          base = base_ptr();
+        detail::ManagerHeader* hdr  = header();
+
+        // Шаг 1: слияние со следующим блоком (если он свободен)
+        if ( blk->next_offset != detail::kNoBlock )
+        {
+            detail::BlockHeader* next_blk = detail::block_at( base, blk->next_offset );
+            if ( !next_blk->used )
+            {
+                // Поглощаем next_blk: увеличиваем размер blk
+                blk->total_size += next_blk->total_size;
+
+                // Перешиваем связный список: blk->next = next_blk->next
+                blk->next_offset = next_blk->next_offset;
+                if ( next_blk->next_offset != detail::kNoBlock )
+                {
+                    detail::BlockHeader* after_next = detail::block_at( base, next_blk->next_offset );
+                    after_next->prev_offset         = detail::block_offset( base, blk );
+                }
+
+                // Обнуляем заголовок поглощённого блока (безопасность)
+                next_blk->magic = 0;
+
+                hdr->block_count--;
+                hdr->free_count--;
+            }
+        }
+
+        // Шаг 2: слияние с предыдущим блоком (если он свободен)
+        if ( blk->prev_offset != detail::kNoBlock )
+        {
+            detail::BlockHeader* prev_blk = detail::block_at( base, blk->prev_offset );
+            if ( !prev_blk->used )
+            {
+                // Поглощаем blk: увеличиваем размер prev_blk
+                prev_blk->total_size += blk->total_size;
+
+                // Перешиваем связный список: prev_blk->next = blk->next
+                prev_blk->next_offset = blk->next_offset;
+                if ( blk->next_offset != detail::kNoBlock )
+                {
+                    detail::BlockHeader* next_blk = detail::block_at( base, blk->next_offset );
+                    next_blk->prev_offset         = detail::block_offset( base, prev_blk );
+                }
+
+                // Обнуляем заголовок поглощённого блока (безопасность)
+                blk->magic = 0;
+
+                hdr->block_count--;
+                hdr->free_count--;
+            }
+        }
+    }
 
     /**
      * @brief Выделить память из конкретного свободного блока.

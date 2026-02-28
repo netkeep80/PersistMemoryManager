@@ -49,6 +49,10 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
+## Возможности (Фаза 2)
+
+- **Слияние блоков (coalescing)** — при освобождении блока автоматически объединяются соседние свободные блоки, что снижает фрагментацию до нуля при полном освобождении памяти
+
 ## Структура репозитория
 
 ```
@@ -58,21 +62,24 @@ PersistMemoryManager/
 ├── examples/
 │   └── basic_usage.cpp             # Базовое использование
 ├── tests/
-│   ├── test_allocate.cpp           # Тесты выделения
-│   ├── test_deallocate.cpp         # Тесты освобождения
+│   ├── test_allocate.cpp           # Тесты выделения (Фаза 1)
+│   ├── test_deallocate.cpp         # Тесты освобождения (Фаза 1)
+│   ├── test_coalesce.cpp           # Тесты слияния блоков (Фаза 2)
 │   └── CMakeLists.txt
 ├── docs/
 │   └── architecture.md             # Архитектура
 ├── plan.md                         # План разработки
 ├── phase1.md                       # Фаза 1: Базовая структура
+├── phase2.md                       # Фаза 2: Слияние блоков
 ├── tz.md                           # Техническое задание
 ├── CMakeLists.txt
 └── LICENSE
 ```
 
-## Текущая фаза: Фаза 1 — Базовая структура
+## Завершённые фазы
 
-Реализованы:
+### Фаза 1 — Базовая структура
+
 - `PersistMemoryManager::create()` — инициализация менеджера
 - `PersistMemoryManager::load()` — загрузка из существующего образа
 - `PersistMemoryManager::destroy()` — уничтожение
@@ -83,7 +90,13 @@ PersistMemoryManager/
 - Диагностика: `validate()`, `dump_stats()`
 - Вспомогательные функции: `get_stats()`, `get_info()`
 
-Подробнее: [plan.md](plan.md) | [phase1.md](phase1.md) | [docs/architecture.md](docs/architecture.md)
+### Фаза 2 — Слияние блоков (coalescing)
+
+- Приватный метод `coalesce()` объединяет соседние свободные блоки при освобождении
+- Слияние с левым соседом, правым соседом или обоими одновременно
+- Фрагментация снижается до нуля после освобождения всех блоков
+
+Подробнее: [plan.md](plan.md) | [phase1.md](phase1.md) | [phase2.md](phase2.md) | [docs/architecture.md](docs/architecture.md)
 
 ## Лицензия
 
