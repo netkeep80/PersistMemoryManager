@@ -1,12 +1,8 @@
 /**
  * @file test_performance.cpp
- * @brief Тесты производительности и корректности оптимизаций (Фаза 6)
+ * @brief Тесты производительности и корректности оптимизаций (Фаза 6, обновлено в Фазе 7)
  *
- * Проверяет:
- * - Достижение целевых показателей: allocate/deallocate 100K блоков ≤ 100 мс.
- * - Корректность работы после allocate/deallocate при наличии оптимизаций.
- * - Корректность validate() после серии операций.
- * - Восстановление списка свободных блоков при load().
+ * Фаза 7: синглтон, destroy() освобождает буфер.
  */
 
 #include "persist_memory_manager.h"
@@ -17,8 +13,6 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
-
-// ─── Вспомогательные макросы ──────────────────────────────────────────────────
 
 #define PMM_TEST( expr )                                                                                               \
     do                                                                                                                 \
@@ -45,8 +39,6 @@
         }                                                                                                              \
     } while ( false )
 
-// ─── Вспомогательные функции ──────────────────────────────────────────────────
-
 static auto now()
 {
     return std::chrono::high_resolution_clock::now();
@@ -58,11 +50,6 @@ static double elapsed_ms( std::chrono::high_resolution_clock::time_point start,
     return std::chrono::duration<double, std::milli>( end - start ).count();
 }
 
-// ─── Тестовые функции ─────────────────────────────────────────────────────────
-
-/**
- * @brief allocate 100K блоков выполняется за ≤ 100 мс (целевой показатель ТЗ).
- */
 static bool test_alloc_100k_within_100ms()
 {
     const std::size_t MEMORY_SIZE = 32UL * 1024 * 1024;
@@ -95,8 +82,7 @@ static bool test_alloc_100k_within_100ms()
     }
 
     PMM_TEST( mgr->validate() );
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
 
     PMM_TEST( allocated == N );
     PMM_TEST( ms_alloc <= 100.0 );
@@ -104,9 +90,6 @@ static bool test_alloc_100k_within_100ms()
     return true;
 }
 
-/**
- * @brief deallocate 100K блоков выполняется за ≤ 100 мс (целевой показатель ТЗ).
- */
 static bool test_dealloc_100k_within_100ms()
 {
     const std::size_t MEMORY_SIZE = 32UL * 1024 * 1024;
@@ -141,17 +124,13 @@ static bool test_dealloc_100k_within_100ms()
     double ms_dealloc = elapsed_ms( t0, t1 );
 
     PMM_TEST( mgr->validate() );
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
 
     PMM_TEST( ms_dealloc <= 100.0 );
 
     return true;
 }
 
-/**
- * @brief Последовательные alloc/dealloc не нарушают структуру менеджера.
- */
 static bool test_alloc_dealloc_validate()
 {
     const std::size_t MEMORY_SIZE = 1UL * 1024 * 1024;
@@ -165,7 +144,6 @@ static bool test_alloc_dealloc_validate()
     const int          N = 1000;
     std::vector<void*> ptrs( N, nullptr );
 
-    // Выделяем N блоков
     for ( int i = 0; i < N; i++ )
     {
         ptrs[i] = mgr->allocate( 64 );
@@ -173,26 +151,20 @@ static bool test_alloc_dealloc_validate()
     }
     PMM_TEST( mgr->validate() );
 
-    // Освобождаем в обратном порядке (вызывает coalescing)
     for ( int i = N - 1; i >= 0; i-- )
     {
         mgr->deallocate( ptrs[i] );
     }
     PMM_TEST( mgr->validate() );
 
-    // После полного освобождения должен быть один большой свободный блок
     auto stats = pmm::get_stats( mgr );
     PMM_TEST( stats.free_blocks == 1 );
     PMM_TEST( stats.allocated_blocks == 0 );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Повторное использование памяти после освобождения.
- */
 static bool test_memory_reuse()
 {
     const std::size_t MEMORY_SIZE = 512 * 1024;
@@ -202,7 +174,6 @@ static bool test_memory_reuse()
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, MEMORY_SIZE );
     PMM_TEST( mgr != nullptr );
 
-    // Первый раунд аллокаций
     const int          N = 100;
     std::vector<void*> ptrs( N, nullptr );
 
@@ -213,7 +184,6 @@ static bool test_memory_reuse()
         std::memset( ptrs[i], i & 0xFF, 128 );
     }
 
-    // Освобождаем чётные блоки
     for ( int i = 0; i < N; i += 2 )
     {
         mgr->deallocate( ptrs[i] );
@@ -222,7 +192,6 @@ static bool test_memory_reuse()
 
     PMM_TEST( mgr->validate() );
 
-    // Повторно выделяем в освобождённые слоты
     for ( int i = 0; i < N; i += 2 )
     {
         ptrs[i] = mgr->allocate( 64 );
@@ -231,7 +200,6 @@ static bool test_memory_reuse()
 
     PMM_TEST( mgr->validate() );
 
-    // Освобождаем всё
     for ( int i = 0; i < N; i++ )
     {
         if ( ptrs[i] != nullptr )
@@ -243,13 +211,14 @@ static bool test_memory_reuse()
     auto stats = pmm::get_stats( mgr );
     PMM_TEST( stats.allocated_blocks == 0 );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
 /**
  * @brief Список свободных блоков корректно перестраивается после load().
+ *
+ * Фаза 7: load() устанавливает синглтон — первый менеджер больше не используется.
  */
 static bool test_free_list_after_load()
 {
@@ -260,45 +229,53 @@ static bool test_free_list_after_load()
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, MEMORY_SIZE );
     PMM_TEST( mgr != nullptr );
 
-    // Выделяем несколько блоков
     void* p1 = mgr->allocate( 64 );
     void* p2 = mgr->allocate( 128 );
     void* p3 = mgr->allocate( 64 );
     PMM_TEST( p1 != nullptr && p2 != nullptr && p3 != nullptr );
 
-    // Освобождаем средний блок
     mgr->deallocate( p2 );
     PMM_TEST( mgr->validate() );
 
-    // «Загружаем» из существующего буфера (имитация перезапуска)
-    pmm::PersistMemoryManager* mgr2 = pmm::PersistMemoryManager::load( mem, MEMORY_SIZE );
+    // Запоминаем смещения p1 и p3 до того как менеджер сменится
+    std::ptrdiff_t off1 = static_cast<std::uint8_t*>( p1 ) - static_cast<std::uint8_t*>( static_cast<void*>( mgr ) );
+    std::ptrdiff_t off3 = static_cast<std::uint8_t*>( p3 ) - static_cast<std::uint8_t*>( static_cast<void*>( mgr ) );
+
+    // Сохраняем образ и загружаем его в новый буфер
+    void* mem_copy = std::malloc( MEMORY_SIZE );
+    PMM_TEST( mem_copy != nullptr );
+    std::memcpy( mem_copy, mem, MEMORY_SIZE );
+
+    // load() устанавливает синглтон на новый буфер
+    pmm::PersistMemoryManager* mgr2 = pmm::PersistMemoryManager::load( mem_copy, MEMORY_SIZE );
     PMM_TEST( mgr2 != nullptr );
     PMM_TEST( mgr2->validate() );
+    PMM_TEST( pmm::PersistMemoryManager::instance() == mgr2 );
 
-    // После загрузки можно выделить новый блок
     void* p4 = mgr2->allocate( 64 );
     PMM_TEST( p4 != nullptr );
-
     PMM_TEST( mgr2->validate() );
 
-    mgr2->deallocate( p1 );
-    mgr2->deallocate( p3 );
+    // Используем сохранённые смещения для получения указателей в новом буфере
+    void* q1 = static_cast<std::uint8_t*>( mem_copy ) + off1;
+    void* q3 = static_cast<std::uint8_t*>( mem_copy ) + off3;
+
+    mgr2->deallocate( q1 );
+    mgr2->deallocate( q3 );
     mgr2->deallocate( p4 );
 
     PMM_TEST( mgr2->validate() );
 
-    // Все блоки освобождены — должен быть один большой свободный блок
     auto stats = pmm::get_stats( mgr2 );
     PMM_TEST( stats.allocated_blocks == 0 );
 
-    mgr2->destroy();
+    pmm::PersistMemoryManager::destroy(); // освобождает mem_copy
+
+    // Освобождаем исходный буфер вручную (mgr2 не владел им)
     std::free( mem );
     return true;
 }
 
-/**
- * @brief Данные в выделенных блоках сохраняются при наличии оптимизаций.
- */
 static bool test_data_integrity_with_free_list()
 {
     const std::size_t MEMORY_SIZE = 2UL * 1024 * 1024;
@@ -312,7 +289,6 @@ static bool test_data_integrity_with_free_list()
     std::vector<void*> ptrs( N, nullptr );
     const std::size_t  BLOCK = 256;
 
-    // Выделяем и заполняем блоки
     for ( int i = 0; i < N; i++ )
     {
         ptrs[i] = mgr->allocate( BLOCK );
@@ -320,7 +296,6 @@ static bool test_data_integrity_with_free_list()
         std::memset( ptrs[i], i & 0xFF, BLOCK );
     }
 
-    // Освобождаем каждый третий блок
     for ( int i = 0; i < N; i += 3 )
     {
         mgr->deallocate( ptrs[i] );
@@ -329,7 +304,6 @@ static bool test_data_integrity_with_free_list()
 
     PMM_TEST( mgr->validate() );
 
-    // Проверяем, что данные в оставшихся блоках не повреждены
     for ( int i = 0; i < N; i++ )
     {
         if ( ptrs[i] == nullptr )
@@ -341,7 +315,6 @@ static bool test_data_integrity_with_free_list()
         }
     }
 
-    // Освобождаем оставшиеся блоки
     for ( int i = 0; i < N; i++ )
     {
         if ( ptrs[i] != nullptr )
@@ -350,14 +323,10 @@ static bool test_data_integrity_with_free_list()
 
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief После освобождения всех блоков память полностью объединяется.
- */
 static bool test_full_coalesce_after_alloc_dealloc()
 {
     const std::size_t MEMORY_SIZE = 1UL * 1024 * 1024;
@@ -367,7 +336,7 @@ static bool test_full_coalesce_after_alloc_dealloc()
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, MEMORY_SIZE );
     PMM_TEST( mgr != nullptr );
 
-    std::size_t initial_free = mgr->free_size();
+    std::size_t initial_total = mgr->total_size();
 
     const int          N = 500;
     std::vector<void*> ptrs( N, nullptr );
@@ -378,7 +347,6 @@ static bool test_full_coalesce_after_alloc_dealloc()
         PMM_TEST( ptrs[i] != nullptr );
     }
 
-    // Освобождаем в случайном порядке (чётные сначала, затем нечётные)
     for ( int i = 0; i < N; i += 2 )
     {
         mgr->deallocate( ptrs[i] );
@@ -388,28 +356,21 @@ static bool test_full_coalesce_after_alloc_dealloc()
         mgr->deallocate( ptrs[i] );
     }
 
-    PMM_TEST( mgr->validate() );
+    PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
 
-    // После слияния должен быть один большой свободный блок
-    auto stats = pmm::get_stats( mgr );
+    auto stats = pmm::get_stats( pmm::PersistMemoryManager::instance() );
     PMM_TEST( stats.allocated_blocks == 0 );
     PMM_TEST( stats.free_blocks == 1 );
 
-    // Свободная память должна быть не меньше начальной (за вычетом заголовков)
-    PMM_TEST( mgr->free_size() > 0 );
-    // После освобождения всего — free_size должен быть близок к initial_free
-    // Допускаем небольшое расхождение из-за накладных расходов заголовков
-    PMM_TEST( mgr->free_size() + mgr->used_size() == MEMORY_SIZE );
-    (void)initial_free;
+    PMM_TEST( pmm::PersistMemoryManager::instance()->free_size() > 0 );
+    PMM_TEST( pmm::PersistMemoryManager::instance()->free_size() + pmm::PersistMemoryManager::instance()->used_size() ==
+              pmm::PersistMemoryManager::instance()->total_size() );
+    (void)initial_total;
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Менеджер корректно работает при минимальном буфере.
- */
 static bool test_minimum_buffer_size()
 {
     const std::size_t MEMORY_SIZE = pmm::kMinMemorySize;
@@ -420,21 +381,17 @@ static bool test_minimum_buffer_size()
     PMM_TEST( mgr != nullptr );
     PMM_TEST( mgr->validate() );
 
-    // Должна быть возможность выделить хотя бы один маленький блок
     void* p = mgr->allocate( 8 );
     if ( p != nullptr )
     {
-        PMM_TEST( mgr->validate() );
-        mgr->deallocate( p );
-        PMM_TEST( mgr->validate() );
+        PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
+        pmm::PersistMemoryManager::instance()->deallocate( p );
+        PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
     }
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
-
-// ─── main ─────────────────────────────────────────────────────────────────────
 
 int main()
 {

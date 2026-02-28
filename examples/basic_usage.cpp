@@ -46,8 +46,7 @@ int main()
     if ( block1 == nullptr || block2 == nullptr || block3 == nullptr )
     {
         std::cerr << "Ошибка выделения блоков\n";
-        mgr->destroy();
-        std::free( memory );
+        pmm::PersistMemoryManager::destroy();
         return 1;
     }
 
@@ -125,8 +124,7 @@ int main()
     mgr->dump_stats();
 
     // ── 11. Уничтожение менеджера ─────────────────────────────────────────────
-    mgr->destroy();
-    std::free( memory );
+    pmm::PersistMemoryManager::destroy();
 
     std::cout << "\nПример завершён успешно.\n";
     return ( aligns_ok && valid ) ? 0 : 1;

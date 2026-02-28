@@ -96,8 +96,7 @@ static bool bench_100k_alloc()
               << " [цель ≤ 100 мс: " << ( dealloc_ok ? "PASS" : "FAIL" ) << "]\n";
     std::cout << "  Validate           : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
 
     return alloc_ok && dealloc_ok && valid && ( allocated == N );
 }
@@ -168,8 +167,7 @@ static bool bench_100k_mixed_sizes()
               << " [цель ≤ 100 мс: " << ( dealloc_ok ? "PASS" : "FAIL" ) << "]\n";
     std::cout << "  Validate           : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
 
     return alloc_ok && dealloc_ok && valid && ( allocated == N );
 }
@@ -245,8 +243,7 @@ static bool bench_reallocate()
     std::cout << "  Время reallocate   : " << ms << " мс\n";
     std::cout << "  Validate           : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
 
     return valid;
 }

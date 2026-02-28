@@ -1,12 +1,10 @@
 /**
  * @file test_allocate.cpp
- * @brief Тесты выделения памяти (Фаза 1)
+ * @brief Тесты выделения памяти (Фаза 1, обновлено в Фазе 7)
  *
- * Проверяет корректность работы PersistMemoryManager::allocate():
- * - выделение блоков разных размеров;
- * - соблюдение выравнивания;
- * - возврат nullptr при нехватке памяти;
- * - проверка целостности структур после выделений.
+ * Фаза 7: менеджер — синглтон, управляет памятью самостоятельно.
+ * Вызов PersistMemoryManager::destroy() освобождает буфер — std::free() не нужен.
+ * Автоматическое расширение памяти на 25% при нехватке.
  */
 
 #include "persist_memory_manager.h"
@@ -15,8 +13,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-
-// ─── Вспомогательные макросы ──────────────────────────────────────────────────
 
 #define PMM_TEST( expr )                                                                                               \
     do                                                                                                                 \
@@ -43,45 +39,35 @@
         }                                                                                                              \
     } while ( false )
 
-// ─── Тестовые функции ─────────────────────────────────────────────────────────
-
-/**
- * @brief create() возвращает ненулевой указатель при достаточном размере буфера.
- */
 static bool test_create_basic()
 {
-    const std::size_t size = 64 * 1024; // 64 КБ
+    const std::size_t size = 64 * 1024;
     void*             mem  = std::malloc( size );
     PMM_TEST( mem != nullptr );
 
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, size );
     PMM_TEST( mgr != nullptr );
+    PMM_TEST( mgr == pmm::PersistMemoryManager::instance() );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
+    PMM_TEST( pmm::PersistMemoryManager::instance() == nullptr );
     return true;
 }
 
-/**
- * @brief create() возвращает nullptr при слишком маленьком буфере.
- */
 static bool test_create_too_small()
 {
-    const std::size_t size = 128; // Меньше kMinMemorySize (4096)
+    const std::size_t size = 128;
     void*             mem  = std::malloc( size );
     PMM_TEST( mem != nullptr );
 
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, size );
     PMM_TEST( mgr == nullptr );
 
-    std::free( mem );
+    std::free( mem ); // create() failed — free manually
     return true;
 }
 
-/**
- * @brief create() возвращает nullptr при nullptr-буфере.
- */
 static bool test_create_null()
 {
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( nullptr, 64 * 1024 );
@@ -89,9 +75,6 @@ static bool test_create_null()
     return true;
 }
 
-/**
- * @brief Выделение одного блока небольшого размера.
- */
 static bool test_allocate_single_small()
 {
     const std::size_t size = 64 * 1024;
@@ -103,18 +86,13 @@ static bool test_allocate_single_small()
 
     void* ptr = mgr->allocate( 64 );
     PMM_TEST( ptr != nullptr );
-    // Должен быть выровнен на 16 байт по умолчанию
     PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % 16 == 0 );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Выделение блока с нестандартным выравниванием (32 байта).
- */
 static bool test_allocate_alignment_32()
 {
     const std::size_t size = 64 * 1024;
@@ -129,14 +107,10 @@ static bool test_allocate_alignment_32()
     PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % 32 == 0 );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Выделение блока с нестандартным выравниванием (64 байта).
- */
 static bool test_allocate_alignment_64()
 {
     const std::size_t size = 64 * 1024;
@@ -151,17 +125,13 @@ static bool test_allocate_alignment_64()
     PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % 64 == 0 );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Выделение нескольких блоков — статистика корректна.
- */
 static bool test_allocate_multiple()
 {
-    const std::size_t size = 256 * 1024; // 256 КБ
+    const std::size_t size = 256 * 1024;
     void*             mem  = std::malloc( size );
     PMM_TEST( mem != nullptr );
 
@@ -178,7 +148,6 @@ static bool test_allocate_multiple()
 
     PMM_TEST( mgr->validate() );
 
-    // Все указатели разные
     for ( int i = 0; i < num; i++ )
     {
         for ( int j = i + 1; j < num; j++ )
@@ -187,14 +156,10 @@ static bool test_allocate_multiple()
         }
     }
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief allocate(0) возвращает nullptr.
- */
 static bool test_allocate_zero()
 {
     const std::size_t size = 64 * 1024;
@@ -208,35 +173,42 @@ static bool test_allocate_zero()
     PMM_TEST( ptr == nullptr );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
 /**
- * @brief Запрос на слишком большой блок возвращает nullptr.
+ * @brief Автоматическое расширение памяти на 25% при нехватке (Фаза 7).
  */
-static bool test_allocate_out_of_memory()
+static bool test_allocate_auto_expand()
 {
-    const std::size_t size = 8 * 1024; // 8 КБ
-    void*             mem  = std::malloc( size );
+    const std::size_t initial_size = 8 * 1024;
+    void*             mem          = std::malloc( initial_size );
     PMM_TEST( mem != nullptr );
 
-    pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, size );
+    pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, initial_size );
     PMM_TEST( mgr != nullptr );
 
-    void* ptr = mgr->allocate( 100 * 1024 * 1024 ); // 100 МБ — не влезет
-    PMM_TEST( ptr == nullptr );
-    PMM_TEST( mgr->validate() );
+    std::size_t initial_total = mgr->total_size();
 
-    mgr->destroy();
-    std::free( mem );
+    // Заполняем большую часть памяти
+    void* block1 = mgr->allocate( 4 * 1024 );
+    PMM_TEST( block1 != nullptr );
+
+    // Запрашиваем блок, который требует расширения
+    void* block2 = mgr->allocate( 4 * 1024 );
+    PMM_TEST( block2 != nullptr );
+
+    // Синглтон указывает на новый (расширенный) буфер
+    pmm::PersistMemoryManager* mgr2 = pmm::PersistMemoryManager::instance();
+    PMM_TEST( mgr2 != nullptr );
+    PMM_TEST( mgr2->total_size() > initial_total );
+    PMM_TEST( mgr2->validate() );
+
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Неверное выравнивание (не степень двойки) возвращает nullptr.
- */
 static bool test_allocate_invalid_alignment()
 {
     const std::size_t size = 64 * 1024;
@@ -246,18 +218,14 @@ static bool test_allocate_invalid_alignment()
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, size );
     PMM_TEST( mgr != nullptr );
 
-    void* ptr = mgr->allocate( 64, 17 ); // 17 — не степень двойки
+    void* ptr = mgr->allocate( 64, 17 );
     PMM_TEST( ptr == nullptr );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Запись и чтение данных из выделенного блока — нет перекрытий.
- */
 static bool test_allocate_write_read()
 {
     const std::size_t size = 64 * 1024;
@@ -272,12 +240,9 @@ static bool test_allocate_write_read()
     PMM_TEST( ptr1 != nullptr );
     PMM_TEST( ptr2 != nullptr );
 
-    // Записываем паттерн в первый блок
     std::memset( ptr1, 0xAA, 128 );
-    // Записываем паттерн во второй блок
     std::memset( ptr2, 0xBB, 256 );
 
-    // Проверяем, что данные не перекрылись
     const std::uint8_t* p1 = static_cast<const std::uint8_t*>( ptr1 );
     const std::uint8_t* p2 = static_cast<const std::uint8_t*>( ptr2 );
     for ( std::size_t i = 0; i < 128; i++ )
@@ -291,14 +256,10 @@ static bool test_allocate_write_read()
 
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief total_size(), used_size(), free_size() возвращают корректные значения.
- */
 static bool test_allocate_metrics()
 {
     const std::size_t size = 64 * 1024;
@@ -319,12 +280,9 @@ static bool test_allocate_metrics()
     PMM_TEST( ptr != nullptr );
     PMM_TEST( mgr->used_size() > used_before );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
-
-// ─── main ─────────────────────────────────────────────────────────────────────
 
 int main()
 {
@@ -339,7 +297,7 @@ int main()
     PMM_RUN( "allocate_alignment_64", test_allocate_alignment_64 );
     PMM_RUN( "allocate_multiple", test_allocate_multiple );
     PMM_RUN( "allocate_zero", test_allocate_zero );
-    PMM_RUN( "allocate_out_of_memory", test_allocate_out_of_memory );
+    PMM_RUN( "allocate_auto_expand", test_allocate_auto_expand );
     PMM_RUN( "allocate_invalid_alignment", test_allocate_invalid_alignment );
     PMM_RUN( "allocate_write_read", test_allocate_write_read );
     PMM_RUN( "allocate_metrics", test_allocate_metrics );

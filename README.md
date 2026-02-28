@@ -13,6 +13,8 @@
 - **Выравнивание** — поддержка alignment от 8 до 4096 байт
 - **Диагностика** — validate(), dump_stats(), get_stats()
 - **Высокая производительность** — отдельный список свободных блоков, allocate 100K ≤ 7 мс
+- **Синглтон** — единственный активный менеджер доступен через `PersistMemoryManager::instance()`
+- **Автоматическое расширение** — при нехватке памяти буфер автоматически растёт на 25%
 
 ## Быстрый старт
 
@@ -23,10 +25,13 @@ int main() {
     // Выделить системную память под менеджер (например, 1 МБ)
     void* memory = std::malloc(1024 * 1024);
 
-    // Создать менеджер
-    auto* mgr = pmm::PersistMemoryManager::create(memory, 1024 * 1024);
+    // Создать менеджер (устанавливает синглтон)
+    pmm::PersistMemoryManager::create(memory, 1024 * 1024);
 
-    // Выделить блоки
+    // Получить доступ к синглтону
+    auto* mgr = pmm::PersistMemoryManager::instance();
+
+    // Выделить блоки (при нехватке памяти автоматически расширяет буфер на 25%)
     void* block1 = mgr->allocate(256);          // 256 байт, align=16
     void* block2 = mgr->allocate(1024, 32);     // 1 КБ, align=32
 
@@ -34,11 +39,10 @@ int main() {
     mgr->deallocate(block1);
 
     // Получить статистику
-    auto stats = pmm::get_stats(mgr);
+    auto stats = pmm::get_stats(pmm::PersistMemoryManager::instance());
 
-    // Уничтожить менеджер
-    mgr->destroy();
-    std::free(memory);
+    // Уничтожить менеджер (освобождает управляемый буфер)
+    pmm::PersistMemoryManager::destroy();
     return 0;
 }
 ```
@@ -51,51 +55,49 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-## Персистный указатель pptr<T> (Фаза 5)
+## Персистный указатель pptr<T> (Фаза 5, обновлено в Фазе 7)
 
-`pptr<T>` — типизированный персистный указатель, который хранит смещение (offset) от базы менеджера памяти вместо абсолютного адреса. Это позволяет корректно восстанавливать указатели после загрузки образа по любому базовому адресу.
+`pptr<T>` — типизированный персистный указатель, который хранит смещение (offset) от базы менеджера памяти вместо абсолютного адреса. Начиная с Фазы 7, `pptr<T>` использует синглтон автоматически и не требует явной передачи менеджера.
 
 ```cpp
 #include "persist_memory_manager.h"
 
 int main() {
     void* memory = std::malloc(1024 * 1024);
-    auto* mgr = pmm::PersistMemoryManager::create(memory, 1024 * 1024);
+    pmm::PersistMemoryManager::create(memory, 1024 * 1024);
 
     // Выделить один объект типа int
-    pmm::pptr<int> p = mgr->allocate_typed<int>();
-    *p.resolve(mgr) = 42;
+    pmm::pptr<int> p = pmm::PersistMemoryManager::instance()->allocate_typed<int>();
+    *p = 42;           // operator* использует синглтон автоматически
 
     // Выделить массив из 10 double
-    pmm::pptr<double> arr = mgr->allocate_typed<double>(10);
+    pmm::pptr<double> arr = pmm::PersistMemoryManager::instance()->allocate_typed<double>(10);
     for (int i = 0; i < 10; i++) {
-        *arr.resolve_at(mgr, i) = i * 1.5;
+        *arr.resolve_at(pmm::PersistMemoryManager::instance(), i) = i * 1.5;
     }
 
     // Проверка на нулевой указатель
     if (p) { /* ненулевой */ }
 
     // Сохранить образ
-    mgr->save("heap.dat");
+    pmm::PersistMemoryManager::instance()->save("heap.dat");
 
     // Сохраняем смещение для восстановления после load
     std::ptrdiff_t off = p.offset();
 
-    mgr->deallocate_typed(arr);
-    mgr->deallocate_typed(p);
-    mgr->destroy();
-    std::free(memory);
+    pmm::PersistMemoryManager::instance()->deallocate_typed(arr);
+    pmm::PersistMemoryManager::instance()->deallocate_typed(p);
+    pmm::PersistMemoryManager::destroy(); // освобождает буфер
 
     // --- следующий запуск ---
     void* buf2 = std::malloc(1024 * 1024);
-    auto* mgr2 = pmm::load_from_file("heap.dat", buf2, 1024 * 1024);
+    pmm::load_from_file("heap.dat", buf2, 1024 * 1024); // устанавливает синглтон
 
     // Восстанавливаем pptr<int> по сохранённому смещению
     pmm::pptr<int> p2(off);
-    std::cout << *p2.resolve(mgr2) << "\n"; // выведет 42
+    std::cout << *p2 << "\n"; // выведет 42 (operator* через синглтон)
 
-    mgr2->destroy();
-    std::free(buf2);
+    pmm::PersistMemoryManager::destroy(); // освобождает buf2
     return 0;
 }
 ```
@@ -104,7 +106,8 @@ int main() {
 - `sizeof(pptr<T>) == sizeof(void*)` — размер как у обычного указателя
 - `pptr<T>()` — нулевой указатель по умолчанию
 - `is_null()` / `operator bool()` — проверка на нулевой указатель
-- `resolve(mgr)` — разыменование (возвращает `T*`)
+- `get()` / `operator*` / `operator->` — разыменование через синглтон (Фаза 7)
+- `resolve(mgr)` — разыменование через явный менеджер (обратная совместимость)
 - `resolve_at(mgr, index)` — доступ к элементу массива
 - `offset()` — хранимое смещение (для сохранения/восстановления)
 - Операторы `==` и `!=`
@@ -115,18 +118,17 @@ int main() {
 
 ```cpp
 // Программа A — создаём и сохраняем
-auto* mgr = pmm::PersistMemoryManager::create(memory, size);
+pmm::PersistMemoryManager::create(memory, size);
+auto* mgr = pmm::PersistMemoryManager::instance();
 void* ptr = mgr->allocate(256);
 std::strcpy((char*)ptr, "Hello, World!");
-mgr->save("heap.dat");          // сохранить образ в файл
-mgr->destroy();
-std::free(memory);
+mgr->save("heap.dat");                       // сохранить образ в файл
+pmm::PersistMemoryManager::destroy();        // освобождает буфер
 
 // Программа B — восстанавливаем
 void* buf = std::malloc(size);
-auto* mgr2 = pmm::load_from_file("heap.dat", buf, size);
-// mgr2 полностью восстановлен: те же блоки, те же данные
-mgr2->validate(); // → true
+pmm::load_from_file("heap.dat", buf, size);  // устанавливает синглтон
+pmm::PersistMemoryManager::instance()->validate(); // → true
 ```
 
 Поскольку все метаданные хранятся как **смещения** (а не абсолютные указатели), образ корректно загружается по любому базовому адресу без пересчёта.
@@ -239,6 +241,15 @@ PersistMemoryManager/
 - 8 тестов производительности в `tests/test_performance.cpp`
 - Бенчмарк в `examples/benchmark.cpp`
 - Результат: allocate 100K блоков ~7 мс (цель ≤ 100 мс ✅, ускорение ~2200×)
+
+### Фаза 7 — Синглтон + автоматическое расширение памяти
+
+- `PersistMemoryManager::instance()` — глобальный доступ к единственному активному менеджеру
+- `create()` и `load()` / `load_from_file()` устанавливают синглтон
+- `destroy()` стал **статическим** и автоматически освобождает управляемый буфер (`std::free`)
+- `expand()` — при нехватке памяти менеджер выделяет новый буфер на 25% больше, копирует данные и освобождает старый
+- `pptr<T>::get()`, `operator*`, `operator->` — разыменование через синглтон без передачи менеджера
+- Все тесты и примеры обновлены для нового API
 
 Подробнее: [plan.md](plan.md) | [phase1.md](phase1.md) | [phase2.md](phase2.md) | [phase3.md](phase3.md) | [phase4.md](phase4.md) | [phase6.md](phase6.md) | [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md)
 

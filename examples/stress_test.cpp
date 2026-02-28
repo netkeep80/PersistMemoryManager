@@ -111,8 +111,7 @@ static bool test_100k_allocations()
     if ( !mgr->validate() )
     {
         std::cerr << "  ОШИБКА: validate() провалился после аллокаций\n";
-        mgr->destroy();
-        std::free( mem );
+        pmm::PersistMemoryManager::destroy();
         return false;
     }
 
@@ -130,8 +129,7 @@ static bool test_100k_allocations()
     if ( !mgr->validate() )
     {
         std::cerr << "  ОШИБКА: validate() провалился после освобождений\n";
-        mgr->destroy();
-        std::free( mem );
+        pmm::PersistMemoryManager::destroy();
         return false;
     }
 
@@ -141,8 +139,7 @@ static bool test_100k_allocations()
     std::cout << "  Свободно после освобождений: " << free_after << " байт\n";
     std::cout << "  Занято (метаданные)         : " << used_after << " байт\n";
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
 
     bool passed = data_ok && ( allocated > 0 );
     std::cout << "  Результат: " << ( passed ? "PASS" : "FAIL" ) << "\n";
@@ -278,8 +275,7 @@ static bool test_1m_alternating()
         std::cerr << "  ОШИБКА: validate() провалился после теста\n";
     }
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
 
     bool passed = data_ok && validate_ok;
     std::cout << "  Результат: " << ( passed ? "PASS" : "FAIL" ) << "\n";

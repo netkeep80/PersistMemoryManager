@@ -1,6 +1,6 @@
 # План разработки PersistMemoryManager
 
-## Текущая фаза: Фаза 6 завершена — ожидает Фаза 7
+## Текущая фаза: Фаза 7 завершена
 
 Подробности по каждой фазе: [phase1.md](phase1.md), [phase2.md](phase2.md), [phase3.md](phase3.md), [phase4.md](phase4.md), [phase6.md](phase6.md)
 
@@ -16,7 +16,7 @@
 | 4 | Тесты и документация | ✅ Завершена | [phase4.md](phase4.md) |
 | 5 | Персистный указатель pptr<T> | ✅ Завершена | — |
 | 6 | Оптимизация производительности | ✅ Завершена | [phase6.md](phase6.md) |
-| 7 | Интеграция с pjson_db | ⏳ Ожидает | — |
+| 7 | Синглтон + автоматическое расширение памяти | ✅ Завершена | — |
 
 ---
 
@@ -155,15 +155,27 @@
 
 ---
 
-## Фаза 7: Интеграция с pjson_db
+## Фаза 7: Синглтон + автоматическое расширение памяти
 
-**Статус:** ⏳ Ожидает
+**Статус:** ✅ Завершена
 
 **Задачи:**
-- [ ] Изучить API pjson_db
-- [ ] Разработать адаптер для использования PersistMemoryManager как аллокатора в pjson_db
-- [ ] Написать демонстрационный пример интеграции
-- [ ] Провести нагрузочное тестирование совместной работы
+- [x] Рефакторинг `PersistMemoryManager` в статический класс (синглтон)
+- [x] Добавить `static PersistMemoryManager* instance()` — доступ к единственному менеджеру
+- [x] `create()` и `load()` устанавливают `s_instance`
+- [x] `destroy()` стал статическим; освобождает управляемый буфер через `std::free()`
+- [x] Автоматическое расширение памяти (`expand()`) при нехватке: рост на 25%, копирование образа, освобождение старого буфера
+- [x] `pptr<T>`: добавить `get()`, `operator*`, `operator->` через синглтон (без явной передачи менеджера)
+- [x] Обновить все тесты для нового API (убрать `std::free(mem)` после `destroy()`)
+- [x] Обновить примеры (`examples/`) для нового API
+- [x] Обновить `plan.md` и `README.md`
+
+**Результаты:**
+- `include/persist_memory_manager.h` — синглтон `s_instance`, статический `destroy()`, метод `expand()`, новые методы `pptr<T>`
+- `tests/test_allocate.cpp` — заменён `test_allocate_out_of_memory` на `test_allocate_auto_expand`
+- `tests/test_pptr.cpp` — заменён `pptr_allocate_oom` на `pptr_allocate_auto_expand`; использование `operator*`, `operator->`
+- `tests/test_performance.cpp` — обновлён под новый API синглтона
+- `examples/` — все примеры обновлены: `mgr->destroy()` → `pmm::PersistMemoryManager::destroy()`, убраны лишние `std::free()`
 
 ---
 

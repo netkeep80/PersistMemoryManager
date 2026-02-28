@@ -1,22 +1,11 @@
 /**
  * @file test_pptr.cpp
- * @brief Тесты персистного типизированного указателя pptr<T> (Фаза 5)
+ * @brief Тесты персистного типизированного указателя pptr<T> (Фаза 5, обновлено в Фазе 7)
  *
- * Проверяет корректность работы pptr<T>:
- * - sizeof(pptr<T>) == sizeof(void*);
- * - нулевой указатель по умолчанию;
- * - allocate_typed<T>() возвращает ненулевой pptr<T>;
- * - resolve() возвращает корректный абсолютный указатель;
- * - запись и чтение данных через pptr<T>;
- * - deallocate_typed() освобождает память;
- * - resolve() нулевого pptr<T> возвращает nullptr;
- * - allocate_typed(count) выделяет массив;
- * - resolve_at() обеспечивает доступ к элементам массива;
- * - персистентность: pptr<T> корректен после save/load;
- * - operator bool() для проверки нулевого указателя;
- * - операторы сравнения pptr<T>;
- * - несколько pptr<T> разных типов;
- * - нехватка памяти — allocate_typed возвращает нулевой pptr<T>.
+ * Фаза 7:
+ * - pptr<T> разыменовывается без явного менеджера через operator* и operator->
+ * - Синглтон устанавливается автоматически в create() и load()
+ * - destroy() освобождает буфер
  */
 
 #include "persist_memory_manager.h"
@@ -25,8 +14,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-
-// ─── Вспомогательные макросы ──────────────────────────────────────────────────
 
 #define PMM_TEST( expr )                                                                                               \
     do                                                                                                                 \
@@ -53,11 +40,6 @@
         }                                                                                                              \
     } while ( false )
 
-// ─── Тестовые функции ─────────────────────────────────────────────────────────
-
-/**
- * @brief sizeof(pptr<T>) == sizeof(void*) для разных типов.
- */
 static bool test_pptr_sizeof()
 {
     PMM_TEST( sizeof( pmm::pptr<int> ) == sizeof( void* ) );
@@ -67,21 +49,15 @@ static bool test_pptr_sizeof()
     return true;
 }
 
-/**
- * @brief Конструктор по умолчанию создаёт нулевой указатель.
- */
 static bool test_pptr_default_null()
 {
     pmm::pptr<int> p;
     PMM_TEST( p.is_null() );
-    PMM_TEST( !p ); // operator bool() == false для нулевого указателя
+    PMM_TEST( !p );
     PMM_TEST( p.offset() == 0 );
     return true;
 }
 
-/**
- * @brief allocate_typed<int>() возвращает ненулевой pptr<int>.
- */
 static bool test_pptr_allocate_typed_int()
 {
     const std::size_t size = 64 * 1024;
@@ -92,21 +68,17 @@ static bool test_pptr_allocate_typed_int()
 
     pmm::pptr<int> p = mgr->allocate_typed<int>();
     PMM_TEST( !p.is_null() );
-    PMM_TEST( static_cast<bool>( p ) ); // operator bool() == true для ненулевого
+    PMM_TEST( static_cast<bool>( p ) );
     PMM_TEST( p.offset() > 0 );
     PMM_TEST( mgr->validate() );
 
     mgr->deallocate_typed( p );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief resolve() возвращает корректный абсолютный указатель.
- */
 static bool test_pptr_resolve()
 {
     const std::size_t size = 64 * 1024;
@@ -118,21 +90,21 @@ static bool test_pptr_resolve()
     pmm::pptr<int> p = mgr->allocate_typed<int>();
     PMM_TEST( !p.is_null() );
 
-    int* ptr = p.resolve( mgr );
+    // Разыменование через синглтон (новый API)
+    int* ptr = p.get();
     PMM_TEST( ptr != nullptr );
-    // Указатель должен находиться внутри управляемой области
     PMM_TEST( ptr >= reinterpret_cast<int*>( mem ) );
     PMM_TEST( ptr < reinterpret_cast<int*>( static_cast<std::uint8_t*>( mem ) + size ) );
 
+    // Разыменование через явный менеджер (обратная совместимость)
+    int* ptr2 = p.resolve( mgr );
+    PMM_TEST( ptr2 == ptr );
+
     mgr->deallocate_typed( p );
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Запись и чтение данных через pptr<int>.
- */
 static bool test_pptr_write_read()
 {
     const std::size_t size = 64 * 1024;
@@ -144,24 +116,18 @@ static bool test_pptr_write_read()
     pmm::pptr<int> p = mgr->allocate_typed<int>();
     PMM_TEST( !p.is_null() );
 
-    int* ptr = p.resolve( mgr );
-    PMM_TEST( ptr != nullptr );
+    // Запись через operator*
+    *p = 42;
+    PMM_TEST( *p == 42 );
 
-    *ptr = 42;
-    PMM_TEST( *p.resolve( mgr ) == 42 );
-
-    *p.resolve( mgr ) = 100;
-    PMM_TEST( *ptr == 100 );
+    *p = 100;
+    PMM_TEST( *p == 100 );
 
     mgr->deallocate_typed( p );
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief deallocate_typed() корректно освобождает память, validate() проходит.
- */
 static bool test_pptr_deallocate()
 {
     const std::size_t size = 64 * 1024;
@@ -179,17 +145,12 @@ static bool test_pptr_deallocate()
     mgr->deallocate_typed( p );
     PMM_TEST( mgr->validate() );
 
-    // После освобождения свободного места должно стать не меньше, чем было
     PMM_TEST( mgr->free_size() >= free_before );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief resolve() нулевого pptr<T> возвращает nullptr.
- */
 static bool test_pptr_resolve_null()
 {
     const std::size_t size = 64 * 1024;
@@ -199,8 +160,7 @@ static bool test_pptr_resolve_null()
     PMM_TEST( mgr != nullptr );
 
     pmm::pptr<int> p; // нулевой по умолчанию
-    int*           ptr = p.resolve( mgr );
-    PMM_TEST( ptr == nullptr );
+    PMM_TEST( p.get() == nullptr );
 
     // resolve() с nullptr менеджером тоже возвращает nullptr
     pmm::pptr<int>             p2       = mgr->allocate_typed<int>();
@@ -208,14 +168,10 @@ static bool test_pptr_resolve_null()
     PMM_TEST( p2.resolve( null_mgr ) == nullptr );
 
     mgr->deallocate_typed( p2 );
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief allocate_typed(count) выделяет массив из count элементов.
- */
 static bool test_pptr_allocate_array()
 {
     const std::size_t size  = 256 * 1024;
@@ -229,31 +185,25 @@ static bool test_pptr_allocate_array()
     PMM_TEST( !p.is_null() );
     PMM_TEST( mgr->validate() );
 
-    // Записываем значения в каждый элемент через resolve_at
     for ( std::size_t i = 0; i < count; i++ )
     {
-        int* elem = p.resolve_at( mgr, i );
+        int* elem = p.get_at( i );
         PMM_TEST( elem != nullptr );
         *elem = static_cast<int>( i * 10 );
     }
 
-    // Читаем и проверяем
     for ( std::size_t i = 0; i < count; i++ )
     {
-        PMM_TEST( *p.resolve_at( mgr, i ) == static_cast<int>( i * 10 ) );
+        PMM_TEST( *p.get_at( i ) == static_cast<int>( i * 10 ) );
     }
 
     mgr->deallocate_typed( p );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief resolve_at() обеспечивает доступ к элементам массива.
- */
 static bool test_pptr_resolve_at()
 {
     const std::size_t size  = 256 * 1024;
@@ -266,14 +216,12 @@ static bool test_pptr_resolve_at()
     pmm::pptr<double> p = mgr->allocate_typed<double>( count );
     PMM_TEST( !p.is_null() );
 
-    // Записываем float-значения
     for ( std::size_t i = 0; i < count; i++ )
     {
-        *p.resolve_at( mgr, i ) = static_cast<double>( i ) * 1.5;
+        *p.get_at( i ) = static_cast<double>( i ) * 1.5;
     }
 
-    // Проверяем последовательный доступ через resolve() (начало массива)
-    double* base_elem = p.resolve( mgr );
+    double* base_elem = p.get();
     PMM_TEST( base_elem != nullptr );
     for ( std::size_t i = 0; i < count; i++ )
     {
@@ -281,23 +229,15 @@ static bool test_pptr_resolve_at()
     }
 
     mgr->deallocate_typed( p );
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Персистентность: pptr<T> корректен после save/load образа.
- *
- * Сохраняем образ с выделенным объектом. Загружаем в новый буфер.
- * Смещение pptr<T> должно остаться тем же, данные доступны через resolve().
- */
 static bool test_pptr_persistence()
 {
     const std::size_t size     = 64 * 1024;
     const char*       filename = "pptr_test.dat";
 
-    // Шаг 1: создаём менеджер, выделяем объект, записываем значение, сохраняем
     void* mem1 = std::malloc( size );
     PMM_TEST( mem1 != nullptr );
     pmm::PersistMemoryManager* mgr1 = pmm::PersistMemoryManager::create( mem1, size );
@@ -305,15 +245,13 @@ static bool test_pptr_persistence()
 
     pmm::pptr<int> p1 = mgr1->allocate_typed<int>();
     PMM_TEST( !p1.is_null() );
-    *p1.resolve( mgr1 ) = 12345;
+    *p1 = 12345;
 
     std::ptrdiff_t saved_offset = p1.offset();
     PMM_TEST( mgr1->save( filename ) );
 
-    mgr1->destroy();
-    std::free( mem1 );
+    pmm::PersistMemoryManager::destroy();
 
-    // Шаг 2: загружаем образ в новый буфер по другому адресу
     void* mem2 = std::malloc( size );
     PMM_TEST( mem2 != nullptr );
     pmm::PersistMemoryManager* mgr2 = pmm::load_from_file( filename, mem2, size );
@@ -324,19 +262,15 @@ static bool test_pptr_persistence()
     pmm::pptr<int> p2( saved_offset );
     PMM_TEST( !p2.is_null() );
 
-    // Данные должны быть те же
-    PMM_TEST( *p2.resolve( mgr2 ) == 12345 );
+    // Разыменование через синглтон (который теперь указывает на mgr2)
+    PMM_TEST( *p2 == 12345 );
 
     mgr2->deallocate_typed( p2 );
-    mgr2->destroy();
-    std::free( mem2 );
+    pmm::PersistMemoryManager::destroy();
     std::remove( filename );
     return true;
 }
 
-/**
- * @brief Операторы сравнения pptr<T>.
- */
 static bool test_pptr_comparison()
 {
     const std::size_t size = 64 * 1024;
@@ -347,22 +281,18 @@ static bool test_pptr_comparison()
 
     pmm::pptr<int> p1 = mgr->allocate_typed<int>();
     pmm::pptr<int> p2 = mgr->allocate_typed<int>();
-    pmm::pptr<int> p3 = p1; // копия
+    pmm::pptr<int> p3 = p1;
 
-    PMM_TEST( p1 == p3 ); // равны (одно смещение)
-    PMM_TEST( p1 != p2 ); // разные смещения
+    PMM_TEST( p1 == p3 );
+    PMM_TEST( p1 != p2 );
     PMM_TEST( !( p1 == p2 ) );
 
     mgr->deallocate_typed( p1 );
     mgr->deallocate_typed( p2 );
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Несколько pptr<T> разных типов в одном менеджере.
- */
 static bool test_pptr_multiple_types()
 {
     const std::size_t size = 256 * 1024;
@@ -373,55 +303,65 @@ static bool test_pptr_multiple_types()
 
     pmm::pptr<int>    pi = mgr->allocate_typed<int>();
     pmm::pptr<double> pd = mgr->allocate_typed<double>();
-    pmm::pptr<char>   pc = mgr->allocate_typed<char>( 16 ); // строка 16 символов
+    pmm::pptr<char>   pc = mgr->allocate_typed<char>( 16 );
 
     PMM_TEST( !pi.is_null() );
     PMM_TEST( !pd.is_null() );
     PMM_TEST( !pc.is_null() );
     PMM_TEST( mgr->validate() );
 
-    *pi.resolve( mgr ) = 7;
-    *pd.resolve( mgr ) = 3.14;
-    std::memcpy( pc.resolve( mgr ), "hello", 6 );
+    *pi = 7;
+    *pd = 3.14;
+    std::memcpy( pc.get(), "hello", 6 );
 
-    PMM_TEST( *pi.resolve( mgr ) == 7 );
-    PMM_TEST( *pd.resolve( mgr ) == 3.14 );
-    PMM_TEST( std::memcmp( pc.resolve( mgr ), "hello", 6 ) == 0 );
+    PMM_TEST( *pi == 7 );
+    PMM_TEST( *pd == 3.14 );
+    PMM_TEST( std::memcmp( pc.get(), "hello", 6 ) == 0 );
 
     mgr->deallocate_typed( pi );
     mgr->deallocate_typed( pd );
     mgr->deallocate_typed( pc );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
 /**
- * @brief Нехватка памяти — allocate_typed возвращает нулевой pptr<T>.
+ * @brief Фаза 7: при нехватке памяти менеджер автоматически расширяется.
+ *
+ * allocate_typed больше не возвращает нулевой pptr при нехватке —
+ * менеджер расширяет память на 25% автоматически.
  */
-static bool test_pptr_allocate_oom()
+static bool test_pptr_allocate_auto_expand()
 {
-    const std::size_t size = 4096; // минимальный размер
-    void*             mem  = std::malloc( size );
+    // Используем 8 КБ буфер — как в test_allocate_auto_expand
+    const std::size_t initial_size = 8 * 1024;
+    void*             mem          = std::malloc( initial_size );
     PMM_TEST( mem != nullptr );
-    pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, size );
+    pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, initial_size );
     PMM_TEST( mgr != nullptr );
 
-    // Запрашиваем много памяти — не влезет
-    pmm::pptr<std::uint8_t> p = mgr->allocate_typed<std::uint8_t>( 1024 * 1024 );
-    PMM_TEST( p.is_null() );
-    PMM_TEST( mgr->validate() );
+    std::size_t initial_total = mgr->total_size();
 
-    mgr->destroy();
-    std::free( mem );
+    // Заполняем большую часть буфера первым блоком
+    pmm::pptr<std::uint8_t> p1 = pmm::PersistMemoryManager::instance()->allocate_typed<std::uint8_t>( 4 * 1024 );
+    PMM_TEST( !p1.is_null() );
+
+    // Запрашиваем второй блок — должно вызвать расширение
+    pmm::pptr<std::uint8_t> p2 = pmm::PersistMemoryManager::instance()->allocate_typed<std::uint8_t>( 4 * 1024 );
+    PMM_TEST( !p2.is_null() );
+
+    // После расширения синглтон указывает на новый буфер
+    pmm::PersistMemoryManager* mgr2 = pmm::PersistMemoryManager::instance();
+    PMM_TEST( mgr2 != nullptr );
+    PMM_TEST( mgr2->total_size() > initial_total );
+    PMM_TEST( mgr2->validate() );
+
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief deallocate_typed нулевого pptr<T> — безопасная операция (нет crash).
- */
 static bool test_pptr_deallocate_null()
 {
     const std::size_t size = 64 * 1024;
@@ -430,16 +370,13 @@ static bool test_pptr_deallocate_null()
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, size );
     PMM_TEST( mgr != nullptr );
 
-    pmm::pptr<int> p;           // нулевой
-    mgr->deallocate_typed( p ); // не должно падать
+    pmm::pptr<int> p;
+    mgr->deallocate_typed( p );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
-
-// ─── main ─────────────────────────────────────────────────────────────────────
 
 int main()
 {
@@ -458,7 +395,7 @@ int main()
     PMM_RUN( "pptr_persistence", test_pptr_persistence );
     PMM_RUN( "pptr_comparison", test_pptr_comparison );
     PMM_RUN( "pptr_multiple_types", test_pptr_multiple_types );
-    PMM_RUN( "pptr_allocate_oom", test_pptr_allocate_oom );
+    PMM_RUN( "pptr_allocate_auto_expand", test_pptr_allocate_auto_expand );
     PMM_RUN( "pptr_deallocate_null", test_pptr_deallocate_null );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );

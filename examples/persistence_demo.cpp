@@ -54,8 +54,7 @@ int main()
     if ( p1 == nullptr || p2 == nullptr || p3 == nullptr )
     {
         std::cerr << "Ошибка выделения блоков\n";
-        mgr1->destroy();
-        std::free( mem1 );
+        pmm::PersistMemoryManager::destroy();
         return 1;
     }
 
@@ -77,8 +76,7 @@ int main()
     if ( !mgr1->validate() )
     {
         std::cerr << "Валидация перед сохранением провалилась\n";
-        mgr1->destroy();
-        std::free( mem1 );
+        pmm::PersistMemoryManager::destroy();
         return 1;
     }
 
@@ -90,8 +88,7 @@ int main()
     if ( !mgr1->save( IMAGE_FILE ) )
     {
         std::cerr << "Ошибка сохранения образа в файл: " << IMAGE_FILE << "\n";
-        mgr1->destroy();
-        std::free( mem1 );
+        pmm::PersistMemoryManager::destroy();
         return 1;
     }
     std::cout << "\n[B] Образ сохранён в файл: " << IMAGE_FILE << "\n";
@@ -102,8 +99,7 @@ int main()
     std::ptrdiff_t off2 = static_cast<std::uint8_t*>( p2 ) - static_cast<std::uint8_t*>( mem1 );
 
     // Уничтожаем первый менеджер — имитируем завершение программы
-    mgr1->destroy();
-    std::free( mem1 );
+    pmm::PersistMemoryManager::destroy();
     mgr1 = nullptr;
     std::cout << "[B] Первый менеджер уничтожен (имитация завершения программы).\n";
 
@@ -129,8 +125,7 @@ int main()
     if ( !mgr2->validate() )
     {
         std::cerr << "Валидация после загрузки провалилась\n";
-        mgr2->destroy();
-        std::free( mem2 );
+        pmm::PersistMemoryManager::destroy();
         return 1;
     }
 
@@ -201,8 +196,7 @@ int main()
 
     // ─── Завершение ───────────────────────────────────────────────────────────
 
-    mgr2->destroy();
-    std::free( mem2 );
+    pmm::PersistMemoryManager::destroy();
     std::remove( IMAGE_FILE );
 
     std::cout << "\n=== Демонстрация завершена: " << ( data_ok ? "УСПЕШНО" : "ОШИБКА" ) << " ===\n";

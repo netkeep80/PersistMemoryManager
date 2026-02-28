@@ -1,13 +1,8 @@
 /**
  * @file test_deallocate.cpp
- * @brief Тесты освобождения памяти (Фаза 1)
+ * @brief Тесты освобождения памяти (Фаза 1, обновлено в Фазе 7)
  *
- * Проверяет корректность работы PersistMemoryManager::deallocate():
- * - освобождение одного и нескольких блоков;
- * - повторное освобождение (double-free) безопасно;
- * - освобождение nullptr безопасно;
- * - после освобождения память можно использовать повторно;
- * - проверка целостности структур после освобождений.
+ * Фаза 7: синглтон, destroy() освобождает буфер — std::free() не нужен.
  */
 
 #include "persist_memory_manager.h"
@@ -16,8 +11,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-
-// ─── Вспомогательные макросы ──────────────────────────────────────────────────
 
 #define PMM_TEST( expr )                                                                                               \
     do                                                                                                                 \
@@ -44,11 +37,6 @@
         }                                                                                                              \
     } while ( false )
 
-// ─── Тестовые функции ─────────────────────────────────────────────────────────
-
-/**
- * @brief deallocate(nullptr) не приводит к падению.
- */
 static bool test_deallocate_null()
 {
     const std::size_t size = 64 * 1024;
@@ -58,17 +46,13 @@ static bool test_deallocate_null()
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, size );
     PMM_TEST( mgr != nullptr );
 
-    mgr->deallocate( nullptr ); // Должен быть NO-OP
+    mgr->deallocate( nullptr );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Освобождение одного блока корректно обновляет счётчики.
- */
 static bool test_deallocate_single()
 {
     const std::size_t size = 64 * 1024;
@@ -86,14 +70,10 @@ static bool test_deallocate_single()
     PMM_TEST( mgr->validate() );
     PMM_TEST( mgr->used_size() < used_after_alloc );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief После освобождения память можно выделить заново.
- */
 static bool test_deallocate_reuse()
 {
     const std::size_t size = 64 * 1024;
@@ -109,19 +89,14 @@ static bool test_deallocate_reuse()
     mgr->deallocate( ptr1 );
     PMM_TEST( mgr->validate() );
 
-    // Повторное выделение должно успеть
     void* ptr2 = mgr->allocate( 256 );
     PMM_TEST( ptr2 != nullptr );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Освобождение нескольких блоков в порядке FIFO.
- */
 static bool test_deallocate_multiple_fifo()
 {
     const std::size_t size = 256 * 1024;
@@ -146,14 +121,10 @@ static bool test_deallocate_multiple_fifo()
         PMM_TEST( mgr->validate() );
     }
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Освобождение нескольких блоков в обратном порядке (LIFO).
- */
 static bool test_deallocate_multiple_lifo()
 {
     const std::size_t size = 256 * 1024;
@@ -177,14 +148,10 @@ static bool test_deallocate_multiple_lifo()
         PMM_TEST( mgr->validate() );
     }
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Освобождение блоков в случайном порядке.
- */
 static bool test_deallocate_random_order()
 {
     const std::size_t size = 256 * 1024;
@@ -201,7 +168,6 @@ static bool test_deallocate_random_order()
         PMM_TEST( ptrs[i] != nullptr );
     }
 
-    // Освобождаем в случайном порядке: 2, 5, 0, 3, 1, 4
     int order[] = { 2, 5, 0, 3, 1, 4 };
     for ( int idx : order )
     {
@@ -209,14 +175,10 @@ static bool test_deallocate_random_order()
         PMM_TEST( mgr->validate() );
     }
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief После освобождения всех блоков free_size близок к начальному.
- */
 static bool test_deallocate_all_then_check_free()
 {
     const std::size_t size = 128 * 1024;
@@ -234,17 +196,12 @@ static bool test_deallocate_all_then_check_free()
 
     mgr->deallocate( ptr );
     PMM_TEST( mgr->validate() );
-    // После освобождения free_size должен восстановиться
-    PMM_TEST( mgr->free_size() >= free_before - 128 ); // небольшой допуск на overhead
+    PMM_TEST( mgr->free_size() >= free_before - 128 );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief Чередование allocate/deallocate — validate() всегда OK.
- */
 static bool test_deallocate_interleaved()
 {
     const std::size_t size = 512 * 1024;
@@ -272,14 +229,10 @@ static bool test_deallocate_interleaved()
     }
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief reallocate: увеличение размера блока.
- */
 static bool test_reallocate_grow()
 {
     const std::size_t size = 256 * 1024;
@@ -295,23 +248,18 @@ static bool test_reallocate_grow()
 
     void* ptr2 = mgr->reallocate( ptr1, 512 );
     PMM_TEST( ptr2 != nullptr );
-    PMM_TEST( mgr->validate() );
+    PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
 
-    // Первые 128 байт должны сохраниться
     const std::uint8_t* p = static_cast<const std::uint8_t*>( ptr2 );
     for ( std::size_t i = 0; i < 128; i++ )
     {
         PMM_TEST( p[i] == 0xCC );
     }
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief reallocate(nullptr, size) работает как allocate(size).
- */
 static bool test_reallocate_from_null()
 {
     const std::size_t size = 64 * 1024;
@@ -325,14 +273,10 @@ static bool test_reallocate_from_null()
     PMM_TEST( ptr != nullptr );
     PMM_TEST( mgr->validate() );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
 
-/**
- * @brief get_info() возвращает корректную информацию о выделенном блоке.
- */
 static bool test_get_info()
 {
     const std::size_t size = 64 * 1024;
@@ -351,12 +295,9 @@ static bool test_get_info()
     PMM_TEST( info.size == 512 );
     PMM_TEST( info.alignment == 32 );
 
-    mgr->destroy();
-    std::free( mem );
+    pmm::PersistMemoryManager::destroy();
     return true;
 }
-
-// ─── main ─────────────────────────────────────────────────────────────────────
 
 int main()
 {
