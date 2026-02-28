@@ -517,17 +517,17 @@ int main()
     std::cout << "=== test_persistence ===\n";
     bool all_passed = true;
 
-    PMM_RUN( "persistence_basic_roundtrip",       test_persistence_basic_roundtrip );
-    PMM_RUN( "persistence_user_data_preserved",   test_persistence_user_data_preserved );
-    PMM_RUN( "persistence_multiple_blocks",       test_persistence_multiple_blocks );
-    PMM_RUN( "persistence_allocate_after_load",   test_persistence_allocate_after_load );
-    PMM_RUN( "persistence_save_null_filename",    test_persistence_save_null_filename );
+    PMM_RUN( "persistence_basic_roundtrip", test_persistence_basic_roundtrip );
+    PMM_RUN( "persistence_user_data_preserved", test_persistence_user_data_preserved );
+    PMM_RUN( "persistence_multiple_blocks", test_persistence_multiple_blocks );
+    PMM_RUN( "persistence_allocate_after_load", test_persistence_allocate_after_load );
+    PMM_RUN( "persistence_save_null_filename", test_persistence_save_null_filename );
     PMM_RUN( "persistence_load_nonexistent_file", test_persistence_load_nonexistent_file );
-    PMM_RUN( "persistence_load_null_args",        test_persistence_load_null_args );
-    PMM_RUN( "persistence_corrupted_image",       test_persistence_corrupted_image );
-    PMM_RUN( "persistence_buffer_too_small",      test_persistence_buffer_too_small );
-    PMM_RUN( "persistence_double_save_load",      test_persistence_double_save_load );
-    PMM_RUN( "persistence_empty_manager",         test_persistence_empty_manager );
+    PMM_RUN( "persistence_load_null_args", test_persistence_load_null_args );
+    PMM_RUN( "persistence_corrupted_image", test_persistence_corrupted_image );
+    PMM_RUN( "persistence_buffer_too_small", test_persistence_buffer_too_small );
+    PMM_RUN( "persistence_double_save_load", test_persistence_double_save_load );
+    PMM_RUN( "persistence_empty_manager", test_persistence_empty_manager );
     PMM_RUN( "persistence_deallocate_after_load", test_persistence_deallocate_after_load );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );

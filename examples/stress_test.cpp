@@ -27,7 +27,7 @@ static auto now()
 
 /// Вернуть время в миллисекундах между двумя моментами
 static double elapsed_ms( std::chrono::high_resolution_clock::time_point start,
-                           std::chrono::high_resolution_clock::time_point end )
+                          std::chrono::high_resolution_clock::time_point end )
 {
     return std::chrono::duration<double, std::milli>( end - start ).count();
 }
@@ -64,12 +64,12 @@ static bool test_100k_allocations()
         return false;
     }
 
-    const int         N    = 100'000;
-    const std::size_t BSIZ = 64; // размер каждого блока
+    const int          N    = 100'000;
+    const std::size_t  BSIZ = 64; // размер каждого блока
     std::vector<void*> ptrs( N, nullptr );
 
     // ── Фаза аллокации ────────────────────────────────────────────────────────
-    auto t0 = now();
+    auto t0        = now();
     int  allocated = 0;
     for ( int i = 0; i < N; i++ )
     {
@@ -83,7 +83,7 @@ static bool test_100k_allocations()
         std::memset( ptrs[i], static_cast<int>( i & 0xFF ), BSIZ );
         allocated++;
     }
-    auto t1       = now();
+    auto   t1       = now();
     double ms_alloc = elapsed_ms( t0, t1 );
 
     std::cout << "  Выделено блоков: " << allocated << " / " << N << "\n";
@@ -122,7 +122,7 @@ static bool test_100k_allocations()
     {
         mgr->deallocate( ptrs[i] );
     }
-    auto t3         = now();
+    auto   t3         = now();
     double ms_dealloc = elapsed_ms( t2, t3 );
 
     std::cout << "  Время освобождения: " << ms_dealloc << " мс\n";
@@ -181,19 +181,20 @@ static bool test_1m_alternating()
     }
 
     // Небольшой пул из 64 слотов, в каждом блоки от 32 до 512 байт
-    const int         POOL = 64;
-    const std::size_t SIZES[8] = { 32, 64, 128, 256, 512, 64, 128, 256 };
-    std::vector<void*>      pool( POOL, nullptr );
+    const int                POOL     = 64;
+    const std::size_t        SIZES[8] = { 32, 64, 128, 256, 512, 64, 128, 256 };
+    std::vector<void*>       pool( POOL, nullptr );
     std::vector<std::size_t> pool_sizes( POOL, 0 );
 
-    const int TOTAL_OPS = 1'000'000;
-    int       alloc_ops = 0;
-    int       dealloc_ops = 0;
+    const int TOTAL_OPS     = 1'000'000;
+    int       alloc_ops     = 0;
+    int       dealloc_ops   = 0;
     int       failed_allocs = 0;
 
     // Простой псевдослучайный генератор (LCG) — воспроизводимые результаты
-    uint32_t rng = 42;
-    auto next_rng = [&]() -> uint32_t {
+    uint32_t rng      = 42;
+    auto     next_rng = [&]() -> uint32_t
+    {
         rng = rng * 1664525u + 1013904223u;
         return rng;
     };
@@ -205,7 +206,7 @@ static bool test_1m_alternating()
         if ( pool[slot] == nullptr )
         {
             // Аллоцируем
-            std::size_t sz = SIZES[next_rng() % 8];
+            std::size_t sz   = SIZES[next_rng() % 8];
             pool[slot]       = mgr->allocate( sz );
             pool_sizes[slot] = sz;
             if ( pool[slot] != nullptr )

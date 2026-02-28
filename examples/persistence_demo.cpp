@@ -141,8 +141,8 @@ int main()
     // ─── Фаза D: Проверка данных ──────────────────────────────────────────────
 
     // Восстанавливаем указатели по сохранённым смещениям
-    char* q1  = reinterpret_cast<char*>( static_cast<std::uint8_t*>( mem2 ) + off1 );
-    int*  q2  = reinterpret_cast<int*>( static_cast<std::uint8_t*>( mem2 ) + off2 );
+    char* q1 = reinterpret_cast<char*>( static_cast<std::uint8_t*>( mem2 ) + off1 );
+    int*  q2 = reinterpret_cast<int*>( static_cast<std::uint8_t*>( mem2 ) + off2 );
 
     std::cout << "\n[D] Проверка данных:\n";
 

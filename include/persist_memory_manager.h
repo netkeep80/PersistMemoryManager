@@ -76,12 +76,12 @@ static constexpr std::uint64_t kMagic = 0x504D4D5F56303130ULL; // "PMM_V010"
  */
 enum class ErrorCode
 {
-    OK = 0,            ///< Успешное завершение
-    OUT_OF_MEMORY,     ///< Недостаточно памяти
-    INVALID_POINTER,   ///< Неверный указатель
-    INVALID_ALIGNMENT, ///< Неверное выравнивание
+    OK = 0,             ///< Успешное завершение
+    OUT_OF_MEMORY,      ///< Недостаточно памяти
+    INVALID_POINTER,    ///< Неверный указатель
+    INVALID_ALIGNMENT,  ///< Неверное выравнивание
     CORRUPTED_METADATA, ///< Повреждённые метаданные
-    FILE_IO_ERROR      ///< Ошибка файлового ввода/вывода
+    FILE_IO_ERROR       ///< Ошибка файлового ввода/вывода
 };
 
 /**
@@ -729,7 +729,7 @@ class PersistMemoryManager
             return false;
         }
         const detail::ManagerHeader* hdr = header();
-        std::FILE* f = std::fopen( filename, "wb" );
+        std::FILE*                   f   = std::fopen( filename, "wb" );
         if ( f == nullptr )
         {
             return false;
@@ -743,8 +743,8 @@ class PersistMemoryManager
     /**
      * @brief Дружественный доступ для get_stats(), get_info() и load_from_file().
      */
-    friend MemoryStats    get_stats( const PersistMemoryManager* mgr );
-    friend AllocationInfo get_info( const PersistMemoryManager* mgr, void* ptr );
+    friend MemoryStats           get_stats( const PersistMemoryManager* mgr );
+    friend AllocationInfo        get_info( const PersistMemoryManager* mgr, void* ptr );
     friend PersistMemoryManager* load_from_file( const char* filename, void* memory, std::size_t size );
 
   private:
