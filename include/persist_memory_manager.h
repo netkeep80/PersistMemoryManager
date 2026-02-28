@@ -8,6 +8,7 @@
  *
  * Фаза 1: Базовая структура, allocate и deallocate.
  * Фаза 2: Слияние соседних свободных блоков (coalescing).
+ * Фаза 3: Персистентность (save/load образа из файла).
  *
  * Использование:
  * @code
@@ -17,14 +18,22 @@
  *     void* memory = std::malloc( 1024 * 1024 );
  *     auto* mgr    = pmm::PersistMemoryManager::create( memory, 1024 * 1024 );
  *     void* block  = mgr->allocate( 256 );
+ *     mgr->save( "heap.dat" );   // сохранить образ в файл
  *     mgr->deallocate( block );
  *     mgr->destroy();
  *     std::free( memory );
+ *
+ *     // --- следующий запуск ---
+ *     void* buf2 = std::malloc( 1024 * 1024 );
+ *     auto* mgr2 = pmm::load_from_file( "heap.dat", buf2, 1024 * 1024 );
+ *     // mgr2 восстановлен с теми же блоками
+ *     mgr2->destroy();
+ *     std::free( buf2 );
  *     return 0;
  * }
  * @endcode
  *
- * @version 0.2.0 (Фаза 2)
+ * @version 0.3.0 (Фаза 3)
  */
 
 #pragma once
@@ -33,6 +42,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <iostream>
 
@@ -70,7 +80,8 @@ enum class ErrorCode
     OUT_OF_MEMORY,     ///< Недостаточно памяти
     INVALID_POINTER,   ///< Неверный указатель
     INVALID_ALIGNMENT, ///< Неверное выравнивание
-    CORRUPTED_METADATA ///< Повреждённые метаданные
+    CORRUPTED_METADATA, ///< Повреждённые метаданные
+    FILE_IO_ERROR      ///< Ошибка файлового ввода/вывода
 };
 
 /**
@@ -322,6 +333,22 @@ MemoryStats get_stats( const PersistMemoryManager* mgr );
  * @return Структура AllocationInfo.
  */
 AllocationInfo get_info( const PersistMemoryManager* mgr, void* ptr );
+
+/**
+ * @brief Загрузить образ менеджера из файла в существующий буфер.
+ *
+ * Читает файл, записанный методом save(), в буфер @p memory,
+ * затем вызывает PersistMemoryManager::load() для проверки заголовка.
+ *
+ * @param filename Путь к файлу с образом.
+ * @param memory   Указатель на буфер для загрузки (размер >= размера файла).
+ * @param size     Размер буфера в байтах.
+ * @return Указатель на восстановленный менеджер или nullptr при ошибке.
+ *
+ * Предусловие:  filename != nullptr, memory != nullptr, size >= kMinMemorySize.
+ * Постусловие: менеджер в буфере полностью восстановлен из файла.
+ */
+PersistMemoryManager* load_from_file( const char* filename, void* memory, std::size_t size );
 
 /**
  * @brief Менеджер персистентной памяти.
@@ -680,11 +707,45 @@ class PersistMemoryManager
                   << "==================================\n";
     }
 
+    // ─── Персистентность ──────────────────────────────────────────────────────
+
     /**
-     * @brief Дружественный доступ для get_stats() и get_info().
+     * @brief Сохранить образ управляемой памяти в файл.
+     *
+     * Записывает весь буфер (от начала до total_size байт) в файл побайтово.
+     * Поскольку все метаданные используют смещения (offsets) от base_ptr,
+     * образ корректно загружается по любому базовому адресу через load_from_file().
+     *
+     * @param filename Путь к выходному файлу.
+     * @return true при успешной записи, false при ошибке ввода/вывода.
+     *
+     * Предусловие:  filename != nullptr, менеджер валиден (validate() == true).
+     * Постусловие: файл содержит точную копию управляемой области памяти.
+     */
+    bool save( const char* filename ) const
+    {
+        if ( filename == nullptr )
+        {
+            return false;
+        }
+        const detail::ManagerHeader* hdr = header();
+        std::FILE* f = std::fopen( filename, "wb" );
+        if ( f == nullptr )
+        {
+            return false;
+        }
+        const void* data    = const_base_ptr();
+        std::size_t written = std::fwrite( data, 1, hdr->total_size, f );
+        std::fclose( f );
+        return written == hdr->total_size;
+    }
+
+    /**
+     * @brief Дружественный доступ для get_stats(), get_info() и load_from_file().
      */
     friend MemoryStats    get_stats( const PersistMemoryManager* mgr );
     friend AllocationInfo get_info( const PersistMemoryManager* mgr, void* ptr );
+    friend PersistMemoryManager* load_from_file( const char* filename, void* memory, std::size_t size );
 
   private:
     // ─── Вспомогательные методы ───────────────────────────────────────────────
@@ -915,6 +976,68 @@ inline AllocationInfo get_info( const PersistMemoryManager* mgr, void* ptr )
     }
 
     return info;
+}
+
+/**
+ * @brief Загрузить образ менеджера из файла в существующий буфер.
+ *
+ * Открывает файл, ранее сохранённый методом save(), читает его содержимое
+ * в буфер @p memory, затем вызывает PersistMemoryManager::load() для
+ * проверки магического числа и базовой целостности заголовка.
+ *
+ * Поскольку все метаданные хранятся как смещения от начала буфера,
+ * загрузка по другому базовому адресу корректна без пересчёта указателей.
+ *
+ * @param filename Путь к файлу с образом памяти.
+ * @param memory   Буфер, в который будет загружен образ (размер >= size файла).
+ * @param size     Размер буфера в байтах.
+ * @return Указатель на восстановленный менеджер или nullptr при ошибке.
+ */
+inline PersistMemoryManager* load_from_file( const char* filename, void* memory, std::size_t size )
+{
+    if ( filename == nullptr || memory == nullptr || size < kMinMemorySize )
+    {
+        return nullptr;
+    }
+
+    std::FILE* f = std::fopen( filename, "rb" );
+    if ( f == nullptr )
+    {
+        return nullptr;
+    }
+
+    // Определяем размер файла
+    if ( std::fseek( f, 0, SEEK_END ) != 0 )
+    {
+        std::fclose( f );
+        return nullptr;
+    }
+    long file_size_long = std::ftell( f );
+    if ( file_size_long <= 0 )
+    {
+        std::fclose( f );
+        return nullptr;
+    }
+    std::rewind( f );
+
+    std::size_t file_size = static_cast<std::size_t>( file_size_long );
+    if ( file_size > size )
+    {
+        // Буфер слишком мал для образа
+        std::fclose( f );
+        return nullptr;
+    }
+
+    std::size_t read_bytes = std::fread( memory, 1, file_size, f );
+    std::fclose( f );
+
+    if ( read_bytes != file_size )
+    {
+        return nullptr;
+    }
+
+    // Проверяем заголовок и возвращаем менеджер
+    return PersistMemoryManager::load( memory, file_size );
 }
 
 } // namespace pmm
