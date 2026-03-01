@@ -20,6 +20,7 @@
 | 8 | Тесты, CI, документация | Все тесты проходят, CI зелёный | ~1 д |
 | 9 | Итератор блоков PMM | Публичный API `for_each_block()` / `get_manager_info()` | ~0.5 д |
 | 10 | Координатор сценариев | `ScenarioCoordinator` — безопасная замена синглтона PMM | ~0.5 д |
+| 11 | Тайловый обзор MemMapView | Режим обзора всей памяти (1 пиксель = N байт) | ~0.5 д |
 
 ---
 
@@ -767,6 +768,94 @@ scenarios_[i]->run(stop_flag, total_ops, params, coordinator_);
 
 ---
 
+## Фаза 11: Тайловый обзор MemMapView
+
+Устраняет Риск #7 из таблицы рисков: при большом PMM (> 512 KB) и 7 параллельных
+сценариях рендеринг карты памяти требует обработки миллионов пикселей, что приводит
+к снижению FPS ниже 30. Фаза 11 добавляет режим обзора (overview mode), в котором
+1 пиксель = N байт (тайловая агрегация), что обеспечивает рендеринг всей управляемой
+области без деградации производительности.
+
+### 11.1 Новая структура TileInfo (demo/mem_map_view.h)
+
+```cpp
+struct TileInfo {
+    ByteInfo::Type dominant_type = ByteInfo::Type::OutOfBlocks;
+    std::size_t    offset        = 0;
+    std::size_t    bytes_per_tile = 1;
+    std::uint32_t  type_counts[6] = {}; // счётчики по типам ByteInfo::Type
+};
+```
+
+Один тайл покрывает `bytes_per_tile` последовательных байт. Доминирующий тип
+(наиболее часто встречающийся в тайле) определяет цвет пикселя.
+
+### 11.2 Расширение MemMapView (demo/mem_map_view.h, demo/mem_map_view.cpp)
+
+Новые поля MemMapView:
+```cpp
+std::vector<TileInfo> tile_snapshot_;   // тайловый снимок (Phase 11)
+std::size_t           bytes_per_tile_;  // вычисляется в update_snapshot()
+bool                  overview_mode_;   // переключатель режима
+```
+
+Алгоритм `update_snapshot()` — Phase 11 addition:
+```
+1. Вычислить bytes_per_tile = ceil(total_bytes / kMaxTiles) (kMaxTiles = 65536).
+2. Инициализировать num_tiles = ceil(total_bytes / bytes_per_tile) тайлов.
+3. Распределить типы байт из detail-снимка (первые 512 KB) по тайлам.
+4. Для байт за пределами 512 KB — использовать for_each_block() для заполнения
+   тайловых счётчиков.
+5. Определить dominant_type для каждого тайла по максимуму type_counts.
+```
+
+Публичные accessors для тестирования:
+```cpp
+const std::vector<TileInfo>& tile_snapshot() const noexcept;
+std::size_t bytes_per_tile() const noexcept;
+std::size_t total_bytes()    const noexcept;
+```
+
+### 11.3 Новая кнопка в UI
+
+При PMM > 512 KB появляется чекбокс «Overview (full memory)» рядом с ползунками:
+```
+[Auto width] [Width: 256] [Scale: 1.0] [✓ Overview (full memory)] (1 px = 64 bytes)
+```
+
+В режиме обзора tooltip показывает:
+```
+Tile:   #1234
+Offset: 79691776
+Range:  79691776 – 79693823 bytes
+Type:   UserData(used) (dominant)
+px/tile: 2048 bytes
+```
+
+### 11.4 Тест (tests/test_mem_map_view_tile.cpp)
+
+| Тест | Что проверяется |
+|------|----------------|
+| `small_pmm_tile_size` | bytes_per_tile == 1 для PMM <= 512 KB |
+| `large_pmm_tile_count` | tile count <= kMaxTiles для PMM > 512 KB |
+| `first_tile_is_manager_header` | тайл 0 → ManagerHeader |
+| `used_block_reflected_in_tiles` | хотя бы один тайл помечен Used после аллокации |
+| `freed_blocks_revert_in_tiles` | после освобождения нет тайлов с Used |
+| `tile_offsets_correct` | tile[i].offset == i * bytes_per_tile |
+| `tile_snapshot_null_mgr` | nullptr не вызывает краш |
+| `very_large_pmm_tile_bound` | tile count <= 65536 для PMM 64 MB |
+
+### 11.5 Проверочные критерии фазы 11
+
+- [x] Все 8 новых тестов `test_mem_map_view_tile` проходят.
+- [x] `mem_map_view.h` и `mem_map_view.cpp` ≤ 1500 строк.
+- [x] `test_mem_map_view_tile.cpp` ≤ 1500 строк.
+- [x] CI зелёный: `build-demo` job проходит на ubuntu, windows, macos.
+- [x] Документация обновлена: `plan.md`, `README.md`, `docs/phase-11-mem-map-tile.md`.
+- [x] Risk #7 отмечен ✅ Решён.
+
+---
+
 ## Ключевые технические решения
 
 ### Синхронизация: однократный shared_lock за кадр
@@ -874,7 +963,7 @@ BlockRange blocks(PersistMemoryManager* mgr); // returns all blocks
 | 4 | Размер файлов > 1500 строк при разрастании scenarios.cpp | Риск | Разделить по одному файлу на сценарий при необходимости |
 | 5 | Сценарий Persistence Cycle: PMM::destroy() вызывает глобальную смену синглтона | ✅ Решён | Добавлен `ScenarioCoordinator` — `PersistenceCycle` вызывает `pause_others()` перед `destroy()` и `resume_others()` после `reload()` |
 | 6 | Thread safety: MemMapView читает PMM без API итератора | ✅ Решён | `for_each_block()` берёт `shared_lock` внутри; вся работа с PMM идёт через публичный API |
-| 7 | FPS < 30 при 7 параллельных сценариях + большой PMM | Риск | Оптимизировать рендеринг карты: DrawList batching, пропускать одинаковые пиксели |
+| 7 | FPS < 30 при 7 параллельных сценариях + большой PMM | ✅ Решён | Добавлен режим обзора в `MemMapView` (Phase 11): 1 пиксель = N байт, ≤ 65536 пикселей на кадр |
 
 ---
 
@@ -884,3 +973,4 @@ BlockRange blocks(PersistMemoryManager* mgr); // returns all blocks
 - [docs/architecture.md](docs/architecture.md) — архитектура PMM
 - [docs/api_reference.md](docs/api_reference.md) — справочник API PMM
 - [include/persist_memory_manager.h](include/persist_memory_manager.h) — реализация PMM
+- [docs/phase-11-mem-map-tile.md](docs/phase-11-mem-map-tile.md) — отчёт о реализации Фазы 11

@@ -225,6 +225,7 @@ ctest --test-dir build -R "test_demo_headless|test_mem_map_view|test_scenario_ma
 - `test_mem_map_view` — тесты `MemMapView::update_snapshot()` без графического окна
 - `test_scenario_manager` — тесты жизненного цикла `ScenarioManager::stop_all()` / `join_all()`
 - `test_scenario_coordinator` — тесты `ScenarioCoordinator`: пауза/возобновление потоков, безопасная замена синглтона PMM (Фаза 10)
+- `test_mem_map_view_tile` — тесты тайловой агрегации `MemMapView` для больших PMM: bytes_per_tile, доминирующий тип, ограничение ≤ 65536 тайлов (Фаза 11)
 
 Подробное техническое задание: [demo.md](demo.md) | План разработки: [plan.md](plan.md)
 
@@ -288,7 +289,8 @@ PersistMemoryManager/
 │   ├── phase-1-infrastructure.md               # Отчёт о реализации Фазы 1
 │   ├── phase-8-tests.md                        # Отчёт о реализации Фазы 8
 │   ├── phase-9-block-iterator.md               # Отчёт о реализации Фазы 9
-│   └── phase-10-scenario-coordinator.md        # Отчёт о реализации Фазы 10
+│   ├── phase-10-scenario-coordinator.md        # Отчёт о реализации Фазы 10
+│   └── phase-11-mem-map-tile.md                # Отчёт о реализации Фазы 11
 ├── demo.md                         # Техническое задание на демо
 ├── plan.md                         # План разработки демо
 ├── CMakeLists.txt

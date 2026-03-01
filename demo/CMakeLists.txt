@@ -100,5 +100,6 @@ endfunction()
 
 pmm_demo_test(test_demo_headless         ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_demo_headless.cpp)
 pmm_demo_test(test_mem_map_view          ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_mem_map_view.cpp)
+pmm_demo_test(test_mem_map_view_tile     ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_mem_map_view_tile.cpp)
 pmm_demo_test(test_scenario_manager      ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_scenario_manager.cpp)
 pmm_demo_test(test_scenario_coordinator  ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_scenario_coordinator.cpp)

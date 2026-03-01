@@ -191,4 +191,4 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Test (headless demo tests)
-        run: ctest --test-dir build --build-config Release --output-on-failure -R "test_demo_headless|test_mem_map_view|test_scenario_manager|test_scenario_coordinator"
+        run: ctest --test-dir build --build-config Release --output-on-failure -R "test_demo_headless|test_mem_map_view|test_scenario_manager|test_scenario_coordinator|test_mem_map_view_tile"
