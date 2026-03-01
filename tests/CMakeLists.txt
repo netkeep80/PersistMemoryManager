@@ -25,6 +25,7 @@ pmm_add_test(test_performance test_performance.cpp)
 
 # ─── Реалистичный стресс-тест (Issue #20) ────────────────────────────────────
 pmm_add_test(test_stress_realistic test_stress_realistic.cpp)
+set_tests_properties(test_stress_realistic PROPERTIES TIMEOUT 120)
 
 # ─── Стресс-тест автоматического роста памяти (Issue #30) ────────────────────
 pmm_add_test(test_stress_auto_grow test_stress_auto_grow.cpp)

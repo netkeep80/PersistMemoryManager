@@ -3,11 +3,13 @@
  * @brief Реалистичный стресс-тест PersistMemoryManager (Issue #20)
  *
  * Тест симулирует реальный жизненный цикл использования менеджера памяти:
- *   Фаза 0: Создание 10000000 начальных блоков (разогрев, заполнение).
- *   Фаза 1: 1000000 итераций, 66% вероятность аллокации, 33% освобождения.
- *   Фаза 2: 1000000 итераций, 50% аллокация / 50% освобождение.
+ *   Фаза 0: Создание PHASE0_ITERS начальных блоков (разогрев, заполнение).
+ *   Фаза 1: PHASE1_ITERS итераций, 66% вероятность аллокации, 33% освобождения.
+ *   Фаза 2: PHASE2_ITERS итераций, 50% аллокация / 50% освобождение.
  *   Фаза 3: 66% вероятность освобождения, 33% аллокации, до полного
  *            освобождения всей памяти.
+ *
+ * Iteration counts are reduced in Debug/coverage builds to avoid OOM in CI.
  */
 
 #include "persist_memory_manager.h"
@@ -16,6 +18,17 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
+// Reduce iteration counts in Debug/coverage builds to avoid OOM kills in CI.
+#if defined( NDEBUG )
+static constexpr int kPhase0Iters = 1000000;
+static constexpr int kPhase1Iters = 1000000;
+static constexpr int kPhase2Iters = 1000000;
+#else
+static constexpr int kPhase0Iters = 50000;
+static constexpr int kPhase1Iters = 50000;
+static constexpr int kPhase2Iters = 50000;
+#endif
 
 // ─── Вспомогательные макросы ──────────────────────────────────────────────────
 
@@ -103,16 +116,16 @@ static bool test_stress_realistic()
     Rng rng( 12345 );
 
     std::vector<pmm::pptr<std::uint8_t>> live;
-    live.reserve( 2 * 1000000 );
+    live.reserve( static_cast<std::size_t>( kPhase0Iters + kPhase1Iters ) );
 
     auto total_start = now();
 
-    // ── Фаза 0: 1000000 начальных аллокаций ────────────────────────────────────
+    // ── Фаза 0: начальные аллокации ────────────────────────────────────────────
     {
-        std::cout << "  Фаза 0: создание 1000000 начальных блоков...\n";
+        std::cout << "  Фаза 0: создание " << kPhase0Iters << " начальных блоков...\n";
         auto t0     = now();
         int  failed = 0;
-        for ( int i = 0; i < 1000000; i++ )
+        for ( int i = 0; i < kPhase0Iters; i++ )
         {
             std::size_t             sz  = rng.next_block_size();
             pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
@@ -127,22 +140,22 @@ static bool test_stress_realistic()
         }
         auto   t1 = now();
         double ms = elapsed_ms( t0, t1 );
-        std::cout << "    Выделено: " << live.size() << " / 1000000" << "  неудачно: " << failed << "  время: " << ms
-                  << " мс\n";
+        std::cout << "    Выделено: " << live.size() << " / " << kPhase0Iters << "  неудачно: " << failed
+                  << "  время: " << ms << " мс\n";
 
         PMM_TEST( pmm::PersistMemoryManager::validate() );
     }
 
-    // ── Фаза 1: 1000000 итераций, 66% аллокация / 33% освобождение ─────────────
+    // ── Фаза 1: итерации, 66% аллокация / 33% освобождение ─────────────────────
     {
-        std::cout << "  Фаза 1: 1000000 итераций (66% alloc / 33% free)...\n";
+        std::cout << "  Фаза 1: " << kPhase1Iters << " итераций (66% alloc / 33% free)...\n";
         auto   t0          = now();
         int    alloc_ok    = 0;
         int    alloc_fail  = 0;
         int    dealloc_cnt = 0;
         size_t start_live  = live.size();
 
-        for ( int i = 0; i < 1000000; i++ )
+        for ( int i = 0; i < kPhase1Iters; i++ )
         {
             if ( rng.next_n( 3 ) < 2 )
             {
@@ -181,15 +194,15 @@ static bool test_stress_realistic()
         PMM_TEST( live.size() > start_live );
     }
 
-    // ── Фаза 2: 1000000 итераций, 50% аллокация / 50% освобождение ─────────────
+    // ── Фаза 2: итерации, 50% аллокация / 50% освобождение ─────────────────────
     {
-        std::cout << "  Фаза 2: 1000000 итераций (50% alloc / 50% free)...\n";
+        std::cout << "  Фаза 2: " << kPhase2Iters << " итераций (50% alloc / 50% free)...\n";
         auto t0          = now();
         int  alloc_ok    = 0;
         int  alloc_fail  = 0;
         int  dealloc_cnt = 0;
 
-        for ( int i = 0; i < 1000000; i++ )
+        for ( int i = 0; i < kPhase2Iters; i++ )
         {
             if ( rng.next_n( 2 ) == 0 )
             {

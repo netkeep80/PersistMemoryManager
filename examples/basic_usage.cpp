@@ -78,7 +78,7 @@ int main()
 
     // ── 5. Статистика после выделений ─────────────────────────────────────────
     std::cout << "Статистика после выделений:\n";
-    pmm::PersistMemoryManager::dump_stats();
+    pmm::PersistMemoryManager::dump_stats( std::cout );
     std::cout << "\n";
 
     // Issue #61: get_stats() больше не принимает mgr
@@ -99,7 +99,7 @@ int main()
     pmm::PersistMemoryManager::deallocate_typed( block1 );
     std::cout << "block1 освобождён.\n";
     std::cout << "Статистика после освобождения block1:\n";
-    pmm::PersistMemoryManager::dump_stats();
+    pmm::PersistMemoryManager::dump_stats( std::cout );
     std::cout << "\n";
 
     // ── 8. Перевыделение block2 (Issue #61: reallocate_typed, N — это кол-во T) ──
@@ -123,7 +123,7 @@ int main()
     pmm::PersistMemoryManager::deallocate_typed( block3 );
     std::cout << "Все блоки освобождены.\n";
     std::cout << "Финальная статистика:\n";
-    pmm::PersistMemoryManager::dump_stats();
+    pmm::PersistMemoryManager::dump_stats( std::cout );
 
     // ── 11. Уничтожение менеджера (Issue #61: после destroy() — free вручную) ─
     pmm::PersistMemoryManager::destroy();

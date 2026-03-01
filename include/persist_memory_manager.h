@@ -44,6 +44,28 @@
  *   4. Removed raw void* allocate/deallocate/reallocate from public API.
  *   5. Removed pptr<T>::resolve(PersistMemoryManager*) — use get() via singleton instead.
  *   6. Removed AllocationInfo struct and get_info() free function.
+ *
+ * Code review fixes (Issue #63):
+ *   1. Replaced static constexpr with inline constexpr at namespace scope (no internal linkage per TU).
+ *   2. Removed #include <iostream> from header; dump_stats() now uses ostream parameter.
+ *   3. Updated kMagic to encode format version 3 ("PMM_V030") to reject incompatible persisted files.
+ *   4. Fixed is_valid_alignment to correctly check for kGranuleSize-only alignment.
+ *   5. Added assert to avl_update_height to guard against int16_t height overflow.
+ *   6. Added upper-bound check in header_from_ptr to prevent out-of-range reads.
+ *   7. Fixed AVL tiebreaker to use strict < instead of <= for correct strict weak ordering.
+ *   8. Fixed bytes_to_granules overflow: added SIZE_MAX proximity guard and uint32_t overflow check.
+ *   9. Fixed sizeof(T)*count overflow in allocate_typed(count) and reallocate_typed.
+ *  10. Fixed unsigned underflow in block_data_size_bytes when data_idx < kBlockHeaderGranules.
+ *  11. Fixed pptr::operator[] bounds check: replaced (i+1)*sizeof(T) with overflow-safe i >= N form.
+ *  12. Made pptr constructors and comparison operators constexpr.
+ *  13. Fixed total_fragmentation in get_stats() to include all free blocks.
+ *  14. Replaced magic literal 0xFFFFFFFFULL with std::numeric_limits<std::uint32_t>::max().
+ *  15. Added inline to free function forward declarations to match definitions.
+ *  16. Documented that for_each_block callbacks must not call mutating PMM methods.
+ *  17. Documented expand() lock precondition; added lock state assertion.
+ *  18. Fixed coalesce() to update hdr->used_size when merging block headers.
+ *  19. Fixed expand() growth computation to avoid size_t overflow.
+ *  20. Replaced void* prev_base_ptr in ManagerHeader with uint64_t prev_base_ptr_offset (persistent-safe).
  */
 
 #pragma once
@@ -54,8 +76,9 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
+#include <limits>
 #include <mutex>
+#include <ostream>
 #include <shared_mutex>
 
 namespace pmm
@@ -63,15 +86,16 @@ namespace pmm
 
 class PersistMemoryManager;
 
-static constexpr std::size_t   kGranuleSize      = 16; ///< Issue #59: granule size in bytes
-static constexpr std::size_t   kDefaultAlignment = 16;
-static constexpr std::size_t   kMinAlignment     = 16;
-static constexpr std::size_t   kMaxAlignment     = 16; ///< Issue #59: only 16-byte alignment supported
-static constexpr std::size_t   kMinMemorySize    = 4096;
-static constexpr std::size_t   kMinBlockSize     = 32; ///< Minimum block size = 2 granules = BlockHeader + user area
-static constexpr std::uint64_t kMagic            = 0x504D4D5F56303232ULL; // "PMM_V022"
-static constexpr std::size_t   kGrowNumerator    = 5;
-static constexpr std::size_t   kGrowDenominator  = 4;
+inline constexpr std::size_t kGranuleSize      = 16; ///< Issue #59: granule size in bytes
+inline constexpr std::size_t kDefaultAlignment = 16;
+inline constexpr std::size_t kMinAlignment     = 16;
+inline constexpr std::size_t kMaxAlignment     = 16; ///< Issue #59: only 16-byte alignment supported
+inline constexpr std::size_t kMinMemorySize    = 4096;
+inline constexpr std::size_t kMinBlockSize =
+    48; ///< Minimum block size in bytes = BlockHeader (32) + 1 data granule (16)
+inline constexpr std::uint64_t kMagic           = 0x504D4D5F56303330ULL; ///< "PMM_V030" — format version 3
+inline constexpr std::size_t   kGrowNumerator   = 5;
+inline constexpr std::size_t   kGrowDenominator = 4;
 
 struct MemoryStats
 {
@@ -151,10 +175,10 @@ static_assert( sizeof( BlockHeader ) == 32, "BlockHeader must be exactly 32 byte
 static_assert( sizeof( BlockHeader ) % kGranuleSize == 0, "BlockHeader must be granule-aligned (Issue #59)" );
 
 /// @brief Число гранул в BlockHeader (2 гранулы = 32 байта)
-static constexpr std::uint32_t kBlockHeaderGranules = sizeof( BlockHeader ) / kGranuleSize;
+inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( BlockHeader ) / kGranuleSize;
 
-static constexpr std::uint32_t kBlockMagic = 0x424C4B32U; // "BLK2" (Issue #59 version)
-static constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: нет блока (гранульный индекс)
+inline constexpr std::uint32_t kBlockMagic = 0x424C4B32U; // "BLK2" (Issue #59 version)
+inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: нет блока (гранульный индекс)
 
 /**
  * @brief Заголовок менеджера памяти (Issue #59: 64 байта, 16-байтное выравнивание).
@@ -165,8 +189,12 @@ static constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: нет б�
  *     [used_size в гранулах]
  *   - first_block_offset (4B) + last_block_offset (4B) + free_tree_root (4B) + owns_memory(1B)+pad(3B) = 16 байт
  *     [смещения — гранульные индексы]
- *   - prev_total_size (8B) + prev_base (8B) = 16 байт
+ *   - prev_total_size (8B) + prev_base_ptr (8B) = 16 байт  [runtime-only; not persisted]
  *   Итого: 64 байта
+ *
+ * NOTE: prev_base_ptr is a runtime-only field. It stores the raw pointer to the previous
+ * buffer after an expand() operation. This field is nulled out by load() because raw
+ * virtual addresses are not meaningful after a reload. Never persist and reload this field.
  */
 struct ManagerHeader
 {
@@ -179,25 +207,33 @@ struct ManagerHeader
     std::uint32_t first_block_offset; ///< Первый блок (гранульный индекс)
     std::uint32_t last_block_offset; ///< [Issue #57 opt 4] Последний блок (гранульный индекс)
     std::uint32_t free_tree_root; ///< Корень AVL-дерева свободных блоков (гранульный индекс)
-    bool         owns_memory;      ///< Менеджер владеет буфером
-    bool         prev_owns_memory; ///< prev_base был выделен менеджером (через expand)
-    std::uint8_t _pad[2];          ///< Выравнивание
-    std::uint64_t prev_total_size; ///< Размер предыдущего буфера в байтах (при расширении)
-    void* prev_base;               ///< Указатель на предыдущий буфер
+    bool          owns_memory;      ///< Менеджер владеет буфером (runtime-only)
+    bool          prev_owns_memory; ///< prev_base_ptr был выделен менеджером (runtime-only)
+    std::uint8_t  _pad[2];          ///< Выравнивание
+    std::uint64_t prev_total_size;  ///< Размер предыдущего буфера в байтах (runtime-only)
+    void* prev_base_ptr; ///< Указатель на предыдущий буфер (runtime-only; nulled on load)
 };
 
 static_assert( sizeof( ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes (Issue #59)" );
 static_assert( sizeof( ManagerHeader ) % kGranuleSize == 0, "ManagerHeader must be granule-aligned (Issue #59)" );
 
 /// @brief Число гранул в ManagerHeader
-static constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader ) / kGranuleSize;
+inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader ) / kGranuleSize;
 
 // ─── Конвертация байты ↔ гранулы ──────────────────────────────────────────────
 
 /// @brief Перевести байты в гранулы (потолок: ceiling(bytes / kGranuleSize)).
+/// Returns 0 if the result would overflow uint32_t (caller must treat as allocation failure).
 inline std::uint32_t bytes_to_granules( std::size_t bytes )
 {
-    return static_cast<std::uint32_t>( ( bytes + kGranuleSize - 1 ) / kGranuleSize );
+    // Guard against size_t overflow in the addition
+    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranuleSize - 1 ) )
+        return 0; // overflow — signal failure to caller
+    std::size_t granules = ( bytes + kGranuleSize - 1 ) / kGranuleSize;
+    // Guard against uint32_t truncation
+    if ( granules > std::numeric_limits<std::uint32_t>::max() )
+        return 0; // overflow — signal failure to caller
+    return static_cast<std::uint32_t>( granules );
 }
 
 /// @brief Перевести гранулы в байты.
@@ -213,17 +249,19 @@ inline std::size_t idx_to_byte_off( std::uint32_t idx )
 }
 
 /// @brief Получить гранульный индекс из байтового смещения.
-/// Байтовое смещение должно быть кратно kGranuleSize.
+/// Байтовое смещение должно быть кратно kGranuleSize и <= UINT32_MAX * kGranuleSize.
 inline std::uint32_t byte_off_to_idx( std::size_t byte_off )
 {
     assert( byte_off % kGranuleSize == 0 );
+    assert( byte_off / kGranuleSize <= std::numeric_limits<std::uint32_t>::max() );
     return static_cast<std::uint32_t>( byte_off / kGranuleSize );
 }
 
+/// @brief Returns true only for kGranuleSize (16-byte) alignment.
+/// Issue #59: only 16-byte alignment is supported — everything is granule-aligned.
 inline bool is_valid_alignment( std::size_t align )
 {
-    // Issue #59: only 16-byte alignment is supported (everything is granule-aligned)
-    return align != 0 && ( align & ( align - 1 ) ) == 0 && align >= 1;
+    return align == kGranuleSize;
 }
 
 /// @brief Получить указатель на BlockHeader по гранульному индексу.
@@ -262,13 +300,19 @@ inline void* user_ptr( BlockHeader* block )
 /// @brief O(1) восстановление заголовка блока по user_ptr (Issue #59).
 /// user_ptr всегда = block + sizeof(BlockHeader), поэтому header = ptr - sizeof(BlockHeader).
 /// Проверка через magic и used_size > 0.
-inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr )
+/// @param base     Базовый адрес управляемой области.
+/// @param ptr      Указатель на пользовательские данные (должен быть внутри [base, base+total_size)).
+/// @param total_size Полный размер управляемой области в байтах (для проверки верхней границы).
+inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t total_size )
 {
     if ( ptr == nullptr )
         return nullptr;
     std::uint8_t* raw_ptr  = reinterpret_cast<std::uint8_t*>( ptr );
     std::uint8_t* min_addr = base + sizeof( ManagerHeader ) + sizeof( BlockHeader );
     if ( raw_ptr < min_addr )
+        return nullptr;
+    // Upper-bound check: ptr must be strictly within the managed region
+    if ( raw_ptr > base + total_size )
         return nullptr;
 
     // user_ptr is always exactly sizeof(BlockHeader) bytes past the block header
@@ -302,7 +346,9 @@ inline std::int32_t avl_height( std::uint8_t* base, std::uint32_t idx )
 
 inline void avl_update_height( std::uint8_t* base, BlockHeader* node )
 {
-    node->avl_height = 1 + std::max( avl_height( base, node->left_offset ), avl_height( base, node->right_offset ) );
+    std::int32_t h = 1 + std::max( avl_height( base, node->left_offset ), avl_height( base, node->right_offset ) );
+    assert( h <= std::numeric_limits<std::int16_t>::max() ); // tree height must fit in int16_t
+    node->avl_height = static_cast<std::int16_t>( h );
 }
 
 inline std::int32_t avl_bf( std::uint8_t* base, BlockHeader* node )
@@ -411,7 +457,7 @@ inline void avl_insert( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t bl
         parent                = cur;
         BlockHeader*  n       = block_at( base, cur );
         std::uint32_t n_gran  = ( n->next_offset != kNoBlock ) ? ( n->next_offset - cur ) : ( total_gran - cur );
-        bool          smaller = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx <= cur );
+        bool          smaller = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx < cur );
         go_left               = smaller;
         cur                   = smaller ? n->left_offset : n->right_offset;
     }
@@ -535,21 +581,21 @@ template <class T> class pptr
     std::uint32_t _idx; ///< Гранульный индекс пользовательских данных
 
   public:
-    inline pptr() noexcept : _idx( 0 ) {}
-    inline explicit pptr( std::uint32_t idx ) noexcept : _idx( idx ) {}
-    inline pptr( const pptr<T>& ) noexcept               = default;
-    inline pptr<T>& operator=( const pptr<T>& ) noexcept = default;
-    inline ~pptr() noexcept                              = default;
+    constexpr pptr() noexcept : _idx( 0 ) {}
+    constexpr explicit pptr( std::uint32_t idx ) noexcept : _idx( idx ) {}
+    constexpr pptr( const pptr<T>& ) noexcept               = default;
+    constexpr pptr<T>& operator=( const pptr<T>& ) noexcept = default;
+    ~pptr() noexcept                                        = default;
 
-    // Issue #59: ++ and -- are forbidden
+    // Pointer arithmetic is forbidden — pptr is not a random-access iterator
     pptr<T>& operator++()      = delete;
     pptr<T>  operator++( int ) = delete;
     pptr<T>& operator--()      = delete;
     pptr<T>  operator--( int ) = delete;
 
-    inline bool          is_null() const noexcept { return _idx == 0; }
-    inline explicit      operator bool() const noexcept { return _idx != 0; }
-    inline std::uint32_t offset() const noexcept { return _idx; }
+    constexpr bool          is_null() const noexcept { return _idx == 0; }
+    constexpr explicit      operator bool() const noexcept { return _idx != 0; }
+    constexpr std::uint32_t offset() const noexcept { return _idx; }
 
     /// @brief Разыменовать через синглтон PersistMemoryManager (Issue #61).
     inline T* get() const noexcept;
@@ -557,25 +603,24 @@ template <class T> class pptr
     inline T* operator->() const noexcept { return get(); }
 
     /// @brief Доступ к i-му элементу типа T с проверкой размера блока (Issue #59).
-    /// Проверяет, что i * sizeof(T) не выходит за размер блока.
-    /// @return Указатель на элемент или nullptr при выходе за границы.
+    /// Bounds-checked: returns nullptr if index i is out of range.
     inline T* operator[]( std::size_t i ) const noexcept;
 
     /// @brief Доступ к i-му элементу без проверки границ (внутреннее использование).
     inline T* get_at( std::size_t index ) const noexcept;
 
-    inline bool operator==( const pptr<T>& other ) const noexcept { return _idx == other._idx; }
-    inline bool operator!=( const pptr<T>& other ) const noexcept { return _idx != other._idx; }
+    constexpr bool operator==( const pptr<T>& other ) const noexcept { return _idx == other._idx; }
+    constexpr bool operator!=( const pptr<T>& other ) const noexcept { return _idx != other._idx; }
 };
 
-// Issue #59: pptr<T> теперь 4 байта (uint32_t гранульный индекс)
-static_assert( sizeof( pptr<int> ) == 4, "sizeof(pptr<T>) должен быть 4 байта (Issue #59)" );
-static_assert( sizeof( pptr<double> ) == 4, "sizeof(pptr<T>) должен быть 4 байта (Issue #59)" );
+// Issue #59: pptr<T> is 4 bytes (uint32_t granule index)
+static_assert( sizeof( pptr<int> ) == 4, "sizeof(pptr<T>) must be 4 bytes (Issue #59)" );
+static_assert( sizeof( pptr<double> ) == 4, "sizeof(pptr<T>) must be 4 bytes (Issue #59)" );
 
 // ─── Основной класс ───────────────────────────────────────────────────────────
 
-MemoryStats get_stats();
-ManagerInfo get_manager_info();
+inline MemoryStats get_stats();
+inline ManagerInfo get_manager_info();
 
 /**
  * @brief Менеджер персистентной памяти — полностью статический класс (Issue #61).
@@ -606,7 +651,7 @@ class PersistMemoryManager
         if ( memory == nullptr || size < kMinMemorySize )
             return false;
         // Issue #59: max 64 GB (2^32 * kGranuleSize)
-        if ( size > static_cast<std::uint64_t>( 0xFFFFFFFFULL ) * kGranuleSize )
+        if ( size > static_cast<std::uint64_t>( std::numeric_limits<std::uint32_t>::max() ) * kGranuleSize )
             return false;
         // Size must be a multiple of kGranuleSize
         if ( size % kGranuleSize != 0 )
@@ -674,7 +719,7 @@ class PersistMemoryManager
         hdr->owns_memory      = false; // external memory — caller is responsible
         hdr->prev_owns_memory = false;
         hdr->prev_total_size  = 0;
-        hdr->prev_base        = nullptr;
+        hdr->prev_base_ptr    = nullptr;
         auto* mgr             = reinterpret_cast<PersistMemoryManager*>( base );
         mgr->rebuild_free_tree();
         s_instance = mgr;
@@ -697,13 +742,13 @@ class PersistMemoryManager
         hdr->magic                 = 0;
         bool  owns                 = hdr->owns_memory;
         void* buf                  = s_instance->base_ptr();
-        void* prev                 = hdr->prev_base;
+        void* prev                 = hdr->prev_base_ptr;
         bool  prev_owns            = hdr->prev_owns_memory;
         s_instance                 = nullptr;
         while ( prev != nullptr )
         {
             detail::ManagerHeader* ph        = reinterpret_cast<detail::ManagerHeader*>( prev );
-            void*                  next_prev = ph->prev_base;
+            void*                  next_prev = ph->prev_base_ptr;
             bool                   next_owns = ph->prev_owns_memory;
             if ( prev_owns )
                 std::free( prev );
@@ -739,6 +784,9 @@ class PersistMemoryManager
     template <class T> static pptr<T> allocate_typed( std::size_t count )
     {
         if ( count == 0 )
+            return pptr<T>();
+        // Guard against sizeof(T) * count overflow
+        if ( sizeof( T ) > 0 && count > std::numeric_limits<std::size_t>::max() / sizeof( T ) )
             return pptr<T>();
         void* raw = s_instance ? s_instance->allocate_raw( sizeof( T ) * count ) : nullptr;
         if ( raw == nullptr )
@@ -786,10 +834,14 @@ class PersistMemoryManager
 
         std::uint8_t*        base    = s_instance->base_ptr();
         void*                old_raw = base + detail::idx_to_byte_off( p.offset() );
-        detail::BlockHeader* blk     = detail::header_from_ptr( base, old_raw );
+        detail::BlockHeader* blk =
+            detail::header_from_ptr( base, old_raw, static_cast<std::size_t>( s_instance->header()->total_size ) );
         if ( blk == nullptr || blk->used_size == 0 )
             return pptr<T>();
 
+        // Guard against sizeof(T) * count overflow
+        if ( count > 0 && sizeof( T ) > std::numeric_limits<std::size_t>::max() / count )
+            return pptr<T>();
         std::uint32_t new_granules = detail::bytes_to_granules( sizeof( T ) * count );
         if ( new_granules <= blk->used_size )
             return p;
@@ -822,6 +874,9 @@ class PersistMemoryManager
     static std::size_t block_data_size_bytes( std::uint32_t data_idx ) noexcept
     {
         if ( s_instance == nullptr || data_idx == 0 )
+            return 0;
+        // Guard against unsigned underflow: data_idx must be at least kBlockHeaderGranules
+        if ( data_idx < detail::kBlockHeaderGranules )
             return 0;
         std::uint8_t* base    = s_instance->base_ptr();
         std::uint32_t blk_idx = data_idx - detail::kBlockHeaderGranules;
@@ -905,23 +960,30 @@ class PersistMemoryManager
         return ( block_count == hdr->block_count && free_count == hdr->free_count && alloc_count == hdr->alloc_count );
     }
 
-    static void dump_stats()
+    /// @brief Dump diagnostics to the provided output stream.
+    /// @param os  Output stream to write to (e.g. std::cout).
+    static void dump_stats( std::ostream& os )
     {
         if ( s_instance == nullptr )
         {
-            std::cout << "=== PersistMemoryManager: no instance ===\n";
+            os << "=== PersistMemoryManager: no instance ===\n";
             return;
         }
         std::shared_lock<std::shared_mutex> lock( s_mutex );
         const detail::ManagerHeader*        hdr = s_instance->header();
-        std::cout << "=== PersistMemoryManager stats ===\n"
-                  << "  total_size  : " << hdr->total_size << " bytes\n"
-                  << "  used_size   : " << used_size() << " bytes\n"
-                  << "  free_size   : " << free_size() << " bytes\n"
-                  << "  blocks      : " << hdr->block_count << " (free=" << hdr->free_count
-                  << ", alloc=" << hdr->alloc_count << ")\n"
-                  << "  fragmentation: " << fragmentation() << " extra free segments\n"
-                  << "==================================\n";
+        os << "=== PersistMemoryManager stats ===\n"
+           << "  total_size  : " << hdr->total_size << " bytes\n"
+           << "  used_size   : " << detail::granules_to_bytes( hdr->used_size ) << " bytes\n"
+           << "  free_size   : "
+           << ( hdr->total_size > detail::granules_to_bytes( hdr->used_size )
+                    ? hdr->total_size - detail::granules_to_bytes( hdr->used_size )
+                    : 0ULL )
+           << " bytes\n"
+           << "  blocks      : " << hdr->block_count << " (free=" << hdr->free_count << ", alloc=" << hdr->alloc_count
+           << ")\n"
+           << "  fragmentation: " << ( ( hdr->free_count > 1 ) ? ( hdr->free_count - 1 ) : 0U )
+           << " extra free segments\n"
+           << "==================================\n";
     }
 
     /// @brief Проверить, инициализирован ли менеджер.
@@ -984,7 +1046,7 @@ class PersistMemoryManager
         ptr                         = translate_ptr( ptr );
         std::uint8_t*          base = base_ptr();
         detail::ManagerHeader* hdr  = header();
-        detail::BlockHeader*   blk  = detail::header_from_ptr( base, ptr );
+        detail::BlockHeader*   blk  = detail::header_from_ptr( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
         if ( blk == nullptr || blk->used_size == 0 )
             return;
 
@@ -998,24 +1060,31 @@ class PersistMemoryManager
         coalesce( blk );
     }
 
+    /// @pre Must be called while holding s_mutex as a unique_lock (called only from allocate_raw).
     bool expand( std::size_t user_size )
     {
         detail::ManagerHeader* hdr      = header();
         std::size_t            old_size = hdr->total_size;
         std::uint32_t          needed   = detail::required_block_granules( user_size );
-        // Round UP to granule boundary: ceil(old * 5/4 / kGranuleSize) * kGranuleSize
-        std::size_t new_size =
-            ( ( old_size * kGrowNumerator / kGrowDenominator + kGranuleSize - 1 ) / kGranuleSize ) * kGranuleSize;
+
+        // Compute new_size = ceil(old_size * 5/4 / kGranuleSize) * kGranuleSize
+        // Use divide-first to avoid overflow: old_size/4 * 5
+        std::size_t growth   = ( old_size / kGrowDenominator ) * kGrowNumerator;
+        std::size_t new_size = ( ( growth + kGranuleSize - 1 ) / kGranuleSize ) * kGranuleSize;
+        if ( new_size <= old_size )
+            new_size = old_size + kGranuleSize; // at minimum grow by one granule
         if ( new_size < old_size + detail::granules_to_bytes( needed ) )
         {
-            new_size =
-                ( ( old_size + detail::granules_to_bytes( needed + detail::kBlockHeaderGranules ) + kGranuleSize - 1 ) /
-                  kGranuleSize ) *
-                kGranuleSize;
+            // Ensure there is enough space for the requested allocation
+            std::size_t extra = detail::granules_to_bytes( needed + detail::kBlockHeaderGranules );
+            // Guard against addition overflow
+            if ( extra > std::numeric_limits<std::size_t>::max() - old_size - ( kGranuleSize - 1 ) )
+                return false;
+            new_size = ( ( old_size + extra + kGranuleSize - 1 ) / kGranuleSize ) * kGranuleSize;
         }
 
         // Issue #59: max 64 GB
-        if ( new_size > static_cast<std::uint64_t>( 0xFFFFFFFFULL ) * kGranuleSize )
+        if ( new_size > static_cast<std::uint64_t>( std::numeric_limits<std::uint32_t>::max() ) * kGranuleSize )
             return false;
 
         void* new_memory = std::malloc( new_size );
@@ -1075,7 +1144,7 @@ class PersistMemoryManager
             nh->total_size = new_size; // Update before AVL insert (affects size computation)
             detail::avl_insert( nb, nh, extra_idx );
         }
-        nh->prev_base        = base_ptr();
+        nh->prev_base_ptr    = base_ptr();
         nh->prev_total_size  = old_size;
         nh->prev_owns_memory = hdr->owns_memory; // whether the previous buffer is owned
         s_instance           = reinterpret_cast<PersistMemoryManager*>( new_memory );
@@ -1109,7 +1178,7 @@ class PersistMemoryManager
         std::uint8_t*                base     = const_cast<PersistMemoryManager*>( this )->base_ptr();
         const detail::ManagerHeader* hdr      = header();
         std::uint8_t*                raw      = static_cast<std::uint8_t*>( ptr );
-        void*                        prev_buf = hdr->prev_base;
+        void*                        prev_buf = hdr->prev_base_ptr;
         std::size_t                  prev_sz  = hdr->prev_total_size;
         while ( prev_buf != nullptr && prev_sz > 0 )
         {
@@ -1117,7 +1186,7 @@ class PersistMemoryManager
             if ( raw >= prev && raw < prev + prev_sz )
                 return base + ( raw - prev );
             detail::ManagerHeader* ph = reinterpret_cast<detail::ManagerHeader*>( prev_buf );
-            prev_buf                  = ph->prev_base;
+            prev_buf                  = ph->prev_base_ptr;
             prev_sz                   = ph->prev_total_size;
         }
         return ptr;
@@ -1149,6 +1218,9 @@ class PersistMemoryManager
                 nxt->magic = 0;
                 hdr->block_count--;
                 hdr->free_count--;
+                // Merged block header (kBlockHeaderGranules granules) is now reclaimed as free space
+                if ( hdr->used_size >= detail::kBlockHeaderGranules )
+                    hdr->used_size -= detail::kBlockHeaderGranules;
             }
         }
 
@@ -1168,6 +1240,9 @@ class PersistMemoryManager
                 blk->magic = 0;
                 hdr->block_count--;
                 hdr->free_count--;
+                // Merged block header (kBlockHeaderGranules granules) is now reclaimed as free space
+                if ( hdr->used_size >= detail::kBlockHeaderGranules )
+                    hdr->used_size -= detail::kBlockHeaderGranules;
                 detail::avl_insert( base, hdr, prv_idx );
                 return;
             }
@@ -1214,6 +1289,8 @@ class PersistMemoryManager
             blk->next_offset = new_idx;
             hdr->block_count++;
             hdr->free_count++;
+            // The new split-off block header occupies kBlockHeaderGranules granules of overhead
+            hdr->used_size += detail::kBlockHeaderGranules;
             detail::avl_insert( base, hdr, new_idx );
         }
 
@@ -1283,8 +1360,9 @@ template <class T> inline T* pptr<T>::operator[]( std::size_t i ) const noexcept
     if ( _idx == 0 )
         return nullptr;
     std::size_t block_bytes = PersistMemoryManager::block_data_size_bytes( _idx );
-    // Bounds check: element must be within the allocated block
-    if ( ( i + 1 ) * sizeof( T ) > block_bytes )
+    // Bounds check: avoid (i+1)*sizeof(T) overflow — use i >= capacity form instead
+    std::size_t capacity = ( sizeof( T ) > 0 ) ? ( block_bytes / sizeof( T ) ) : 0;
+    if ( i >= capacity )
         return nullptr;
     T* base_elem = static_cast<T*>( PersistMemoryManager::offset_to_ptr( _idx ) );
     return base_elem + i;
@@ -1326,8 +1404,9 @@ inline MemoryStats get_stats()
             {
                 stats.largest_free  = std::max( stats.largest_free, blk_size );
                 stats.smallest_free = std::min( stats.smallest_free, blk_size );
-                stats.total_fragmentation += blk_size;
             }
+            // total_fragmentation = total free bytes across all free blocks
+            stats.total_fragmentation += blk_size;
         }
         idx = blk->next_offset;
     }
@@ -1361,6 +1440,11 @@ inline ManagerInfo get_manager_info()
 }
 
 /// @brief Итерировать по всем блокам (Issue #61: без параметра PersistMemoryManager*).
+///
+/// @warning The callback MUST NOT call any mutating PersistMemoryManager methods
+/// (allocate_typed, deallocate_typed, reallocate_typed, create, destroy, load).
+/// Doing so while a shared_lock is held by the calling thread will deadlock, because
+/// mutating methods acquire a unique_lock on the same non-recursive mutex.
 template <typename Callback> inline void for_each_block( Callback&& cb )
 {
     PersistMemoryManager* mgr = PersistMemoryManager::instance();

@@ -12,6 +12,7 @@
 #include "persist_memory_manager.h"
 
 #include <cstdio>
+#include <iostream>
 
 namespace demo
 {
@@ -163,7 +164,7 @@ void MetricsView::render()
 
     if ( ImGui::Button( "Dump to stdout" ) )
     {
-        pmm::PersistMemoryManager::dump_stats();
+        pmm::PersistMemoryManager::dump_stats( std::cout );
     }
 
     ImGui::End();

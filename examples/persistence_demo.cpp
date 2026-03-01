@@ -88,7 +88,7 @@ int main()
     }
 
     std::cout << "\nСтатистика перед сохранением:\n";
-    pmm::PersistMemoryManager::dump_stats();
+    pmm::PersistMemoryManager::dump_stats( std::cout );
 
     // Запоминаем смещения (гранульные индексы) выделенных блоков
     // (они останутся такими же в восстановленном образе)
@@ -143,7 +143,7 @@ int main()
 
     std::cout << "[C] Образ успешно загружен и валиден.\n";
     std::cout << "\nСтатистика после загрузки:\n";
-    pmm::PersistMemoryManager::dump_stats();
+    pmm::PersistMemoryManager::dump_stats( std::cout );
 
     // ─── Фаза D: Проверка данных ──────────────────────────────────────────────
 
