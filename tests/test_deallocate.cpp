@@ -8,6 +8,7 @@
 #include "persist_memory_manager.h"
 
 #include <cassert>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -288,12 +289,16 @@ static bool test_get_info()
 
     void* ptr = mgr->allocate( 512, 32 );
     PMM_TEST( ptr != nullptr );
+    // Issue #59: only 16-byte alignment is guaranteed
+    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % pmm::kMinAlignment == 0 );
 
     pmm::AllocationInfo info = pmm::get_info( mgr, ptr );
     PMM_TEST( info.is_valid );
     PMM_TEST( info.ptr == ptr );
-    PMM_TEST( info.size == 512 );
-    PMM_TEST( info.alignment == 32 );
+    // Issue #59: size stored in granules, returned as bytes (rounded up to granule boundary)
+    PMM_TEST( info.size >= 512 );
+    PMM_TEST( info.size % pmm::kMinAlignment == 0 );
+    PMM_TEST( info.alignment == pmm::kMinAlignment );
 
     pmm::PersistMemoryManager::destroy();
     return true;

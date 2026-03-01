@@ -7,9 +7,9 @@
  * в управляемой области памяти для возможности персистентности между запусками.
  *
  * Алгоритм (Issue #55): Каждый блок содержит 6 ключевых полей:
- *   1. used_size   — занятый размер данных (0 = свободный блок)
- *   2. prev_offset — смещение предыдущего блока (kNoBlock = нет)
- *   3. next_offset — смещение следующего блока (kNoBlock = последний)
+ *   1. used_size   — занятый размер данных в гранулах (0 = свободный блок)
+ *   2. prev_offset — индекс предыдущего блока (kNoBlock = нет)
+ *   3. next_offset — индекс следующего блока (kNoBlock = последний)
  *   4. left_offset — левый дочерний узел AVL-дерева свободных блоков
  *   5. right_offset — правый дочерний узел AVL-дерева свободных блоков
  *   6. parent_offset — родительский узел AVL-дерева
@@ -17,13 +17,25 @@
  * Поиск свободного блока: best-fit через AVL-дерево (O(log n)).
  * При освобождении: слияние с соседними свободными блоками.
  *
- * @version 2.1.0
+ * @version 2.2.0
  *
  * Optimizations (Issue #57):
  *   1. O(1) back-pointer (boundary tag) in header_from_ptr — O(1) instead of up to 512 iterations.
  *   2. Restructured deallocate()+coalesce() — max 2 removes + 1 insert instead of insert+removes+insert.
  *   3. Actual-padding computation in allocate_from_block() — less internal fragmentation.
  *   4. last_block_offset in ManagerHeader — O(1) last-block lookup in expand().
+ *
+ * Optimizations (Issue #59):
+ *   1. 16-byte granule addressing — all indices are in units of 16 bytes (kGranuleSize).
+ *   2. 32-bit granule indices for all block offsets — supports up to 64 GB per manager (2^32 * 16).
+ *   3. BlockHeader reduced to 32 bytes = 2 granules (removed total_size, alignment fields).
+ *   4. total_size computed from next_offset - this_offset (last block uses manager total_size).
+ *   5. used_size stored in granules (ceiling of bytes / kGranuleSize).
+ *   6. alignment is no longer needed — minimum allocation is 16 bytes (1 granule).
+ *   7. pptr<T> reduced to 4 bytes (uint32_t granule index) — halves pointer memory in JSON structures.
+ *   8. pptr<T>++ and pptr<T>-- are forbidden (deleted).
+ *   9. pptr<T>[i] addresses elements of type T with block-size bounds checking.
+ *  10. header_from_ptr is O(1) without back-pointer tag: user_ptr = block + 2 granules always.
  */
 
 #pragma once
@@ -43,12 +55,13 @@ namespace pmm
 
 class PersistMemoryManager;
 
+static constexpr std::size_t   kGranuleSize      = 16; ///< Issue #59: granule size in bytes
 static constexpr std::size_t   kDefaultAlignment = 16;
-static constexpr std::size_t   kMinAlignment     = 8;
-static constexpr std::size_t   kMaxAlignment     = 4096;
+static constexpr std::size_t   kMinAlignment     = 16;
+static constexpr std::size_t   kMaxAlignment     = 16; ///< Issue #59: only 16-byte alignment supported
 static constexpr std::size_t   kMinMemorySize    = 4096;
-static constexpr std::size_t   kMinBlockSize     = 32;
-static constexpr std::uint64_t kMagic            = 0x504D4D5F56303231ULL; // "PMM_V021"
+static constexpr std::size_t   kMinBlockSize     = 32; ///< Minimum block size = 2 granules = BlockHeader + user area
+static constexpr std::uint64_t kMagic            = 0x504D4D5F56303232ULL; // "PMM_V022"
 static constexpr std::size_t   kGrowNumerator    = 5;
 static constexpr std::size_t   kGrowDenominator  = 4;
 
@@ -87,11 +100,11 @@ struct ManagerInfo
 struct BlockView
 {
     std::size_t    index;
-    std::ptrdiff_t offset;
-    std::size_t    total_size;
-    std::size_t    header_size;
-    std::size_t    user_size;
-    std::size_t    alignment;
+    std::ptrdiff_t offset;      ///< Byte offset in PAS
+    std::size_t    total_size;  ///< Total block size in bytes
+    std::size_t    header_size; ///< BlockHeader size in bytes
+    std::size_t    user_size;   ///< User data size in bytes
+    std::size_t    alignment;   ///< Always kDefaultAlignment (Issue #59)
     bool           used;
 };
 
@@ -99,150 +112,204 @@ namespace detail
 {
 
 /**
- * @brief Заголовок блока памяти (Issue #55: 6 ключевых полей).
+ * @brief Заголовок блока памяти (Issue #59: 32 байта = 2 гранулы по 16 байт).
+ *
+ * Issue #59: Адресация в гранулах по 16 байт (kGranuleSize).
+ *   - Все _offset поля — гранульные индексы (uint32_t), а не байтовые смещения.
+ *   - Индекс i → байтовый адрес: base + i * kGranuleSize.
+ *   - kNoBlock = 0xFFFFFFFF — отсутствие блока.
+ *   - Поддерживает до 64 ГБ на один менеджер (2^32 * 16 = 64 ГБ).
+ *
+ * Структура (32 байта):
+ *   - magic (4B) + used_size (4B) = 8 байт
+ *   - prev_offset (4B) + next_offset (4B) = 8 байт
+ *   - left_offset (4B) + right_offset (4B) = 8 байт
+ *   - parent_offset (4B) + avl_height (2B) + _pad (2B) = 8 байт
+ *   Итого: 32 байта = 2 гранулы
+ *
+ * Удалено: total_size (вычисляется через next_offset), alignment (не нужен).
+ * used_size хранится в гранулах (потолок байт / kGranuleSize).
+ * Пользовательские данные всегда начинаются через 32 байта после начала блока.
  *
  * Поля: used_size (1), prev_offset (2), next_offset (3),
  *       left_offset (4), right_offset (5), parent_offset (6).
- * Дополнительно: magic, total_size, alignment, avl_height.
  */
 struct BlockHeader
 {
-    std::uint64_t  magic;      ///< Магическое число
-    std::size_t    used_size;  ///< [1] Занятый размер (0 = свободный)
-    std::size_t    total_size; ///< Полный размер блока с заголовком
-    std::size_t    alignment;  ///< Выравнивание данных пользователя
-    std::int32_t   avl_height; ///< Высота AVL-поддерева (0 = не в дереве)
-    std::uint8_t   _pad[4];
-    std::ptrdiff_t prev_offset;   ///< [2] Предыдущий блок в адресном порядке
-    std::ptrdiff_t next_offset;   ///< [3] Следующий блок в адресном порядке
-    std::ptrdiff_t left_offset;   ///< [4] Левый дочерний узел AVL-дерева
-    std::ptrdiff_t right_offset;  ///< [5] Правый дочерний узел AVL-дерева
-    std::ptrdiff_t parent_offset; ///< [6] Родительский узел AVL-дерева
+    std::uint32_t magic;     ///< Магическое число (4 байта)
+    std::uint32_t used_size; ///< [1] Занятый размер в гранулах (0 = свободный блок)
+    std::uint32_t prev_offset; ///< [2] Предыдущий блок (гранульный индекс)
+    std::uint32_t next_offset; ///< [3] Следующий блок (гранульный индекс)
+    std::uint32_t left_offset; ///< [4] Левый дочерний узел AVL-дерева (гранульный индекс)
+    std::uint32_t right_offset; ///< [5] Правый дочерний узел AVL-дерева (гранульный индекс)
+    std::uint32_t parent_offset; ///< [6] Родительский узел AVL-дерева (гранульный индекс)
+    std::int16_t  avl_height; ///< Высота AVL-поддерева (0 = не в дереве)
+    std::uint16_t _pad;       ///< Зарезервировано
 };
 
-static_assert( sizeof( BlockHeader ) % 8 == 0, "BlockHeader must be 8-byte aligned" );
+static_assert( sizeof( BlockHeader ) == 32, "BlockHeader must be exactly 32 bytes (Issue #59)" );
+static_assert( sizeof( BlockHeader ) % kGranuleSize == 0, "BlockHeader must be granule-aligned (Issue #59)" );
 
-static constexpr std::uint64_t  kBlockMagic = 0x424C4B5F56303231ULL; // "BLK_V021"
-static constexpr std::ptrdiff_t kNoBlock    = -1;
+/// @brief Число гранул в BlockHeader (2 гранулы = 32 байта)
+static constexpr std::uint32_t kBlockHeaderGranules = sizeof( BlockHeader ) / kGranuleSize;
 
+static constexpr std::uint32_t kBlockMagic = 0x424C4B32U; // "BLK2" (Issue #59 version)
+static constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: нет блока (гранульный индекс)
+
+/**
+ * @brief Заголовок менеджера памяти (Issue #59: 64 байта, 16-байтное выравнивание).
+ *
+ * Оптимизированная структура с 32-битными гранульными индексами:
+ *   - magic (8B) + total_size (8B) = 16 байт      [total_size в байтах]
+ *   - used_size (4B) + block_count (4B) + free_count (4B) + alloc_count (4B) = 16 байт
+ *     [used_size в гранулах]
+ *   - first_block_offset (4B) + last_block_offset (4B) + free_tree_root (4B) + owns_memory(1B)+pad(3B) = 16 байт
+ *     [смещения — гранульные индексы]
+ *   - prev_total_size (8B) + prev_base (8B) = 16 байт
+ *   Итого: 64 байта
+ */
 struct ManagerHeader
 {
-    std::uint64_t  magic;
-    std::size_t    total_size;
-    std::size_t    used_size;
-    std::size_t    block_count;
-    std::size_t    free_count;
-    std::size_t    alloc_count;
-    std::ptrdiff_t first_block_offset;
-    std::ptrdiff_t last_block_offset; ///< [Issue #57 opt 4] Последний блок — O(1) в expand()
-    std::ptrdiff_t free_tree_root;    ///< Корень AVL-дерева свободных блоков
-    bool           owns_memory;
-    std::uint8_t   _hdr_pad[7];
-    std::size_t    prev_total_size;
-    void*          prev_base;
-    bool           prev_owns;
-    std::uint8_t   _prev_pad[7];
+    std::uint64_t magic;       ///< Магическое число менеджера
+    std::uint64_t total_size;  ///< Полный размер управляемой области в байтах
+    std::uint32_t used_size;   ///< Занятый размер в гранулах (Issue #59)
+    std::uint32_t block_count; ///< Общее число блоков
+    std::uint32_t free_count;  ///< Число свободных блоков
+    std::uint32_t alloc_count; ///< Число занятых блоков
+    std::uint32_t first_block_offset; ///< Первый блок (гранульный индекс)
+    std::uint32_t last_block_offset; ///< [Issue #57 opt 4] Последний блок (гранульный индекс)
+    std::uint32_t free_tree_root; ///< Корень AVL-дерева свободных блоков (гранульный индекс)
+    bool         owns_memory; ///< Менеджер владеет буфером
+    std::uint8_t _pad[3];     ///< Выравнивание
+    std::uint64_t prev_total_size; ///< Размер предыдущего буфера в байтах (при расширении)
+    void* prev_base;               ///< Указатель на предыдущий буфер
 };
 
-static_assert( sizeof( ManagerHeader ) % 8 == 0, "ManagerHeader must be 8-byte aligned" );
+static_assert( sizeof( ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes (Issue #59)" );
+static_assert( sizeof( ManagerHeader ) % kGranuleSize == 0, "ManagerHeader must be granule-aligned (Issue #59)" );
 
-inline std::size_t align_up( std::size_t value, std::size_t align )
+/// @brief Число гранул в ManagerHeader
+static constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader ) / kGranuleSize;
+
+// ─── Конвертация байты ↔ гранулы ──────────────────────────────────────────────
+
+/// @brief Перевести байты в гранулы (потолок: ceiling(bytes / kGranuleSize)).
+inline std::uint32_t bytes_to_granules( std::size_t bytes )
 {
-    assert( align != 0 && ( align & ( align - 1 ) ) == 0 );
-    return ( value + align - 1 ) & ~( align - 1 );
+    return static_cast<std::uint32_t>( ( bytes + kGranuleSize - 1 ) / kGranuleSize );
+}
+
+/// @brief Перевести гранулы в байты.
+inline std::size_t granules_to_bytes( std::uint32_t granules )
+{
+    return static_cast<std::size_t>( granules ) * kGranuleSize;
+}
+
+/// @brief Получить байтовое смещение из гранульного индекса.
+inline std::size_t idx_to_byte_off( std::uint32_t idx )
+{
+    return static_cast<std::size_t>( idx ) * kGranuleSize;
+}
+
+/// @brief Получить гранульный индекс из байтового смещения.
+/// Байтовое смещение должно быть кратно kGranuleSize.
+inline std::uint32_t byte_off_to_idx( std::size_t byte_off )
+{
+    assert( byte_off % kGranuleSize == 0 );
+    return static_cast<std::uint32_t>( byte_off / kGranuleSize );
 }
 
 inline bool is_valid_alignment( std::size_t align )
 {
-    return align >= kMinAlignment && align <= kMaxAlignment && ( align & ( align - 1 ) ) == 0;
+    // Issue #59: only 16-byte alignment is supported (everything is granule-aligned)
+    return align != 0 && ( align & ( align - 1 ) ) == 0 && align >= 1;
 }
 
-inline BlockHeader* block_at( std::uint8_t* base, std::ptrdiff_t offset )
+/// @brief Получить указатель на BlockHeader по гранульному индексу.
+inline BlockHeader* block_at( std::uint8_t* base, std::uint32_t idx )
 {
-    assert( offset >= 0 );
-    return reinterpret_cast<BlockHeader*>( base + offset );
+    assert( idx != kNoBlock );
+    return reinterpret_cast<BlockHeader*>( base + idx_to_byte_off( idx ) );
 }
 
-inline std::ptrdiff_t block_offset( const std::uint8_t* base, const BlockHeader* block )
+/// @brief Получить гранульный индекс BlockHeader.
+inline std::uint32_t block_idx( const std::uint8_t* base, const BlockHeader* block )
 {
-    return reinterpret_cast<const std::uint8_t*>( block ) - base;
+    std::size_t byte_off = reinterpret_cast<const std::uint8_t*>( block ) - base;
+    assert( byte_off % kGranuleSize == 0 );
+    return static_cast<std::uint32_t>( byte_off / kGranuleSize );
+}
+
+/// @brief Вычислить total_size блока в гранулах.
+/// Issue #59: total_size больше не хранится — вычисляется через next_offset.
+inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr, const BlockHeader* blk )
+{
+    std::uint32_t this_idx = block_idx( base, blk );
+    if ( blk->next_offset != kNoBlock )
+        return blk->next_offset - this_idx;
+    return byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - this_idx;
 }
 
 /// @brief Вычислить адрес пользовательских данных для блока.
-/// Issue #57 opt 1: пропускает sizeof(ptrdiff_t) байт перед user_ptr для back-pointer тега.
-/// Это гарантирует, что тег всегда помещается между BlockHeader и user_ptr.
+/// Issue #59: user_ptr всегда ровно через kBlockHeaderGranules гранул после начала блока.
+/// Выравнивание по kGranuleSize = 16 байт гарантировано самой структурой адресации.
 inline void* user_ptr( BlockHeader* block )
 {
-    std::uint8_t* raw          = reinterpret_cast<std::uint8_t*>( block ) + sizeof( BlockHeader );
-    std::size_t   addr         = reinterpret_cast<std::size_t>( raw ) + sizeof( std::ptrdiff_t );
-    std::size_t   aligned_addr = align_up( addr, block->alignment );
-    return reinterpret_cast<void*>( aligned_addr );
+    return reinterpret_cast<std::uint8_t*>( block ) + sizeof( BlockHeader );
 }
 
-/// @brief Записать тег обратного указателя (Issue #57 opt 1).
-/// Хранит offset блока в байте прямо перед user_ptr.
-/// Вызывать при каждом выделении (allocate_from_block).
-inline void write_back_ptr( std::uint8_t* base, BlockHeader* block )
-{
-    std::uint8_t*  uptr = reinterpret_cast<std::uint8_t*>( user_ptr( block ) );
-    std::ptrdiff_t off  = reinterpret_cast<std::uint8_t*>( block ) - base;
-    std::memcpy( uptr - sizeof( std::ptrdiff_t ), &off, sizeof( std::ptrdiff_t ) );
-}
-
-/// @brief O(1) восстановление заголовка блока по user_ptr через тег (Issue #57 opt 1).
+/// @brief O(1) восстановление заголовка блока по user_ptr (Issue #59).
+/// user_ptr всегда = block + sizeof(BlockHeader), поэтому header = ptr - sizeof(BlockHeader).
+/// Проверка через magic и used_size > 0.
 inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr )
 {
     if ( ptr == nullptr )
         return nullptr;
     std::uint8_t* raw_ptr  = reinterpret_cast<std::uint8_t*>( ptr );
-    std::uint8_t* min_addr = base + sizeof( ManagerHeader );
-    // Minimum size needed before user_ptr: BlockHeader + tag
-    if ( raw_ptr < min_addr + sizeof( BlockHeader ) + sizeof( std::ptrdiff_t ) )
+    std::uint8_t* min_addr = base + sizeof( ManagerHeader ) + sizeof( BlockHeader );
+    if ( raw_ptr < min_addr )
         return nullptr;
 
-    // Read the back-pointer tag stored just before user_ptr
-    std::ptrdiff_t off = 0;
-    std::memcpy( &off, raw_ptr - sizeof( std::ptrdiff_t ), sizeof( std::ptrdiff_t ) );
-    if ( off < 0 )
-        return nullptr;
-    std::uint8_t* cand_addr = base + off;
-    if ( cand_addr < min_addr || cand_addr + sizeof( BlockHeader ) > raw_ptr )
+    // user_ptr is always exactly sizeof(BlockHeader) bytes past the block header
+    std::uint8_t* cand_addr = raw_ptr - sizeof( BlockHeader );
+    // Must be granule-aligned
+    if ( ( reinterpret_cast<std::size_t>( cand_addr ) - reinterpret_cast<std::size_t>( base ) ) % kGranuleSize != 0 )
         return nullptr;
     BlockHeader* cand = reinterpret_cast<BlockHeader*>( cand_addr );
-    if ( cand->magic == kBlockMagic && cand->used_size > 0 && user_ptr( cand ) == ptr )
+    if ( cand->magic == kBlockMagic && cand->used_size > 0 )
         return cand;
     return nullptr;
 }
 
 inline BlockHeader* find_block_by_ptr( std::uint8_t* base, const ManagerHeader* mhdr, void* ptr )
 {
-    std::ptrdiff_t offset = mhdr->first_block_offset;
-    while ( offset != kNoBlock )
+    std::uint32_t idx = mhdr->first_block_offset;
+    while ( idx != kNoBlock )
     {
-        BlockHeader* blk = block_at( base, offset );
+        BlockHeader* blk = block_at( base, idx );
         if ( blk->used_size > 0 && user_ptr( blk ) == ptr )
             return blk;
-        offset = blk->next_offset;
+        idx = blk->next_offset;
     }
     return nullptr;
 }
 
-/// @brief Worst-case размер блока: заголовок + overhead + данные.
-/// user_ptr() = align_up(raw + sizeof(ptrdiff_t), alignment), raw = block + sizeof(BlockHeader).
-/// Поскольку все блоки выровнены по kMinAlignment и sizeof(BlockHeader)%kMinAlignment==0,
-/// практический worst-case overhead = alignment (а не alignment-1+8 = alignment+7).
-/// Доказательство: raw%kMinAlignment==0 → align_up(raw+sizeof(ptrdiff_t), alignment) <= raw+alignment.
-inline std::size_t required_block_size( std::size_t user_size, std::size_t alignment )
+/// @brief Минимальный размер блока в гранулах для заданного числа байт пользователя.
+/// Issue #59: overhead = kBlockHeaderGranules; user data aligned up to granule boundary.
+/// Минимум: kBlockHeaderGranules + 1 (заголовок + хотя бы 1 гранула данных).
+inline std::uint32_t required_block_granules( std::size_t user_bytes )
 {
-    std::size_t min_total = sizeof( BlockHeader ) + alignment + user_size;
-    return align_up( std::max( min_total, kMinBlockSize ), kMinAlignment );
+    std::uint32_t data_granules = bytes_to_granules( user_bytes );
+    if ( data_granules == 0 )
+        data_granules = 1;
+    return kBlockHeaderGranules + data_granules;
 }
 
-// ─── AVL-дерево свободных блоков (ключ: total_size, затем offset) ────────────
+// ─── AVL-дерево свободных блоков (ключ: total_granules, затем index) ─────────
 
-inline std::int32_t avl_height( std::uint8_t* base, std::ptrdiff_t off )
+inline std::int32_t avl_height( std::uint8_t* base, std::uint32_t idx )
 {
-    return ( off == kNoBlock ) ? 0 : block_at( base, off )->avl_height;
+    return ( idx == kNoBlock ) ? 0 : block_at( base, idx )->avl_height;
 }
 
 inline void avl_update_height( std::uint8_t* base, BlockHeader* node )
@@ -256,8 +323,8 @@ inline std::int32_t avl_bf( std::uint8_t* base, BlockHeader* node )
 }
 
 /// @brief Обновить ссылку parent → child в дереве.
-inline void avl_set_child( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t parent, std::ptrdiff_t old_child,
-                           std::ptrdiff_t new_child )
+inline void avl_set_child( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t parent, std::uint32_t old_child,
+                           std::uint32_t new_child )
 {
     if ( parent == kNoBlock )
     {
@@ -271,47 +338,47 @@ inline void avl_set_child( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_
         p->right_offset = new_child;
 }
 
-inline std::ptrdiff_t avl_rotate_right( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t y_off )
+inline std::uint32_t avl_rotate_right( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t y_idx )
 {
-    BlockHeader*   y     = block_at( base, y_off );
-    std::ptrdiff_t x_off = y->left_offset;
-    BlockHeader*   x     = block_at( base, x_off );
-    std::ptrdiff_t t2    = x->right_offset;
+    BlockHeader*  y     = block_at( base, y_idx );
+    std::uint32_t x_idx = y->left_offset;
+    BlockHeader*  x     = block_at( base, x_idx );
+    std::uint32_t t2    = x->right_offset;
 
-    x->right_offset  = y_off;
+    x->right_offset  = y_idx;
     y->left_offset   = t2;
     x->parent_offset = y->parent_offset;
-    y->parent_offset = x_off;
+    y->parent_offset = x_idx;
     if ( t2 != kNoBlock )
-        block_at( base, t2 )->parent_offset = y_off;
-    avl_set_child( base, hdr, x->parent_offset, y_off, x_off );
+        block_at( base, t2 )->parent_offset = y_idx;
+    avl_set_child( base, hdr, x->parent_offset, y_idx, x_idx );
     avl_update_height( base, y );
     avl_update_height( base, x );
-    return x_off;
+    return x_idx;
 }
 
-inline std::ptrdiff_t avl_rotate_left( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t x_off )
+inline std::uint32_t avl_rotate_left( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t x_idx )
 {
-    BlockHeader*   x     = block_at( base, x_off );
-    std::ptrdiff_t y_off = x->right_offset;
-    BlockHeader*   y     = block_at( base, y_off );
-    std::ptrdiff_t t2    = y->left_offset;
+    BlockHeader*  x     = block_at( base, x_idx );
+    std::uint32_t y_idx = x->right_offset;
+    BlockHeader*  y     = block_at( base, y_idx );
+    std::uint32_t t2    = y->left_offset;
 
-    y->left_offset   = x_off;
+    y->left_offset   = x_idx;
     x->right_offset  = t2;
     y->parent_offset = x->parent_offset;
-    x->parent_offset = y_off;
+    x->parent_offset = y_idx;
     if ( t2 != kNoBlock )
-        block_at( base, t2 )->parent_offset = x_off;
-    avl_set_child( base, hdr, y->parent_offset, x_off, y_off );
+        block_at( base, t2 )->parent_offset = x_idx;
+    avl_set_child( base, hdr, y->parent_offset, x_idx, y_idx );
     avl_update_height( base, x );
     avl_update_height( base, y );
-    return y_off;
+    return y_idx;
 }
 
-inline void avl_rebalance_up( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t node_off )
+inline void avl_rebalance_up( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t node_idx )
 {
-    std::ptrdiff_t cur = node_off;
+    std::uint32_t cur = node_idx;
     while ( cur != kNoBlock )
     {
         BlockHeader* node = block_at( base, cur );
@@ -333,92 +400,97 @@ inline void avl_rebalance_up( std::uint8_t* base, ManagerHeader* hdr, std::ptrdi
     }
 }
 
-inline void avl_insert( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t blk_off )
+inline void avl_insert( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t blk_idx )
 {
-    BlockHeader* blk   = block_at( base, blk_off );
+    BlockHeader* blk   = block_at( base, blk_idx );
     blk->left_offset   = kNoBlock;
     blk->right_offset  = kNoBlock;
     blk->parent_offset = kNoBlock;
     blk->avl_height    = 1;
     if ( hdr->free_tree_root == kNoBlock )
     {
-        hdr->free_tree_root = blk_off;
+        hdr->free_tree_root = blk_idx;
         return;
     }
-    std::ptrdiff_t cur = hdr->free_tree_root, parent = kNoBlock;
-    bool           go_left = false;
+    // Issue #59: cache total_gran once; compute blk size in granules before the traversal loop
+    std::uint32_t total_gran = byte_off_to_idx( hdr->total_size );
+    std::uint32_t blk_gran =
+        ( blk->next_offset != kNoBlock ) ? ( blk->next_offset - blk_idx ) : ( total_gran - blk_idx );
+    std::uint32_t cur = hdr->free_tree_root, parent = kNoBlock;
+    bool          go_left = false;
     while ( cur != kNoBlock )
     {
-        parent         = cur;
-        BlockHeader* n = block_at( base, cur );
-        bool smaller   = ( blk->total_size < n->total_size ) || ( blk->total_size == n->total_size && blk_off <= cur );
-        go_left        = smaller;
-        cur            = smaller ? n->left_offset : n->right_offset;
+        parent                = cur;
+        BlockHeader*  n       = block_at( base, cur );
+        std::uint32_t n_gran  = ( n->next_offset != kNoBlock ) ? ( n->next_offset - cur ) : ( total_gran - cur );
+        bool          smaller = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx <= cur );
+        go_left               = smaller;
+        cur                   = smaller ? n->left_offset : n->right_offset;
     }
     blk->parent_offset = parent;
     if ( go_left )
-        block_at( base, parent )->left_offset = blk_off;
+        block_at( base, parent )->left_offset = blk_idx;
     else
-        block_at( base, parent )->right_offset = blk_off;
+        block_at( base, parent )->right_offset = blk_idx;
     avl_rebalance_up( base, hdr, parent );
 }
 
-inline std::ptrdiff_t avl_min_node( std::uint8_t* base, std::ptrdiff_t node_off )
+inline std::uint32_t avl_min_node( std::uint8_t* base, std::uint32_t node_idx )
 {
-    while ( node_off != kNoBlock )
+    while ( node_idx != kNoBlock )
     {
-        std::ptrdiff_t left = block_at( base, node_off )->left_offset;
+        std::uint32_t left = block_at( base, node_idx )->left_offset;
         if ( left == kNoBlock )
             break;
-        node_off = left;
+        node_idx = left;
     }
-    return node_off;
+    return node_idx;
 }
 
-inline void avl_remove( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t blk_off )
+inline void avl_remove( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t blk_idx )
 {
-    BlockHeader*   blk    = block_at( base, blk_off );
-    std::ptrdiff_t parent = blk->parent_offset;
-    std::ptrdiff_t left   = blk->left_offset;
-    std::ptrdiff_t right  = blk->right_offset;
-    std::ptrdiff_t rebal  = kNoBlock;
+    BlockHeader*  blk    = block_at( base, blk_idx );
+    std::uint32_t parent = blk->parent_offset;
+    std::uint32_t left   = blk->left_offset;
+    std::uint32_t right  = blk->right_offset;
+    std::uint32_t rebal  = kNoBlock;
 
     if ( left == kNoBlock && right == kNoBlock )
     {
-        avl_set_child( base, hdr, parent, blk_off, kNoBlock );
+        avl_set_child( base, hdr, parent, blk_idx, kNoBlock );
         rebal = parent;
     }
     else if ( left == kNoBlock || right == kNoBlock )
     {
-        std::ptrdiff_t child                   = ( left != kNoBlock ) ? left : right;
+        std::uint32_t child                    = ( left != kNoBlock ) ? left : right;
         block_at( base, child )->parent_offset = parent;
-        avl_set_child( base, hdr, parent, blk_off, child );
+        avl_set_child( base, hdr, parent, blk_idx, child );
         rebal = parent;
     }
     else
     {
-        std::ptrdiff_t succ_off    = avl_min_node( base, right );
-        BlockHeader*   succ        = block_at( base, succ_off );
-        std::ptrdiff_t succ_parent = succ->parent_offset;
-        std::ptrdiff_t succ_right  = succ->right_offset;
+        std::uint32_t succ_idx    = avl_min_node( base, right );
+        BlockHeader*  succ        = block_at( base, succ_idx );
+        std::uint32_t succ_parent = succ->parent_offset;
+        std::uint32_t succ_right  = succ->right_offset;
 
-        if ( succ_parent != blk_off )
+        if ( succ_parent != blk_idx )
         {
-            avl_set_child( base, hdr, succ_parent, succ_off, succ_right );
+            avl_set_child( base, hdr, succ_parent, succ_idx, succ_right );
             if ( succ_right != kNoBlock )
                 block_at( base, succ_right )->parent_offset = succ_parent;
             succ->right_offset                     = right;
-            block_at( base, right )->parent_offset = succ_off;
+            block_at( base, right )->parent_offset = succ_idx;
             rebal                                  = succ_parent;
         }
         else
         {
-            rebal = succ_off;
+            rebal = succ_idx;
         }
         succ->left_offset                     = left;
-        block_at( base, left )->parent_offset = succ_off;
+        block_at( base, left )->parent_offset = succ_idx;
         succ->parent_offset                   = parent;
-        avl_set_child( base, hdr, parent, blk_off, succ_off );
+        avl_set_child( base, hdr, parent, blk_idx, succ_idx );
         avl_update_height( base, succ );
     }
     blk->left_offset   = kNoBlock;
@@ -428,14 +500,18 @@ inline void avl_remove( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t b
     avl_rebalance_up( base, hdr, rebal );
 }
 
-/// @brief Найти наименьший блок >= needed (best-fit, O(log n)).
-inline std::ptrdiff_t avl_find_best_fit( std::uint8_t* base, ManagerHeader* hdr, std::size_t needed )
+/// @brief Найти наименьший блок >= needed гранул (best-fit, O(log n)).
+/// Issue #59: размеры в гранулах.
+inline std::uint32_t avl_find_best_fit( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t needed_granules )
 {
-    std::ptrdiff_t cur = hdr->free_tree_root, result = kNoBlock;
+    // Issue #59: cache total_gran once to avoid repeated hdr->total_size reads in the hot path
+    std::uint32_t total_gran = byte_off_to_idx( hdr->total_size );
+    std::uint32_t cur = hdr->free_tree_root, result = kNoBlock;
     while ( cur != kNoBlock )
     {
-        BlockHeader* node = block_at( base, cur );
-        if ( node->total_size >= needed )
+        BlockHeader*  node     = block_at( base, cur );
+        std::uint32_t cur_gran = ( node->next_offset != kNoBlock ) ? ( node->next_offset - cur ) : ( total_gran - cur );
+        if ( cur_gran >= needed_granules )
         {
             result = cur;
             cur    = node->left_offset;
@@ -452,36 +528,62 @@ inline std::ptrdiff_t avl_find_best_fit( std::uint8_t* base, ManagerHeader* hdr,
 
 // ─── Персистный типизированный указатель ──────────────────────────────────────
 
+/**
+ * @brief Персистный типизированный указатель (Issue #59: 4 байта, гранульный индекс).
+ *
+ * Issue #59: хранит гранульный индекс (uint32_t).
+ *   - Индекс i → байтовый адрес: base + i * kGranuleSize.
+ *   - 0 означает nullptr (нулевой индекс зарезервирован для ManagerHeader).
+ *   - Размер: 4 байта (уменьшен с 8 до 4 байт).
+ *   - Максимальный размер PAS: 2^32 * 16 = 64 ГБ.
+ *
+ * Операции pptr<T>++ и pptr<T>-- запрещены.
+ * pptr<T>[i] адресует i-й элемент типа T с проверкой размера блока.
+ */
 template <class T> class pptr
 {
-    std::ptrdiff_t _offset;
+    std::uint32_t _idx; ///< Гранульный индекс пользовательских данных
 
   public:
-    inline pptr() noexcept : _offset( 0 ) {}
-    inline explicit pptr( std::ptrdiff_t offset ) noexcept : _offset( offset ) {}
+    inline pptr() noexcept : _idx( 0 ) {}
+    inline explicit pptr( std::uint32_t idx ) noexcept : _idx( idx ) {}
     inline pptr( const pptr<T>& ) noexcept               = default;
     inline pptr<T>& operator=( const pptr<T>& ) noexcept = default;
     inline ~pptr() noexcept                              = default;
 
-    inline bool           is_null() const noexcept { return _offset == 0; }
-    inline explicit       operator bool() const noexcept { return _offset != 0; }
-    inline std::ptrdiff_t offset() const noexcept { return _offset; }
+    // Issue #59: ++ and -- are forbidden
+    pptr<T>& operator++()      = delete;
+    pptr<T>  operator++( int ) = delete;
+    pptr<T>& operator--()      = delete;
+    pptr<T>  operator--( int ) = delete;
+
+    inline bool          is_null() const noexcept { return _idx == 0; }
+    inline explicit      operator bool() const noexcept { return _idx != 0; }
+    inline std::uint32_t offset() const noexcept { return _idx; }
 
     inline T* get() const noexcept;
     inline T& operator*() const noexcept { return *get(); }
     inline T* operator->() const noexcept { return get(); }
+
+    /// @brief Доступ к i-му элементу типа T с проверкой размера блока (Issue #59).
+    /// Проверяет, что i * sizeof(T) не выходит за размер блока.
+    /// @return Указатель на элемент или nullptr при выходе за границы.
+    inline T* operator[]( std::size_t i ) const noexcept;
+
+    /// @brief Доступ к i-му элементу без проверки границ (внутреннее использование).
     inline T* get_at( std::size_t index ) const noexcept;
 
     inline T*       resolve( PersistMemoryManager* mgr ) const noexcept;
     inline const T* resolve( const PersistMemoryManager* mgr ) const noexcept;
     inline T*       resolve_at( PersistMemoryManager* mgr, std::size_t index ) const noexcept;
 
-    inline bool operator==( const pptr<T>& other ) const noexcept { return _offset == other._offset; }
-    inline bool operator!=( const pptr<T>& other ) const noexcept { return _offset != other._offset; }
+    inline bool operator==( const pptr<T>& other ) const noexcept { return _idx == other._idx; }
+    inline bool operator!=( const pptr<T>& other ) const noexcept { return _idx != other._idx; }
 };
 
-static_assert( sizeof( pptr<int> ) == sizeof( void* ), "sizeof(pptr<T>) должен быть равен sizeof(void*)" );
-static_assert( sizeof( pptr<double> ) == sizeof( void* ), "sizeof(pptr<T>) должен быть равен sizeof(void*)" );
+// Issue #59: pptr<T> теперь 4 байта (uint32_t гранульный индекс)
+static_assert( sizeof( pptr<int> ) == 4, "sizeof(pptr<T>) должен быть 4 байта (Issue #59)" );
+static_assert( sizeof( pptr<double> ) == 4, "sizeof(pptr<T>) должен быть 4 байта (Issue #59)" );
 
 // ─── Основной класс ───────────────────────────────────────────────────────────
 
@@ -498,6 +600,12 @@ class PersistMemoryManager
         std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( memory == nullptr || size < kMinMemorySize )
             return nullptr;
+        // Issue #59: max 64 GB (2^32 * kGranuleSize)
+        if ( size > static_cast<std::uint64_t>( 0xFFFFFFFFULL ) * kGranuleSize )
+            return nullptr;
+        // Size must be a multiple of kGranuleSize
+        if ( size % kGranuleSize != 0 )
+            size -= ( size % kGranuleSize );
 
         std::uint8_t*          base = static_cast<std::uint8_t*>( memory );
         detail::ManagerHeader* hdr  = reinterpret_cast<detail::ManagerHeader*>( base );
@@ -505,34 +613,34 @@ class PersistMemoryManager
         hdr->magic              = kMagic;
         hdr->total_size         = size;
         hdr->first_block_offset = detail::kNoBlock;
-        hdr->last_block_offset  = detail::kNoBlock; // Issue #57 opt 4
+        hdr->last_block_offset  = detail::kNoBlock;
         hdr->free_tree_root     = detail::kNoBlock;
         hdr->owns_memory        = true;
 
-        std::size_t    hdr_end = detail::align_up( sizeof( detail::ManagerHeader ), kDefaultAlignment );
-        std::ptrdiff_t blk_off = static_cast<std::ptrdiff_t>( hdr_end );
+        // First block starts right after ManagerHeader (granule-aligned)
+        std::uint32_t blk_idx = detail::kManagerHeaderGranules;
 
-        if ( static_cast<std::size_t>( blk_off ) + sizeof( detail::BlockHeader ) + kMinBlockSize > size )
+        if ( detail::idx_to_byte_off( blk_idx ) + sizeof( detail::BlockHeader ) + kMinBlockSize > size )
             return nullptr;
 
-        detail::BlockHeader* blk = detail::block_at( base, blk_off );
+        detail::BlockHeader* blk = detail::block_at( base, blk_idx );
         std::memset( blk, 0, sizeof( detail::BlockHeader ) );
         blk->magic         = detail::kBlockMagic;
-        blk->total_size    = size - static_cast<std::size_t>( blk_off );
-        blk->alignment     = kDefaultAlignment;
-        blk->avl_height    = 1;
+        blk->used_size     = 0;
         blk->prev_offset   = detail::kNoBlock;
         blk->next_offset   = detail::kNoBlock;
         blk->left_offset   = detail::kNoBlock;
         blk->right_offset  = detail::kNoBlock;
         blk->parent_offset = detail::kNoBlock;
+        blk->avl_height    = 1;
 
-        hdr->first_block_offset = blk_off;
-        hdr->last_block_offset  = blk_off; // Issue #57 opt 4
-        hdr->free_tree_root     = blk_off;
+        hdr->first_block_offset = blk_idx;
+        hdr->last_block_offset  = blk_idx;
+        hdr->free_tree_root     = blk_idx;
         hdr->block_count        = 1;
         hdr->free_count         = 1;
-        hdr->used_size          = hdr_end + sizeof( detail::BlockHeader );
+        // used_size in granules: ManagerHeader + BlockHeader
+        hdr->used_size = blk_idx + detail::kBlockHeaderGranules;
 
         PersistMemoryManager* mgr = reinterpret_cast<PersistMemoryManager*>( base );
         s_instance                = mgr;
@@ -551,7 +659,6 @@ class PersistMemoryManager
         hdr->owns_memory     = true;
         hdr->prev_total_size = 0;
         hdr->prev_base       = nullptr;
-        hdr->prev_owns       = false;
         auto* mgr            = reinterpret_cast<PersistMemoryManager*>( base );
         mgr->rebuild_free_tree();
         s_instance = mgr;
@@ -568,46 +675,50 @@ class PersistMemoryManager
         bool  owns                 = hdr->owns_memory;
         void* buf                  = s_instance->base_ptr();
         void* prev                 = hdr->prev_base;
-        bool  prev_owns            = hdr->prev_owns;
+        bool  prev_owns            = ( prev != nullptr );
         s_instance                 = nullptr;
         while ( prev != nullptr && prev_owns )
         {
             detail::ManagerHeader* ph        = reinterpret_cast<detail::ManagerHeader*>( prev );
             void*                  next_prev = ph->prev_base;
-            bool                   next_owns = ph->prev_owns;
             std::free( prev );
             prev      = next_prev;
-            prev_owns = next_owns;
+            prev_owns = ( next_prev != nullptr );
         }
         if ( owns )
             std::free( buf );
     }
 
+    /// @brief Выделить память.
+    /// Issue #59: параметр alignment принимается для обратной совместимости,
+    /// но игнорируется — всё выравнивается по kGranuleSize = 16 байт.
     void* allocate( std::size_t user_size, std::size_t alignment = kDefaultAlignment )
     {
         std::unique_lock<std::shared_mutex> lock( s_mutex );
-        if ( user_size == 0 || !detail::is_valid_alignment( alignment ) )
+        if ( user_size == 0 )
+            return nullptr;
+        if ( !detail::is_valid_alignment( alignment ) )
             return nullptr;
 
-        std::uint8_t*          base   = base_ptr();
-        detail::ManagerHeader* hdr    = header();
-        std::size_t            needed = detail::required_block_size( user_size, alignment );
-        std::ptrdiff_t         off    = detail::avl_find_best_fit( base, hdr, needed );
+        std::uint8_t*          base    = base_ptr();
+        detail::ManagerHeader* hdr     = header();
+        std::uint32_t          needed  = detail::required_block_granules( user_size );
+        std::uint32_t          blk_idx = detail::avl_find_best_fit( base, hdr, needed );
 
-        if ( off != detail::kNoBlock )
-            return allocate_from_block( detail::block_at( base, off ), user_size, alignment );
+        if ( blk_idx != detail::kNoBlock )
+            return allocate_from_block( detail::block_at( base, blk_idx ), user_size );
 
-        if ( !expand( user_size, alignment ) )
+        if ( !expand( user_size ) )
             return nullptr;
 
         PersistMemoryManager* new_mgr = s_instance;
         if ( new_mgr == nullptr )
             return nullptr;
-        std::uint8_t*          nb  = new_mgr->base_ptr();
-        detail::ManagerHeader* nh  = new_mgr->header();
-        std::ptrdiff_t         nof = detail::avl_find_best_fit( nb, nh, needed );
-        if ( nof != detail::kNoBlock )
-            return new_mgr->allocate_from_block( detail::block_at( nb, nof ), user_size, alignment );
+        std::uint8_t*          nb      = new_mgr->base_ptr();
+        detail::ManagerHeader* nh      = new_mgr->header();
+        std::uint32_t          new_idx = detail::avl_find_best_fit( nb, nh, needed );
+        if ( new_idx != detail::kNoBlock )
+            return new_mgr->allocate_from_block( detail::block_at( nb, new_idx ), user_size );
         return nullptr;
     }
 
@@ -623,8 +734,8 @@ class PersistMemoryManager
         if ( blk == nullptr || blk->used_size == 0 )
             return;
 
-        std::size_t freed = blk->used_size;
-        blk->used_size    = 0;
+        std::uint32_t freed = blk->used_size; // in granules
+        blk->used_size      = 0;
         hdr->alloc_count--;
         hdr->free_count++;
         if ( hdr->used_size >= freed )
@@ -648,59 +759,85 @@ class PersistMemoryManager
         detail::BlockHeader* blk  = detail::header_from_ptr( base, ptr );
         if ( blk == nullptr || blk->used_size == 0 )
             return nullptr;
-        if ( new_size <= blk->used_size )
+        // Issue #59: used_size in granules; compare with granules needed for new_size
+        std::uint32_t new_granules = detail::bytes_to_granules( new_size );
+        if ( new_granules <= blk->used_size )
             return ptr;
-        std::size_t old_size = blk->used_size;
-        std::size_t align    = blk->alignment;
+        std::size_t old_bytes = detail::granules_to_bytes( blk->used_size );
         lock.unlock();
-        void* new_ptr = allocate( new_size, align );
+        void* new_ptr = allocate( new_size );
         if ( new_ptr == nullptr )
             return nullptr;
-        std::memcpy( new_ptr, ptr, old_size );
+        std::memcpy( new_ptr, ptr, old_bytes );
         deallocate( ptr );
         return new_ptr;
     }
 
     template <class T> pptr<T> allocate_typed()
     {
-        std::size_t align = alignof( T ) < kMinAlignment ? kMinAlignment : alignof( T );
-        void*       raw   = allocate( sizeof( T ), align );
+        void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
-        return pptr<T>( static_cast<std::ptrdiff_t>( static_cast<std::uint8_t*>( raw ) - base_ptr() ) );
+        // Issue #59: pptr stores granule index of user data
+        std::size_t byte_off = static_cast<std::uint8_t*>( raw ) - base_ptr();
+        assert( byte_off % kGranuleSize == 0 );
+        return pptr<T>( static_cast<std::uint32_t>( byte_off / kGranuleSize ) );
     }
 
     template <class T> pptr<T> allocate_typed( std::size_t count )
     {
         if ( count == 0 )
             return pptr<T>();
-        std::size_t align = alignof( T ) < kMinAlignment ? kMinAlignment : alignof( T );
-        void*       raw   = allocate( sizeof( T ) * count, align );
+        void* raw = allocate( sizeof( T ) * count );
         if ( raw == nullptr )
             return pptr<T>();
-        return pptr<T>( static_cast<std::ptrdiff_t>( static_cast<std::uint8_t*>( raw ) - base_ptr() ) );
+        std::size_t byte_off = static_cast<std::uint8_t*>( raw ) - base_ptr();
+        assert( byte_off % kGranuleSize == 0 );
+        return pptr<T>( static_cast<std::uint32_t>( byte_off / kGranuleSize ) );
     }
 
     template <class T> void deallocate_typed( pptr<T> p )
     {
         if ( !p.is_null() )
-            deallocate( base_ptr() + p.offset() );
+            deallocate( base_ptr() + detail::idx_to_byte_off( p.offset() ) );
     }
 
-    void* offset_to_ptr( std::ptrdiff_t offset ) noexcept { return ( offset == 0 ) ? nullptr : base_ptr() + offset; }
-
-    const void* offset_to_ptr( std::ptrdiff_t offset ) const noexcept
+    /// @brief Конвертировать гранульный индекс в указатель.
+    void* offset_to_ptr( std::uint32_t idx ) noexcept
     {
-        return ( offset == 0 ) ? nullptr : const_base_ptr() + offset;
+        return ( idx == 0 ) ? nullptr : base_ptr() + detail::idx_to_byte_off( idx );
+    }
+
+    const void* offset_to_ptr( std::uint32_t idx ) const noexcept
+    {
+        return ( idx == 0 ) ? nullptr : const_base_ptr() + detail::idx_to_byte_off( idx );
+    }
+
+    /// @brief Получить размер блока в байтах по гранульному индексу данных.
+    /// Используется для bounds checking в pptr<T>::operator[].
+    std::size_t block_data_size_bytes( std::uint32_t data_idx ) const noexcept
+    {
+        if ( data_idx == 0 )
+            return 0;
+        std::uint8_t* base    = const_cast<PersistMemoryManager*>( this )->base_ptr();
+        std::uint32_t blk_idx = data_idx - detail::kBlockHeaderGranules;
+        if ( blk_idx * kGranuleSize < sizeof( detail::ManagerHeader ) )
+            return 0;
+        const detail::BlockHeader* blk = detail::block_at( base, blk_idx );
+        if ( blk->magic != detail::kBlockMagic || blk->used_size == 0 )
+            return 0;
+        return detail::granules_to_bytes( blk->used_size );
     }
 
     std::size_t        total_size() const { return header()->total_size; }
     static std::size_t manager_header_size() noexcept { return sizeof( detail::ManagerHeader ); }
-    std::size_t        used_size() const { return header()->used_size; }
-    std::size_t        free_size() const
+    /// @brief Использованный размер в байтах (Issue #59: внутри хранится в гранулах).
+    std::size_t used_size() const { return detail::granules_to_bytes( header()->used_size ); }
+    std::size_t free_size() const
     {
-        const detail::ManagerHeader* hdr = header();
-        return ( hdr->total_size > hdr->used_size ) ? ( hdr->total_size - hdr->used_size ) : 0;
+        const detail::ManagerHeader* hdr        = header();
+        std::size_t                  used_bytes = detail::granules_to_bytes( hdr->used_size );
+        return ( hdr->total_size > used_bytes ) ? ( hdr->total_size - used_bytes ) : 0;
     }
     std::size_t fragmentation() const
     {
@@ -717,13 +854,13 @@ class PersistMemoryManager
         if ( hdr->magic != kMagic )
             return false;
 
-        std::size_t    block_count = 0, free_count = 0, alloc_count = 0;
-        std::ptrdiff_t offset = hdr->first_block_offset;
-        while ( offset != detail::kNoBlock )
+        std::size_t   block_count = 0, free_count = 0, alloc_count = 0;
+        std::uint32_t idx = hdr->first_block_offset;
+        while ( idx != detail::kNoBlock )
         {
-            if ( offset < 0 || static_cast<std::size_t>( offset ) >= hdr->total_size )
+            if ( detail::idx_to_byte_off( idx ) >= hdr->total_size )
                 return false;
-            const detail::BlockHeader* blk = reinterpret_cast<const detail::BlockHeader*>( base + offset );
+            const detail::BlockHeader* blk = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
             if ( blk->magic != detail::kBlockMagic )
                 return false;
             block_count++;
@@ -734,11 +871,11 @@ class PersistMemoryManager
             if ( blk->next_offset != detail::kNoBlock )
             {
                 const detail::BlockHeader* nxt =
-                    reinterpret_cast<const detail::BlockHeader*>( base + blk->next_offset );
-                if ( nxt->prev_offset != offset )
+                    detail::block_at( const_cast<std::uint8_t*>( base ), blk->next_offset );
+                if ( nxt->prev_offset != idx )
                     return false;
             }
-            offset = blk->next_offset;
+            idx = blk->next_offset;
         }
         std::size_t tree_free = 0;
         if ( !validate_avl( base, hdr, hdr->free_tree_root, tree_free ) )
@@ -754,7 +891,7 @@ class PersistMemoryManager
         const detail::ManagerHeader*        hdr = header();
         std::cout << "=== PersistMemoryManager stats ===\n"
                   << "  total_size  : " << hdr->total_size << " bytes\n"
-                  << "  used_size   : " << hdr->used_size << " bytes\n"
+                  << "  used_size   : " << used_size() << " bytes\n"
                   << "  free_size   : " << free_size() << " bytes\n"
                   << "  blocks      : " << hdr->block_count << " (free=" << hdr->free_count
                   << ", alloc=" << hdr->alloc_count << ")\n"
@@ -776,16 +913,25 @@ class PersistMemoryManager
     detail::ManagerHeader*       header() { return reinterpret_cast<detail::ManagerHeader*>( this ); }
     const detail::ManagerHeader* header() const { return reinterpret_cast<const detail::ManagerHeader*>( this ); }
 
-    bool expand( std::size_t user_size, std::size_t alignment )
+    bool expand( std::size_t user_size )
     {
         detail::ManagerHeader* hdr      = header();
         std::size_t            old_size = hdr->total_size;
-        std::size_t            needed   = detail::required_block_size( user_size, alignment );
-        std::size_t new_size = detail::align_up( old_size * kGrowNumerator / kGrowDenominator, kMinAlignment );
-        if ( new_size < old_size + needed )
-            new_size = detail::align_up( old_size + needed +
-                                             detail::align_up( sizeof( detail::BlockHeader ), kDefaultAlignment ),
-                                         kMinAlignment );
+        std::uint32_t          needed   = detail::required_block_granules( user_size );
+        // Round UP to granule boundary: ceil(old * 5/4 / kGranuleSize) * kGranuleSize
+        std::size_t new_size =
+            ( ( old_size * kGrowNumerator / kGrowDenominator + kGranuleSize - 1 ) / kGranuleSize ) * kGranuleSize;
+        if ( new_size < old_size + detail::granules_to_bytes( needed ) )
+        {
+            new_size =
+                ( ( old_size + detail::granules_to_bytes( needed + detail::kBlockHeaderGranules ) + kGranuleSize - 1 ) /
+                  kGranuleSize ) *
+                kGranuleSize;
+        }
+
+        // Issue #59: max 64 GB
+        if ( new_size > static_cast<std::uint64_t>( 0xFFFFFFFFULL ) * kGranuleSize )
+            return false;
 
         void* new_memory = std::malloc( new_size );
         if ( new_memory == nullptr )
@@ -797,17 +943,18 @@ class PersistMemoryManager
         std::uint8_t*          nb = static_cast<std::uint8_t*>( new_memory );
         nh->owns_memory           = true;
 
-        std::ptrdiff_t extra_off  = static_cast<std::ptrdiff_t>( old_size );
-        std::size_t    extra_size = new_size - old_size;
+        std::uint32_t extra_idx  = detail::byte_off_to_idx( old_size );
+        std::size_t   extra_size = new_size - old_size;
         // Issue #57 opt 4: O(1) last-block lookup via last_block_offset
         detail::BlockHeader* last_blk =
             ( nh->last_block_offset != detail::kNoBlock ) ? detail::block_at( nb, nh->last_block_offset ) : nullptr;
 
         if ( last_blk != nullptr && last_blk->used_size == 0 )
         {
-            std::ptrdiff_t loff = detail::block_offset( nb, last_blk );
+            std::uint32_t loff = detail::block_idx( nb, last_blk );
             detail::avl_remove( nb, nh, loff );
-            last_blk->total_size += extra_size;
+            // Issue #59: just update total_size; the last block's size is recomputed from total_size
+            nh->total_size = new_size;
             detail::avl_insert( nb, nh, loff );
         }
         else
@@ -817,38 +964,37 @@ class PersistMemoryManager
                 std::free( new_memory );
                 return false;
             }
-            detail::BlockHeader* nb_blk = detail::block_at( nb, extra_off );
+            detail::BlockHeader* nb_blk = detail::block_at( nb, extra_idx );
             std::memset( nb_blk, 0, sizeof( detail::BlockHeader ) );
             nb_blk->magic         = detail::kBlockMagic;
-            nb_blk->total_size    = extra_size;
-            nb_blk->alignment     = kDefaultAlignment;
-            nb_blk->avl_height    = 1;
+            nb_blk->used_size     = 0;
             nb_blk->left_offset   = detail::kNoBlock;
             nb_blk->right_offset  = detail::kNoBlock;
             nb_blk->parent_offset = detail::kNoBlock;
+            nb_blk->avl_height    = 1;
             if ( last_blk != nullptr )
             {
-                std::ptrdiff_t loff   = detail::block_offset( nb, last_blk );
+                std::uint32_t loff    = detail::block_idx( nb, last_blk );
                 nb_blk->prev_offset   = loff;
                 nb_blk->next_offset   = detail::kNoBlock;
-                last_blk->next_offset = extra_off;
+                last_blk->next_offset = extra_idx;
             }
             else
             {
                 nb_blk->prev_offset    = detail::kNoBlock;
                 nb_blk->next_offset    = detail::kNoBlock;
-                nh->first_block_offset = extra_off;
+                nh->first_block_offset = extra_idx;
             }
-            nh->last_block_offset = extra_off; // Issue #57 opt 4
+            nh->last_block_offset = extra_idx;
             nh->block_count++;
             nh->free_count++;
-            detail::avl_insert( nb, nh, extra_off );
+            nh->total_size = new_size; // Update before AVL insert (affects size computation)
+            detail::avl_insert( nb, nh, extra_idx );
         }
-        nh->total_size      = new_size;
         nh->prev_base       = base_ptr();
         nh->prev_total_size = old_size;
-        nh->prev_owns       = old_owns;
         s_instance          = reinterpret_cast<PersistMemoryManager*>( new_memory );
+        (void)old_owns;
         return true;
     }
 
@@ -857,20 +1003,20 @@ class PersistMemoryManager
         std::uint8_t*          base = base_ptr();
         detail::ManagerHeader* hdr  = header();
         hdr->free_tree_root         = detail::kNoBlock;
-        hdr->last_block_offset      = detail::kNoBlock; // Issue #57 opt 4: rebuild
-        std::ptrdiff_t offset       = hdr->first_block_offset;
-        while ( offset != detail::kNoBlock )
+        hdr->last_block_offset      = detail::kNoBlock;
+        std::uint32_t idx           = hdr->first_block_offset;
+        while ( idx != detail::kNoBlock )
         {
-            detail::BlockHeader* blk = detail::block_at( base, offset );
+            detail::BlockHeader* blk = detail::block_at( base, idx );
             blk->left_offset         = detail::kNoBlock;
             blk->right_offset        = detail::kNoBlock;
             blk->parent_offset       = detail::kNoBlock;
             blk->avl_height          = 0;
             if ( blk->used_size == 0 )
-                detail::avl_insert( base, hdr, offset );
+                detail::avl_insert( base, hdr, idx );
             if ( blk->next_offset == detail::kNoBlock )
-                hdr->last_block_offset = offset; // track last block
-            offset = blk->next_offset;
+                hdr->last_block_offset = idx;
+            idx = blk->next_offset;
         }
     }
 
@@ -896,11 +1042,12 @@ class PersistMemoryManager
     /// @brief Слить блок с соседними свободными блоками и вставить результат в AVL один раз.
     /// Issue #57 opt 2: max 2 avl_remove + 1 avl_insert вместо insert + remove/remove/insert.
     /// Issue #57 opt 4: поддерживает last_block_offset.
+    /// Issue #59: размеры в гранулах.
     void coalesce( detail::BlockHeader* blk )
     {
         std::uint8_t*          base  = base_ptr();
         detail::ManagerHeader* hdr   = header();
-        std::ptrdiff_t         b_off = detail::block_offset( base, blk );
+        std::uint32_t          b_idx = detail::block_idx( base, blk );
 
         // Слияние со следующим свободным соседом
         if ( blk->next_offset != detail::kNoBlock )
@@ -908,14 +1055,13 @@ class PersistMemoryManager
             detail::BlockHeader* nxt = detail::block_at( base, blk->next_offset );
             if ( nxt->used_size == 0 )
             {
-                std::ptrdiff_t nxt_off = blk->next_offset;
-                detail::avl_remove( base, hdr, nxt_off );
-                blk->total_size += nxt->total_size;
+                std::uint32_t nxt_idx = blk->next_offset;
+                detail::avl_remove( base, hdr, nxt_idx );
                 blk->next_offset = nxt->next_offset;
                 if ( nxt->next_offset != detail::kNoBlock )
-                    detail::block_at( base, nxt->next_offset )->prev_offset = b_off;
+                    detail::block_at( base, nxt->next_offset )->prev_offset = b_idx;
                 else
-                    hdr->last_block_offset = b_off; // Issue #57 opt 4
+                    hdr->last_block_offset = b_idx;
                 nxt->magic = 0;
                 hdr->block_count--;
                 hdr->free_count--;
@@ -928,93 +1074,84 @@ class PersistMemoryManager
             detail::BlockHeader* prv = detail::block_at( base, blk->prev_offset );
             if ( prv->used_size == 0 )
             {
-                std::ptrdiff_t prv_off = blk->prev_offset;
-                detail::avl_remove( base, hdr, prv_off );
-                prv->total_size += blk->total_size;
+                std::uint32_t prv_idx = blk->prev_offset;
+                detail::avl_remove( base, hdr, prv_idx );
                 prv->next_offset = blk->next_offset;
                 if ( blk->next_offset != detail::kNoBlock )
-                    detail::block_at( base, blk->next_offset )->prev_offset = prv_off;
+                    detail::block_at( base, blk->next_offset )->prev_offset = prv_idx;
                 else
-                    hdr->last_block_offset = prv_off; // Issue #57 opt 4
+                    hdr->last_block_offset = prv_idx;
                 blk->magic = 0;
                 hdr->block_count--;
                 hdr->free_count--;
-                // Insert the merged prev block (which absorbed blk)
-                detail::avl_insert( base, hdr, prv_off );
+                detail::avl_insert( base, hdr, prv_idx );
                 return;
             }
         }
 
         // No merge with prev — insert blk itself
-        detail::avl_insert( base, hdr, b_off );
+        detail::avl_insert( base, hdr, b_idx );
     }
 
-    void* allocate_from_block( detail::BlockHeader* blk, std::size_t user_size, std::size_t alignment )
+    void* allocate_from_block( detail::BlockHeader* blk, std::size_t user_size )
     {
         std::uint8_t*          base    = base_ptr();
         detail::ManagerHeader* hdr     = header();
-        std::ptrdiff_t         blk_off = detail::block_offset( base, blk );
-        detail::avl_remove( base, hdr, blk_off );
+        std::uint32_t          blk_idx = detail::block_idx( base, blk );
+        detail::avl_remove( base, hdr, blk_idx );
 
-        // Issue #57 opt 3: compute actual needed for this specific block address.
-        // user_ptr() = align_up(raw + sizeof(ptrdiff_t), alignment).
-        std::uint8_t* raw        = reinterpret_cast<std::uint8_t*>( blk ) + sizeof( detail::BlockHeader );
-        std::size_t   raw_addr   = reinterpret_cast<std::size_t>( raw );
-        std::size_t   user_start = detail::align_up( raw_addr + sizeof( std::ptrdiff_t ), alignment );
-        std::size_t   needed     = ( user_start - reinterpret_cast<std::size_t>( blk ) ) + user_size;
-        needed                   = detail::align_up( std::max( needed, kMinBlockSize ), kMinAlignment );
+        // Issue #59: block total granules computed from next_offset vs total_size
+        std::uint32_t blk_total_gran = detail::block_total_granules( base, hdr, blk );
 
-        std::size_t min_rem   = sizeof( detail::BlockHeader ) + kMinBlockSize;
-        bool        can_split = ( blk->total_size >= needed + min_rem );
+        // Granules needed for this allocation: header + data
+        std::uint32_t data_gran   = detail::bytes_to_granules( user_size );
+        std::uint32_t needed_gran = detail::kBlockHeaderGranules + data_gran;
+
+        std::uint32_t min_rem_gran = detail::kBlockHeaderGranules + 1; // min: header + 1 data granule
+        bool          can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {
-            std::ptrdiff_t       new_off = blk_off + static_cast<std::ptrdiff_t>( needed );
-            detail::BlockHeader* new_blk = detail::block_at( base, new_off );
+            std::uint32_t        new_idx = blk_idx + needed_gran;
+            detail::BlockHeader* new_blk = detail::block_at( base, new_idx );
             std::memset( new_blk, 0, sizeof( detail::BlockHeader ) );
             new_blk->magic         = detail::kBlockMagic;
-            new_blk->total_size    = blk->total_size - needed;
-            new_blk->alignment     = kDefaultAlignment;
-            new_blk->avl_height    = 1;
-            new_blk->prev_offset   = blk_off;
+            new_blk->used_size     = 0;
+            new_blk->prev_offset   = blk_idx;
             new_blk->next_offset   = blk->next_offset;
             new_blk->left_offset   = detail::kNoBlock;
             new_blk->right_offset  = detail::kNoBlock;
             new_blk->parent_offset = detail::kNoBlock;
+            new_blk->avl_height    = 1;
             if ( blk->next_offset != detail::kNoBlock )
-                detail::block_at( base, blk->next_offset )->prev_offset = new_off;
+                detail::block_at( base, blk->next_offset )->prev_offset = new_idx;
             else
-                hdr->last_block_offset = new_off; // Issue #57 opt 4
-            blk->next_offset = new_off;
-            blk->total_size  = needed;
+                hdr->last_block_offset = new_idx;
+            blk->next_offset = new_idx;
             hdr->block_count++;
             hdr->free_count++;
-            detail::avl_insert( base, hdr, new_off );
+            detail::avl_insert( base, hdr, new_idx );
         }
 
-        blk->used_size     = user_size;
-        blk->alignment     = alignment;
+        blk->used_size     = data_gran; // store in granules
         blk->left_offset   = detail::kNoBlock;
         blk->right_offset  = detail::kNoBlock;
         blk->parent_offset = detail::kNoBlock;
         blk->avl_height    = 0;
         hdr->alloc_count++;
         hdr->free_count--;
-        hdr->used_size += user_size;
-        // Issue #57 opt 1: write back-pointer tag before user_ptr for O(1) header_from_ptr.
-        void* uptr = detail::user_ptr( blk );
-        detail::write_back_ptr( base, blk );
-        return uptr;
+        hdr->used_size += data_gran;
+        return detail::user_ptr( blk );
     }
 
-    bool validate_avl( const std::uint8_t* base, const detail::ManagerHeader* hdr, std::ptrdiff_t node_off,
+    bool validate_avl( const std::uint8_t* base, const detail::ManagerHeader* hdr, std::uint32_t node_idx,
                        std::size_t& count ) const
     {
-        if ( node_off == detail::kNoBlock )
+        if ( node_idx == detail::kNoBlock )
             return true;
-        if ( node_off < 0 || static_cast<std::size_t>( node_off ) >= hdr->total_size )
+        if ( detail::idx_to_byte_off( node_idx ) >= hdr->total_size )
             return false;
-        const detail::BlockHeader* node = reinterpret_cast<const detail::BlockHeader*>( base + node_off );
+        const detail::BlockHeader* node = detail::block_at( const_cast<std::uint8_t*>( base ), node_idx );
         if ( node->magic != detail::kBlockMagic || node->used_size != 0 )
             return false;
         count++;
@@ -1024,14 +1161,14 @@ class PersistMemoryManager
             return false;
         if ( node->left_offset != detail::kNoBlock )
         {
-            const detail::BlockHeader* lc = reinterpret_cast<const detail::BlockHeader*>( base + node->left_offset );
-            if ( lc->parent_offset != node_off )
+            const detail::BlockHeader* lc = detail::block_at( const_cast<std::uint8_t*>( base ), node->left_offset );
+            if ( lc->parent_offset != node_idx )
                 return false;
         }
         if ( node->right_offset != detail::kNoBlock )
         {
-            const detail::BlockHeader* rc = reinterpret_cast<const detail::BlockHeader*>( base + node->right_offset );
-            if ( rc->parent_offset != node_off )
+            const detail::BlockHeader* rc = detail::block_at( const_cast<std::uint8_t*>( base ), node->right_offset );
+            if ( rc->parent_offset != node_idx )
                 return false;
         }
         return true;
@@ -1046,9 +1183,9 @@ inline std::shared_mutex     PersistMemoryManager::s_mutex;
 template <class T> inline T* pptr<T>::get() const noexcept
 {
     PersistMemoryManager* mgr = PersistMemoryManager::instance();
-    if ( mgr == nullptr || _offset == 0 )
+    if ( mgr == nullptr || _idx == 0 )
         return nullptr;
-    return static_cast<T*>( mgr->offset_to_ptr( _offset ) );
+    return static_cast<T*>( mgr->offset_to_ptr( _idx ) );
 }
 
 template <class T> inline T* pptr<T>::get_at( std::size_t index ) const noexcept
@@ -1057,18 +1194,31 @@ template <class T> inline T* pptr<T>::get_at( std::size_t index ) const noexcept
     return ( base_elem == nullptr ) ? nullptr : base_elem + index;
 }
 
+template <class T> inline T* pptr<T>::operator[]( std::size_t i ) const noexcept
+{
+    PersistMemoryManager* mgr = PersistMemoryManager::instance();
+    if ( mgr == nullptr || _idx == 0 )
+        return nullptr;
+    std::size_t block_bytes = mgr->block_data_size_bytes( _idx );
+    // Bounds check: element must be within the allocated block
+    if ( ( i + 1 ) * sizeof( T ) > block_bytes )
+        return nullptr;
+    T* base_elem = static_cast<T*>( mgr->offset_to_ptr( _idx ) );
+    return base_elem + i;
+}
+
 template <class T> inline T* pptr<T>::resolve( PersistMemoryManager* mgr ) const noexcept
 {
-    if ( mgr == nullptr || _offset == 0 )
+    if ( mgr == nullptr || _idx == 0 )
         return nullptr;
-    return static_cast<T*>( mgr->offset_to_ptr( _offset ) );
+    return static_cast<T*>( mgr->offset_to_ptr( _idx ) );
 }
 
 template <class T> inline const T* pptr<T>::resolve( const PersistMemoryManager* mgr ) const noexcept
 {
-    if ( mgr == nullptr || _offset == 0 )
+    if ( mgr == nullptr || _idx == 0 )
         return nullptr;
-    return static_cast<const T*>( mgr->offset_to_ptr( _offset ) );
+    return static_cast<const T*>( mgr->offset_to_ptr( _idx ) );
 }
 
 template <class T> inline T* pptr<T>::resolve_at( PersistMemoryManager* mgr, std::size_t index ) const noexcept
@@ -1089,27 +1239,32 @@ inline MemoryStats get_stats( const PersistMemoryManager* mgr )
     stats.total_blocks                = hdr->block_count;
     stats.free_blocks                 = hdr->free_count;
     stats.allocated_blocks            = hdr->alloc_count;
-    bool           first_free         = true;
-    std::ptrdiff_t offset             = hdr->first_block_offset;
-    while ( offset != detail::kNoBlock )
+    bool          first_free          = true;
+    std::uint32_t idx                 = hdr->first_block_offset;
+    while ( idx != detail::kNoBlock )
     {
-        const detail::BlockHeader* blk = reinterpret_cast<const detail::BlockHeader*>( base + offset );
+        const detail::BlockHeader* blk = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
         if ( blk->used_size == 0 )
         {
+            // Issue #59: compute total granules from indices
+            std::uint32_t gran     = ( blk->next_offset != detail::kNoBlock )
+                                         ? ( blk->next_offset - idx )
+                                         : ( detail::byte_off_to_idx( hdr->total_size ) - idx );
+            std::size_t   blk_size = detail::granules_to_bytes( gran );
             if ( first_free )
             {
-                stats.largest_free  = blk->total_size;
-                stats.smallest_free = blk->total_size;
+                stats.largest_free  = blk_size;
+                stats.smallest_free = blk_size;
                 first_free          = false;
             }
             else
             {
-                stats.largest_free  = std::max( stats.largest_free, blk->total_size );
-                stats.smallest_free = std::min( stats.smallest_free, blk->total_size );
-                stats.total_fragmentation += blk->total_size;
+                stats.largest_free  = std::max( stats.largest_free, blk_size );
+                stats.smallest_free = std::min( stats.smallest_free, blk_size );
+                stats.total_fragmentation += blk_size;
             }
         }
-        offset = blk->next_offset;
+        idx = blk->next_offset;
     }
     return stats;
 }
@@ -1126,8 +1281,9 @@ inline AllocationInfo get_info( const PersistMemoryManager* mgr, void* ptr )
     detail::BlockHeader*   blk  = detail::find_block_by_ptr( base, mhdr, ptr );
     if ( blk != nullptr && blk->used_size > 0 )
     {
-        info.size      = blk->used_size;
-        info.alignment = blk->alignment;
+        // Issue #59: used_size in granules → convert to bytes
+        info.size      = detail::granules_to_bytes( blk->used_size );
+        info.alignment = kDefaultAlignment; // Issue #59: always 16-byte aligned
         info.is_valid  = true;
     }
     return info;
@@ -1141,14 +1297,19 @@ inline ManagerInfo get_manager_info( const PersistMemoryManager* mgr )
     const detail::ManagerHeader* hdr = mgr->header();
     info.magic                       = hdr->magic;
     info.total_size                  = hdr->total_size;
-    info.used_size                   = hdr->used_size;
-    info.block_count                 = hdr->block_count;
-    info.free_count                  = hdr->free_count;
-    info.alloc_count                 = hdr->alloc_count;
-    info.first_block_offset          = hdr->first_block_offset;
-    info.first_free_offset           = hdr->free_tree_root;
-    info.last_free_offset            = detail::kNoBlock;
-    info.manager_header_size         = sizeof( detail::ManagerHeader );
+    // Issue #59: used_size in granules, convert to bytes for external API
+    info.used_size           = detail::granules_to_bytes( hdr->used_size );
+    info.block_count         = hdr->block_count;
+    info.free_count          = hdr->free_count;
+    info.alloc_count         = hdr->alloc_count;
+    info.first_block_offset  = ( hdr->first_block_offset != detail::kNoBlock )
+                                   ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( hdr->first_block_offset ) )
+                                   : -1;
+    info.first_free_offset   = ( hdr->free_tree_root != detail::kNoBlock )
+                                   ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( hdr->free_tree_root ) )
+                                   : -1;
+    info.last_free_offset    = -1;
+    info.manager_header_size = sizeof( detail::ManagerHeader );
     return info;
 }
 
@@ -1157,26 +1318,30 @@ template <typename Callback> inline void for_each_block( const PersistMemoryMana
     if ( mgr == nullptr )
         return;
     std::shared_lock<std::shared_mutex> lock( PersistMemoryManager::s_mutex );
-    const std::uint8_t*                 base   = mgr->const_base_ptr();
-    const detail::ManagerHeader*        hdr    = mgr->header();
-    std::ptrdiff_t                      offset = hdr->first_block_offset;
-    std::size_t                         index  = 0;
-    while ( offset != detail::kNoBlock )
+    const std::uint8_t*                 base  = mgr->const_base_ptr();
+    const detail::ManagerHeader*        hdr   = mgr->header();
+    std::uint32_t                       idx   = hdr->first_block_offset;
+    std::size_t                         index = 0;
+    while ( idx != detail::kNoBlock )
     {
-        if ( offset < 0 || static_cast<std::size_t>( offset ) >= hdr->total_size )
+        if ( detail::idx_to_byte_off( idx ) >= hdr->total_size )
             break;
-        const detail::BlockHeader* blk = reinterpret_cast<const detail::BlockHeader*>( base + offset );
-        BlockView                  view;
+        const detail::BlockHeader* blk = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
+        // Issue #59: total granules from indices
+        std::uint32_t gran = ( blk->next_offset != detail::kNoBlock )
+                                 ? ( blk->next_offset - idx )
+                                 : ( detail::byte_off_to_idx( hdr->total_size ) - idx );
+        BlockView     view;
         view.index       = index;
-        view.offset      = offset;
-        view.total_size  = blk->total_size;
+        view.offset      = static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( idx ) );
+        view.total_size  = detail::granules_to_bytes( gran );
         view.header_size = sizeof( detail::BlockHeader );
-        view.user_size   = blk->used_size;
-        view.alignment   = blk->alignment;
+        view.user_size   = detail::granules_to_bytes( blk->used_size ); // in bytes
+        view.alignment   = kDefaultAlignment;                           // always 16 (Issue #59)
         view.used        = ( blk->used_size > 0 );
         cb( view );
         ++index;
-        offset = blk->next_offset;
+        idx = blk->next_offset;
     }
 }
 

@@ -275,7 +275,7 @@ struct Node
 /**
  * @brief Простая контрольная сумма для узла.
  */
-static unsigned int compute_checksum( int id, std::ptrdiff_t next_offset )
+static unsigned int compute_checksum( int id, std::uint32_t next_offset )
 {
     return static_cast<unsigned int>( id * 2654435761u ) ^ static_cast<unsigned int>( next_offset );
 }
@@ -350,7 +350,7 @@ static bool test_persistent_cycle()
     }
 
     // Сохраняем смещение головы списка для использования после загрузки
-    std::ptrdiff_t head_offset = nodes[0].offset();
+    std::uint32_t head_offset = nodes[0].offset();
 
     PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
     std::cout << "    Список построен, смещение головы: " << head_offset << "\n";

@@ -95,6 +95,7 @@ static bool test_allocate_single_small()
 
 static bool test_allocate_alignment_32()
 {
+    // Issue #59: alignment parameter is accepted but only 16-byte alignment is guaranteed.
     const std::size_t size = 64 * 1024;
     void*             mem  = std::malloc( size );
     PMM_TEST( mem != nullptr );
@@ -104,7 +105,7 @@ static bool test_allocate_alignment_32()
 
     void* ptr = mgr->allocate( 128, 32 );
     PMM_TEST( ptr != nullptr );
-    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % 32 == 0 );
+    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % pmm::kMinAlignment == 0 );
     PMM_TEST( mgr->validate() );
 
     pmm::PersistMemoryManager::destroy();
@@ -113,6 +114,7 @@ static bool test_allocate_alignment_32()
 
 static bool test_allocate_alignment_64()
 {
+    // Issue #59: alignment parameter is accepted but only 16-byte alignment is guaranteed.
     const std::size_t size = 64 * 1024;
     void*             mem  = std::malloc( size );
     PMM_TEST( mem != nullptr );
@@ -122,7 +124,7 @@ static bool test_allocate_alignment_64()
 
     void* ptr = mgr->allocate( 256, 64 );
     PMM_TEST( ptr != nullptr );
-    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % 64 == 0 );
+    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % pmm::kMinAlignment == 0 );
     PMM_TEST( mgr->validate() );
 
     pmm::PersistMemoryManager::destroy();
