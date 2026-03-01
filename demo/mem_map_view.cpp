@@ -7,10 +7,6 @@
 
 #include "imgui.h"
 
-#include <cstdint>
-#include <cstring>
-
-// Access internal PMM detail structures for memory traversal
 #include "persist_memory_manager.h"
 
 namespace demo
@@ -65,56 +61,39 @@ void MemMapView::update_snapshot( pmm::PersistMemoryManager* mgr )
         snapshot_[i].offset      = i;
     }
 
-    // Get raw base pointer via reinterpret_cast (PMM is stored at the start of
-    // its managed buffer; the public API provides only total_size).
-    const auto* base_const = reinterpret_cast<const std::uint8_t*>( mgr );
-    auto*       base       = const_cast<std::uint8_t*>( base_const );
-
-    // Mark ManagerHeader region
-    const std::size_t mgr_hdr_sz = sizeof( pmm::detail::ManagerHeader );
+    // Mark ManagerHeader region using the public API
+    const std::size_t mgr_hdr_sz = pmm::PersistMemoryManager::manager_header_size();
     const std::size_t mark_hdr   = ( mgr_hdr_sz < display_bytes ) ? mgr_hdr_sz : display_bytes;
     for ( std::size_t i = 0; i < mark_hdr; ++i )
         snapshot_[i].type = ByteInfo::Type::ManagerHeader;
 
-    // Walk block linked list
-    const auto*    hdr     = reinterpret_cast<const pmm::detail::ManagerHeader*>( base );
-    std::ptrdiff_t offset  = hdr->first_block_offset;
-    std::size_t    blk_idx = 0;
+    // Walk block linked list via the public for_each_block() iterator
+    pmm::for_each_block( mgr,
+                         [&]( const pmm::BlockView& blk )
+                         {
+                             const ByteInfo::Type hdr_type =
+                                 blk.used ? ByteInfo::Type::BlockHeaderUsed : ByteInfo::Type::BlockHeaderFree;
+                             const ByteInfo::Type data_type =
+                                 blk.used ? ByteInfo::Type::UserDataUsed : ByteInfo::Type::UserDataFree;
 
-    while ( offset != pmm::detail::kNoBlock )
-    {
-        if ( offset < 0 || static_cast<std::size_t>( offset ) >= total_bytes_ )
-            break;
+                             const std::size_t blk_start = static_cast<std::size_t>( blk.offset );
+                             const std::size_t hdr_end   = blk_start + blk.header_size;
+                             const std::size_t blk_end   = blk_start + blk.total_size;
 
-        const auto* blk = reinterpret_cast<const pmm::detail::BlockHeader*>( base + offset );
+                             // Mark BlockHeader bytes
+                             for ( std::size_t b = blk_start; b < hdr_end && b < display_bytes; ++b )
+                             {
+                                 snapshot_[b].type        = hdr_type;
+                                 snapshot_[b].block_index = blk.index;
+                             }
 
-        const bool        used   = blk->used;
-        const std::size_t blk_sz = blk->total_size;
-
-        const ByteInfo::Type hdr_type  = used ? ByteInfo::Type::BlockHeaderUsed : ByteInfo::Type::BlockHeaderFree;
-        const ByteInfo::Type data_type = used ? ByteInfo::Type::UserDataUsed : ByteInfo::Type::UserDataFree;
-
-        // Mark BlockHeader bytes
-        const std::size_t hdr_sz  = sizeof( pmm::detail::BlockHeader );
-        const std::size_t hdr_end = static_cast<std::size_t>( offset ) + hdr_sz;
-        const std::size_t blk_end = static_cast<std::size_t>( offset ) + blk_sz;
-
-        for ( std::size_t b = static_cast<std::size_t>( offset ); b < hdr_end && b < display_bytes; ++b )
-        {
-            snapshot_[b].type        = hdr_type;
-            snapshot_[b].block_index = blk_idx;
-        }
-
-        // Mark user data bytes
-        for ( std::size_t b = hdr_end; b < blk_end && b < display_bytes; ++b )
-        {
-            snapshot_[b].type        = data_type;
-            snapshot_[b].block_index = blk_idx;
-        }
-
-        ++blk_idx;
-        offset = blk->next_offset;
-    }
+                             // Mark user data bytes
+                             for ( std::size_t b = hdr_end; b < blk_end && b < display_bytes; ++b )
+                             {
+                                 snapshot_[b].type        = data_type;
+                                 snapshot_[b].block_index = blk.index;
+                             }
+                         } );
 }
 
 // ─── Renderer ─────────────────────────────────────────────────────────────────
