@@ -26,6 +26,9 @@ pmm_add_test(test_performance test_performance.cpp)
 # ─── Реалистичный стресс-тест (Issue #20) ────────────────────────────────────
 pmm_add_test(test_stress_realistic test_stress_realistic.cpp)
 
+# ─── Стресс-тест автоматического роста памяти (Issue #30) ────────────────────
+pmm_add_test(test_stress_auto_grow test_stress_auto_grow.cpp)
+
 # ─── Тесты Фазы 9: Потокобезопасность ────────────────────────────────────────
 add_executable(test_thread_safety test_thread_safety.cpp)
 target_link_libraries(test_thread_safety PRIVATE pmm Threads::Threads)
