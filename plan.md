@@ -21,6 +21,7 @@
 | 9 | Итератор блоков PMM | Публичный API `for_each_block()` / `get_manager_info()` | ~0.5 д |
 | 10 | Координатор сценариев | `ScenarioCoordinator` — безопасная замена синглтона PMM | ~0.5 д |
 | 11 | Тайловый обзор MemMapView | Режим обзора всей памяти (1 пиксель = N байт) | ~0.5 д |
+| 12 | Фоновая проверка целостности | Периодический `validate()` каждые 5 с + кнопка «Validate now» | ~0.5 д |
 
 ---
 
@@ -853,6 +854,90 @@ px/tile: 2048 bytes
 - [x] CI зелёный: `build-demo` job проходит на ubuntu, windows, macos.
 - [x] Документация обновлена: `plan.md`, `README.md`, `docs/phase-11-mem-map-tile.md`.
 - [x] Risk #7 отмечен ✅ Решён.
+
+---
+
+## Фаза 12: Фоновая проверка целостности (Background Integrity Validator)
+
+Реализует требование из `demo.md` (раздел 11): периодический вызов `mgr->validate()`
+каждые 5 секунд и отображение результата в `MetricsView`.
+
+### 12.1 Новый тип ValidationResult (demo/metrics_view.h)
+
+```cpp
+struct ValidationResult {
+    enum class State { Unknown, Ok, Failed };
+    State                              state     = State::Unknown;
+    std::chrono::steady_clock::time_point timestamp{};
+};
+```
+
+### 12.2 Изменения MetricsView (demo/metrics_view.h, demo/metrics_view.cpp)
+
+Новые поля и методы:
+```cpp
+class MetricsView {
+public:
+    void update_validation(const ValidationResult& result); // фаза 12
+    bool validate_requested() const noexcept;               // true если нажата кнопка
+private:
+    ValidationResult last_validation_{};
+    bool             validate_requested_ = false;
+};
+```
+
+В `render()` добавлена строка статуса проверки целостности:
+```
+Integrity check (validate):  OK  (3 s ago)  [Validate now]
+```
+- **Unknown** → серый текст «pending...»
+- **Ok** → зелёный «OK» + сколько секунд назад
+- **Failed** → красный «FAILED» + сколько секунд назад
+- Кнопка **«Validate now»** выставляет `validate_requested_ = true` на один кадр.
+
+### 12.3 Изменения DemoApp (demo/demo_app.h, demo/demo_app.cpp)
+
+Новые поля:
+```cpp
+static constexpr long long kValidateIntervalSec = 5;
+ValidationResult                      last_validation_{};
+std::chrono::steady_clock::time_point last_validate_time_{};
+bool                                  first_validate_ = true;
+void run_validate(pmm::PersistMemoryManager* mgr);
+```
+
+Логика в `render()`:
+1. Каждый кадр проверяется: прошло ли `>= kValidateIntervalSec` секунд с последней
+   проверки (или это первый кадр) — если да, вызывается `run_validate(mgr)`.
+2. Результат передаётся в `metrics_view_->update_validation(last_validation_)`.
+3. Если `metrics_view_->validate_requested()` истинно (пользователь нажал кнопку) —
+   вызывается `run_validate(mgr)` немедленно.
+4. `apply_pmm_size()` сбрасывает `first_validate_ = true`, чтобы проверка запустилась
+   сразу после пересоздания PMM.
+
+### 12.4 Тест (tests/test_background_validator.cpp)
+
+| Тест | Что проверяется |
+|------|----------------|
+| `validation_result_default_state` | `ValidationResult` по умолчанию — State::Unknown |
+| `metrics_view_initial_state` | `validate_requested_` = false при создании |
+| `metrics_view_update_validation_ok` | `update_validation(Ok)` не падает, объект в валидном состоянии |
+| `metrics_view_update_validation_failed` | `update_validation(Failed)` не падает |
+| `validate_fresh_pmm_returns_ok` | `mgr->validate()` возвращает true для нового PMM |
+| `validate_after_allocations` | `validate()` возвращает true после alloc/dealloc |
+| `validation_timestamp_is_recent` | временная метка ValidationResult не старше 1 с |
+| `validate_interval_is_five_seconds` | `DemoApp::kValidateIntervalSec == 5` |
+| `update_validation_last_wins` | повторный вызов `update_validation()` перезаписывает состояние |
+| `validation_state_enum_values` | три состояния State::Unknown/Ok/Failed различны |
+
+### 12.5 Проверочные критерии фазы 12
+
+- [x] Все 10 новых тестов `test_background_validator` проходят.
+- [x] `metrics_view.h` и `metrics_view.cpp` ≤ 1500 строк.
+- [x] `demo_app.h` и `demo_app.cpp` ≤ 1500 строк.
+- [x] `test_background_validator.cpp` ≤ 1500 строк.
+- [x] CI зелёный: `build-demo` job проходит на ubuntu, windows, macos.
+- [x] Документация обновлена: `plan.md`, `README.md`, `docs/phase-12-background-validator.md`.
 
 ---
 

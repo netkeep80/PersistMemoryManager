@@ -1,6 +1,9 @@
 /**
  * @file metrics_view.cpp
  * @brief Implementation of MetricsView: live PMM metrics panel.
+ *
+ * Phase 12 addition: displays the result and age of the most recent background
+ * integrity check (validate()) and a manual "Validate now" button.
  */
 
 #include "metrics_view.h"
@@ -34,10 +37,19 @@ void MetricsView::update( const MetricsSnapshot& snap, float ops_per_sec )
     history_offset_ = ( history_offset_ + 1 ) % kHistorySize;
 }
 
+// ─── Phase 12: Validation update ─────────────────────────────────────────────
+
+void MetricsView::update_validation( const ValidationResult& result )
+{
+    last_validation_ = result;
+}
+
 // ─── Render ───────────────────────────────────────────────────────────────────
 
 void MetricsView::render()
 {
+    validate_requested_ = false; // reset each frame
+
     ImGui::Begin( "Metrics" );
 
     // Progress bar: used / total
@@ -106,6 +118,45 @@ void MetricsView::render()
     ImGui::Text( "Operations / sec" );
     ImGui::PlotLines( "##ops", ops_history_, kHistorySize, history_offset_, nullptr, 0.0f, -1.0f,
                       ImVec2( plot_w, plot_h ) );
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // ── Phase 12: Integrity check status ─────────────────────────────────────
+    ImGui::TextUnformatted( "Integrity check (validate):" );
+    ImGui::SameLine();
+
+    switch ( last_validation_.state )
+    {
+    case ValidationResult::State::Unknown:
+        ImGui::TextDisabled( "pending..." );
+        break;
+    case ValidationResult::State::Ok:
+    {
+        auto elapsed_s = std::chrono::duration_cast<std::chrono::seconds>( std::chrono::steady_clock::now() -
+                                                                           last_validation_.timestamp )
+                             .count();
+        ImGui::TextColored( ImVec4( 0.0f, 1.0f, 0.0f, 1.0f ), "OK" );
+        ImGui::SameLine();
+        ImGui::TextDisabled( "(%lld s ago)", static_cast<long long>( elapsed_s ) );
+        break;
+    }
+    case ValidationResult::State::Failed:
+    {
+        auto elapsed_s = std::chrono::duration_cast<std::chrono::seconds>( std::chrono::steady_clock::now() -
+                                                                           last_validation_.timestamp )
+                             .count();
+        ImGui::TextColored( ImVec4( 1.0f, 0.2f, 0.2f, 1.0f ), "FAILED" );
+        ImGui::SameLine();
+        ImGui::TextDisabled( "(%lld s ago)", static_cast<long long>( elapsed_s ) );
+        break;
+    }
+    }
+
+    ImGui::SameLine();
+    if ( ImGui::Button( "Validate now" ) )
+        validate_requested_ = true;
 
     ImGui::Spacing();
     ImGui::Separator();

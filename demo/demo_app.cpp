@@ -1,6 +1,11 @@
 /**
  * @file demo_app.cpp
  * @brief Implementation of DemoApp.
+ *
+ * Phase 12: run_validate() is called automatically every kValidateIntervalSec
+ * seconds (and on the very first frame) to detect structural corruption in the
+ * PMM heap. The user can also trigger it on demand via the "Validate now" button
+ * in the Metrics panel.
  */
 
 #include "demo_app.h"
@@ -76,6 +81,19 @@ void DemoApp::render()
         metrics_view_->update( snap, ops_per_sec_ );
     } // snapshots collected
 
+    // ── Phase 12: periodic validate() every kValidateIntervalSec seconds ────
+    if ( mgr )
+    {
+        auto now     = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>( now - last_validate_time_ ).count();
+        if ( first_validate_ || elapsed >= kValidateIntervalSec )
+        {
+            run_validate( mgr );
+            first_validate_ = false;
+        }
+        metrics_view_->update_validation( last_validation_ );
+    }
+
     // ── Render panels (no lock held) ─────────────────────────────────────────
     mem_map_view_->highlighted_block = highlighted_block_;
     mem_map_view_->render();
@@ -83,6 +101,10 @@ void DemoApp::render()
     struct_tree_view_->render( highlighted_block_ );
     metrics_view_->render();
     scenario_manager_->render();
+
+    // ── Phase 12: handle "Validate now" button press ──────────────────────────
+    if ( metrics_view_->validate_requested() && mgr )
+        run_validate( mgr );
 
     if ( show_help_ )
         render_help_window();
@@ -225,6 +247,21 @@ void DemoApp::apply_pmm_size()
     pmm_size_ = kPmmSizes[pmm_size_idx_];
     pmm_buffer_.assign( pmm_size_, std::uint8_t{ 0 } );
     pmm::PersistMemoryManager::create( pmm_buffer_.data(), pmm_size_ );
+
+    // Reset validate state so a fresh check runs on the new PMM instance.
+    first_validate_  = true;
+    last_validation_ = ValidationResult{};
+}
+
+// ─── Phase 12: Integrity validation ──────────────────────────────────────────
+
+void DemoApp::run_validate( pmm::PersistMemoryManager* mgr )
+{
+    last_validate_time_        = std::chrono::steady_clock::now();
+    bool ok                    = mgr->validate();
+    last_validation_.state     = ok ? ValidationResult::State::Ok : ValidationResult::State::Failed;
+    last_validation_.timestamp = last_validate_time_;
+    metrics_view_->update_validation( last_validation_ );
 }
 
 } // namespace demo

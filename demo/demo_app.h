@@ -7,6 +7,11 @@
  *  2. Update all snapshots from live PMM state.
  *  3. Release lock.
  *  4. Render all ImGui panels.
+ *
+ * Phase 12 addition: DemoApp periodically calls validate() every
+ * kValidateIntervalSec seconds and forwards the result to MetricsView.
+ * The user can also trigger an immediate validate() via the "Validate now"
+ * button in the Metrics panel.
  */
 
 #pragma once
@@ -72,6 +77,19 @@ class DemoApp
     int theme_idx_    = 0; // 0=Dark, 1=Light, 2=Classic
 
     void apply_pmm_size();
+
+  public:
+    // ── Phase 12: Background integrity validation ─────────────────────────────
+    /// How many seconds between automatic validate() calls (public for testing).
+    static constexpr long long kValidateIntervalSec = 5;
+
+  private:
+    ValidationResult                      last_validation_{};
+    std::chrono::steady_clock::time_point last_validate_time_{};
+    bool                                  first_validate_ = true; ///< run validate() on first frame
+
+    /// Run validate() on mgr and update last_validation_.
+    void run_validate( pmm::PersistMemoryManager* mgr );
 };
 
 } // namespace demo

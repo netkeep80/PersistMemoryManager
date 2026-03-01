@@ -4,10 +4,14 @@
  *
  * Displays a table of nine key metrics plus scrolling history graphs for
  * used memory, fragmentation, and operations per second.
+ *
+ * Phase 12 addition: shows the result of the latest background integrity check
+ * (validate()) and a manual "Validate now" button.
  */
 
 #pragma once
 
+#include <chrono>
 #include <cstddef>
 
 namespace demo
@@ -30,6 +34,24 @@ struct MetricsSnapshot
 };
 
 /**
+ * @brief Result of the most recent validate() call.
+ *
+ * Phase 12: updated by DemoApp and displayed in MetricsView.
+ */
+struct ValidationResult
+{
+    enum class State
+    {
+        Unknown, ///< validate() has not been called yet
+        Ok,      ///< validate() returned true
+        Failed   ///< validate() returned false
+    };
+
+    State                                 state = State::Unknown;
+    std::chrono::steady_clock::time_point timestamp{}; ///< when validate() was last called
+};
+
+/**
  * @brief ImGui panel showing live PMM metrics and scrolling history plots.
  */
 class MetricsView
@@ -43,8 +65,19 @@ class MetricsView
      */
     void update( const MetricsSnapshot& snap, float ops_per_sec );
 
+    /**
+     * @brief Update the latest validation result (Phase 12).
+     *
+     * Called by DemoApp after each periodic or manual validate() check.
+     * @param result  Result struct holding state and timestamp.
+     */
+    void update_validation( const ValidationResult& result );
+
     /// Render the Metrics ImGui panel.
     void render();
+
+    /// Returns true if the user pressed the "Validate now" button this frame.
+    bool validate_requested() const noexcept { return validate_requested_; }
 
   private:
     static constexpr int kHistorySize = 256;
@@ -56,6 +89,10 @@ class MetricsView
 
     MetricsSnapshot current_{};
     float           current_ops_per_sec_ = 0.0f;
+
+    // Phase 12: validation state
+    ValidationResult last_validation_{};
+    bool             validate_requested_ = false; ///< set to true when button pressed
 };
 
 } // namespace demo

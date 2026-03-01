@@ -6,6 +6,7 @@ issue-comments.txt
 .DS_Store
 build/
 build_test/
+build-test/
 build_clean/
 build_test2/
 build_asan/
