@@ -6,6 +6,12 @@
  * ScenarioManager.  All scenarios must honour the stop_flag by checking it
  * frequently and returning as soon as it is set.
  *
+ * Phase 10: All scenarios accept a ScenarioCoordinator reference and call
+ * coordinator.yield_if_paused() at safe inter-operation points.  The
+ * PersistenceCycle scenario uses coordinator.pause_others() / resume_others()
+ * to ensure exclusive access during PMM destroy()/reload() (fixes plan.md
+ * Risk #5).
+ *
  * Scenarios implemented here (Phases 4, 5):
  *   1. LinearFill     – fill then free sequentially
  *   2. RandomStress   – random alloc/dealloc mix
@@ -23,6 +29,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
 #include <deque>
 #include <random>
 #include <thread>
@@ -30,6 +37,42 @@
 
 namespace demo
 {
+
+// ─── ScenarioCoordinator implementation ──────────────────────────────────────
+
+void ScenarioCoordinator::pause_others()
+{
+    {
+        std::lock_guard<std::mutex> lk( mutex_ );
+        paused_.store( true, std::memory_order_release );
+    }
+    // No need to notify here; threads already running will hit yield_if_paused
+    // on their next iteration and block themselves.
+}
+
+void ScenarioCoordinator::resume_others()
+{
+    {
+        std::lock_guard<std::mutex> lk( mutex_ );
+        paused_.store( false, std::memory_order_release );
+    }
+    cv_.notify_all();
+}
+
+void ScenarioCoordinator::yield_if_paused( const std::atomic<bool>& stop_flag )
+{
+    if ( !paused_.load( std::memory_order_acquire ) )
+        return;
+
+    std::unique_lock<std::mutex> lk( mutex_ );
+    cv_.wait( lk, [this, &stop_flag]
+              { return !paused_.load( std::memory_order_relaxed ) || stop_flag.load( std::memory_order_relaxed ); } );
+}
+
+bool ScenarioCoordinator::is_paused() const noexcept
+{
+    return paused_.load( std::memory_order_acquire );
+}
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
@@ -56,7 +99,8 @@ class LinearFill final : public Scenario
   public:
     const char* name() const override { return "Linear Fill"; }
 
-    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p ) override
+    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p,
+              ScenarioCoordinator& coord ) override
     {
         auto*      mgr      = pmm::PersistMemoryManager::instance();
         const auto interval = std::chrono::duration<double>( 1.0 / std::max( p.alloc_freq, 1.0f ) );
@@ -67,9 +111,27 @@ class LinearFill final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
+            coord.yield_if_paused( stop );
+            if ( stop.load( std::memory_order_relaxed ) )
+                break;
+            // If the PMM singleton was replaced while we were paused, our live
+            // pointers point into the old (now freed) buffer — discard them.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                live.clear();
+
             // Fill phase
             while ( !stop.load( std::memory_order_relaxed ) )
             {
+                auto* inner_before = pmm::PersistMemoryManager::instance();
+                coord.yield_if_paused( stop );
+                if ( stop.load( std::memory_order_relaxed ) )
+                    break;
+                if ( pmm::PersistMemoryManager::instance() != inner_before )
+                    live.clear();
+                mgr = pmm::PersistMemoryManager::instance();
+                if ( !mgr )
+                    break;
                 void* ptr = mgr->allocate( p.min_block_size );
                 if ( !ptr )
                     break;
@@ -79,11 +141,13 @@ class LinearFill final : public Scenario
             }
 
             // Free phase
+            mgr = pmm::PersistMemoryManager::instance();
             for ( void* ptr : live )
             {
                 if ( stop.load( std::memory_order_relaxed ) )
                     break;
-                mgr->deallocate( ptr );
+                if ( mgr )
+                    mgr->deallocate( ptr );
                 ops.fetch_add( 1, std::memory_order_relaxed );
             }
             live.clear();
@@ -102,7 +166,8 @@ class RandomStress final : public Scenario
   public:
     const char* name() const override { return "Random Stress"; }
 
-    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p ) override
+    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p,
+              ScenarioCoordinator& coord ) override
     {
         auto*                                      mgr = pmm::PersistMemoryManager::instance();
         std::mt19937                               rng( std::random_device{}() );
@@ -117,6 +182,21 @@ class RandomStress final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
+            coord.yield_if_paused( stop );
+            if ( stop.load( std::memory_order_relaxed ) )
+                break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                live.clear();
+
+            mgr = pmm::PersistMemoryManager::instance();
+            if ( !mgr )
+            {
+                rate_sleep( next, alloc_interval );
+                continue;
+            }
+
             bool do_alloc =
                 live.empty() || ( static_cast<int>( live.size() ) < p.max_live_blocks && choice( rng ) < p.alloc_freq );
 
@@ -143,8 +223,12 @@ class RandomStress final : public Scenario
         }
 
         // Cleanup remaining live blocks
-        for ( void* ptr : live )
-            mgr->deallocate( ptr );
+        mgr = pmm::PersistMemoryManager::instance();
+        if ( mgr )
+        {
+            for ( void* ptr : live )
+                mgr->deallocate( ptr );
+        }
     }
 };
 
@@ -160,7 +244,8 @@ class FragmentationDemo final : public Scenario
   public:
     const char* name() const override { return "Fragmentation Demo"; }
 
-    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p ) override
+    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p,
+              ScenarioCoordinator& coord ) override
     {
         auto*        mgr = pmm::PersistMemoryManager::instance();
         std::mt19937 rng( std::random_device{}() );
@@ -177,6 +262,24 @@ class FragmentationDemo final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
+            coord.yield_if_paused( stop );
+            if ( stop.load( std::memory_order_relaxed ) )
+                break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+            {
+                small_live.clear();
+                large_live.clear();
+            }
+
+            mgr = pmm::PersistMemoryManager::instance();
+            if ( !mgr )
+            {
+                rate_sleep( next, interval );
+                continue;
+            }
+
             if ( alloc_small )
             {
                 void* ptr = mgr->allocate( 16 + ( rng() % 48 ) ); // 16..63
@@ -215,10 +318,14 @@ class FragmentationDemo final : public Scenario
             rate_sleep( next, interval );
         }
 
-        for ( void* ptr : small_live )
-            mgr->deallocate( ptr );
-        for ( void* ptr : large_live )
-            mgr->deallocate( ptr );
+        mgr = pmm::PersistMemoryManager::instance();
+        if ( mgr )
+        {
+            for ( void* ptr : small_live )
+                mgr->deallocate( ptr );
+            for ( void* ptr : large_live )
+                mgr->deallocate( ptr );
+        }
     }
 };
 
@@ -233,7 +340,8 @@ class LargeBlocks final : public Scenario
   public:
     const char* name() const override { return "Large Blocks"; }
 
-    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p ) override
+    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p,
+              ScenarioCoordinator& coord ) override
     {
         auto*                                      mgr = pmm::PersistMemoryManager::instance();
         std::mt19937                               rng( std::random_device{}() );
@@ -246,58 +354,21 @@ class LargeBlocks final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
-            void* ptr = mgr->allocate( size_dist( rng ) );
-            if ( ptr )
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
+            coord.yield_if_paused( stop );
+            if ( stop.load( std::memory_order_relaxed ) )
+                break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                fifo.clear();
+
+            mgr = pmm::PersistMemoryManager::instance();
+            if ( !mgr )
             {
-                fifo.push_back( ptr );
-                ops.fetch_add( 1, std::memory_order_relaxed );
+                rate_sleep( next, interval );
+                continue;
             }
 
-            if ( fifo.size() > 8 )
-            {
-                mgr->deallocate( fifo.front() );
-                fifo.pop_front();
-                ops.fetch_add( 1, std::memory_order_relaxed );
-            }
-
-            rate_sleep( next, interval );
-        }
-
-        while ( !fifo.empty() )
-        {
-            mgr->deallocate( fifo.front() );
-            fifo.pop_front();
-        }
-    }
-};
-
-// ─── Scenario 5: Tiny Blocks ─────────────────────────────────────────────────
-
-/**
- * High-frequency micro-alloc/dealloc using a FIFO queue.
- * Default params: min=8, max=32, alloc_freq=10000, dealloc_freq=9500.
- */
-class TinyBlocks final : public Scenario
-{
-  public:
-    const char* name() const override { return "Tiny Blocks"; }
-
-    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p ) override
-    {
-        auto*        mgr = pmm::PersistMemoryManager::instance();
-        std::mt19937 rng( std::random_device{}() );
-
-        const std::size_t                          min_sz = std::max( p.min_block_size, std::size_t( 8 ) );
-        const std::size_t                          max_sz = std::max( p.max_block_size, min_sz );
-        std::uniform_int_distribution<std::size_t> size_dist( min_sz, max_sz );
-
-        const auto interval = std::chrono::duration<double>( 1.0 / std::max( p.alloc_freq, 1.0f ) );
-        auto       next     = std::chrono::steady_clock::now();
-
-        std::deque<void*> fifo;
-
-        while ( !stop.load( std::memory_order_relaxed ) )
-        {
             void* ptr = mgr->allocate( size_dist( rng ) );
             if ( ptr )
             {
@@ -315,10 +386,86 @@ class TinyBlocks final : public Scenario
             rate_sleep( next, interval );
         }
 
-        while ( !fifo.empty() )
+        mgr = pmm::PersistMemoryManager::instance();
+        if ( mgr )
         {
-            mgr->deallocate( fifo.front() );
-            fifo.pop_front();
+            while ( !fifo.empty() )
+            {
+                mgr->deallocate( fifo.front() );
+                fifo.pop_front();
+            }
+        }
+    }
+};
+
+// ─── Scenario 5: Tiny Blocks ─────────────────────────────────────────────────
+
+/**
+ * High-frequency micro-alloc/dealloc using a FIFO queue.
+ * Default params: min=8, max=32, alloc_freq=10000, dealloc_freq=9500.
+ */
+class TinyBlocks final : public Scenario
+{
+  public:
+    const char* name() const override { return "Tiny Blocks"; }
+
+    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p,
+              ScenarioCoordinator& coord ) override
+    {
+        auto*        mgr = pmm::PersistMemoryManager::instance();
+        std::mt19937 rng( std::random_device{}() );
+
+        const std::size_t                          min_sz = std::max( p.min_block_size, std::size_t( 8 ) );
+        const std::size_t                          max_sz = std::max( p.max_block_size, min_sz );
+        std::uniform_int_distribution<std::size_t> size_dist( min_sz, max_sz );
+
+        const auto interval = std::chrono::duration<double>( 1.0 / std::max( p.alloc_freq, 1.0f ) );
+        auto       next     = std::chrono::steady_clock::now();
+
+        std::deque<void*> fifo;
+
+        while ( !stop.load( std::memory_order_relaxed ) )
+        {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
+            coord.yield_if_paused( stop );
+            if ( stop.load( std::memory_order_relaxed ) )
+                break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                fifo.clear();
+
+            mgr = pmm::PersistMemoryManager::instance();
+            if ( !mgr )
+            {
+                rate_sleep( next, interval );
+                continue;
+            }
+
+            void* ptr = mgr->allocate( size_dist( rng ) );
+            if ( ptr )
+            {
+                fifo.push_back( ptr );
+                ops.fetch_add( 1, std::memory_order_relaxed );
+            }
+
+            if ( fifo.size() > static_cast<std::size_t>( p.max_live_blocks ) )
+            {
+                mgr->deallocate( fifo.front() );
+                fifo.pop_front();
+                ops.fetch_add( 1, std::memory_order_relaxed );
+            }
+
+            rate_sleep( next, interval );
+        }
+
+        mgr = pmm::PersistMemoryManager::instance();
+        if ( mgr )
+        {
+            while ( !fifo.empty() )
+            {
+                mgr->deallocate( fifo.front() );
+                fifo.pop_front();
+            }
         }
     }
 };
@@ -335,7 +482,8 @@ class MixedSizes final : public Scenario
   public:
     const char* name() const override { return "Mixed Sizes"; }
 
-    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p ) override
+    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p,
+              ScenarioCoordinator& coord ) override
     {
         auto*                                 mgr = pmm::PersistMemoryManager::instance();
         std::mt19937                          rng( std::random_device{}() );
@@ -354,6 +502,21 @@ class MixedSizes final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
+            coord.yield_if_paused( stop );
+            if ( stop.load( std::memory_order_relaxed ) )
+                break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                live.clear();
+
+            mgr = pmm::PersistMemoryManager::instance();
+            if ( !mgr )
+            {
+                rate_sleep( next, interval );
+                continue;
+            }
+
             // Switch profile every 50 operations
             if ( ++profile_counter >= 50 )
             {
@@ -406,8 +569,12 @@ class MixedSizes final : public Scenario
             rate_sleep( next, interval );
         }
 
-        for ( void* ptr : live )
-            mgr->deallocate( ptr );
+        mgr = pmm::PersistMemoryManager::instance();
+        if ( mgr )
+        {
+            for ( void* ptr : live )
+                mgr->deallocate( ptr );
+        }
     }
 };
 
@@ -418,17 +585,18 @@ class MixedSizes final : public Scenario
  * then validates the restored state.
  * Default params: min=128, max=1024, cycle_period via alloc_freq (1/alloc_freq s).
  *
- * NOTE: This scenario stops all other operations while performing destroy/load,
- * which involves stopping and restarting the singleton. It is designed to run
- * only when other scenarios are idle or will gracefully fail to allocate
- * during the reload window.
+ * Phase 10: Uses ScenarioCoordinator to pause all other scenarios before
+ * calling destroy() and to resume them after reload().  This fixes plan.md
+ * Risk #5 (critical: destroy() must not be called while other scenario threads
+ * are using the PMM singleton).
  */
 class PersistenceCycle final : public Scenario
 {
   public:
     const char* name() const override { return "Persistence Cycle"; }
 
-    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p ) override
+    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p,
+              ScenarioCoordinator& coord ) override
     {
         auto*                                      mgr = pmm::PersistMemoryManager::instance();
         std::mt19937                               rng( std::random_device{}() );
@@ -446,6 +614,9 @@ class PersistenceCycle final : public Scenario
             // Allocate a few blocks and write data
             for ( int i = 0; i < 4 && !stop.load( std::memory_order_relaxed ); ++i )
             {
+                mgr = pmm::PersistMemoryManager::instance();
+                if ( !mgr )
+                    break;
                 void* ptr = mgr->allocate( size_dist( rng ) );
                 if ( ptr )
                 {
@@ -456,6 +627,10 @@ class PersistenceCycle final : public Scenario
             }
 
             if ( stop.load( std::memory_order_relaxed ) )
+                break;
+
+            mgr = pmm::PersistMemoryManager::instance();
+            if ( !mgr )
                 break;
 
             // Save image
@@ -472,6 +647,14 @@ class PersistenceCycle final : public Scenario
             if ( !buf )
                 break;
 
+            // --- Phase 10: pause all other scenarios before destroy() ---
+            coord.pause_others();
+
+            // Give other scenario threads a moment to reach yield_if_paused()
+            // and block.  50 ms is conservative; typical loop iterations are
+            // << 1 ms except for TinyBlocks which has a 0.1 ms interval.
+            std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
+
             // Destroy and reload from file
             pmm::PersistMemoryManager::destroy();
             auto* mgr2 = pmm::load_from_file( "pmm_demo.bin", buf, total );
@@ -484,9 +667,11 @@ class PersistenceCycle final : public Scenario
             else
             {
                 // Fallback: recreate fresh
-                pmm::PersistMemoryManager::create( buf, total );
-                mgr = pmm::PersistMemoryManager::instance();
+                mgr = pmm::PersistMemoryManager::create( buf, total );
             }
+
+            // --- Phase 10: resume all other scenarios ---
+            coord.resume_others();
 
             // Wait for cycle period
             auto deadline = std::chrono::steady_clock::now() + cycle_dur;
@@ -497,10 +682,11 @@ class PersistenceCycle final : public Scenario
         }
 
         // Cleanup
-        for ( void* ptr : live )
+        mgr = pmm::PersistMemoryManager::instance();
+        if ( mgr )
         {
-            if ( pmm::PersistMemoryManager::instance() )
-                pmm::PersistMemoryManager::instance()->deallocate( ptr );
+            for ( void* ptr : live )
+                mgr->deallocate( ptr );
         }
     }
 };

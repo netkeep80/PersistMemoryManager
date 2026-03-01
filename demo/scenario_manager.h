@@ -4,6 +4,9 @@
  *
  * Each scenario runs in its own std::thread. ScenarioManager provides
  * start/stop controls and renders the Scenarios panel in the ImGui UI.
+ *
+ * Phase 10: ScenarioManager owns a ScenarioCoordinator instance that is
+ * shared across all scenario threads for safe PMM singleton replacement.
  */
 
 #pragma once
@@ -74,9 +77,13 @@ class ScenarioManager
     /// Number of scenarios managed.
     std::size_t count() const;
 
+    /// Access the shared coordinator (for testing).
+    ScenarioCoordinator& coordinator() noexcept;
+
   private:
     void render_scenario_row( std::size_t i );
 
+    ScenarioCoordinator                         coordinator_;
     std::vector<std::unique_ptr<Scenario>>      scenarios_;
     std::vector<std::unique_ptr<ScenarioState>> states_;
 };

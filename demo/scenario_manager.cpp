@@ -117,7 +117,7 @@ void ScenarioManager::start( std::size_t index )
     state.thread = std::thread(
         [this, index, params_copy]() mutable
         {
-            scenarios_[index]->run( states_[index]->stop_flag, states_[index]->total_ops, params_copy );
+            scenarios_[index]->run( states_[index]->stop_flag, states_[index]->total_ops, params_copy, coordinator_ );
             states_[index]->running.store( false );
         } );
 }
@@ -161,6 +161,11 @@ void ScenarioManager::join_all()
 std::size_t ScenarioManager::count() const
 {
     return scenarios_.size();
+}
+
+ScenarioCoordinator& ScenarioManager::coordinator() noexcept
+{
+    return coordinator_;
 }
 
 float ScenarioManager::total_ops_per_sec() const
