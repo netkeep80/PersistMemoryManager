@@ -8,6 +8,7 @@
 #include "persist_memory_manager.h"
 
 #include <cassert>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -288,6 +289,8 @@ static bool test_get_info()
 
     void* ptr = mgr->allocate( 512, 32 );
     PMM_TEST( ptr != nullptr );
+    // Issue #59: pointer must be 32-byte aligned
+    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr ) % 32 == 0 );
 
     pmm::AllocationInfo info = pmm::get_info( mgr, ptr );
     PMM_TEST( info.is_valid );

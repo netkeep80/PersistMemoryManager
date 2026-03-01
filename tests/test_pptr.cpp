@@ -43,10 +43,11 @@
 
 static bool test_pptr_sizeof()
 {
-    PMM_TEST( sizeof( pmm::pptr<int> ) == sizeof( void* ) );
-    PMM_TEST( sizeof( pmm::pptr<double> ) == sizeof( void* ) );
-    PMM_TEST( sizeof( pmm::pptr<char> ) == sizeof( void* ) );
-    PMM_TEST( sizeof( pmm::pptr<std::uint64_t> ) == sizeof( void* ) );
+    // Issue #59: pptr<T> is now 4 bytes (uint32_t offset), not sizeof(void*)
+    PMM_TEST( sizeof( pmm::pptr<int> ) == 4 );
+    PMM_TEST( sizeof( pmm::pptr<double> ) == 4 );
+    PMM_TEST( sizeof( pmm::pptr<char> ) == 4 );
+    PMM_TEST( sizeof( pmm::pptr<std::uint64_t> ) == 4 );
     return true;
 }
 
@@ -248,7 +249,7 @@ static bool test_pptr_persistence()
     PMM_TEST( !p1.is_null() );
     *p1 = 12345;
 
-    std::ptrdiff_t saved_offset = p1.offset();
+    std::uint32_t saved_offset = p1.offset();
     PMM_TEST( pmm::save( mgr1, filename ) );
 
     pmm::PersistMemoryManager::destroy();

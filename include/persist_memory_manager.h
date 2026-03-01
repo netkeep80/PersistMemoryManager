@@ -17,13 +17,20 @@
  * Поиск свободного блока: best-fit через AVL-дерево (O(log n)).
  * При освобождении: слияние с соседними свободными блоками.
  *
- * @version 2.1.0
+ * @version 2.2.0
  *
  * Optimizations (Issue #57):
  *   1. O(1) back-pointer (boundary tag) in header_from_ptr — O(1) instead of up to 512 iterations.
  *   2. Restructured deallocate()+coalesce() — max 2 removes + 1 insert instead of insert+removes+insert.
  *   3. Actual-padding computation in allocate_from_block() — less internal fragmentation.
  *   4. last_block_offset in ManagerHeader — O(1) last-block lookup in expand().
+ *
+ * Optimizations (Issue #59):
+ *   1. 16-byte alignment standard for all structures and blocks in PAS.
+ *   2. 32-bit indices (uint32_t) for all block offsets — supports up to 4 GB per manager.
+ *   3. BlockHeader reduced to 32 bytes (removed redundant total_size and alignment fields).
+ *   4. total_size computed from next_offset - current_offset (last block uses manager total_size).
+ *   5. pptr<T> reduced to 4 bytes (uint32_t offset) — halves pointer memory in JSON structures.
  */
 
 #pragma once
@@ -44,11 +51,11 @@ namespace pmm
 class PersistMemoryManager;
 
 static constexpr std::size_t   kDefaultAlignment = 16;
-static constexpr std::size_t   kMinAlignment     = 8;
+static constexpr std::size_t   kMinAlignment     = 16;
 static constexpr std::size_t   kMaxAlignment     = 4096;
 static constexpr std::size_t   kMinMemorySize    = 4096;
 static constexpr std::size_t   kMinBlockSize     = 32;
-static constexpr std::uint64_t kMagic            = 0x504D4D5F56303231ULL; // "PMM_V021"
+static constexpr std::uint64_t kMagic            = 0x504D4D5F56303232ULL; // "PMM_V022"
 static constexpr std::size_t   kGrowNumerator    = 5;
 static constexpr std::size_t   kGrowDenominator  = 4;
 
@@ -99,52 +106,72 @@ namespace detail
 {
 
 /**
- * @brief Заголовок блока памяти (Issue #55: 6 ключевых полей).
+ * @brief Заголовок блока памяти (Issue #59: 32 байта, 16-байтное выравнивание).
+ *
+ * Issue #59: Оптимизированная структура:
+ *   - magic (4B) + used_size (4B) = 8 байт
+ *   - prev_offset (4B) + next_offset (4B) = 8 байт
+ *   - left_offset (4B) + right_offset (4B) = 8 байт
+ *   - parent_offset (4B) + avl_height (2B) + alignment_log2 (1B) + _pad (1B) = 8 байт
+ *   Итого: 32 байта
+ *
+ * Удалено поле: total_size (вычисляется по next_offset).
+ * alignment хранится компактно как log2: alignment = 1 << alignment_log2 (1 байт).
+ * Смещения — std::uint32_t (4 байта), kNoBlock = UINT32_MAX.
+ * Поддерживает до 4 ГБ на один менеджер.
  *
  * Поля: used_size (1), prev_offset (2), next_offset (3),
  *       left_offset (4), right_offset (5), parent_offset (6).
- * Дополнительно: magic, total_size, alignment, avl_height.
  */
 struct BlockHeader
 {
-    std::uint64_t  magic;      ///< Магическое число
-    std::size_t    used_size;  ///< [1] Занятый размер (0 = свободный)
-    std::size_t    total_size; ///< Полный размер блока с заголовком
-    std::size_t    alignment;  ///< Выравнивание данных пользователя
-    std::int32_t   avl_height; ///< Высота AVL-поддерева (0 = не в дереве)
-    std::uint8_t   _pad[4];
-    std::ptrdiff_t prev_offset;   ///< [2] Предыдущий блок в адресном порядке
-    std::ptrdiff_t next_offset;   ///< [3] Следующий блок в адресном порядке
-    std::ptrdiff_t left_offset;   ///< [4] Левый дочерний узел AVL-дерева
-    std::ptrdiff_t right_offset;  ///< [5] Правый дочерний узел AVL-дерева
-    std::ptrdiff_t parent_offset; ///< [6] Родительский узел AVL-дерева
+    std::uint32_t magic;          ///< Магическое число (4 байта)
+    std::uint32_t used_size;      ///< [1] Занятый размер (0 = свободный). Max 4 ГБ.
+    std::uint32_t prev_offset;    ///< [2] Предыдущий блок в адресном порядке
+    std::uint32_t next_offset;    ///< [3] Следующий блок в адресном порядке
+    std::uint32_t left_offset;    ///< [4] Левый дочерний узел AVL-дерева
+    std::uint32_t right_offset;   ///< [5] Правый дочерний узел AVL-дерева
+    std::uint32_t parent_offset;  ///< [6] Родительский узел AVL-дерева
+    std::int16_t  avl_height;     ///< Высота AVL-поддерева (0 = не в дереве)
+    std::uint8_t  alignment_log2; ///< log2(alignment): alignment = 1 << alignment_log2
+    std::uint8_t  _pad;           ///< Выравнивание
 };
 
-static_assert( sizeof( BlockHeader ) % 8 == 0, "BlockHeader must be 8-byte aligned" );
+static_assert( sizeof( BlockHeader ) == 32, "BlockHeader must be exactly 32 bytes (Issue #59)" );
+static_assert( sizeof( BlockHeader ) % 16 == 0, "BlockHeader must be 16-byte aligned (Issue #59)" );
 
-static constexpr std::uint64_t  kBlockMagic = 0x424C4B5F56303231ULL; // "BLK_V021"
-static constexpr std::ptrdiff_t kNoBlock    = -1;
+static constexpr std::uint32_t kBlockMagic = 0x424C4B32U; // "BLK2" (Issue #59 version)
+static constexpr std::uint32_t kNoBlock    = 0xFFFFFFFFU; ///< Sentinel: нет блока
 
+/**
+ * @brief Заголовок менеджера памяти (Issue #59: 64 байта, 16-байтное выравнивание).
+ *
+ * Оптимизированная структура с 32-битными смещениями:
+ *   - magic (8B) + total_size (8B) = 16 байт
+ *   - used_size (4B) + block_count (4B) + free_count (4B) + alloc_count (4B) = 16 байт
+ *   - first_block_offset (4B) + last_block_offset (4B) + free_tree_root (4B) + owns_memory(1B)+pad(3B) = 16 байт
+ *   - prev_total_size (8B) + prev_base (8B) = 16 байт
+ *   Итого: 64 байта
+ */
 struct ManagerHeader
 {
-    std::uint64_t  magic;
-    std::size_t    total_size;
-    std::size_t    used_size;
-    std::size_t    block_count;
-    std::size_t    free_count;
-    std::size_t    alloc_count;
-    std::ptrdiff_t first_block_offset;
-    std::ptrdiff_t last_block_offset; ///< [Issue #57 opt 4] Последний блок — O(1) в expand()
-    std::ptrdiff_t free_tree_root;    ///< Корень AVL-дерева свободных блоков
-    bool           owns_memory;
-    std::uint8_t   _hdr_pad[7];
-    std::size_t    prev_total_size;
-    void*          prev_base;
-    bool           prev_owns;
-    std::uint8_t   _prev_pad[7];
+    std::uint64_t  magic;             ///< Магическое число менеджера
+    std::uint64_t  total_size;        ///< Полный размер управляемой области
+    std::uint32_t  used_size;         ///< Занятый размер (включая заголовки)
+    std::uint32_t  block_count;       ///< Общее число блоков
+    std::uint32_t  free_count;        ///< Число свободных блоков
+    std::uint32_t  alloc_count;       ///< Число занятых блоков
+    std::uint32_t  first_block_offset;///< Первый блок в адресном порядке
+    std::uint32_t  last_block_offset; ///< [Issue #57 opt 4] Последний блок — O(1) в expand()
+    std::uint32_t  free_tree_root;    ///< Корень AVL-дерева свободных блоков
+    bool           owns_memory;       ///< Менеджер владеет буфером
+    std::uint8_t   _pad[3];           ///< Выравнивание
+    std::uint64_t  prev_total_size;   ///< Размер предыдущего буфера (при расширении)
+    void*          prev_base;         ///< Указатель на предыдущий буфер
 };
 
-static_assert( sizeof( ManagerHeader ) % 8 == 0, "ManagerHeader must be 8-byte aligned" );
+static_assert( sizeof( ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes (Issue #59)" );
+static_assert( sizeof( ManagerHeader ) % 16 == 0, "ManagerHeader must be 16-byte aligned (Issue #59)" );
 
 inline std::size_t align_up( std::size_t value, std::size_t align )
 {
@@ -157,53 +184,78 @@ inline bool is_valid_alignment( std::size_t align )
     return align >= kMinAlignment && align <= kMaxAlignment && ( align & ( align - 1 ) ) == 0;
 }
 
-inline BlockHeader* block_at( std::uint8_t* base, std::ptrdiff_t offset )
+/// @brief Вычислить log2 выравнивания (align должно быть степенью двойки >= 1).
+inline std::uint8_t alignment_to_log2( std::size_t align )
 {
-    assert( offset >= 0 );
+    std::uint8_t log2 = 0;
+    while ( align > 1 ) { align >>= 1; ++log2; }
+    return log2;
+}
+
+/// @brief Восстановить выравнивание из alignment_log2.
+inline std::size_t log2_to_alignment( std::uint8_t log2 )
+{
+    return static_cast<std::size_t>( 1 ) << log2;
+}
+
+inline BlockHeader* block_at( std::uint8_t* base, std::uint32_t offset )
+{
+    assert( offset != kNoBlock );
     return reinterpret_cast<BlockHeader*>( base + offset );
 }
 
-inline std::ptrdiff_t block_offset( const std::uint8_t* base, const BlockHeader* block )
+inline std::uint32_t block_offset( const std::uint8_t* base, const BlockHeader* block )
 {
-    return reinterpret_cast<const std::uint8_t*>( block ) - base;
+    return static_cast<std::uint32_t>( reinterpret_cast<const std::uint8_t*>( block ) - base );
+}
+
+/// @brief Вычислить total_size блока из цепочки: next_offset - this_offset, или manager total_size - this_offset.
+/// Issue #59: total_size больше не хранится в заголовке блока.
+inline std::size_t block_total_size( const std::uint8_t* base, const ManagerHeader* hdr, const BlockHeader* blk )
+{
+    std::uint32_t this_off = block_offset( base, blk );
+    if ( blk->next_offset != kNoBlock )
+        return static_cast<std::size_t>( blk->next_offset - this_off );
+    return static_cast<std::size_t>( hdr->total_size ) - static_cast<std::size_t>( this_off );
 }
 
 /// @brief Вычислить адрес пользовательских данных для блока.
-/// Issue #57 opt 1: пропускает sizeof(ptrdiff_t) байт перед user_ptr для back-pointer тега.
-/// Это гарантирует, что тег всегда помещается между BlockHeader и user_ptr.
+/// Issue #57 opt 1: пропускает sizeof(uint32_t) байт перед user_ptr для back-pointer тега.
+/// Issue #59: тег теперь 4 байта (uint32_t); alignment хранится как alignment_log2.
 inline void* user_ptr( BlockHeader* block )
 {
     std::uint8_t* raw          = reinterpret_cast<std::uint8_t*>( block ) + sizeof( BlockHeader );
-    std::size_t   addr         = reinterpret_cast<std::size_t>( raw ) + sizeof( std::ptrdiff_t );
-    std::size_t   aligned_addr = align_up( addr, block->alignment );
+    std::size_t   addr         = reinterpret_cast<std::size_t>( raw ) + sizeof( std::uint32_t );
+    std::size_t   alignment    = log2_to_alignment( block->alignment_log2 );
+    std::size_t   aligned_addr = align_up( addr, alignment );
     return reinterpret_cast<void*>( aligned_addr );
 }
 
-/// @brief Записать тег обратного указателя (Issue #57 opt 1).
-/// Хранит offset блока в байте прямо перед user_ptr.
+/// @brief Записать тег обратного указателя (Issue #57 opt 1, Issue #59: тег 4 байта).
+/// Хранит offset блока (uint32_t) в 4 байтах прямо перед user_ptr.
 /// Вызывать при каждом выделении (allocate_from_block).
 inline void write_back_ptr( std::uint8_t* base, BlockHeader* block )
 {
-    std::uint8_t*  uptr = reinterpret_cast<std::uint8_t*>( user_ptr( block ) );
-    std::ptrdiff_t off  = reinterpret_cast<std::uint8_t*>( block ) - base;
-    std::memcpy( uptr - sizeof( std::ptrdiff_t ), &off, sizeof( std::ptrdiff_t ) );
+    std::uint8_t* uptr = reinterpret_cast<std::uint8_t*>( user_ptr( block ) );
+    std::uint32_t off  = static_cast<std::uint32_t>( reinterpret_cast<std::uint8_t*>( block ) - base );
+    std::memcpy( uptr - sizeof( std::uint32_t ), &off, sizeof( std::uint32_t ) );
 }
 
-/// @brief O(1) восстановление заголовка блока по user_ptr через тег (Issue #57 opt 1).
+/// @brief O(1) восстановление заголовка блока по user_ptr через тег (Issue #57 opt 1, Issue #59: тег 4 байта).
 inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr )
 {
     if ( ptr == nullptr )
         return nullptr;
     std::uint8_t* raw_ptr  = reinterpret_cast<std::uint8_t*>( ptr );
     std::uint8_t* min_addr = base + sizeof( ManagerHeader );
-    // Minimum size needed before user_ptr: BlockHeader + tag
-    if ( raw_ptr < min_addr + sizeof( BlockHeader ) + sizeof( std::ptrdiff_t ) )
+    // Minimum size needed before user_ptr: BlockHeader + tag(4B)
+    if ( raw_ptr < min_addr + sizeof( BlockHeader ) + sizeof( std::uint32_t ) )
         return nullptr;
 
     // Read the back-pointer tag stored just before user_ptr
-    std::ptrdiff_t off = 0;
-    std::memcpy( &off, raw_ptr - sizeof( std::ptrdiff_t ), sizeof( std::ptrdiff_t ) );
-    if ( off < 0 )
+    std::uint32_t off = 0;
+    std::memcpy( &off, raw_ptr - sizeof( std::uint32_t ), sizeof( std::uint32_t ) );
+    if ( off == kNoBlock )
         return nullptr;
     std::uint8_t* cand_addr = base + off;
     if ( cand_addr < min_addr || cand_addr + sizeof( BlockHeader ) > raw_ptr )
@@ -216,7 +268,7 @@ inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr )
 
 inline BlockHeader* find_block_by_ptr( std::uint8_t* base, const ManagerHeader* mhdr, void* ptr )
 {
-    std::ptrdiff_t offset = mhdr->first_block_offset;
+    std::uint32_t offset = mhdr->first_block_offset;
     while ( offset != kNoBlock )
     {
         BlockHeader* blk = block_at( base, offset );
@@ -228,10 +280,8 @@ inline BlockHeader* find_block_by_ptr( std::uint8_t* base, const ManagerHeader* 
 }
 
 /// @brief Worst-case размер блока: заголовок + overhead + данные.
-/// user_ptr() = align_up(raw + sizeof(ptrdiff_t), alignment), raw = block + sizeof(BlockHeader).
-/// Поскольку все блоки выровнены по kMinAlignment и sizeof(BlockHeader)%kMinAlignment==0,
-/// практический worst-case overhead = alignment (а не alignment-1+8 = alignment+7).
-/// Доказательство: raw%kMinAlignment==0 → align_up(raw+sizeof(ptrdiff_t), alignment) <= raw+alignment.
+/// Issue #59: tag теперь 4 байта (sizeof(uint32_t)), alignment всегда kDefaultAlignment.
+/// user_ptr() = align_up(raw + sizeof(uint32_t), kDefaultAlignment), raw = block + sizeof(BlockHeader).
 inline std::size_t required_block_size( std::size_t user_size, std::size_t alignment )
 {
     std::size_t min_total = sizeof( BlockHeader ) + alignment + user_size;
@@ -240,7 +290,7 @@ inline std::size_t required_block_size( std::size_t user_size, std::size_t align
 
 // ─── AVL-дерево свободных блоков (ключ: total_size, затем offset) ────────────
 
-inline std::int32_t avl_height( std::uint8_t* base, std::ptrdiff_t off )
+inline std::int32_t avl_height( std::uint8_t* base, std::uint32_t off )
 {
     return ( off == kNoBlock ) ? 0 : block_at( base, off )->avl_height;
 }
@@ -256,8 +306,8 @@ inline std::int32_t avl_bf( std::uint8_t* base, BlockHeader* node )
 }
 
 /// @brief Обновить ссылку parent → child в дереве.
-inline void avl_set_child( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t parent, std::ptrdiff_t old_child,
-                           std::ptrdiff_t new_child )
+inline void avl_set_child( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t parent, std::uint32_t old_child,
+                           std::uint32_t new_child )
 {
     if ( parent == kNoBlock )
     {
@@ -271,12 +321,12 @@ inline void avl_set_child( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_
         p->right_offset = new_child;
 }
 
-inline std::ptrdiff_t avl_rotate_right( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t y_off )
+inline std::uint32_t avl_rotate_right( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t y_off )
 {
-    BlockHeader*   y     = block_at( base, y_off );
-    std::ptrdiff_t x_off = y->left_offset;
-    BlockHeader*   x     = block_at( base, x_off );
-    std::ptrdiff_t t2    = x->right_offset;
+    BlockHeader*  y     = block_at( base, y_off );
+    std::uint32_t x_off = y->left_offset;
+    BlockHeader*  x     = block_at( base, x_off );
+    std::uint32_t t2    = x->right_offset;
 
     x->right_offset  = y_off;
     y->left_offset   = t2;
@@ -290,12 +340,12 @@ inline std::ptrdiff_t avl_rotate_right( std::uint8_t* base, ManagerHeader* hdr, 
     return x_off;
 }
 
-inline std::ptrdiff_t avl_rotate_left( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t x_off )
+inline std::uint32_t avl_rotate_left( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t x_off )
 {
-    BlockHeader*   x     = block_at( base, x_off );
-    std::ptrdiff_t y_off = x->right_offset;
-    BlockHeader*   y     = block_at( base, y_off );
-    std::ptrdiff_t t2    = y->left_offset;
+    BlockHeader*  x     = block_at( base, x_off );
+    std::uint32_t y_off = x->right_offset;
+    BlockHeader*  y     = block_at( base, y_off );
+    std::uint32_t t2    = y->left_offset;
 
     y->left_offset   = x_off;
     x->right_offset  = t2;
@@ -309,9 +359,9 @@ inline std::ptrdiff_t avl_rotate_left( std::uint8_t* base, ManagerHeader* hdr, s
     return y_off;
 }
 
-inline void avl_rebalance_up( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t node_off )
+inline void avl_rebalance_up( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t node_off )
 {
-    std::ptrdiff_t cur = node_off;
+    std::uint32_t cur = node_off;
     while ( cur != kNoBlock )
     {
         BlockHeader* node = block_at( base, cur );
@@ -333,7 +383,7 @@ inline void avl_rebalance_up( std::uint8_t* base, ManagerHeader* hdr, std::ptrdi
     }
 }
 
-inline void avl_insert( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t blk_off )
+inline void avl_insert( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t blk_off )
 {
     BlockHeader* blk   = block_at( base, blk_off );
     blk->left_offset   = kNoBlock;
@@ -345,13 +395,20 @@ inline void avl_insert( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t b
         hdr->free_tree_root = blk_off;
         return;
     }
-    std::ptrdiff_t cur = hdr->free_tree_root, parent = kNoBlock;
-    bool           go_left = false;
+    std::uint32_t cur = hdr->free_tree_root, parent = kNoBlock;
+    bool          go_left = false;
     while ( cur != kNoBlock )
     {
         parent         = cur;
         BlockHeader* n = block_at( base, cur );
-        bool smaller   = ( blk->total_size < n->total_size ) || ( blk->total_size == n->total_size && blk_off <= cur );
+        // Issue #59: total_size computed from offsets
+        std::size_t blk_size = ( blk->next_offset != kNoBlock )
+                                   ? static_cast<std::size_t>( blk->next_offset - blk_off )
+                                   : static_cast<std::size_t>( hdr->total_size - blk_off );
+        std::size_t n_size   = ( n->next_offset != kNoBlock )
+                                   ? static_cast<std::size_t>( n->next_offset - cur )
+                                   : static_cast<std::size_t>( hdr->total_size - cur );
+        bool smaller   = ( blk_size < n_size ) || ( blk_size == n_size && blk_off <= cur );
         go_left        = smaller;
         cur            = smaller ? n->left_offset : n->right_offset;
     }
@@ -363,11 +420,11 @@ inline void avl_insert( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t b
     avl_rebalance_up( base, hdr, parent );
 }
 
-inline std::ptrdiff_t avl_min_node( std::uint8_t* base, std::ptrdiff_t node_off )
+inline std::uint32_t avl_min_node( std::uint8_t* base, std::uint32_t node_off )
 {
     while ( node_off != kNoBlock )
     {
-        std::ptrdiff_t left = block_at( base, node_off )->left_offset;
+        std::uint32_t left = block_at( base, node_off )->left_offset;
         if ( left == kNoBlock )
             break;
         node_off = left;
@@ -375,13 +432,13 @@ inline std::ptrdiff_t avl_min_node( std::uint8_t* base, std::ptrdiff_t node_off 
     return node_off;
 }
 
-inline void avl_remove( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t blk_off )
+inline void avl_remove( std::uint8_t* base, ManagerHeader* hdr, std::uint32_t blk_off )
 {
-    BlockHeader*   blk    = block_at( base, blk_off );
-    std::ptrdiff_t parent = blk->parent_offset;
-    std::ptrdiff_t left   = blk->left_offset;
-    std::ptrdiff_t right  = blk->right_offset;
-    std::ptrdiff_t rebal  = kNoBlock;
+    BlockHeader*  blk    = block_at( base, blk_off );
+    std::uint32_t parent = blk->parent_offset;
+    std::uint32_t left   = blk->left_offset;
+    std::uint32_t right  = blk->right_offset;
+    std::uint32_t rebal  = kNoBlock;
 
     if ( left == kNoBlock && right == kNoBlock )
     {
@@ -390,17 +447,17 @@ inline void avl_remove( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t b
     }
     else if ( left == kNoBlock || right == kNoBlock )
     {
-        std::ptrdiff_t child                   = ( left != kNoBlock ) ? left : right;
+        std::uint32_t child                   = ( left != kNoBlock ) ? left : right;
         block_at( base, child )->parent_offset = parent;
         avl_set_child( base, hdr, parent, blk_off, child );
         rebal = parent;
     }
     else
     {
-        std::ptrdiff_t succ_off    = avl_min_node( base, right );
-        BlockHeader*   succ        = block_at( base, succ_off );
-        std::ptrdiff_t succ_parent = succ->parent_offset;
-        std::ptrdiff_t succ_right  = succ->right_offset;
+        std::uint32_t succ_off    = avl_min_node( base, right );
+        BlockHeader*  succ        = block_at( base, succ_off );
+        std::uint32_t succ_parent = succ->parent_offset;
+        std::uint32_t succ_right  = succ->right_offset;
 
         if ( succ_parent != blk_off )
         {
@@ -429,13 +486,17 @@ inline void avl_remove( std::uint8_t* base, ManagerHeader* hdr, std::ptrdiff_t b
 }
 
 /// @brief Найти наименьший блок >= needed (best-fit, O(log n)).
-inline std::ptrdiff_t avl_find_best_fit( std::uint8_t* base, ManagerHeader* hdr, std::size_t needed )
+/// Issue #59: total_size вычисляется из смещений.
+inline std::uint32_t avl_find_best_fit( std::uint8_t* base, ManagerHeader* hdr, std::size_t needed )
 {
-    std::ptrdiff_t cur = hdr->free_tree_root, result = kNoBlock;
+    std::uint32_t cur = hdr->free_tree_root, result = kNoBlock;
     while ( cur != kNoBlock )
     {
-        BlockHeader* node = block_at( base, cur );
-        if ( node->total_size >= needed )
+        BlockHeader* node    = block_at( base, cur );
+        std::size_t  cur_size = ( node->next_offset != kNoBlock )
+                                    ? static_cast<std::size_t>( node->next_offset - cur )
+                                    : static_cast<std::size_t>( hdr->total_size - cur );
+        if ( cur_size >= needed )
         {
             result = cur;
             cur    = node->left_offset;
@@ -452,20 +513,28 @@ inline std::ptrdiff_t avl_find_best_fit( std::uint8_t* base, ManagerHeader* hdr,
 
 // ─── Персистный типизированный указатель ──────────────────────────────────────
 
+/**
+ * @brief Персистный типизированный указатель (Issue #59: 4 байта).
+ *
+ * Issue #59: использует uint32_t вместо ptrdiff_t.
+ * Размер уменьшен с 8 до 4 байт.
+ * Максимальное смещение: 4 ГБ - 1.
+ * Нулевое значение (0) означает nullptr.
+ */
 template <class T> class pptr
 {
-    std::ptrdiff_t _offset;
+    std::uint32_t _offset;
 
   public:
     inline pptr() noexcept : _offset( 0 ) {}
-    inline explicit pptr( std::ptrdiff_t offset ) noexcept : _offset( offset ) {}
+    inline explicit pptr( std::uint32_t offset ) noexcept : _offset( offset ) {}
     inline pptr( const pptr<T>& ) noexcept               = default;
     inline pptr<T>& operator=( const pptr<T>& ) noexcept = default;
     inline ~pptr() noexcept                              = default;
 
-    inline bool           is_null() const noexcept { return _offset == 0; }
-    inline explicit       operator bool() const noexcept { return _offset != 0; }
-    inline std::ptrdiff_t offset() const noexcept { return _offset; }
+    inline bool          is_null() const noexcept { return _offset == 0; }
+    inline explicit      operator bool() const noexcept { return _offset != 0; }
+    inline std::uint32_t offset() const noexcept { return _offset; }
 
     inline T* get() const noexcept;
     inline T& operator*() const noexcept { return *get(); }
@@ -480,8 +549,9 @@ template <class T> class pptr
     inline bool operator!=( const pptr<T>& other ) const noexcept { return _offset != other._offset; }
 };
 
-static_assert( sizeof( pptr<int> ) == sizeof( void* ), "sizeof(pptr<T>) должен быть равен sizeof(void*)" );
-static_assert( sizeof( pptr<double> ) == sizeof( void* ), "sizeof(pptr<T>) должен быть равен sizeof(void*)" );
+// Issue #59: pptr<T> теперь 4 байта (uint32_t), не sizeof(void*)
+static_assert( sizeof( pptr<int> ) == 4, "sizeof(pptr<T>) должен быть 4 байта (Issue #59)" );
+static_assert( sizeof( pptr<double> ) == 4, "sizeof(pptr<T>) должен быть 4 байта (Issue #59)" );
 
 // ─── Основной класс ───────────────────────────────────────────────────────────
 
@@ -498,6 +568,8 @@ class PersistMemoryManager
         std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( memory == nullptr || size < kMinMemorySize )
             return nullptr;
+        if ( size > 0xFFFFFFFFULL )
+            return nullptr; // Issue #59: max 4 GB per manager
 
         std::uint8_t*          base = static_cast<std::uint8_t*>( memory );
         detail::ManagerHeader* hdr  = reinterpret_cast<detail::ManagerHeader*>( base );
@@ -510,7 +582,7 @@ class PersistMemoryManager
         hdr->owns_memory        = true;
 
         std::size_t    hdr_end = detail::align_up( sizeof( detail::ManagerHeader ), kDefaultAlignment );
-        std::ptrdiff_t blk_off = static_cast<std::ptrdiff_t>( hdr_end );
+        std::uint32_t  blk_off = static_cast<std::uint32_t>( hdr_end );
 
         if ( static_cast<std::size_t>( blk_off ) + sizeof( detail::BlockHeader ) + kMinBlockSize > size )
             return nullptr;
@@ -518,21 +590,21 @@ class PersistMemoryManager
         detail::BlockHeader* blk = detail::block_at( base, blk_off );
         std::memset( blk, 0, sizeof( detail::BlockHeader ) );
         blk->magic         = detail::kBlockMagic;
-        blk->total_size    = size - static_cast<std::size_t>( blk_off );
-        blk->alignment     = kDefaultAlignment;
-        blk->avl_height    = 1;
+        // Issue #59: no total_size field; computed from next_offset vs manager total_size
+        blk->used_size     = 0;
         blk->prev_offset   = detail::kNoBlock;
         blk->next_offset   = detail::kNoBlock;
         blk->left_offset   = detail::kNoBlock;
         blk->right_offset  = detail::kNoBlock;
         blk->parent_offset = detail::kNoBlock;
+        blk->avl_height    = 1;
 
         hdr->first_block_offset = blk_off;
         hdr->last_block_offset  = blk_off; // Issue #57 opt 4
         hdr->free_tree_root     = blk_off;
         hdr->block_count        = 1;
         hdr->free_count         = 1;
-        hdr->used_size          = hdr_end + sizeof( detail::BlockHeader );
+        hdr->used_size          = static_cast<std::uint32_t>( hdr_end + sizeof( detail::BlockHeader ) );
 
         PersistMemoryManager* mgr = reinterpret_cast<PersistMemoryManager*>( base );
         s_instance                = mgr;
@@ -551,7 +623,6 @@ class PersistMemoryManager
         hdr->owns_memory     = true;
         hdr->prev_total_size = 0;
         hdr->prev_base       = nullptr;
-        hdr->prev_owns       = false;
         auto* mgr            = reinterpret_cast<PersistMemoryManager*>( base );
         mgr->rebuild_free_tree();
         s_instance = mgr;
@@ -568,16 +639,15 @@ class PersistMemoryManager
         bool  owns                 = hdr->owns_memory;
         void* buf                  = s_instance->base_ptr();
         void* prev                 = hdr->prev_base;
-        bool  prev_owns            = hdr->prev_owns;
+        bool  prev_owns            = ( prev != nullptr );
         s_instance                 = nullptr;
         while ( prev != nullptr && prev_owns )
         {
             detail::ManagerHeader* ph        = reinterpret_cast<detail::ManagerHeader*>( prev );
             void*                  next_prev = ph->prev_base;
-            bool                   next_owns = ph->prev_owns;
             std::free( prev );
             prev      = next_prev;
-            prev_owns = next_owns;
+            prev_owns = ( next_prev != nullptr );
         }
         if ( owns )
             std::free( buf );
@@ -592,7 +662,7 @@ class PersistMemoryManager
         std::uint8_t*          base   = base_ptr();
         detail::ManagerHeader* hdr    = header();
         std::size_t            needed = detail::required_block_size( user_size, alignment );
-        std::ptrdiff_t         off    = detail::avl_find_best_fit( base, hdr, needed );
+        std::uint32_t          off    = detail::avl_find_best_fit( base, hdr, needed );
 
         if ( off != detail::kNoBlock )
             return allocate_from_block( detail::block_at( base, off ), user_size, alignment );
@@ -605,7 +675,7 @@ class PersistMemoryManager
             return nullptr;
         std::uint8_t*          nb  = new_mgr->base_ptr();
         detail::ManagerHeader* nh  = new_mgr->header();
-        std::ptrdiff_t         nof = detail::avl_find_best_fit( nb, nh, needed );
+        std::uint32_t          nof = detail::avl_find_best_fit( nb, nh, needed );
         if ( nof != detail::kNoBlock )
             return new_mgr->allocate_from_block( detail::block_at( nb, nof ), user_size, alignment );
         return nullptr;
@@ -628,7 +698,7 @@ class PersistMemoryManager
         hdr->alloc_count--;
         hdr->free_count++;
         if ( hdr->used_size >= freed )
-            hdr->used_size -= freed;
+            hdr->used_size -= static_cast<std::uint32_t>( freed );
         // Issue #57 opt 2: do NOT insert into AVL yet; coalesce() will do a single insert after merging.
         coalesce( blk );
     }
@@ -651,7 +721,7 @@ class PersistMemoryManager
         if ( new_size <= blk->used_size )
             return ptr;
         std::size_t old_size = blk->used_size;
-        std::size_t align    = blk->alignment;
+        std::size_t align    = detail::log2_to_alignment( blk->alignment_log2 ); // Issue #59
         lock.unlock();
         void* new_ptr = allocate( new_size, align );
         if ( new_ptr == nullptr )
@@ -667,7 +737,7 @@ class PersistMemoryManager
         void*       raw   = allocate( sizeof( T ), align );
         if ( raw == nullptr )
             return pptr<T>();
-        return pptr<T>( static_cast<std::ptrdiff_t>( static_cast<std::uint8_t*>( raw ) - base_ptr() ) );
+        return pptr<T>( static_cast<std::uint32_t>( static_cast<std::uint8_t*>( raw ) - base_ptr() ) );
     }
 
     template <class T> pptr<T> allocate_typed( std::size_t count )
@@ -678,7 +748,7 @@ class PersistMemoryManager
         void*       raw   = allocate( sizeof( T ) * count, align );
         if ( raw == nullptr )
             return pptr<T>();
-        return pptr<T>( static_cast<std::ptrdiff_t>( static_cast<std::uint8_t*>( raw ) - base_ptr() ) );
+        return pptr<T>( static_cast<std::uint32_t>( static_cast<std::uint8_t*>( raw ) - base_ptr() ) );
     }
 
     template <class T> void deallocate_typed( pptr<T> p )
@@ -687,9 +757,9 @@ class PersistMemoryManager
             deallocate( base_ptr() + p.offset() );
     }
 
-    void* offset_to_ptr( std::ptrdiff_t offset ) noexcept { return ( offset == 0 ) ? nullptr : base_ptr() + offset; }
+    void* offset_to_ptr( std::uint32_t offset ) noexcept { return ( offset == 0 ) ? nullptr : base_ptr() + offset; }
 
-    const void* offset_to_ptr( std::ptrdiff_t offset ) const noexcept
+    const void* offset_to_ptr( std::uint32_t offset ) const noexcept
     {
         return ( offset == 0 ) ? nullptr : const_base_ptr() + offset;
     }
@@ -717,11 +787,11 @@ class PersistMemoryManager
         if ( hdr->magic != kMagic )
             return false;
 
-        std::size_t    block_count = 0, free_count = 0, alloc_count = 0;
-        std::ptrdiff_t offset = hdr->first_block_offset;
+        std::size_t   block_count = 0, free_count = 0, alloc_count = 0;
+        std::uint32_t offset = hdr->first_block_offset;
         while ( offset != detail::kNoBlock )
         {
-            if ( offset < 0 || static_cast<std::size_t>( offset ) >= hdr->total_size )
+            if ( static_cast<std::size_t>( offset ) >= hdr->total_size )
                 return false;
             const detail::BlockHeader* blk = reinterpret_cast<const detail::BlockHeader*>( base + offset );
             if ( blk->magic != detail::kBlockMagic )
@@ -787,6 +857,9 @@ class PersistMemoryManager
                                              detail::align_up( sizeof( detail::BlockHeader ), kDefaultAlignment ),
                                          kMinAlignment );
 
+        if ( new_size > 0xFFFFFFFFULL )
+            return false; // Issue #59: max 4 GB
+
         void* new_memory = std::malloc( new_size );
         if ( new_memory == nullptr )
             return false;
@@ -797,17 +870,20 @@ class PersistMemoryManager
         std::uint8_t*          nb = static_cast<std::uint8_t*>( new_memory );
         nh->owns_memory           = true;
 
-        std::ptrdiff_t extra_off  = static_cast<std::ptrdiff_t>( old_size );
-        std::size_t    extra_size = new_size - old_size;
+        std::uint32_t extra_off  = static_cast<std::uint32_t>( old_size );
+        std::size_t   extra_size = new_size - old_size;
         // Issue #57 opt 4: O(1) last-block lookup via last_block_offset
         detail::BlockHeader* last_blk =
             ( nh->last_block_offset != detail::kNoBlock ) ? detail::block_at( nb, nh->last_block_offset ) : nullptr;
 
         if ( last_blk != nullptr && last_blk->used_size == 0 )
         {
-            std::ptrdiff_t loff = detail::block_offset( nb, last_blk );
+            std::uint32_t loff = detail::block_offset( nb, last_blk );
             detail::avl_remove( nb, nh, loff );
-            last_blk->total_size += extra_size;
+            // Issue #59: no total_size field — just update next_offset or manager total_size
+            // Since last_blk is the last block, its size = new_size - loff (updated below via nh->total_size)
+            // We need to re-insert after updating total_size
+            nh->total_size = new_size;
             detail::avl_insert( nb, nh, loff );
         }
         else
@@ -820,15 +896,14 @@ class PersistMemoryManager
             detail::BlockHeader* nb_blk = detail::block_at( nb, extra_off );
             std::memset( nb_blk, 0, sizeof( detail::BlockHeader ) );
             nb_blk->magic         = detail::kBlockMagic;
-            nb_blk->total_size    = extra_size;
-            nb_blk->alignment     = kDefaultAlignment;
-            nb_blk->avl_height    = 1;
+            nb_blk->used_size     = 0;
             nb_blk->left_offset   = detail::kNoBlock;
             nb_blk->right_offset  = detail::kNoBlock;
             nb_blk->parent_offset = detail::kNoBlock;
+            nb_blk->avl_height    = 1;
             if ( last_blk != nullptr )
             {
-                std::ptrdiff_t loff   = detail::block_offset( nb, last_blk );
+                std::uint32_t loff    = detail::block_offset( nb, last_blk );
                 nb_blk->prev_offset   = loff;
                 nb_blk->next_offset   = detail::kNoBlock;
                 last_blk->next_offset = extra_off;
@@ -842,13 +917,17 @@ class PersistMemoryManager
             nh->last_block_offset = extra_off; // Issue #57 opt 4
             nh->block_count++;
             nh->free_count++;
+            nh->total_size = new_size; // Update total_size before AVL insert (affects size computation)
             detail::avl_insert( nb, nh, extra_off );
         }
-        nh->total_size      = new_size;
         nh->prev_base       = base_ptr();
         nh->prev_total_size = old_size;
-        nh->prev_owns       = old_owns;
         s_instance          = reinterpret_cast<PersistMemoryManager*>( new_memory );
+        if ( old_owns )
+        {
+            // Schedule old buffer to be freed; it's chained via prev_base
+            // (old buffer will be freed in destroy() via prev_base chain)
+        }
         return true;
     }
 
@@ -858,7 +937,7 @@ class PersistMemoryManager
         detail::ManagerHeader* hdr  = header();
         hdr->free_tree_root         = detail::kNoBlock;
         hdr->last_block_offset      = detail::kNoBlock; // Issue #57 opt 4: rebuild
-        std::ptrdiff_t offset       = hdr->first_block_offset;
+        std::uint32_t offset        = hdr->first_block_offset;
         while ( offset != detail::kNoBlock )
         {
             detail::BlockHeader* blk = detail::block_at( base, offset );
@@ -896,11 +975,12 @@ class PersistMemoryManager
     /// @brief Слить блок с соседними свободными блоками и вставить результат в AVL один раз.
     /// Issue #57 opt 2: max 2 avl_remove + 1 avl_insert вместо insert + remove/remove/insert.
     /// Issue #57 opt 4: поддерживает last_block_offset.
+    /// Issue #59: total_size вычисляется из смещений, а не хранится в заголовке.
     void coalesce( detail::BlockHeader* blk )
     {
         std::uint8_t*          base  = base_ptr();
         detail::ManagerHeader* hdr   = header();
-        std::ptrdiff_t         b_off = detail::block_offset( base, blk );
+        std::uint32_t          b_off = detail::block_offset( base, blk );
 
         // Слияние со следующим свободным соседом
         if ( blk->next_offset != detail::kNoBlock )
@@ -908,9 +988,9 @@ class PersistMemoryManager
             detail::BlockHeader* nxt = detail::block_at( base, blk->next_offset );
             if ( nxt->used_size == 0 )
             {
-                std::ptrdiff_t nxt_off = blk->next_offset;
+                std::uint32_t nxt_off = blk->next_offset;
                 detail::avl_remove( base, hdr, nxt_off );
-                blk->total_size += nxt->total_size;
+                // Issue #59: merge by updating next_offset (total_size implicitly updated)
                 blk->next_offset = nxt->next_offset;
                 if ( nxt->next_offset != detail::kNoBlock )
                     detail::block_at( base, nxt->next_offset )->prev_offset = b_off;
@@ -928,9 +1008,9 @@ class PersistMemoryManager
             detail::BlockHeader* prv = detail::block_at( base, blk->prev_offset );
             if ( prv->used_size == 0 )
             {
-                std::ptrdiff_t prv_off = blk->prev_offset;
+                std::uint32_t prv_off = blk->prev_offset;
                 detail::avl_remove( base, hdr, prv_off );
-                prv->total_size += blk->total_size;
+                // Issue #59: merge by updating next_offset of prev block
                 prv->next_offset = blk->next_offset;
                 if ( blk->next_offset != detail::kNoBlock )
                     detail::block_at( base, blk->next_offset )->prev_offset = prv_off;
@@ -953,66 +1033,68 @@ class PersistMemoryManager
     {
         std::uint8_t*          base    = base_ptr();
         detail::ManagerHeader* hdr     = header();
-        std::ptrdiff_t         blk_off = detail::block_offset( base, blk );
+        std::uint32_t          blk_off = detail::block_offset( base, blk );
         detail::avl_remove( base, hdr, blk_off );
 
+        // Issue #59: compute block total_size from offsets
+        std::size_t blk_total_size = detail::block_total_size( base, hdr, blk );
+
         // Issue #57 opt 3: compute actual needed for this specific block address.
-        // user_ptr() = align_up(raw + sizeof(ptrdiff_t), alignment).
+        // user_ptr() = align_up(raw + sizeof(uint32_t), alignment).
         std::uint8_t* raw        = reinterpret_cast<std::uint8_t*>( blk ) + sizeof( detail::BlockHeader );
         std::size_t   raw_addr   = reinterpret_cast<std::size_t>( raw );
-        std::size_t   user_start = detail::align_up( raw_addr + sizeof( std::ptrdiff_t ), alignment );
+        std::size_t   user_start = detail::align_up( raw_addr + sizeof( std::uint32_t ), alignment );
         std::size_t   needed     = ( user_start - reinterpret_cast<std::size_t>( blk ) ) + user_size;
         needed                   = detail::align_up( std::max( needed, kMinBlockSize ), kMinAlignment );
 
         std::size_t min_rem   = sizeof( detail::BlockHeader ) + kMinBlockSize;
-        bool        can_split = ( blk->total_size >= needed + min_rem );
+        bool        can_split = ( blk_total_size >= needed + min_rem );
 
         if ( can_split )
         {
-            std::ptrdiff_t       new_off = blk_off + static_cast<std::ptrdiff_t>( needed );
+            std::uint32_t        new_off = blk_off + static_cast<std::uint32_t>( needed );
             detail::BlockHeader* new_blk = detail::block_at( base, new_off );
             std::memset( new_blk, 0, sizeof( detail::BlockHeader ) );
             new_blk->magic         = detail::kBlockMagic;
-            new_blk->total_size    = blk->total_size - needed;
-            new_blk->alignment     = kDefaultAlignment;
-            new_blk->avl_height    = 1;
+            new_blk->used_size     = 0;
             new_blk->prev_offset   = blk_off;
             new_blk->next_offset   = blk->next_offset;
             new_blk->left_offset   = detail::kNoBlock;
             new_blk->right_offset  = detail::kNoBlock;
             new_blk->parent_offset = detail::kNoBlock;
+            new_blk->avl_height    = 1;
             if ( blk->next_offset != detail::kNoBlock )
                 detail::block_at( base, blk->next_offset )->prev_offset = new_off;
             else
                 hdr->last_block_offset = new_off; // Issue #57 opt 4
             blk->next_offset = new_off;
-            blk->total_size  = needed;
+            // Issue #59: no total_size field to update; size of blk is now (new_off - blk_off)
             hdr->block_count++;
             hdr->free_count++;
             detail::avl_insert( base, hdr, new_off );
         }
 
-        blk->used_size     = user_size;
-        blk->alignment     = alignment;
-        blk->left_offset   = detail::kNoBlock;
-        blk->right_offset  = detail::kNoBlock;
-        blk->parent_offset = detail::kNoBlock;
-        blk->avl_height    = 0;
+        blk->used_size      = static_cast<std::uint32_t>( user_size );
+        blk->alignment_log2 = detail::alignment_to_log2( alignment ); // Issue #59: compact alignment storage
+        blk->left_offset    = detail::kNoBlock;
+        blk->right_offset   = detail::kNoBlock;
+        blk->parent_offset  = detail::kNoBlock;
+        blk->avl_height     = 0;
         hdr->alloc_count++;
         hdr->free_count--;
-        hdr->used_size += user_size;
+        hdr->used_size += static_cast<std::uint32_t>( user_size );
         // Issue #57 opt 1: write back-pointer tag before user_ptr for O(1) header_from_ptr.
         void* uptr = detail::user_ptr( blk );
         detail::write_back_ptr( base, blk );
         return uptr;
     }
 
-    bool validate_avl( const std::uint8_t* base, const detail::ManagerHeader* hdr, std::ptrdiff_t node_off,
+    bool validate_avl( const std::uint8_t* base, const detail::ManagerHeader* hdr, std::uint32_t node_off,
                        std::size_t& count ) const
     {
         if ( node_off == detail::kNoBlock )
             return true;
-        if ( node_off < 0 || static_cast<std::size_t>( node_off ) >= hdr->total_size )
+        if ( static_cast<std::size_t>( node_off ) >= hdr->total_size )
             return false;
         const detail::BlockHeader* node = reinterpret_cast<const detail::BlockHeader*>( base + node_off );
         if ( node->magic != detail::kBlockMagic || node->used_size != 0 )
@@ -1089,24 +1171,28 @@ inline MemoryStats get_stats( const PersistMemoryManager* mgr )
     stats.total_blocks                = hdr->block_count;
     stats.free_blocks                 = hdr->free_count;
     stats.allocated_blocks            = hdr->alloc_count;
-    bool           first_free         = true;
-    std::ptrdiff_t offset             = hdr->first_block_offset;
+    bool          first_free          = true;
+    std::uint32_t offset              = hdr->first_block_offset;
     while ( offset != detail::kNoBlock )
     {
         const detail::BlockHeader* blk = reinterpret_cast<const detail::BlockHeader*>( base + offset );
         if ( blk->used_size == 0 )
         {
+            // Issue #59: compute total_size from offsets
+            std::size_t blk_size = ( blk->next_offset != detail::kNoBlock )
+                                       ? static_cast<std::size_t>( blk->next_offset - offset )
+                                       : static_cast<std::size_t>( hdr->total_size - offset );
             if ( first_free )
             {
-                stats.largest_free  = blk->total_size;
-                stats.smallest_free = blk->total_size;
+                stats.largest_free  = blk_size;
+                stats.smallest_free = blk_size;
                 first_free          = false;
             }
             else
             {
-                stats.largest_free  = std::max( stats.largest_free, blk->total_size );
-                stats.smallest_free = std::min( stats.smallest_free, blk->total_size );
-                stats.total_fragmentation += blk->total_size;
+                stats.largest_free  = std::max( stats.largest_free, blk_size );
+                stats.smallest_free = std::min( stats.smallest_free, blk_size );
+                stats.total_fragmentation += blk_size;
             }
         }
         offset = blk->next_offset;
@@ -1127,7 +1213,7 @@ inline AllocationInfo get_info( const PersistMemoryManager* mgr, void* ptr )
     if ( blk != nullptr && blk->used_size > 0 )
     {
         info.size      = blk->used_size;
-        info.alignment = blk->alignment;
+        info.alignment = detail::log2_to_alignment( blk->alignment_log2 ); // Issue #59
         info.is_valid  = true;
     }
     return info;
@@ -1145,9 +1231,13 @@ inline ManagerInfo get_manager_info( const PersistMemoryManager* mgr )
     info.block_count                 = hdr->block_count;
     info.free_count                  = hdr->free_count;
     info.alloc_count                 = hdr->alloc_count;
-    info.first_block_offset          = hdr->first_block_offset;
-    info.first_free_offset           = hdr->free_tree_root;
-    info.last_free_offset            = detail::kNoBlock;
+    info.first_block_offset          = ( hdr->first_block_offset != detail::kNoBlock )
+                                           ? static_cast<std::ptrdiff_t>( hdr->first_block_offset )
+                                           : -1;
+    info.first_free_offset           = ( hdr->free_tree_root != detail::kNoBlock )
+                                           ? static_cast<std::ptrdiff_t>( hdr->free_tree_root )
+                                           : -1;
+    info.last_free_offset            = -1;
     info.manager_header_size         = sizeof( detail::ManagerHeader );
     return info;
 }
@@ -1159,20 +1249,24 @@ template <typename Callback> inline void for_each_block( const PersistMemoryMana
     std::shared_lock<std::shared_mutex> lock( PersistMemoryManager::s_mutex );
     const std::uint8_t*                 base   = mgr->const_base_ptr();
     const detail::ManagerHeader*        hdr    = mgr->header();
-    std::ptrdiff_t                      offset = hdr->first_block_offset;
+    std::uint32_t                       offset = hdr->first_block_offset;
     std::size_t                         index  = 0;
     while ( offset != detail::kNoBlock )
     {
-        if ( offset < 0 || static_cast<std::size_t>( offset ) >= hdr->total_size )
+        if ( static_cast<std::size_t>( offset ) >= hdr->total_size )
             break;
         const detail::BlockHeader* blk = reinterpret_cast<const detail::BlockHeader*>( base + offset );
-        BlockView                  view;
+        // Issue #59: compute total_size from offsets
+        std::size_t blk_total = ( blk->next_offset != detail::kNoBlock )
+                                    ? static_cast<std::size_t>( blk->next_offset - offset )
+                                    : static_cast<std::size_t>( hdr->total_size - offset );
+        BlockView view;
         view.index       = index;
-        view.offset      = offset;
-        view.total_size  = blk->total_size;
+        view.offset      = static_cast<std::ptrdiff_t>( offset );
+        view.total_size  = blk_total;
         view.header_size = sizeof( detail::BlockHeader );
         view.user_size   = blk->used_size;
-        view.alignment   = blk->alignment;
+        view.alignment   = detail::log2_to_alignment( blk->alignment_log2 ); // Issue #59
         view.used        = ( blk->used_size > 0 );
         cb( view );
         ++index;
