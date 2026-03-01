@@ -8,7 +8,6 @@
 #include "imgui.h"
 
 #include <cstdio>
-#include <cstdint>
 
 namespace demo
 {
@@ -22,41 +21,29 @@ void StructTreeView::update_snapshot( pmm::PersistMemoryManager* mgr )
 
     snapshot_.blocks.clear();
 
-    const auto* base = reinterpret_cast<const std::uint8_t*>( mgr );
-    const auto* hdr  = reinterpret_cast<const pmm::detail::ManagerHeader*>( base );
+    const pmm::ManagerInfo info = pmm::get_manager_info( mgr );
 
-    snapshot_.magic              = hdr->magic;
-    snapshot_.total_size         = hdr->total_size;
-    snapshot_.used_size          = hdr->used_size;
-    snapshot_.block_count        = hdr->block_count;
-    snapshot_.free_count         = hdr->free_count;
-    snapshot_.alloc_count        = hdr->alloc_count;
-    snapshot_.first_block_offset = hdr->first_block_offset;
-    snapshot_.first_free_offset  = hdr->first_free_offset;
+    snapshot_.magic              = info.magic;
+    snapshot_.total_size         = info.total_size;
+    snapshot_.used_size          = info.used_size;
+    snapshot_.block_count        = info.block_count;
+    snapshot_.free_count         = info.free_count;
+    snapshot_.alloc_count        = info.alloc_count;
+    snapshot_.first_block_offset = info.first_block_offset;
+    snapshot_.first_free_offset  = info.first_free_offset;
 
-    std::ptrdiff_t offset = hdr->first_block_offset;
-    std::size_t    idx    = 0;
-
-    while ( offset != pmm::detail::kNoBlock )
-    {
-        if ( offset < 0 || static_cast<std::size_t>( offset ) >= hdr->total_size )
-            break;
-
-        const auto* blk = reinterpret_cast<const pmm::detail::BlockHeader*>( base + offset );
-
-        BlockSnapshot bs;
-        bs.index      = idx;
-        bs.offset     = static_cast<std::size_t>( offset );
-        bs.total_size = blk->total_size;
-        bs.user_size  = blk->user_size;
-        bs.alignment  = blk->alignment;
-        bs.used       = blk->used;
-
-        snapshot_.blocks.push_back( bs );
-        ++idx;
-
-        offset = blk->next_offset;
-    }
+    pmm::for_each_block( mgr,
+                         [&]( const pmm::BlockView& blk )
+                         {
+                             BlockSnapshot bs;
+                             bs.index      = blk.index;
+                             bs.offset     = static_cast<std::size_t>( blk.offset );
+                             bs.total_size = blk.total_size;
+                             bs.user_size  = blk.user_size;
+                             bs.alignment  = blk.alignment;
+                             bs.used       = blk.used;
+                             snapshot_.blocks.push_back( bs );
+                         } );
 }
 
 // ─── Renderer ─────────────────────────────────────────────────────────────────

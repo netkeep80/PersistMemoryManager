@@ -103,6 +103,41 @@ struct AllocationInfo
     bool        is_valid;  ///< Признак корректного блока
 };
 
+/**
+ * @brief Снимок полей заголовка менеджера памяти, возвращаемый get_manager_info().
+ *
+ * Предназначен для диагностических инструментов, визуализаторов и тестов,
+ * которым нужен доступ к внутренним полям без прямого обращения к detail::.
+ */
+struct ManagerInfo
+{
+    std::uint64_t  magic; ///< Магическое число (kMagic при корректном заголовке)
+    std::size_t    total_size;         ///< Полный размер управляемой области (байт)
+    std::size_t    used_size;          ///< Занятый объём (метаданные + данные, байт)
+    std::size_t    block_count;        ///< Общее количество блоков
+    std::size_t    free_count;         ///< Количество свободных блоков
+    std::size_t    alloc_count;        ///< Количество занятых блоков
+    std::ptrdiff_t first_block_offset; ///< Смещение первого блока (-1 = нет блоков)
+    std::ptrdiff_t first_free_offset; ///< Смещение первого свободного блока (-1 = нет)
+    std::size_t manager_header_size; ///< Размер служебного заголовка менеджера (байт)
+};
+
+/**
+ * @brief Информация об одном блоке памяти, возвращаемая итератором for_each_block().
+ *
+ * Безопасный снимок заголовка блока без прямого доступа к detail::.
+ */
+struct BlockView
+{
+    std::size_t index; ///< Порядковый индекс блока (0-based, по связному списку)
+    std::ptrdiff_t offset; ///< Смещение блока (включая заголовок) от начала PMM-области
+    std::size_t total_size;  ///< Полный размер блока (заголовок + данные, байт)
+    std::size_t header_size; ///< Размер служебного заголовка блока (байт)
+    std::size_t user_size; ///< Размер пользовательских данных (0 для свободных блоков)
+    std::size_t alignment; ///< Выравнивание пользовательских данных
+    bool        used;      ///< true — блок занят, false — свободен
+};
+
 // ─── Внутренние структуры ─────────────────────────────────────────────────────
 
 namespace detail
@@ -834,6 +869,14 @@ class PersistMemoryManager
     std::size_t total_size() const { return header()->total_size; }
 
     /**
+     * @brief Размер служебного заголовка менеджера (байт).
+     *
+     * Первые manager_header_size() байт управляемой области заняты под
+     * внутренние метаданные менеджера (счётчики, указатели списков и пр.).
+     */
+    static std::size_t manager_header_size() noexcept { return sizeof( detail::ManagerHeader ); }
+
+    /**
      * @brief Объём занятой памяти (метаданные + данные пользователя, байт).
      */
     std::size_t used_size() const { return header()->used_size; }
@@ -939,8 +982,10 @@ class PersistMemoryManager
     /**
      * @brief Дружественный доступ для get_stats() и get_info().
      */
-    friend MemoryStats    get_stats( const PersistMemoryManager* mgr );
-    friend AllocationInfo get_info( const PersistMemoryManager* mgr, void* ptr );
+    friend MemoryStats                       get_stats( const PersistMemoryManager* mgr );
+    friend AllocationInfo                    get_info( const PersistMemoryManager* mgr, void* ptr );
+    friend ManagerInfo                       get_manager_info( const PersistMemoryManager* mgr );
+    template <typename Callback> friend void for_each_block( const PersistMemoryManager* mgr, Callback&& callback );
 
   private:
     /// Единственный экземпляр менеджера (синглтон).
@@ -1363,6 +1408,92 @@ inline AllocationInfo get_info( const PersistMemoryManager* mgr, void* ptr )
     }
 
     return info;
+}
+
+/**
+ * @brief Получить снимок полей заголовка менеджера памяти.
+ *
+ * Возвращает ManagerInfo с диагностическими метаданными без прямого доступа к detail::.
+ * Полезен для визуализаторов и тестов, которым нужно отобразить внутренние счётчики PMM.
+ *
+ * @param mgr Менеджер памяти (nullptr → возвращается нулевой ManagerInfo).
+ */
+inline ManagerInfo get_manager_info( const PersistMemoryManager* mgr )
+{
+    ManagerInfo info{};
+    if ( mgr == nullptr )
+        return info;
+
+    const detail::ManagerHeader* hdr = mgr->header();
+
+    info.magic               = hdr->magic;
+    info.total_size          = hdr->total_size;
+    info.used_size           = hdr->used_size;
+    info.block_count         = hdr->block_count;
+    info.free_count          = hdr->free_count;
+    info.alloc_count         = hdr->alloc_count;
+    info.first_block_offset  = hdr->first_block_offset;
+    info.first_free_offset   = hdr->first_free_offset;
+    info.manager_header_size = sizeof( detail::ManagerHeader );
+
+    return info;
+}
+
+/**
+ * @brief Вызвать @p callback для каждого блока памяти менеджера.
+ *
+ * Позволяет безопасно обходить все блоки PMM без прямого доступа к internal-структурам.
+ * Обход выполняется под shared_lock, поэтому параллельные вызовы allocate/deallocate
+ * блокируются на время обхода.
+ *
+ * @param mgr      Менеджер памяти (может быть nullptr — тогда функция не делает ничего).
+ * @param callback Вызываемый объект с сигнатурой `void(const BlockView&)`.
+ *                 Возможен ранний выход, если callback бросает исключение.
+ *
+ * Пример:
+ * @code
+ * pmm::for_each_block( mgr, []( const pmm::BlockView& blk ) {
+ *     std::cout << "Block #" << blk.index
+ *               << " offset=" << blk.offset
+ *               << " size="   << blk.total_size
+ *               << ( blk.used ? " USED" : " FREE" ) << "\n";
+ * } );
+ * @endcode
+ */
+template <typename Callback> inline void for_each_block( const PersistMemoryManager* mgr, Callback&& callback )
+{
+    if ( mgr == nullptr )
+        return;
+
+    std::shared_lock<std::shared_mutex> lock( PersistMemoryManager::s_mutex );
+
+    const std::uint8_t*          base = mgr->const_base_ptr();
+    const detail::ManagerHeader* hdr  = mgr->header();
+
+    std::ptrdiff_t offset = hdr->first_block_offset;
+    std::size_t    index  = 0;
+
+    while ( offset != detail::kNoBlock )
+    {
+        if ( offset < 0 || static_cast<std::size_t>( offset ) >= hdr->total_size )
+            break;
+
+        const detail::BlockHeader* blk = reinterpret_cast<const detail::BlockHeader*>( base + offset );
+
+        BlockView view;
+        view.index       = index;
+        view.offset      = offset;
+        view.total_size  = blk->total_size;
+        view.header_size = sizeof( detail::BlockHeader );
+        view.user_size   = blk->user_size;
+        view.alignment   = blk->alignment;
+        view.used        = blk->used;
+
+        callback( view );
+
+        ++index;
+        offset = blk->next_offset;
+    }
 }
 
 } // namespace pmm

@@ -11,7 +11,7 @@
 - **Персистентность** — все ссылки хранятся как смещения, а не абсолютные указатели
 - **pptr<T>** — персистный типизированный указатель, sizeof == sizeof(void*)
 - **Выравнивание** — поддержка alignment от 8 до 4096 байт
-- **Диагностика** — validate(), dump_stats(), get_stats()
+- **Диагностика** — validate(), dump_stats(), get_stats(), get_manager_info(), for_each_block()
 - **Высокая производительность** — отдельный список свободных блоков, allocate 100K ≤ 7 мс
 - **Синглтон** — единственный активный менеджер доступен через `PersistMemoryManager::instance()`
 - **Автоматическое расширение** — при нехватке памяти буфер автоматически растёт на 25%
@@ -135,6 +135,51 @@ pmm::PersistMemoryManager::instance()->validate(); // → true
 Поскольку все метаданные хранятся как **смещения** (а не абсолютные указатели), образ корректно загружается по любому базовому адресу без пересчёта.
 
 - **Слияние блоков (coalescing)** — при освобождении блока автоматически объединяются соседние свободные блоки, что снижает фрагментацию до нуля при полном освобождении памяти
+
+## API итератора блоков
+
+Для безопасного обхода блоков и чтения метаданных менеджера без прямого доступа к внутренним
+структурам библиотека предоставляет три функции:
+
+### `for_each_block()`
+
+```cpp
+template <typename Callback>
+void pmm::for_each_block( const pmm::PersistMemoryManager* mgr, Callback&& callback );
+// Callback: void(const pmm::BlockView&)
+```
+
+Вызывает `callback` для каждого блока памяти. Берёт `shared_lock` внутри — потокобезопасно
+при параллельных `allocate` / `deallocate`. Каждый `BlockView` содержит: `index`, `offset`,
+`total_size`, `header_size`, `user_size`, `alignment`, `used`.
+
+```cpp
+pmm::for_each_block( mgr, []( const pmm::BlockView& blk ) {
+    std::cout << "Block #" << blk.index
+              << " offset=" << blk.offset
+              << " size="   << blk.total_size
+              << ( blk.used ? " USED" : " FREE" ) << "\n";
+} );
+```
+
+### `get_manager_info()`
+
+```cpp
+pmm::ManagerInfo pmm::get_manager_info( const pmm::PersistMemoryManager* mgr );
+```
+
+Возвращает снимок полей заголовка менеджера: `magic`, `total_size`, `used_size`,
+`block_count`, `free_count`, `alloc_count`, `first_block_offset`, `first_free_offset`,
+`manager_header_size`.
+
+### `PersistMemoryManager::manager_header_size()`
+
+```cpp
+static std::size_t pmm::PersistMemoryManager::manager_header_size() noexcept;
+```
+
+Возвращает размер служебного заголовка менеджера в байтах (первые N байт управляемой
+области заняты под метаданные PMM).
 
 ## Визуальное демо
 

@@ -796,12 +796,12 @@ BlockRange blocks(PersistMemoryManager* mgr); // returns all blocks
 
 | # | Вопрос / Риск | Статус | Решение |
 |---|--------------|--------|---------|
-| 1 | Доступ к внутренним заголовкам PMM для MemMapView | Открыт | Добавить `for_each_block()` в Фазе 2 |
+| 1 | Доступ к внутренним заголовкам PMM для MemMapView | ✅ Решён | Добавлены `for_each_block()`, `get_manager_info()`, `manager_header_size()` в `persist_memory_manager.h`; `mem_map_view.cpp` и `struct_tree_view.cpp` переведены на публичный API |
 | 2 | Сборка GLFW на Windows (зависимость от Win32 API) | Известен | FetchContent + find_package(OpenGL) покрывает |
 | 3 | macOS: deprecated OpenGL + GLFW совместимость | Известен | imgui_impl_opengl3 поддерживает; добавить -DGL_SILENCE_DEPRECATION |
 | 4 | Размер файлов > 1500 строк при разрастании scenarios.cpp | Риск | Разделить по одному файлу на сценарий при необходимости |
 | 5 | Сценарий Persistence Cycle: PMM::destroy() вызывает глобальную смену синглтона | Критично | Scenario 7 должен остановить все остальные сценарии перед destroy() |
-| 6 | Thread safety: MemMapView читает PMM без API итератора | Риск | Решается Вариантом A из секции «Структура данных» |
+| 6 | Thread safety: MemMapView читает PMM без API итератора | ✅ Решён | `for_each_block()` берёт `shared_lock` внутри; вся работа с PMM идёт через публичный API |
 | 7 | FPS < 30 при 7 параллельных сценариях + большой PMM | Риск | Оптимизировать рендеринг карты: DrawList batching, пропускать одинаковые пиксели |
 
 ---
