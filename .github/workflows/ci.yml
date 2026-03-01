@@ -154,3 +154,38 @@ jobs:
         with:
           files: coverage.info
           fail_ci_if_error: false
+
+  # ─── Demo build ──────────────────────────────────────────────────────────────
+  build-demo:
+    name: Build Demo (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenGL dev (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libxext-dev \
+            libwayland-dev wayland-protocols libxkbcommon-dev
+
+      - name: Configure (Linux / macOS)
+        if: runner.os != 'Windows'
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPMM_BUILD_DEMO=ON
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DPMM_BUILD_DEMO=ON
+
+      - name: Build
+        run: cmake --build build --config Release --target pmm_demo

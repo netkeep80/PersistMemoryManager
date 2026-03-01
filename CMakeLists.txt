@@ -27,3 +27,9 @@ add_subdirectory(tests)
 
 # ─── Примеры ──────────────────────────────────────────────────────────────────
 add_subdirectory(examples)
+
+# ─── Визуальное демо (опционально) ────────────────────────────────────────────
+option(PMM_BUILD_DEMO "Build the visual demo application (requires OpenGL + GLFW)" OFF)
+if(PMM_BUILD_DEMO)
+    add_subdirectory(demo)
+endif()

@@ -104,9 +104,9 @@ private:
 
 ### 1.5 Проверочные критерии фазы 1
 
-- [ ] `cmake -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --target pmm_demo` — успешно.
-- [ ] Запуск `./build/demo/pmm_demo` открывает пустое ImGui-окно.
-- [ ] Нет утечек памяти при немедленном закрытии.
+- [x] `cmake -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --target pmm_demo` — успешно.
+- [x] Запуск `./build/demo/pmm_demo` открывает пустое ImGui-окно.
+- [x] Нет утечек памяти при немедленном закрытии.
 
 ---
 
