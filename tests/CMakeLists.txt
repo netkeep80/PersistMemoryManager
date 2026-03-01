@@ -30,3 +30,8 @@ pmm_add_test(test_stress_realistic test_stress_realistic.cpp)
 add_executable(test_thread_safety test_thread_safety.cpp)
 target_link_libraries(test_thread_safety PRIVATE pmm Threads::Threads)
 add_test(NAME test_thread_safety COMMAND test_thread_safety)
+
+# ─── Тесты Фазы 10: Разделённые блокировки (shared_mutex) ─────────────────────
+add_executable(test_shared_mutex test_shared_mutex.cpp)
+target_link_libraries(test_shared_mutex PRIVATE pmm Threads::Threads)
+add_test(NAME test_shared_mutex COMMAND test_shared_mutex)

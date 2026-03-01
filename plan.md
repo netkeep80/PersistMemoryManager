@@ -1,8 +1,8 @@
 # План разработки PersistMemoryManager
 
-## Текущая фаза: Фаза 9 завершена
+## Текущая фаза: Фаза 10 завершена
 
-Подробности по каждой фазе: [phase1.md](phase1.md), [phase2.md](phase2.md), [phase3.md](phase3.md), [phase4.md](phase4.md), [phase6.md](phase6.md), [phase9.md](phase9.md)
+Подробности по каждой фазе: [phase1.md](phase1.md), [phase2.md](phase2.md), [phase3.md](phase3.md), [phase4.md](phase4.md), [phase6.md](phase6.md), [phase9.md](phase9.md), [phase10.md](phase10.md)
 
 ---
 
@@ -19,6 +19,7 @@
 | 7 | Синглтон + автоматическое расширение памяти | ✅ Завершена | — |
 | 8 | Реалистичный стресс-тест | ✅ Завершена | — |
 | 9 | Потокобезопасность (std::recursive_mutex) | ✅ Завершена | [phase9.md](phase9.md) |
+| 10 | std::shared_mutex — разделённые блокировки | ✅ Завершена | [phase10.md](phase10.md) |
 
 ---
 
@@ -220,6 +221,29 @@
 - `include/persist_memory_manager.h` — добавлен `s_mutex`, блокировка в публичных методах
 - `tests/test_thread_safety.cpp` — тесты многопоточного выделения/освобождения памяти
 - `phase9.md` — документация по Фазе 9
+
+---
+
+## Фаза 10: std::shared_mutex — разделённые блокировки
+
+**Статус:** ✅ Завершена
+
+**Задачи:**
+- [x] Добавить `#include <shared_mutex>` в заголовочный файл
+- [x] Заменить `static std::recursive_mutex s_mutex` на `static std::shared_mutex s_mutex`
+- [x] Писатели (`create`, `load`, `destroy`, `allocate`, `deallocate`): `unique_lock<shared_mutex>`
+- [x] Читатели (`validate`, `save`, `dump_stats`): `shared_lock<shared_mutex>`
+- [x] Рефакторинг `reallocate()` с `lock.unlock()` перед подвызовами (устранение deadlock)
+- [x] Написать `tests/test_shared_mutex.cpp`
+- [x] Обновить `tests/CMakeLists.txt`
+- [x] Написать `phase10.md`
+- [x] Обновить `plan.md` и `README.md`
+
+**Результаты:**
+- `include/persist_memory_manager.h` — `std::shared_mutex`, `unique_lock` для писателей, `shared_lock` для читателей, рефакторинг `reallocate()`
+- `tests/test_shared_mutex.cpp` — 4 теста разделённых блокировок
+- `phase10.md` — документация по Фазе 10
+- Версия обновлена до `0.8.0`; размер файла: 1499 строк (≤ 1500 ✅)
 
 ---
 

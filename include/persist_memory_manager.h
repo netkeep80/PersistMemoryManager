@@ -13,6 +13,7 @@
  * Фаза 6: Оптимизация производительности (отдельный список свободных блоков).
  * Фаза 7: Синглтон и автоматическое расширение памяти.
  * Фаза 9: Потокобезопасность (std::recursive_mutex).
+ * Фаза 10: std::shared_mutex — разделённые блокировки для read-only методов.
  *
  * Использование (синглтон):
  * @code
@@ -38,7 +39,7 @@
  * }
  * @endcode
  *
- * @version 0.7.0 (Фаза 9)
+ * @version 0.8.0 (Фаза 10)
  */
 
 #pragma once
@@ -52,6 +53,7 @@
 #include <cstring>
 #include <iostream>
 #include <mutex>
+#include <shared_mutex>
 
 namespace pmm
 {
@@ -574,7 +576,7 @@ class PersistMemoryManager
      */
     static PersistMemoryManager* create( void* memory, std::size_t size )
     {
-        std::lock_guard<std::recursive_mutex> lock( s_mutex );
+        std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( memory == nullptr || size < kMinMemorySize )
         {
             return nullptr;
@@ -629,7 +631,7 @@ class PersistMemoryManager
      */
     static PersistMemoryManager* load( void* memory, std::size_t size )
     {
-        std::lock_guard<std::recursive_mutex> lock( s_mutex );
+        std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( memory == nullptr || size < kMinMemorySize )
         {
             return nullptr;
@@ -654,7 +656,7 @@ class PersistMemoryManager
     /// @brief Уничтожить синглтон: обнулить магическое число, освободить буферы, сбросить s_instance.
     static void destroy()
     {
-        std::lock_guard<std::recursive_mutex> lock( s_mutex );
+        std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( s_instance != nullptr )
         {
             detail::ManagerHeader* hdr = s_instance->header();
@@ -680,7 +682,7 @@ class PersistMemoryManager
      */
     void* allocate( std::size_t user_size, std::size_t alignment = kDefaultAlignment )
     {
-        std::lock_guard<std::recursive_mutex> lock( s_mutex );
+        std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( user_size == 0 )
         {
             return nullptr;
@@ -742,7 +744,7 @@ class PersistMemoryManager
      */
     void deallocate( void* ptr )
     {
-        std::lock_guard<std::recursive_mutex> lock( s_mutex );
+        std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( ptr == nullptr )
         {
             return;
@@ -785,20 +787,17 @@ class PersistMemoryManager
     /// @brief Изменить размер блока. Если new_size <= текущему — возвращает тот же ptr. nullptr — выделяет новый.
     void* reallocate( void* ptr, std::size_t new_size )
     {
-        std::lock_guard<std::recursive_mutex> lock( s_mutex );
         if ( ptr == nullptr )
-        {
             return allocate( new_size );
-        }
         if ( new_size == 0 )
         {
             deallocate( ptr );
             return nullptr;
         }
 
-        std::uint8_t*          base = base_ptr();
-        detail::ManagerHeader* hdr  = header();
-
+        std::unique_lock<std::shared_mutex> lock( s_mutex );
+        std::uint8_t*                       base = base_ptr();
+        detail::ManagerHeader*              hdr  = header();
         // Транслируем указатель из предыдущего буфера (после expand()) в текущий
         if ( hdr->prev_base != nullptr && hdr->prev_total_size > 0 )
         {
@@ -807,20 +806,19 @@ class PersistMemoryManager
             if ( raw >= prev && raw < prev + hdr->prev_total_size )
                 ptr = base + ( raw - prev );
         }
-
         detail::BlockHeader* blk = detail::header_from_ptr( base, ptr );
         if ( blk == nullptr || !blk->used )
             return nullptr;
         if ( new_size <= blk->user_size )
             return ptr;
+        std::size_t old_user_size = blk->user_size;
+        std::size_t align         = blk->alignment;
+        lock.unlock();
 
-        void* new_ptr = allocate( new_size, blk->alignment );
+        void* new_ptr = allocate( new_size, align );
         if ( new_ptr == nullptr )
-        {
             return nullptr;
-        }
-
-        std::memcpy( new_ptr, ptr, blk->user_size );
+        std::memcpy( new_ptr, ptr, old_user_size );
         deallocate( ptr );
         return new_ptr;
     }
@@ -931,8 +929,9 @@ class PersistMemoryManager
      */
     bool validate() const
     {
-        const std::uint8_t*          base = const_base_ptr();
-        const detail::ManagerHeader* hdr  = header();
+        std::shared_lock<std::shared_mutex> lock( s_mutex );
+        const std::uint8_t*                 base = const_base_ptr();
+        const detail::ManagerHeader*        hdr  = header();
 
         if ( hdr->magic != kMagic )
         {
@@ -985,7 +984,8 @@ class PersistMemoryManager
      */
     void dump_stats() const
     {
-        const detail::ManagerHeader* hdr = header();
+        std::shared_lock<std::shared_mutex> lock( s_mutex );
+        const detail::ManagerHeader*        hdr = header();
         std::cout << "=== PersistMemoryManager stats ===\n"
                   << "  total_size  : " << hdr->total_size << " bytes\n"
                   << "  used_size   : " << hdr->used_size << " bytes\n"
@@ -1014,11 +1014,10 @@ class PersistMemoryManager
     bool save( const char* filename ) const
     {
         if ( filename == nullptr )
-        {
             return false;
-        }
-        const detail::ManagerHeader* hdr = header();
-        std::FILE*                   f   = std::fopen( filename, "wb" );
+        std::shared_lock<std::shared_mutex> lock( s_mutex );
+        const detail::ManagerHeader*        hdr = header();
+        std::FILE*                          f   = std::fopen( filename, "wb" );
         if ( f == nullptr )
         {
             return false;
@@ -1040,7 +1039,8 @@ class PersistMemoryManager
     /// Единственный экземпляр менеджера (синглтон).
     static PersistMemoryManager* s_instance;
     /// Мьютекс для потокобезопасного доступа к синглтону.
-    static std::recursive_mutex s_mutex;
+    /// shared_mutex позволяет параллельное чтение (shared_lock) и эксклюзивную запись (unique_lock).
+    static std::shared_mutex s_mutex;
 
     // ─── Вспомогательные методы ───────────────────────────────────────────────
 
@@ -1299,7 +1299,7 @@ class PersistMemoryManager
 // ─── Определение статического члена синглтона ──────────────────────────────────
 
 inline PersistMemoryManager* PersistMemoryManager::s_instance = nullptr;
-inline std::recursive_mutex  PersistMemoryManager::s_mutex;
+inline std::shared_mutex     PersistMemoryManager::s_mutex;
 
 // ─── Реализация методов pptr<T> (после полного определения PersistMemoryManager) ──
 

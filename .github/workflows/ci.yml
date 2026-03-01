@@ -123,8 +123,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_C_COMPILER=${{ matrix.cc }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
-            -DCMAKE_CXX_FLAGS="--coverage" \
-            -DCMAKE_C_FLAGS="--coverage"
+            -DCMAKE_CXX_FLAGS="--coverage -fprofile-update=atomic" \
+            -DCMAKE_C_FLAGS="--coverage -fprofile-update=atomic"
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'

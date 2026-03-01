@@ -15,7 +15,7 @@
 - **Высокая производительность** — отдельный список свободных блоков, allocate 100K ≤ 7 мс
 - **Синглтон** — единственный активный менеджер доступен через `PersistMemoryManager::instance()`
 - **Автоматическое расширение** — при нехватке памяти буфер автоматически растёт на 25%
-- **Потокобезопасность** — базовая синхронизация через `std::recursive_mutex`
+- **Потокобезопасность** — разделённые блокировки через `std::shared_mutex` (параллельное чтение, эксклюзивная запись)
 
 ## Быстрый старт
 
@@ -175,6 +175,7 @@ PersistMemoryManager/
 │   ├── test_performance.cpp        # Тесты производительности (Фаза 6)
 │   ├── test_stress_realistic.cpp   # Реалистичный стресс-тест (Фаза 8)
 │   ├── test_thread_safety.cpp      # Тесты потокобезопасности (Фаза 9)
+│   ├── test_shared_mutex.cpp       # Тесты разделённых блокировок (Фаза 10)
 │   └── CMakeLists.txt
 ├── docs/
 │   ├── architecture.md             # Архитектура
@@ -187,6 +188,7 @@ PersistMemoryManager/
 ├── phase4.md                       # Фаза 4: Тесты и документация
 ├── phase6.md                       # Фаза 6: Оптимизация производительности
 ├── phase9.md                       # Фаза 9: Потокобезопасность
+├── phase10.md                      # Фаза 10: std::shared_mutex
 ├── tz.md                           # Техническое задание
 ├── CMakeLists.txt
 └── LICENSE
@@ -253,9 +255,17 @@ PersistMemoryManager/
 
 ### Фаза 9 — Потокобезопасность
 
-- `std::recursive_mutex s_mutex` — единый статический мьютекс для синглтона
+- `std::recursive_mutex` — базовая потокобезопасность всех публичных методов
 - `create()`, `load()`, `destroy()`, `allocate()`, `deallocate()`, `reallocate()` защищены `lock_guard`
 - 4 теста в `tests/test_thread_safety.cpp`: конкурентный allocate, чередование alloc/dealloc, reallocate, проверка отсутствия гонок данных
+
+### Фаза 10 — std::shared_mutex (разделённые блокировки)
+
+- `std::shared_mutex s_mutex` — единый статический мьютекс для синглтона
+- Писатели (`create`, `load`, `destroy`, `allocate`, `deallocate`): `unique_lock<shared_mutex>`
+- Читатели (`validate`, `save`, `dump_stats`): `shared_lock<shared_mutex>` — несколько потоков могут читать параллельно
+- `reallocate()` рефакторирован: освобождает `unique_lock` перед вызовом `allocate()`/`deallocate()` (устранение deadlock с нерекурсивным `shared_mutex`)
+- 4 теста в `tests/test_shared_mutex.cpp`: параллельный `validate`, читатели+писатели, корректность `reallocate`, параллельный `get_stats`
 
 ### Фаза 7 — Синглтон + автоматическое расширение памяти
 
@@ -266,7 +276,7 @@ PersistMemoryManager/
 - `pptr<T>::get()`, `operator*`, `operator->` — разыменование через синглтон без передачи менеджера
 - Все тесты и примеры обновлены для нового API
 
-Подробнее: [plan.md](plan.md) | [phase1.md](phase1.md) | [phase2.md](phase2.md) | [phase3.md](phase3.md) | [phase4.md](phase4.md) | [phase6.md](phase6.md) | [phase9.md](phase9.md) | [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md)
+Подробнее: [plan.md](plan.md) | [phase1.md](phase1.md) | [phase2.md](phase2.md) | [phase3.md](phase3.md) | [phase4.md](phase4.md) | [phase6.md](phase6.md) | [phase9.md](phase9.md) | [phase10.md](phase10.md) | [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md)
 
 ## Лицензия
 
