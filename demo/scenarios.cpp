@@ -111,16 +111,24 @@ class LinearFill final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
             coord.yield_if_paused( stop );
             if ( stop.load( std::memory_order_relaxed ) )
                 break;
+            // If the PMM singleton was replaced while we were paused, our live
+            // pointers point into the old (now freed) buffer — discard them.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                live.clear();
 
             // Fill phase
             while ( !stop.load( std::memory_order_relaxed ) )
             {
+                auto* inner_before = pmm::PersistMemoryManager::instance();
                 coord.yield_if_paused( stop );
                 if ( stop.load( std::memory_order_relaxed ) )
                     break;
+                if ( pmm::PersistMemoryManager::instance() != inner_before )
+                    live.clear();
                 mgr = pmm::PersistMemoryManager::instance();
                 if ( !mgr )
                     break;
@@ -174,9 +182,13 @@ class RandomStress final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
             coord.yield_if_paused( stop );
             if ( stop.load( std::memory_order_relaxed ) )
                 break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                live.clear();
 
             mgr = pmm::PersistMemoryManager::instance();
             if ( !mgr )
@@ -250,9 +262,16 @@ class FragmentationDemo final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
             coord.yield_if_paused( stop );
             if ( stop.load( std::memory_order_relaxed ) )
                 break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+            {
+                small_live.clear();
+                large_live.clear();
+            }
 
             mgr = pmm::PersistMemoryManager::instance();
             if ( !mgr )
@@ -335,9 +354,13 @@ class LargeBlocks final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
             coord.yield_if_paused( stop );
             if ( stop.load( std::memory_order_relaxed ) )
                 break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                fifo.clear();
 
             mgr = pmm::PersistMemoryManager::instance();
             if ( !mgr )
@@ -403,9 +426,13 @@ class TinyBlocks final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
             coord.yield_if_paused( stop );
             if ( stop.load( std::memory_order_relaxed ) )
                 break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                fifo.clear();
 
             mgr = pmm::PersistMemoryManager::instance();
             if ( !mgr )
@@ -475,9 +502,13 @@ class MixedSizes final : public Scenario
 
         while ( !stop.load( std::memory_order_relaxed ) )
         {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
             coord.yield_if_paused( stop );
             if ( stop.load( std::memory_order_relaxed ) )
                 break;
+            // Discard stale pointers if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+                live.clear();
 
             mgr = pmm::PersistMemoryManager::instance();
             if ( !mgr )
