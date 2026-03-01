@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <shared_mutex>
 
 namespace demo
 {
@@ -55,11 +54,9 @@ void DemoApp::render()
 
     auto* mgr = pmm::PersistMemoryManager::instance();
 
-    // ── Collect snapshots under a single shared_lock ──────────────────────────
+    // ── Collect snapshots (PMM methods are individually thread-safe) ──────────
     if ( mgr )
     {
-        std::shared_lock<std::shared_mutex> lock( mgr->mutex_ );
-
         mem_map_view_->update_snapshot( mgr );
         struct_tree_view_->update_snapshot( mgr );
 
@@ -77,7 +74,7 @@ void DemoApp::render()
         snap.smallest_free    = stats.smallest_free;
 
         metrics_view_->update( snap, ops_per_sec_ );
-    }
+    } // snapshots collected
 
     // ── Render panels (no lock held) ─────────────────────────────────────────
     mem_map_view_->highlighted_block = highlighted_block_;
@@ -97,7 +94,7 @@ void DemoApp::render()
 
 void DemoApp::render_dockspace()
 {
-    ImGuiID dockspace_id = ImGui::DockSpaceOverViewport( ImGui::GetMainViewport() );
+    ImGuiID dockspace_id = ImGui::DockSpaceOverViewport( 0, ImGui::GetMainViewport() );
     (void)dockspace_id;
 }
 

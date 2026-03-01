@@ -39,7 +39,7 @@ namespace
 /// Sleep until the next tick defined by a fixed-rate timer.
 inline void rate_sleep( std::chrono::steady_clock::time_point& next, std::chrono::duration<double> interval )
 {
-    next += interval;
+    next += std::chrono::duration_cast<std::chrono::steady_clock::duration>( interval );
     std::this_thread::sleep_until( next );
 }
 
