@@ -6,15 +6,6 @@
  * Предоставляет низкоуровневый менеджер памяти, хранящий все метаданные
  * в управляемой области памяти для возможности персистентности между запусками.
  *
- * Фаза 1: Базовая структура, allocate и deallocate.
- * Фаза 2: Слияние соседних свободных блоков (coalescing).
- * Фаза 3: Персистентность (save/load образа из файла).
- * Фаза 5: Персистный типизированный указатель pptr<T>.
- * Фаза 6: Оптимизация производительности (отдельный список свободных блоков).
- * Фаза 7: Синглтон и автоматическое расширение памяти.
- * Фаза 9: Потокобезопасность (std::recursive_mutex).
- * Фаза 10: std::shared_mutex — разделённые блокировки для read-only методов.
- *
  * Использование (синглтон):
  * @code
  * #include "persist_memory_manager.h"
@@ -23,19 +14,17 @@
  * int main() {
  *     void* memory = std::malloc( 1024 * 1024 );
  *     auto* mgr    = pmm::PersistMemoryManager::create( memory, 1024 * 1024 );
- *     void* block  = mgr->allocate( 256 );
+ *     pmm::pptr<int> p = mgr->allocate_typed<int>();
+ *     *p = 42;
  *     pmm::save( mgr, "heap.dat" );   // сохранить образ в файл
- *     mgr->deallocate( block );
+ *     mgr->deallocate_typed( p );
  *     pmm::PersistMemoryManager::destroy();
- *     // память освобождается менеджером автоматически при expand
- *     // либо вручную по sys_memory() + destroy
  *
  *     // --- следующий запуск ---
  *     void* buf2 = std::malloc( 1024 * 1024 );
  *     auto* mgr2 = pmm::load_from_file( "heap.dat", buf2, 1024 * 1024 );
  *     // mgr2 восстановлен с теми же блоками
  *     pmm::PersistMemoryManager::destroy();
- *     std::free( buf2 );
  *     return 0;
  * }
  * @endcode
@@ -43,7 +32,7 @@
  * @note Файловый ввод/вывод (save/load_from_file) вынесен в отдельный
  *       вспомогательный заголовок: persist_memory_io.h.
  *
- * @version 0.9.0 (Фаза 10, рефакторинг)
+ * @version 1.0.0
  */
 
 #pragma once
@@ -87,30 +76,6 @@ static constexpr std::uint64_t kMagic = 0x504D4D5F56303130ULL; // "PMM_V010"
 /// Коэффициент расширения памяти при нехватке (25%)
 static constexpr std::size_t kGrowNumerator   = 5;
 static constexpr std::size_t kGrowDenominator = 4;
-
-// ─── Коды ошибок ──────────────────────────────────────────────────────────────
-
-/**
- * @brief Коды ошибок библиотеки
- */
-enum class ErrorCode
-{
-    OK = 0,             ///< Успешное завершение
-    OUT_OF_MEMORY,      ///< Недостаточно памяти
-    INVALID_POINTER,    ///< Неверный указатель
-    INVALID_ALIGNMENT,  ///< Неверное выравнивание
-    CORRUPTED_METADATA, ///< Повреждённые метаданные
-    FILE_IO_ERROR       ///< Ошибка файлового ввода/вывода
-};
-
-/**
- * @brief Результат операции с кодом ошибки и сообщением
- */
-struct Result
-{
-    ErrorCode   code;    ///< Код ошибки
-    const char* message; ///< Текстовое описание ошибки
-};
 
 // ─── Статистика ───────────────────────────────────────────────────────────────
 
