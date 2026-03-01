@@ -11,6 +11,7 @@
  * 6. Продолжение работы с восстановленным менеджером (allocate/deallocate).
  */
 
+#include "persist_memory_io.h"
 #include "persist_memory_manager.h"
 
 #include <cstdlib>
@@ -85,7 +86,7 @@ int main()
 
     // ─── Фаза B: Сохранение образа ───────────────────────────────────────────
 
-    if ( !mgr1->save( IMAGE_FILE ) )
+    if ( !pmm::save( mgr1, IMAGE_FILE ) )
     {
         std::cerr << "Ошибка сохранения образа в файл: " << IMAGE_FILE << "\n";
         pmm::PersistMemoryManager::destroy();

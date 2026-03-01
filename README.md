@@ -81,7 +81,7 @@ int main() {
     if (p) { /* ненулевой */ }
 
     // Сохранить образ
-    pmm::PersistMemoryManager::instance()->save("heap.dat");
+    pmm::save(pmm::PersistMemoryManager::instance(), "heap.dat");
 
     // Сохраняем смещение для восстановления после load
     std::ptrdiff_t off = p.offset();
@@ -123,7 +123,7 @@ pmm::PersistMemoryManager::create(memory, size);
 auto* mgr = pmm::PersistMemoryManager::instance();
 void* ptr = mgr->allocate(256);
 std::strcpy((char*)ptr, "Hello, World!");
-mgr->save("heap.dat");                       // сохранить образ в файл
+pmm::save(mgr, "heap.dat");                  // сохранить образ в файл
 pmm::PersistMemoryManager::destroy();        // освобождает буфер
 
 // Программа B — восстанавливаем
@@ -216,8 +216,8 @@ PersistMemoryManager/
 
 ### Фаза 3 — Персистентность (save/load)
 
-- `save(const char* filename)` — запись образа кучи в двоичный файл
-- `load_from_file(filename, memory, size)` — загрузка образа из файла в буфер
+- `pmm::save(mgr, filename)` — запись образа кучи в двоичный файл (в `persist_memory_io.h`)
+- `pmm::load_from_file(filename, memory, size)` — загрузка образа из файла в буфер (в `persist_memory_io.h`)
 - Корректная работа по любому базовому адресу (все ссылки — смещения)
 - Определение повреждённых образов через магическое число
 

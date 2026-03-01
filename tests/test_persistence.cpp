@@ -6,12 +6,13 @@
  * load_from_file() и load() устанавливают синглтон автоматически.
  */
 
+#include "persist_memory_io.h"
 #include "persist_memory_manager.h"
 
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>
 #include <iostream>
 
 #define PMM_TEST( expr )                                                                                               \
@@ -55,7 +56,7 @@ static bool test_persistence_basic_roundtrip()
     pmm::PersistMemoryManager* mgr1 = pmm::PersistMemoryManager::create( mem1, size );
     PMM_TEST( mgr1 != nullptr );
 
-    PMM_TEST( mgr1->save( TEST_FILE ) );
+    PMM_TEST( pmm::save( mgr1, TEST_FILE ) );
 
     // Сохраняем статистику до destroy
     std::size_t total1 = mgr1->total_size();
@@ -105,7 +106,7 @@ static bool test_persistence_user_data_preserved()
     std::ptrdiff_t block_offset =
         static_cast<std::uint8_t*>( ptr1 ) - static_cast<std::uint8_t*>( static_cast<void*>( mgr1 ) );
 
-    PMM_TEST( mgr1->save( TEST_FILE ) );
+    PMM_TEST( pmm::save( mgr1, TEST_FILE ) );
     pmm::PersistMemoryManager::destroy();
 
     void* mem2 = std::malloc( size );
@@ -154,7 +155,7 @@ static bool test_persistence_multiple_blocks()
     std::size_t total1 = mgr1->total_size();
     std::size_t used1  = mgr1->used_size();
 
-    PMM_TEST( mgr1->save( TEST_FILE ) );
+    PMM_TEST( pmm::save( mgr1, TEST_FILE ) );
     pmm::PersistMemoryManager::destroy();
 
     void* mem2 = std::malloc( size );
@@ -188,7 +189,7 @@ static bool test_persistence_allocate_after_load()
     void* p1 = mgr1->allocate( 512 );
     PMM_TEST( p1 != nullptr );
 
-    PMM_TEST( mgr1->save( TEST_FILE ) );
+    PMM_TEST( pmm::save( mgr1, TEST_FILE ) );
     pmm::PersistMemoryManager::destroy();
 
     void* mem2 = std::malloc( size );
@@ -222,7 +223,7 @@ static bool test_persistence_save_null_filename()
     pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, size );
     PMM_TEST( mgr != nullptr );
 
-    PMM_TEST( mgr->save( nullptr ) == false );
+    PMM_TEST( pmm::save( mgr, nullptr ) == false );
 
     pmm::PersistMemoryManager::destroy();
     return true;
@@ -286,7 +287,7 @@ static bool test_persistence_buffer_too_small()
 
     pmm::PersistMemoryManager* mgr1 = pmm::PersistMemoryManager::create( mem1, size );
     PMM_TEST( mgr1 != nullptr );
-    PMM_TEST( mgr1->save( TEST_FILE ) );
+    PMM_TEST( pmm::save( mgr1, TEST_FILE ) );
     pmm::PersistMemoryManager::destroy();
 
     const std::size_t small_size = 4 * 1024;
@@ -319,7 +320,7 @@ static bool test_persistence_double_save_load()
     auto        stats1 = pmm::get_stats( mgr1 );
     std::size_t total1 = mgr1->total_size();
 
-    PMM_TEST( mgr1->save( TEST_FILE ) );
+    PMM_TEST( pmm::save( mgr1, TEST_FILE ) );
     pmm::PersistMemoryManager::destroy();
 
     void* mem2 = std::malloc( size );
@@ -329,7 +330,7 @@ static bool test_persistence_double_save_load()
     PMM_TEST( mgr2->validate() );
 
     static const char* TEST_FILE2 = "test_heap2.dat";
-    PMM_TEST( mgr2->save( TEST_FILE2 ) );
+    PMM_TEST( pmm::save( mgr2, TEST_FILE2 ) );
     pmm::PersistMemoryManager::destroy();
 
     void* mem3 = std::malloc( size );
@@ -359,7 +360,7 @@ static bool test_persistence_empty_manager()
     PMM_TEST( mgr1 != nullptr );
 
     auto stats1 = pmm::get_stats( mgr1 );
-    PMM_TEST( mgr1->save( TEST_FILE ) );
+    PMM_TEST( pmm::save( mgr1, TEST_FILE ) );
     pmm::PersistMemoryManager::destroy();
 
     void* mem2 = std::malloc( size );
@@ -399,7 +400,7 @@ static bool test_persistence_deallocate_after_load()
     std::ptrdiff_t off1 = static_cast<std::uint8_t*>( p1 ) - static_cast<std::uint8_t*>( static_cast<void*>( mgr1 ) );
     std::ptrdiff_t off2 = static_cast<std::uint8_t*>( p2 ) - static_cast<std::uint8_t*>( static_cast<void*>( mgr1 ) );
 
-    PMM_TEST( mgr1->save( TEST_FILE ) );
+    PMM_TEST( pmm::save( mgr1, TEST_FILE ) );
     pmm::PersistMemoryManager::destroy();
 
     void* mem2 = std::malloc( size );

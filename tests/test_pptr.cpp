@@ -8,6 +8,7 @@
  * - destroy() освобождает буфер
  */
 
+#include "persist_memory_io.h"
 #include "persist_memory_manager.h"
 
 #include <cassert>
@@ -248,7 +249,7 @@ static bool test_pptr_persistence()
     *p1 = 12345;
 
     std::ptrdiff_t saved_offset = p1.offset();
-    PMM_TEST( mgr1->save( filename ) );
+    PMM_TEST( pmm::save( mgr1, filename ) );
 
     pmm::PersistMemoryManager::destroy();
 
