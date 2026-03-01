@@ -10,6 +10,10 @@
  *  - Verifies that free regions contain BlockHeaderFree / UserDataFree.
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
+ *
+ * NOTE: Uses std::malloc for the PMM buffer so that destroy() can safely
+ * free it (consistent with all other PMM tests and the PMM contract where
+ * owns_memory=true means the buffer was malloc'd).
  */
 
 #include "mem_map_view.h"
@@ -58,8 +62,10 @@ static bool test_manager_header_region()
 {
     constexpr std::size_t kPmmSize = 256 * 1024; // 256 KiB
 
-    std::vector<std::uint8_t> buf( kPmmSize, std::uint8_t{ 0 } );
-    auto*                     mgr = pmm::PersistMemoryManager::create( buf.data(), kPmmSize );
+    void* buf = std::malloc( kPmmSize );
+    PMM_TEST( buf != nullptr );
+    std::memset( buf, 0, kPmmSize );
+    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -94,8 +100,10 @@ static bool test_snapshot_after_alloc()
 {
     constexpr std::size_t kPmmSize = 256 * 1024;
 
-    std::vector<std::uint8_t> buf( kPmmSize, std::uint8_t{ 0 } );
-    auto*                     mgr = pmm::PersistMemoryManager::create( buf.data(), kPmmSize );
+    void* buf = std::malloc( kPmmSize );
+    PMM_TEST( buf != nullptr );
+    std::memset( buf, 0, kPmmSize );
+    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
     PMM_TEST( mgr != nullptr );
 
     // Allocate a few blocks to exercise block traversal in update_snapshot
@@ -147,8 +155,10 @@ static bool test_highlighted_block_preserved()
 {
     constexpr std::size_t kPmmSize = 128 * 1024;
 
-    std::vector<std::uint8_t> buf( kPmmSize, std::uint8_t{ 0 } );
-    auto*                     mgr = pmm::PersistMemoryManager::create( buf.data(), kPmmSize );
+    void* buf = std::malloc( kPmmSize );
+    PMM_TEST( buf != nullptr );
+    std::memset( buf, 0, kPmmSize );
+    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
     PMM_TEST( mgr != nullptr );
 
     void* p = mgr->allocate( 64 );

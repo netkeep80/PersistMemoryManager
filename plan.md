@@ -644,7 +644,10 @@ build-demo:
       run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DPMM_BUILD_DEMO=ON
 
     - name: Build
-      run: cmake --build build --config Release --target pmm_demo
+      run: cmake --build build --config Release
+
+    - name: Test (headless demo tests)
+      run: ctest --test-dir build --build-config Release --output-on-failure -R "test_demo_headless|test_mem_map_view|test_scenario_manager"
 ```
 
 ### 8.3 Обновление документации
