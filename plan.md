@@ -18,6 +18,8 @@
 | 6 | Дерево структур | StructTreeView + подсветка | ~1 д |
 | 7 | Полировка и настройки | Dockspace, Settings, Help, финальный UI | ~1 д |
 | 8 | Тесты, CI, документация | Все тесты проходят, CI зелёный | ~1 д |
+| 9 | Итератор блоков PMM | Публичный API `for_each_block()` / `get_manager_info()` | ~0.5 д |
+| 10 | Координатор сценариев | `ScenarioCoordinator` — безопасная замена синглтона PMM | ~0.5 д |
 
 ---
 
@@ -695,6 +697,76 @@ cmake --build build --target pmm_demo
 
 ---
 
+## Фаза 10: Координатор сценариев (ScenarioCoordinator)
+
+Устраняет критический Риск #5 из таблицы рисков: сценарий Persistence Cycle
+вызывает `PersistMemoryManager::destroy()` пока другие сценарии используют
+синглтон — потенциальный data race / use-after-free.
+
+### 10.1 Новый класс ScenarioCoordinator (demo/scenarios.h, demo/scenarios.cpp)
+
+```cpp
+// demo/scenarios.h
+class ScenarioCoordinator {
+public:
+    void pause_others();                          // поставить все сценарии на паузу
+    void resume_others();                         // возобновить все сценарии
+    void yield_if_paused(const std::atomic<bool>& stop_flag); // вызов в каждом цикле
+    bool is_paused() const noexcept;
+private:
+    std::atomic<bool>       paused_{ false };
+    std::mutex              mutex_;
+    std::condition_variable cv_;
+};
+```
+
+Протокол:
+1. `PersistenceCycle::run()` вызывает `coord.pause_others()` перед `destroy()`.
+2. Все остальные сценарии вызывают `coord.yield_if_paused(stop)` в начале каждой итерации — блокируются на `cv_.wait()`.
+3. После `reload()` `PersistenceCycle` вызывает `coord.resume_others()` — все потоки просыпаются и продолжают работу.
+4. Если `stop_flag == true`, `yield_if_paused()` возвращается немедленно без ожидания.
+
+### 10.2 Изменение сигнатуры Scenario::run()
+
+```cpp
+// Было:
+virtual void run(std::atomic<bool>& stop, std::atomic<uint64_t>& ops,
+                 const ScenarioParams& params) = 0;
+// Стало:
+virtual void run(std::atomic<bool>& stop, std::atomic<uint64_t>& ops,
+                 const ScenarioParams& params, ScenarioCoordinator& coordinator) = 0;
+```
+
+### 10.3 ScenarioManager хранит единственный координатор
+
+```cpp
+// scenario_manager.h
+class ScenarioManager {
+    ScenarioCoordinator coordinator_; // один экземпляр на всё приложение
+    ...
+};
+// При запуске потока:
+scenarios_[i]->run(stop_flag, total_ops, params, coordinator_);
+```
+
+### 10.4 Тест (tests/test_scenario_coordinator.cpp)
+
+- `test_pause_blocks_thread` — `yield_if_paused()` блокирует поток до `resume_others()`.
+- `test_resume_unblocks_all` — 5 потоков одновременно разблокируются одним `resume_others()`.
+- `test_no_block_when_not_paused` — без активной паузы `yield_if_paused()` возвращается сразу.
+- `test_stop_flag_breaks_pause` — `stop_flag=true` прерывает ожидание даже при активной паузе.
+- `test_persistence_cycle_safety` — PersistenceCycle + LinearFill + RandomStress работают 4 секунды; после останова `validate() == true`.
+
+### 10.5 Проверочные критерии фазы 10
+
+- [x] Все 5 новых тестов `test_scenario_coordinator` проходят.
+- [x] Нет data race при одновременном запуске всех 7 сценариев (ThreadSanitizer).
+- [x] Размер `scenarios.cpp` ≤ 1500 строк.
+- [x] CI зелёный: `build-demo` job проходит на ubuntu, windows, macos.
+- [x] Документация обновлена: `plan.md`, `README.md`, `docs/phase-10-scenario-coordinator.md`.
+
+---
+
 ## Ключевые технические решения
 
 ### Синхронизация: однократный shared_lock за кадр
@@ -800,7 +872,7 @@ BlockRange blocks(PersistMemoryManager* mgr); // returns all blocks
 | 2 | Сборка GLFW на Windows (зависимость от Win32 API) | Известен | FetchContent + find_package(OpenGL) покрывает |
 | 3 | macOS: deprecated OpenGL + GLFW совместимость | Известен | imgui_impl_opengl3 поддерживает; добавить -DGL_SILENCE_DEPRECATION |
 | 4 | Размер файлов > 1500 строк при разрастании scenarios.cpp | Риск | Разделить по одному файлу на сценарий при необходимости |
-| 5 | Сценарий Persistence Cycle: PMM::destroy() вызывает глобальную смену синглтона | Критично | Scenario 7 должен остановить все остальные сценарии перед destroy() |
+| 5 | Сценарий Persistence Cycle: PMM::destroy() вызывает глобальную смену синглтона | ✅ Решён | Добавлен `ScenarioCoordinator` — `PersistenceCycle` вызывает `pause_others()` перед `destroy()` и `resume_others()` после `reload()` |
 | 6 | Thread safety: MemMapView читает PMM без API итератора | ✅ Решён | `for_each_block()` берёт `shared_lock` внутри; вся работа с PMM идёт через публичный API |
 | 7 | FPS < 30 при 7 параллельных сценариях + большой PMM | Риск | Оптимизировать рендеринг карты: DrawList batching, пропускать одинаковые пиксели |
 
