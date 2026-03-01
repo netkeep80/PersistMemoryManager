@@ -61,45 +61,38 @@
  * Scenario 6 (PersistenceCycle) is excluded because it calls destroy() /
  * reload() which is incompatible with concurrent scenario execution in a
  * headless test context.
- *
- * Verifies: no crash, validate() == true after run, total ops > 0.
  */
 static bool test_all_scenarios_run()
 {
     constexpr std::size_t kPmmSize = 16 * 1024 * 1024; // 16 MiB
 
-    // Use malloc so destroy() can free the buffer (owns_memory=true contract).
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
 
     {
         demo::ScenarioManager mgr;
         PMM_TEST( mgr.count() == 7 );
 
-        // Start scenarios 0-5; skip scenario 6 (PersistenceCycle) which calls
-        // destroy()/reload() and is incompatible with concurrent execution.
         for ( std::size_t i = 0; i < 6; ++i )
             mgr.start( i );
 
-        // Let scenarios run for 2 seconds
         std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
 
         mgr.stop_all();
 
-        // Join with a 5-second deadline
         auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds( 5 );
         mgr.join_all();
         PMM_TEST( std::chrono::steady_clock::now() < deadline );
-    } // ScenarioManager destructor also calls stop_all / join_all (idempotent)
+    }
 
-    // PMM must still be structurally valid after concurrent scenario activity
     auto* inst = pmm::PersistMemoryManager::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->validate() );
+    PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     PMM_TEST( pmm::PersistMemoryManager::instance() == nullptr );
     return true;
 }
@@ -114,7 +107,7 @@ static bool test_ops_counter_increments()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
 
     uint64_t ops_before = 0;
     uint64_t ops_after  = 0;
@@ -122,37 +115,34 @@ static bool test_ops_counter_increments()
     {
         demo::ScenarioManager mgr;
 
-        // Start only scenarios 1 and 4 (TinyBlocks) which are high-frequency
         mgr.start( 4 ); // TinyBlocks: 10 000 alloc/s
 
         std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
-        // Capture ops after running
-        (void)ops_before; // ops_before stays 0 — baseline
+        (void)ops_before;
         mgr.stop_all();
         mgr.join_all();
 
-        // Access total_ops from state (via count() being > 0)
         PMM_TEST( mgr.count() > 0 );
     }
 
-    // ops_after: re-run briefly to collect
     {
         demo::ScenarioManager mgr2;
         mgr2.start( 1 ); // RandomStress
         std::this_thread::sleep_for( std::chrono::milliseconds( 300 ) );
         mgr2.stop_all();
         mgr2.join_all();
-        ops_after = 1; // At least one op must have occurred — checked via validate
+        ops_after = 1;
     }
 
     PMM_TEST( ops_after > ops_before );
 
     auto* inst = pmm::PersistMemoryManager::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->validate() );
+    PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 
@@ -166,16 +156,13 @@ static bool test_stop_all_fast()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
 
     {
         demo::ScenarioManager mgr;
-        // Start scenarios 0-5; skip scenario 6 (PersistenceCycle) which calls
-        // destroy()/reload() and is incompatible with concurrent execution.
         for ( std::size_t i = 0; i < 6; ++i )
             mgr.start( i );
 
-        // Run briefly then measure stop latency
         std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
         auto t0 = std::chrono::steady_clock::now();
@@ -187,6 +174,7 @@ static bool test_stop_all_fast()
     }
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 

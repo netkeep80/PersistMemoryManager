@@ -94,7 +94,6 @@ static void test_metrics_view_update_validation_ok()
     r.timestamp = std::chrono::steady_clock::now();
     mv.update_validation( r );
 
-    // Successive update() calls must still work
     demo::MetricsSnapshot snap{};
     mv.update( snap, 0.0f );
 
@@ -128,7 +127,7 @@ static void test_validate_fresh_pmm_returns_ok()
     if ( !mgr )
         fail( name, "PMM instance is null" );
 
-    bool ok = mgr->validate();
+    bool ok = pmm::PersistMemoryManager::validate();
     if ( !ok )
         fail( name, "validate() returned false on a freshly created PMM" );
 
@@ -145,20 +144,20 @@ static void test_validate_after_allocations()
     if ( !mgr )
         fail( name, "PMM instance is null" );
 
-    void* p1 = mgr->allocate( 256 );
-    void* p2 = mgr->allocate( 512 );
-    void* p3 = mgr->allocate( 1024 );
-    if ( !p1 || !p2 || !p3 )
+    pmm::pptr<std::uint8_t> p1 = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 256 );
+    pmm::pptr<std::uint8_t> p2 = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 512 );
+    pmm::pptr<std::uint8_t> p3 = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 1024 );
+    if ( p1.is_null() || p2.is_null() || p3.is_null() )
         fail( name, "allocate() returned null unexpectedly" );
 
-    mgr->deallocate( p2 ); // free middle block to exercise coalescing
+    pmm::PersistMemoryManager::deallocate_typed( p2 ); // free middle block to exercise coalescing
 
-    bool ok = mgr->validate();
+    bool ok = pmm::PersistMemoryManager::validate();
     if ( !ok )
         fail( name, "validate() returned false after alloc/dealloc sequence" );
 
-    mgr->deallocate( p1 );
-    mgr->deallocate( p3 );
+    pmm::PersistMemoryManager::deallocate_typed( p1 );
+    pmm::PersistMemoryManager::deallocate_typed( p3 );
     destroy_pmm();
     pass( name );
 }
@@ -172,14 +171,13 @@ static void test_validation_timestamp_is_recent()
     if ( !mgr )
         fail( name, "PMM instance is null" );
 
-    bool ok    = mgr->validate();
+    bool ok    = pmm::PersistMemoryManager::validate();
     auto after = std::chrono::steady_clock::now();
 
     demo::ValidationResult r;
     r.state     = ok ? demo::ValidationResult::State::Ok : demo::ValidationResult::State::Failed;
     r.timestamp = after;
 
-    // The timestamp we just assigned should be within 1 s of "now"
     auto age_ms =
         std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::steady_clock::now() - r.timestamp ).count();
     if ( age_ms > 1000 )
@@ -217,7 +215,6 @@ static void test_update_validation_last_wins()
     r2.timestamp = std::chrono::steady_clock::now();
     mv.update_validation( r2 );
 
-    // Object must remain usable after overwriting the result
     demo::MetricsSnapshot snap{};
     mv.update( snap, 0.0f );
 
@@ -231,7 +228,6 @@ static void test_validation_state_enum_values()
     const char* name = "validation_state_enum_values";
     using State      = demo::ValidationResult::State;
 
-    // All three states must be distinct
     if ( State::Unknown == State::Ok )
         fail( name, "Unknown == Ok" );
     if ( State::Unknown == State::Failed )

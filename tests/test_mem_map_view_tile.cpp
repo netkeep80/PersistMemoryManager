@@ -2,13 +2,7 @@
  * @file test_mem_map_view_tile.cpp
  * @brief Phase 11 unit tests for MemMapView tile-aggregation (overview mode).
  *
- * Tests the tile snapshot logic added in Phase 11:
- *  - Small PMM (<= 512 KB): bytes_per_tile == 1, tiles match byte count.
- *  - Large PMM (> 512 KB): bytes_per_tile > 1, tile count <= kMaxTiles.
- *  - Tile dominant type reflects the actual byte composition.
- *  - Manager-header tiles are tagged ManagerHeader.
- *  - update_snapshot() handles nullptr gracefully.
- *  - Tile count equals ceil(total_bytes / bytes_per_tile).
+ * Tests the tile snapshot logic added in Phase 11.
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
  */
@@ -61,18 +55,20 @@ static bool test_small_pmm_tile_size()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+
+    auto* mgr = pmm::PersistMemoryManager::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
     view.update_snapshot( mgr );
 
     PMM_TEST( view.total_bytes() == kPmmSize );
-    // For small PMM tiles should be 1 byte each
     PMM_TEST( view.bytes_per_tile() == 1 );
     PMM_TEST( view.tile_snapshot().size() == kPmmSize );
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 
@@ -87,7 +83,9 @@ static bool test_large_pmm_tile_count()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+
+    auto* mgr = pmm::PersistMemoryManager::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -95,19 +93,17 @@ static bool test_large_pmm_tile_count()
 
     PMM_TEST( view.total_bytes() == kPmmSize );
     PMM_TEST( view.bytes_per_tile() >= 1 );
-    // Tile count must not exceed kMaxTiles
     PMM_TEST( view.tile_snapshot().size() <= 65536 );
-    // Tile count must cover the full managed region
     const std::size_t expected_tiles = ( kPmmSize + view.bytes_per_tile() - 1 ) / view.bytes_per_tile();
     PMM_TEST( view.tile_snapshot().size() == expected_tiles );
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 
 /**
- * @brief The first tile (offset 0) must have dominant type ManagerHeader
- *        because the manager header is at the very start of the region.
+ * @brief The first tile (offset 0) must have dominant type ManagerHeader.
  */
 static bool test_first_tile_is_manager_header()
 {
@@ -116,7 +112,9 @@ static bool test_first_tile_is_manager_header()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+
+    auto* mgr = pmm::PersistMemoryManager::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -126,14 +124,13 @@ static bool test_first_tile_is_manager_header()
     PMM_TEST( view.tile_snapshot()[0].dominant_type == demo::ByteInfo::Type::ManagerHeader );
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 
 /**
  * @brief After allocating blocks, tiles covering used regions must be tagged
  *        UserDataUsed or BlockHeaderUsed (not OutOfBlocks).
- *
- * We verify that at least one tile in the snapshot reflects used data.
  */
 static bool test_used_block_reflected_in_tiles()
 {
@@ -142,12 +139,13 @@ static bool test_used_block_reflected_in_tiles()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+
+    auto* mgr = pmm::PersistMemoryManager::instance();
     PMM_TEST( mgr != nullptr );
 
-    // Allocate a large chunk so it definitely covers several tiles
-    void* p = mgr->allocate( 32 * 1024 );
-    PMM_TEST( p != nullptr );
+    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 32 * 1024 );
+    PMM_TEST( !p.is_null() );
 
     demo::MemMapView view;
     view.update_snapshot( mgr );
@@ -164,14 +162,15 @@ static bool test_used_block_reflected_in_tiles()
     }
     PMM_TEST( found_used );
 
-    mgr->deallocate( p );
+    pmm::PersistMemoryManager::deallocate_typed( p );
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 
 /**
  * @brief After freeing all blocks, no tile in the detail range should be
- *        tagged as Used (they should revert to Free or OutOfBlocks).
+ *        tagged as Used.
  */
 static bool test_freed_blocks_revert_in_tiles()
 {
@@ -180,12 +179,14 @@ static bool test_freed_blocks_revert_in_tiles()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+
+    auto* mgr = pmm::PersistMemoryManager::instance();
     PMM_TEST( mgr != nullptr );
 
-    void* p = mgr->allocate( 32 * 1024 );
-    PMM_TEST( p != nullptr );
-    mgr->deallocate( p );
+    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 32 * 1024 );
+    PMM_TEST( !p.is_null() );
+    pmm::PersistMemoryManager::deallocate_typed( p );
 
     demo::MemMapView view;
     view.update_snapshot( mgr );
@@ -203,6 +204,7 @@ static bool test_freed_blocks_revert_in_tiles()
     PMM_TEST( !found_used );
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 
@@ -216,7 +218,9 @@ static bool test_tile_offsets_correct()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
+    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+
+    auto* mgr = pmm::PersistMemoryManager::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -230,6 +234,7 @@ static bool test_tile_offsets_correct()
     }
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 
@@ -241,7 +246,6 @@ static bool test_tile_snapshot_null_mgr()
 {
     demo::MemMapView view;
     view.update_snapshot( nullptr );
-    // No crash is the primary check; tile_snapshot should be empty or unchanged
     (void)view.tile_snapshot();
     return true;
 }
@@ -257,16 +261,18 @@ static bool test_very_large_pmm_tile_bound()
     if ( !buf )
     {
         std::cout << "(skipped — not enough memory) ";
-        return true; // skip gracefully on low-memory systems
+        return true;
     }
     std::memset( buf, 0, kPmmSize );
-    auto* mgr = pmm::PersistMemoryManager::create( buf, kPmmSize );
-    if ( !mgr )
+    if ( !pmm::PersistMemoryManager::create( buf, kPmmSize ) )
     {
         std::free( buf );
         std::cout << "(skipped — PMM create failed) ";
         return true;
     }
+
+    auto* mgr = pmm::PersistMemoryManager::instance();
+    PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
     view.update_snapshot( mgr );
@@ -274,6 +280,7 @@ static bool test_very_large_pmm_tile_bound()
     PMM_TEST( view.tile_snapshot().size() <= 65536 );
 
     pmm::PersistMemoryManager::destroy();
+    std::free( buf );
     return true;
 }
 

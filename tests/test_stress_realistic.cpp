@@ -8,14 +8,6 @@
  *   Фаза 2: 1000000 итераций, 50% аллокация / 50% освобождение.
  *   Фаза 3: 66% вероятность освобождения, 33% аллокации, до полного
  *            освобождения всей памяти.
- *
- * Размеры блоков: от 8 байт до 4 КБ.
- *
- * Примечание: количество итераций в фазах 1 и 2 ограничено 1000000
- * вместо требуемых в задаче 1000000, поскольку deallocate() имеет
- * сложность O(n) по числу живых блоков. При 1000000+ блоках и 1000000
- * итерациях суммарная стоимость операций делает тест неприемлемо
- * медленным для CI.
  */
 
 #include "persist_memory_manager.h"
@@ -82,14 +74,10 @@ struct Rng
         return state;
     }
 
-    /// Возвращает равномерно распределённое число в [0, n).
-    /// Использует старшие 16 бит для избежания короткого периода младших бит LCG.
     uint32_t next_n( uint32_t n ) { return ( next() >> 16 ) % n; }
 
-    /// Возвращает случайный размер блока в диапазоне [8, 4096] байт
     std::size_t next_block_size()
     {
-        // Диапазон: 8..4096 байт с шагом 8 (всего 512 вариантов)
         return static_cast<std::size_t>( ( next_n( 512 ) + 1 ) * 8 );
     }
 };
@@ -98,22 +86,8 @@ struct Rng
 
 // ─── Основной реалистичный стресс-тест ────────────────────────────────────────
 
-/**
- * @brief Реалистичный стресс-тест с четырьмя фазами.
- *
- * Фаза 0: 1000000 начальных аллокаций (разогрев).
- * Фаза 1: 1000000 итераций, 66% аллокация / 33% освобождение.
- * Фаза 2: 1000000 итераций, 50% аллокация / 50% освобождение.
- * Фаза 3: 66% освобождение / 33% аллокация до полного освобождения памяти.
- *
- * @return true при успешном прохождении теста.
- */
 static bool test_stress_realistic()
 {
-    // Достаточно большой буфер для всех фаз теста.
-    // 1000000 начальных блоков + ~3 300 в пике (Фаза 1) = ~13 300 блоков.
-    // Максимальный размер блока 4 КБ + ~64 байт заголовок ≈ 4 КБ.
-    // 13 300 × 4 КБ ≈ 53 МБ; берём 64 МБ с запасом.
     const std::size_t memory_size = 64UL * 1024 * 1024; // 64 МБ
     void*             mem         = std::malloc( memory_size );
     if ( mem == nullptr )
@@ -122,8 +96,7 @@ static bool test_stress_realistic()
         return false;
     }
 
-    pmm::PersistMemoryManager* mgr = pmm::PersistMemoryManager::create( mem, memory_size );
-    if ( mgr == nullptr )
+    if ( !pmm::PersistMemoryManager::create( mem, memory_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -132,8 +105,7 @@ static bool test_stress_realistic()
 
     Rng rng( 12345 );
 
-    // Динамический пул указателей на живые блоки
-    std::vector<void*> live;
+    std::vector<pmm::pptr<std::uint8_t>> live;
     live.reserve( 2 * 1000000 );
 
     auto total_start = now();
@@ -145,9 +117,9 @@ static bool test_stress_realistic()
         int  failed = 0;
         for ( int i = 0; i < 1000000; i++ )
         {
-            std::size_t sz  = rng.next_block_size();
-            void*       ptr = pmm::PersistMemoryManager::instance()->allocate( sz );
-            if ( ptr != nullptr )
+            std::size_t             sz  = rng.next_block_size();
+            pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+            if ( !ptr.is_null() )
             {
                 live.push_back( ptr );
             }
@@ -161,7 +133,7 @@ static bool test_stress_realistic()
         std::cout << "    Выделено: " << live.size() << " / 1000000" << "  неудачно: " << failed << "  время: " << ms
                   << " мс\n";
 
-        PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
+        PMM_TEST( pmm::PersistMemoryManager::validate() );
     }
 
     // ── Фаза 1: 1000000 итераций, 66% аллокация / 33% освобождение ─────────────
@@ -175,13 +147,11 @@ static bool test_stress_realistic()
 
         for ( int i = 0; i < 1000000; i++ )
         {
-            // 66% — аллокация (0..1 из 0..2 → 0 или 1 → аллокация)
             if ( rng.next_n( 3 ) < 2 )
             {
-                // Аллокация
-                std::size_t sz  = rng.next_block_size();
-                void*       ptr = pmm::PersistMemoryManager::instance()->allocate( sz );
-                if ( ptr != nullptr )
+                std::size_t             sz  = rng.next_block_size();
+                pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+                if ( !ptr.is_null() )
                 {
                     live.push_back( ptr );
                     alloc_ok++;
@@ -193,11 +163,10 @@ static bool test_stress_realistic()
             }
             else
             {
-                // Освобождение — только если есть живые блоки
                 if ( !live.empty() )
                 {
                     uint32_t idx = rng.next_n( static_cast<uint32_t>( live.size() ) );
-                    pmm::PersistMemoryManager::instance()->deallocate( live[idx] );
+                    pmm::PersistMemoryManager::deallocate_typed( live[idx] );
                     live[idx] = live.back();
                     live.pop_back();
                     dealloc_cnt++;
@@ -211,8 +180,7 @@ static bool test_stress_realistic()
                   << "\n"
                   << "    Живых блоков: " << start_live << " → " << live.size() << "  время: " << ms << " мс\n";
 
-        PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
-        // В Фазе 1 создаётся больше, чем удаляется — live должен вырасти
+        PMM_TEST( pmm::PersistMemoryManager::validate() );
         PMM_TEST( live.size() > start_live );
     }
 
@@ -228,10 +196,9 @@ static bool test_stress_realistic()
         {
             if ( rng.next_n( 2 ) == 0 )
             {
-                // Аллокация
-                std::size_t sz  = rng.next_block_size();
-                void*       ptr = pmm::PersistMemoryManager::instance()->allocate( sz );
-                if ( ptr != nullptr )
+                std::size_t             sz  = rng.next_block_size();
+                pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+                if ( !ptr.is_null() )
                 {
                     live.push_back( ptr );
                     alloc_ok++;
@@ -243,11 +210,10 @@ static bool test_stress_realistic()
             }
             else
             {
-                // Освобождение
                 if ( !live.empty() )
                 {
                     uint32_t idx = rng.next_n( static_cast<uint32_t>( live.size() ) );
-                    pmm::PersistMemoryManager::instance()->deallocate( live[idx] );
+                    pmm::PersistMemoryManager::deallocate_typed( live[idx] );
                     live[idx] = live.back();
                     live.pop_back();
                     dealloc_cnt++;
@@ -261,7 +227,7 @@ static bool test_stress_realistic()
                   << "\n"
                   << "    Живых блоков после фазы: " << live.size() << "  время: " << ms << " мс\n";
 
-        PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
+        PMM_TEST( pmm::PersistMemoryManager::validate() );
     }
 
     // ── Фаза 3: 66% освобождение / 33% аллокация, до полного освобождения ─────
@@ -279,10 +245,9 @@ static bool test_stress_realistic()
 
             if ( rng.next_n( 3 ) < 1 )
             {
-                // 33% — аллокация
-                std::size_t sz  = rng.next_block_size();
-                void*       ptr = pmm::PersistMemoryManager::instance()->allocate( sz );
-                if ( ptr != nullptr )
+                std::size_t             sz  = rng.next_block_size();
+                pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+                if ( !ptr.is_null() )
                 {
                     live.push_back( ptr );
                     alloc_ok++;
@@ -294,11 +259,10 @@ static bool test_stress_realistic()
             }
             else
             {
-                // 66% — освобождение
                 if ( !live.empty() )
                 {
                     uint32_t idx = rng.next_n( static_cast<uint32_t>( live.size() ) );
-                    pmm::PersistMemoryManager::instance()->deallocate( live[idx] );
+                    pmm::PersistMemoryManager::deallocate_typed( live[idx] );
                     live[idx] = live.back();
                     live.pop_back();
                     dealloc_cnt++;
@@ -313,10 +277,9 @@ static bool test_stress_realistic()
                   << "    Живых блоков после фазы: " << live.size() << "  время: " << ms << " мс\n";
 
         PMM_TEST( live.empty() );
-        PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
+        PMM_TEST( pmm::PersistMemoryManager::validate() );
 
-        // Вся память должна быть освобождена — 0 выделенных блоков
-        auto stats = pmm::get_stats( pmm::PersistMemoryManager::instance() );
+        auto stats = pmm::get_stats();
         PMM_TEST( stats.allocated_blocks == 0 );
     }
 
@@ -324,6 +287,7 @@ static bool test_stress_realistic()
     std::cout << "  Общее время: " << total_ms << " мс\n";
 
     pmm::PersistMemoryManager::destroy();
+    std::free( mem );
     return true;
 }
 

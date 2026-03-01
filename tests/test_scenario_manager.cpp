@@ -100,12 +100,10 @@ static bool test_stop_all_within_deadline()
     {
         demo::ScenarioManager mgr;
 
-        // Start scenarios 0, 1, 4 (LinearFill, RandomStress, TinyBlocks)
         mgr.start( 0 );
         mgr.start( 1 );
         mgr.start( 4 );
 
-        // Let them run briefly
         std::this_thread::sleep_for( std::chrono::milliseconds( 300 ) );
 
         auto t0 = std::chrono::steady_clock::now();
@@ -130,7 +128,6 @@ static bool test_start_stop_single()
     {
         demo::ScenarioManager mgr;
 
-        // Run scenario 1 (RandomStress) three times
         for ( int round = 0; round < 3; ++round )
         {
             mgr.start( 1 );
@@ -138,14 +135,13 @@ static bool test_start_stop_single()
             mgr.stop( 1 );
         }
 
-        // All threads should have been joined
         mgr.stop_all();
         mgr.join_all();
     }
 
     auto* inst = pmm::PersistMemoryManager::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->validate() );
+    PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     pmm_teardown();
     return true;
@@ -168,7 +164,7 @@ static bool test_destructor_cleans_up()
 
     auto* inst = pmm::PersistMemoryManager::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->validate() );
+    PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     pmm_teardown();
     return true;

@@ -34,19 +34,16 @@
 
 // ─── Вспомогательная функция ───────────────────────────────────────────────
 
-static pmm::PersistMemoryManager* make_manager( std::size_t size )
+static void make_manager( std::size_t size )
 {
     void* mem = std::malloc( size );
-    return pmm::PersistMemoryManager::create( mem, size );
+    pmm::PersistMemoryManager::create( mem, size );
 }
 
 // ─── Тесты ─────────────────────────────────────────────────────────────────
 
 /**
  * @brief Параллельный вызов validate() из нескольких потоков.
- *
- * Все потоки одновременно вызывают validate() (shared_lock). Ни один поток
- * не должен заблокироваться другим. Все вызовы должны вернуть true.
  */
 static void test_concurrent_validate()
 {
@@ -55,12 +52,11 @@ static void test_concurrent_validate()
     constexpr int         kIter    = 100;
 
     make_manager( kMemSize );
-    auto* mgr = pmm::PersistMemoryManager::instance();
 
     // Выделяем несколько блоков для нетривиального состояния
     for ( int i = 0; i < 20; ++i )
     {
-        mgr->allocate( 64 );
+        pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
     }
 
     std::atomic<int>         failures{ 0 };
@@ -71,10 +67,9 @@ static void test_concurrent_validate()
         threads.emplace_back(
             [&failures, kIter]()
             {
-                auto* m = pmm::PersistMemoryManager::instance();
                 for ( int i = 0; i < kIter; ++i )
                 {
-                    if ( !m->validate() )
+                    if ( !pmm::PersistMemoryManager::validate() )
                     {
                         failures.fetch_add( 1 );
                     }
@@ -94,9 +89,6 @@ static void test_concurrent_validate()
 
 /**
  * @brief Параллельный вызов validate() и allocate().
- *
- * Часть потоков читает (validate), часть пишет (allocate/deallocate).
- * Проверяем целостность после завершения.
  */
 static void test_readers_writers()
 {
@@ -117,10 +109,9 @@ static void test_readers_writers()
         threads.emplace_back(
             [&invalid_reads, &stop]()
             {
-                auto* m = pmm::PersistMemoryManager::instance();
                 while ( !stop.load() )
                 {
-                    if ( !m->validate() )
+                    if ( !pmm::PersistMemoryManager::validate() )
                     {
                         invalid_reads.fetch_add( 1 );
                     }
@@ -134,44 +125,40 @@ static void test_readers_writers()
         threads.emplace_back(
             [kIter]()
             {
-                auto*              m = pmm::PersistMemoryManager::instance();
-                std::vector<void*> ptrs;
+                std::vector<pmm::pptr<std::uint8_t>> ptrs;
                 ptrs.reserve( 32 );
                 for ( int i = 0; i < kIter; ++i )
                 {
-                    void* p = m->allocate( 128 );
-                    if ( p != nullptr )
+                    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 128 );
+                    if ( !p.is_null() )
                     {
                         ptrs.push_back( p );
                     }
                     if ( ptrs.size() > 16 )
                     {
-                        m->deallocate( ptrs.front() );
+                        pmm::PersistMemoryManager::deallocate_typed( ptrs.front() );
                         ptrs.erase( ptrs.begin() );
                     }
                 }
-                for ( void* p : ptrs )
+                for ( auto& p : ptrs )
                 {
-                    m->deallocate( p );
+                    pmm::PersistMemoryManager::deallocate_typed( p );
                 }
             } );
     }
 
-    // Ждём завершения писателей (последние kWriteThreads потоков)
     for ( int t = kReadThreads; t < kReadThreads + kWriteThreads; ++t )
     {
         threads[t].join();
     }
     stop.store( true );
 
-    // Ждём завершения читателей
     for ( int t = 0; t < kReadThreads; ++t )
     {
         threads[t].join();
     }
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
-    PMM_TEST( mgr->validate(), "readers_writers: validate() после смешанных операций" );
+    PMM_TEST( pmm::PersistMemoryManager::validate(), "readers_writers: validate() после смешанных операций" );
     PMM_TEST( invalid_reads.load() == 0, "readers_writers: читатели не видели инвалидного состояния" );
 
     pmm::PersistMemoryManager::destroy();
@@ -179,9 +166,6 @@ static void test_readers_writers()
 
 /**
  * @brief Корректность reallocate() после перехода к unlock-before-subvызов.
- *
- * Многократный reallocate в нескольких потоках. Проверяем, что данные
- * не портятся и validate() проходит.
  */
 static void test_reallocate_correctness()
 {
@@ -190,13 +174,12 @@ static void test_reallocate_correctness()
     constexpr int         kIter    = 200;
 
     make_manager( kMemSize );
-    auto*              mgr = pmm::PersistMemoryManager::instance();
-    std::vector<void*> ptrs( kThreads );
+
+    std::vector<pmm::pptr<std::uint8_t>> ptrs( kThreads );
     for ( int t = 0; t < kThreads; ++t )
     {
-        ptrs[t] = mgr->allocate( 64 );
-        // Записываем уникальный маркер
-        std::memset( ptrs[t], t + 1, 64 );
+        ptrs[t] = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
+        std::memset( ptrs[t].get(), t + 1, 64 );
     }
 
     std::atomic<int>         corrupted{ 0 };
@@ -207,21 +190,18 @@ static void test_reallocate_correctness()
         threads.emplace_back(
             [t, &ptrs, &corrupted, kIter]()
             {
-                auto* m = pmm::PersistMemoryManager::instance();
                 for ( int i = 0; i < kIter; ++i )
                 {
-                    std::size_t new_sz = 64 + static_cast<std::size_t>( ( i % 4 ) + 1 ) * 64;
-                    void*       p      = m->reallocate( ptrs[t], new_sz );
-                    if ( p != nullptr )
+                    std::size_t             new_sz = 64 + static_cast<std::size_t>( ( i % 4 ) + 1 ) * 64;
+                    pmm::pptr<std::uint8_t> p      = pmm::PersistMemoryManager::reallocate_typed( ptrs[t], new_sz );
+                    if ( !p.is_null() )
                     {
-                        // Проверяем, что первый байт не изменился (маркер потока)
-                        unsigned char first = *static_cast<unsigned char*>( p );
+                        unsigned char first = *p.get();
                         if ( first != static_cast<unsigned char>( t + 1 ) && i == 0 )
                         {
                             corrupted.fetch_add( 1 );
                         }
-                        // Обновляем маркер для следующей итерации
-                        std::memset( p, t + 1, 64 );
+                        std::memset( p.get(), t + 1, 64 );
                         ptrs[t] = p;
                     }
                 }
@@ -235,13 +215,13 @@ static void test_reallocate_correctness()
 
     for ( int t = 0; t < kThreads; ++t )
     {
-        if ( ptrs[t] != nullptr )
+        if ( !ptrs[t].is_null() )
         {
-            mgr->deallocate( ptrs[t] );
+            pmm::PersistMemoryManager::deallocate_typed( ptrs[t] );
         }
     }
 
-    PMM_TEST( mgr->validate(), "reallocate_correctness: validate() пройдена" );
+    PMM_TEST( pmm::PersistMemoryManager::validate(), "reallocate_correctness: validate() пройдена" );
     PMM_TEST( corrupted.load() == 0, "reallocate_correctness: данные не повреждены при reallocate" );
 
     pmm::PersistMemoryManager::destroy();
@@ -249,9 +229,6 @@ static void test_reallocate_correctness()
 
 /**
  * @brief Параллельный вызов get_stats() из нескольких потоков.
- *
- * get_stats() — read-only операция. Несколько потоков вызывают её одновременно.
- * Проверяем, что возвращаемые значения согласованны (total >= allocated + free).
  */
 static void test_concurrent_get_stats()
 {
@@ -260,10 +237,10 @@ static void test_concurrent_get_stats()
     constexpr int         kIter    = 100;
 
     make_manager( kMemSize );
-    auto* mgr = pmm::PersistMemoryManager::instance();
+
     for ( int i = 0; i < 30; ++i )
     {
-        mgr->allocate( 256 );
+        pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 256 );
     }
 
     std::atomic<int>         inconsistent{ 0 };
@@ -274,11 +251,9 @@ static void test_concurrent_get_stats()
         threads.emplace_back(
             [&inconsistent, kIter]()
             {
-                auto* m = pmm::PersistMemoryManager::instance();
                 for ( int i = 0; i < kIter; ++i )
                 {
-                    auto stats = pmm::get_stats( m );
-                    // Базовая проверка согласованности счётчиков
+                    auto stats = pmm::get_stats();
                     if ( stats.total_blocks != stats.free_blocks + stats.allocated_blocks )
                     {
                         inconsistent.fetch_add( 1 );

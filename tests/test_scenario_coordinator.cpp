@@ -93,30 +93,23 @@ static bool test_pause_blocks_thread()
     std::atomic<bool>         stop_flag{ false };
     std::atomic<bool>         thread_unblocked{ false };
 
-    // Register one participant so pause_others() must wait for its ack.
     coord.register_participant();
 
-    // Start the participant thread first so it can ack the pause.
     std::thread t(
         [&]
         {
-            // Small delay so the main thread can call pause_others() first.
             std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
             coord.yield_if_paused( stop_flag );
             thread_unblocked.store( true, std::memory_order_release );
         } );
 
-    // pause_others() will block until the participant acks; after that the
-    // participant is blocked inside yield_if_paused() waiting for resume.
     coord.pause_others( stop_flag );
 
-    // Thread should still be blocked (waiting for resume_others())
     PMM_TEST( !thread_unblocked.load( std::memory_order_acquire ) );
 
     coord.resume_others();
     t.join();
 
-    // Unregister so the coordinator's participant count returns to 0.
     coord.unregister_participant();
 
     PMM_TEST( thread_unblocked.load( std::memory_order_acquire ) );
@@ -134,11 +127,9 @@ static bool test_resume_unblocks_all()
     std::atomic<int>          unblocked_count{ 0 };
     std::vector<std::thread>  threads;
 
-    // Register all participants before pausing so pause_others() waits for them.
     for ( int i = 0; i < kThreads; ++i )
         coord.register_participant();
 
-    // Start participant threads with a small delay so pause_others() is called first.
     for ( int i = 0; i < kThreads; ++i )
     {
         threads.emplace_back(
@@ -150,10 +141,8 @@ static bool test_resume_unblocks_all()
             } );
     }
 
-    // pause_others() blocks until all kThreads participants have acked.
     coord.pause_others( stop_flag );
 
-    // All threads have acked (are inside yield_if_paused) but not yet unblocked.
     PMM_TEST( unblocked_count.load() == 0 );
 
     coord.resume_others();
@@ -180,7 +169,7 @@ static bool test_no_block_when_not_paused()
     std::thread t(
         [&]
         {
-            coord.yield_if_paused( stop_flag ); // should not block
+            coord.yield_if_paused( stop_flag );
             returned.store( true, std::memory_order_release );
         } );
 
@@ -198,28 +187,22 @@ static bool test_stop_flag_breaks_pause()
     std::atomic<bool>         stop_flag{ false };
     std::atomic<bool>         thread_returned{ false };
 
-    // Register one participant so pause_others() must wait for its ack.
     coord.register_participant();
 
     std::thread t(
         [&]
         {
-            // Small delay so the main thread can call pause_others() first.
             std::this_thread::sleep_for( std::chrono::milliseconds( 20 ) );
             coord.yield_if_paused( stop_flag );
             thread_returned.store( true, std::memory_order_release );
         } );
 
-    // pause_others() blocks until the participant acks, then participant is
-    // blocked inside yield_if_paused() waiting for resume or stop_flag.
     coord.pause_others( stop_flag );
 
-    // Thread must still be blocked (waiting for resume or stop_flag).
     PMM_TEST( !thread_returned.load( std::memory_order_acquire ) );
 
-    // Set stop flag — thread must unblock even though pause is still active
     stop_flag.store( true, std::memory_order_release );
-    coord.resume_others(); // notify the CV so the thread re-evaluates the predicate
+    coord.resume_others();
 
     auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds( 2 );
     while ( !thread_returned.load( std::memory_order_acquire ) )
@@ -239,10 +222,6 @@ static bool test_stop_flag_breaks_pause()
 /**
  * @brief PersistenceCycle scenario runs safely alongside LinearFill and
  *        RandomStress; after the destroy/reload cycle PMM validate() == true.
- *
- * This test exercises the full coordinator flow end-to-end by starting 3
- * scenarios (0=LinearFill, 1=RandomStress, 6=PersistenceCycle), letting them
- * run for 4 seconds, then stopping all and verifying PMM integrity.
  */
 static bool test_persistence_cycle_safety()
 {
@@ -251,8 +230,6 @@ static bool test_persistence_cycle_safety()
     {
         demo::ScenarioManager sm;
 
-        // Increase PersistenceCycle frequency so it fires within 4 s
-        // (index 6, alloc_freq = 0.5 => 1 cycle per 2 s)
         sm.start( 0 ); // LinearFill
         sm.start( 1 ); // RandomStress
         sm.start( 6 ); // PersistenceCycle
@@ -263,10 +240,9 @@ static bool test_persistence_cycle_safety()
         sm.join_all();
     }
 
-    // After all scenarios have stopped the PMM singleton must still be valid.
     auto* inst = pmm::PersistMemoryManager::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->validate() );
+    PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     pmm_teardown();
     return true;

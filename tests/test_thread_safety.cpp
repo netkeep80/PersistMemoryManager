@@ -34,20 +34,16 @@
 // ─── Вспомогательная функция ───────────────────────────────────────────────
 
 /// Создаёт новый менеджер с буфером заданного размера.
-static pmm::PersistMemoryManager* make_manager( std::size_t size )
+static void make_manager( std::size_t size )
 {
     void* mem = std::malloc( size );
-    return pmm::PersistMemoryManager::create( mem, size );
+    pmm::PersistMemoryManager::create( mem, size );
 }
 
 // ─── Тесты ────────────────────────────────────────────────────────────────
 
 /**
  * @brief Параллельное выделение памяти из нескольких потоков.
- *
- * Несколько потоков одновременно вызывают allocate(). Все аллокации
- * должны завершиться успешно (менеджер автоматически расширяется) и
- * возвращать ненулевые, уникальные указатели.
  */
 static void test_concurrent_allocate()
 {
@@ -58,19 +54,18 @@ static void test_concurrent_allocate()
 
     make_manager( kMemSize );
 
-    std::vector<std::vector<void*>> results( kThreads );
-    std::vector<std::thread>        threads;
+    std::vector<std::vector<pmm::pptr<std::uint8_t>>> results( kThreads );
+    std::vector<std::thread>                          threads;
 
     for ( int t = 0; t < kThreads; ++t )
     {
         threads.emplace_back(
             [t, &results, kPerThread, kBlockSize]()
             {
-                auto* mgr = pmm::PersistMemoryManager::instance();
                 for ( int i = 0; i < kPerThread; ++i )
                 {
-                    void* p = mgr->allocate( kBlockSize );
-                    if ( p != nullptr )
+                    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( kBlockSize );
+                    if ( !p.is_null() )
                     {
                         results[t].push_back( p );
                     }
@@ -84,19 +79,17 @@ static void test_concurrent_allocate()
     }
 
     // Освобождаем всё
-    auto* mgr = pmm::PersistMemoryManager::instance();
     for ( auto& vec : results )
     {
-        for ( void* p : vec )
+        for ( auto& p : vec )
         {
-            mgr->deallocate( p );
+            pmm::PersistMemoryManager::deallocate_typed( p );
         }
     }
 
     // Проверяем целостность
-    PMM_TEST( mgr->validate(), "concurrent_allocate: validate() после параллельных аллокаций" );
+    PMM_TEST( pmm::PersistMemoryManager::validate(), "concurrent_allocate: validate() после параллельных аллокаций" );
 
-    // Проверяем, что суммарно выделено kThreads * kPerThread блоков (или меньше при расширении)
     int total = 0;
     for ( auto& vec : results )
     {
@@ -109,10 +102,6 @@ static void test_concurrent_allocate()
 
 /**
  * @brief Параллельное чередование allocate/deallocate.
- *
- * Несколько потоков выделяют и освобождают память в цикле.
- * После завершения validate() должен вернуть true, и все блоки —
- * быть освобождены.
  */
 static void test_concurrent_alloc_dealloc()
 {
@@ -130,10 +119,8 @@ static void test_concurrent_alloc_dealloc()
         threads.emplace_back(
             [t, kIter]()
             {
-                auto* mgr = pmm::PersistMemoryManager::instance();
-                // Простой LCG для воспроизводимой псевдослучайности
-                unsigned           state = static_cast<unsigned>( t * 1234567 + 42 );
-                std::vector<void*> live;
+                unsigned                             state = static_cast<unsigned>( t * 1234567 + 42 );
+                std::vector<pmm::pptr<std::uint8_t>> live;
                 live.reserve( 64 );
 
                 for ( int i = 0; i < kIter; ++i )
@@ -143,8 +130,8 @@ static void test_concurrent_alloc_dealloc()
 
                     if ( live.empty() || ( state >> 31 ) == 0 )
                     {
-                        void* p = mgr->allocate( sz );
-                        if ( p != nullptr )
+                        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+                        if ( !p.is_null() )
                         {
                             live.push_back( p );
                         }
@@ -152,15 +139,14 @@ static void test_concurrent_alloc_dealloc()
                     else
                     {
                         std::size_t idx = ( state >> 16 ) % live.size();
-                        mgr->deallocate( live[idx] );
+                        pmm::PersistMemoryManager::deallocate_typed( live[idx] );
                         live.erase( live.begin() + static_cast<std::ptrdiff_t>( idx ) );
                     }
                 }
 
-                // Освобождаем оставшиеся блоки этого потока
-                for ( void* p : live )
+                for ( auto& p : live )
                 {
-                    mgr->deallocate( p );
+                    pmm::PersistMemoryManager::deallocate_typed( p );
                 }
             } );
     }
@@ -170,11 +156,10 @@ static void test_concurrent_alloc_dealloc()
         th.join();
     }
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
-    PMM_TEST( mgr->validate(), "concurrent_alloc_dealloc: validate() после чередующихся операций" );
+    PMM_TEST( pmm::PersistMemoryManager::validate(), "concurrent_alloc_dealloc: validate() после чередующихся операций" );
     PMM_TEST( errors.load() == 0, "concurrent_alloc_dealloc: нет ошибок в потоках" );
 
-    auto stats = pmm::get_stats( mgr );
+    auto stats = pmm::get_stats();
     PMM_TEST( stats.allocated_blocks == 0, "concurrent_alloc_dealloc: все блоки освобождены" );
 
     pmm::PersistMemoryManager::destroy();
@@ -182,8 +167,6 @@ static void test_concurrent_alloc_dealloc()
 
 /**
  * @brief Параллельный reallocate.
- *
- * Несколько потоков многократно reallocate существующих блоков.
  */
 static void test_concurrent_reallocate()
 {
@@ -193,13 +176,10 @@ static void test_concurrent_reallocate()
 
     make_manager( kMemSize );
 
-    // Каждый поток работает со своим блоком (нет гонок на конкретных блоках,
-    // но есть конкуренция за мьютекс менеджера)
-    std::vector<void*> blocks( kThreads );
-    auto*              mgr = pmm::PersistMemoryManager::instance();
+    std::vector<pmm::pptr<std::uint8_t>> blocks( kThreads );
     for ( int t = 0; t < kThreads; ++t )
     {
-        blocks[t] = mgr->allocate( 64 );
+        blocks[t] = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
     }
 
     std::vector<std::thread> threads;
@@ -208,12 +188,11 @@ static void test_concurrent_reallocate()
         threads.emplace_back(
             [t, &blocks, kIter]()
             {
-                auto* m = pmm::PersistMemoryManager::instance();
                 for ( int i = 0; i < kIter; ++i )
                 {
-                    std::size_t new_sz = 64 + static_cast<std::size_t>( i % 8 ) * 64;
-                    void*       p      = m->reallocate( blocks[t], new_sz );
-                    if ( p != nullptr )
+                    std::size_t             new_sz = 64 + static_cast<std::size_t>( i % 8 ) * 64;
+                    pmm::pptr<std::uint8_t> p      = pmm::PersistMemoryManager::reallocate_typed( blocks[t], new_sz );
+                    if ( !p.is_null() )
                     {
                         blocks[t] = p;
                     }
@@ -228,19 +207,17 @@ static void test_concurrent_reallocate()
 
     for ( int t = 0; t < kThreads; ++t )
     {
-        mgr->deallocate( blocks[t] );
+        if ( !blocks[t].is_null() )
+            pmm::PersistMemoryManager::deallocate_typed( blocks[t] );
     }
 
-    PMM_TEST( mgr->validate(), "concurrent_reallocate: validate() после параллельного reallocate" );
+    PMM_TEST( pmm::PersistMemoryManager::validate(), "concurrent_reallocate: validate() после параллельного reallocate" );
 
     pmm::PersistMemoryManager::destroy();
 }
 
 /**
  * @brief Запись данных в параллельных потоках без гонки данных.
- *
- * Каждый поток пишет уникальное значение в свой блок, затем проверяет его.
- * Тест выявляет ситуации, когда два потока получили один и тот же указатель.
  */
 static void test_no_data_races()
 {
@@ -258,30 +235,28 @@ static void test_no_data_races()
         threads.emplace_back(
             [t, &mismatches, kPerThread]()
             {
-                auto*                              mgr = pmm::PersistMemoryManager::instance();
-                std::vector<std::pair<void*, int>> allocs;
+                std::vector<std::pair<pmm::pptr<std::uint8_t>, int>> allocs;
 
                 for ( int i = 0; i < kPerThread; ++i )
                 {
-                    void* p = mgr->allocate( sizeof( int ) );
-                    if ( p != nullptr )
+                    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sizeof( int ) );
+                    if ( !p.is_null() )
                     {
                         int val = t * 1000 + i;
-                        std::memcpy( p, &val, sizeof( int ) );
+                        std::memcpy( p.get(), &val, sizeof( int ) );
                         allocs.emplace_back( p, val );
                     }
                 }
 
-                // Проверяем, что данные не были перезаписаны другим потоком
                 for ( auto& [p, expected] : allocs )
                 {
                     int actual = 0;
-                    std::memcpy( &actual, p, sizeof( int ) );
+                    std::memcpy( &actual, p.get(), sizeof( int ) );
                     if ( actual != expected )
                     {
                         mismatches.fetch_add( 1 );
                     }
-                    mgr->deallocate( p );
+                    pmm::PersistMemoryManager::deallocate_typed( p );
                 }
             } );
     }
@@ -291,8 +266,7 @@ static void test_no_data_races()
         th.join();
     }
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
-    PMM_TEST( mgr->validate(), "no_data_races: validate() пройдена" );
+    PMM_TEST( pmm::PersistMemoryManager::validate(), "no_data_races: validate() пройдена" );
     PMM_TEST( mismatches.load() == 0, "no_data_races: данные в блоках не повреждены" );
 
     pmm::PersistMemoryManager::destroy();
