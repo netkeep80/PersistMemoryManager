@@ -3,7 +3,13 @@
 ## Обзор
 
 `PersistMemoryManager` — single-header C++17 библиотека управления персистентной кучей памяти.
-Вся реализация находится в одном файле: `include/persist_memory_manager.h`.
+Все метаданные хранятся внутри управляемой области, что позволяет сохранять и загружать образ
+памяти из файла или shared memory. Взаимодействие с данными в управляемой памяти осуществляется
+через персистные типизированные указатели `pptr<T>`.
+
+Реализация находится в двух файлах:
+- `include/persist_memory_manager.h` — менеджер памяти и `pptr<T>`
+- `include/persist_memory_io.h` — утилиты файлового ввода/вывода (`save` / `load_from_file`)
 
 Пространство имён: `pmm`
 
@@ -13,9 +19,10 @@
 
 ```cpp
 #include "persist_memory_manager.h"
+#include "persist_memory_io.h"  // для save() / load_from_file()
 ```
 
-Никаких `.cpp` файлов, никакой линковки — только включите заголовок.
+Никаких `.cpp` файлов, никакой линковки — только включите заголовки.
 
 ---
 
@@ -29,7 +36,20 @@ namespace pmm {
 
 Все объекты создаются и уничтожаются через статические методы — прямой вызов конструктора/деструктора не предусмотрен.
 
-### Статические методы инициализации
+Одновременно может существовать только один экземпляр менеджера (синглтон). Доступ к нему осуществляется
+через `PersistMemoryManager::instance()`.
+
+### Статические методы
+
+#### `instance()`
+
+```cpp
+static PersistMemoryManager* instance() noexcept;
+```
+
+Возвращает указатель на текущий экземпляр менеджера. `nullptr`, если менеджер не создан.
+
+---
 
 #### `create()`
 
@@ -37,7 +57,7 @@ namespace pmm {
 static PersistMemoryManager* create(void* memory, std::size_t size);
 ```
 
-Создаёт новый менеджер памяти в переданном буфере.
+Создаёт новый менеджер памяти в переданном буфере и устанавливает синглтон.
 
 **Параметры:**
 - `memory` — указатель на буфер. Не должен быть `nullptr`.
@@ -45,9 +65,7 @@ static PersistMemoryManager* create(void* memory, std::size_t size);
 
 **Возвращает:** указатель на менеджер или `nullptr` при ошибке.
 
-**Предусловия:** буфер валиден и имеет размер ≥ 4096 байт.
-
-**Постусловия:** возвращённый указатель совпадает с `memory`.
+**Постусловие:** `PersistMemoryManager::instance()` указывает на созданный менеджер. Буфер принадлежит менеджеру и будет освобождён при `destroy()`.
 
 **Пример:**
 ```cpp
@@ -64,7 +82,7 @@ auto* mgr = pmm::PersistMemoryManager::create(mem, 1024 * 1024);
 static PersistMemoryManager* load(void* memory, std::size_t size);
 ```
 
-Загружает менеджер из существующего образа в памяти. Проверяет магическое число и размер.
+Загружает менеджер из существующего образа в памяти. Проверяет магическое число и размер. Устанавливает синглтон.
 
 **Параметры:**
 - `memory` — буфер с ранее сохранённым образом.
@@ -80,97 +98,80 @@ auto* mgr = pmm::PersistMemoryManager::load(memory, file_size);
 
 ---
 
-### Методы уничтожения
-
 #### `destroy()`
 
 ```cpp
-void destroy();
+static void destroy();
 ```
 
-Обнуляет метаданные менеджера в управляемом буфере. Системную память (`memory` из `malloc`) нужно освобождать отдельно через `std::free`.
+Уничтожает синглтон: обнуляет метаданные, освобождает все управляемые буферы (включая цепочку расширений), сбрасывает `instance()` в `nullptr`.
 
-**Постусловие:** менеджер недействителен, буфер можно освобождать.
+**Постусловие:** `PersistMemoryManager::instance() == nullptr`.
 
 **Пример:**
 ```cpp
-mgr->destroy();
-std::free(mem);
+pmm::PersistMemoryManager::destroy();
+// Буфер, переданный в create(), уже освобождён
 ```
 
 ---
 
-### Выделение и освобождение памяти
+### Персистные типизированные указатели (pptr<T>)
 
-#### `allocate()`
+Основной способ работы с данными в управляемой памяти — через `pptr<T>`.
+
+#### `allocate_typed<T>()`
 
 ```cpp
-void* allocate(std::size_t size, std::size_t alignment = 16);
+template <class T>
+pptr<T> allocate_typed();
+
+template <class T>
+pptr<T> allocate_typed(std::size_t count);
 ```
 
-Выделяет блок памяти внутри управляемой области.
+Выделяет `sizeof(T)` байт (или `sizeof(T) * count` для массива) с выравниванием `alignof(T)`.
 
-**Параметры:**
-- `size` — запрошенный размер блока в байтах. Должен быть > 0.
-- `alignment` — выравнивание адреса (по умолчанию 16). Должно быть степенью двойки в диапазоне [8, 4096].
+**Возвращает:** `pptr<T>` на выделенный объект/массив. Нулевой `pptr` при ошибке.
 
-**Возвращает:** выровненный указатель на пользовательские данные или `nullptr` при ошибке (нет памяти, неверное выравнивание, `size == 0`).
-
-**Алгоритм:** first-fit (линейный обход связного списка блоков). При нахождении блока достаточного размера он разделяется, если остаток ≥ 32 байт.
+**Особенность:** при нехватке памяти менеджер автоматически расширяет управляемую область на 25%. После расширения `PersistMemoryManager::instance()` указывает на новый буфер.
 
 **Пример:**
 ```cpp
-void* p1 = mgr->allocate(256);          // выравнивание 16
-void* p2 = mgr->allocate(1024, 32);    // выравнивание 32
-void* p3 = mgr->allocate(64, 4096);    // выравнивание 4096 (страничное)
+pmm::pptr<int>    p1 = mgr->allocate_typed<int>();
+pmm::pptr<double> p2 = mgr->allocate_typed<double>(10);  // массив из 10 double
+*p1 = 42;
+*p2.get_at(0) = 3.14;
 ```
 
 ---
 
-#### `deallocate()`
+#### `deallocate_typed<T>()`
 
 ```cpp
-void deallocate(void* ptr);
+template <class T>
+void deallocate_typed(pptr<T> p);
 ```
 
-Освобождает блок, ранее выделенный через `allocate()`. После освобождения выполняется слияние соседних свободных блоков (coalescing).
-
-**Параметры:**
-- `ptr` — указатель, полученный от `allocate()`. `nullptr` допустим (нет операции).
-
-**Предусловие:** `ptr` должен быть указателем на начало пользовательских данных занятого блока.
+Освобождает блок памяти, на который указывает `p`. Нулевой `pptr` игнорируется.
 
 **Пример:**
 ```cpp
-mgr->deallocate(p1);  // OK
-mgr->deallocate(nullptr);  // нет операции
+mgr->deallocate_typed(p1);
 ```
 
 ---
 
-### Персистентность
+### Вспомогательный метод
 
-#### `save()`
+#### `offset_to_ptr()`
 
 ```cpp
-bool save(const char* filename) const;
+void*       offset_to_ptr(std::ptrdiff_t offset) noexcept;
+const void* offset_to_ptr(std::ptrdiff_t offset) const noexcept;
 ```
 
-Сохраняет образ управляемой области памяти в двоичный файл.
-
-**Параметры:**
-- `filename` — путь к выходному файлу. Не должен быть `nullptr`.
-
-**Возвращает:** `true` при успешной записи, `false` при ошибке.
-
-**Поведение:** записывает весь буфер (от начала до `total_size` байт) в файл через `fwrite`. Образ самодостаточен — содержит все метаданные.
-
-**Пример:**
-```cpp
-if (!mgr->save("heap.dat")) {
-    // ошибка записи
-}
-```
+Преобразует смещение от базы управляемой области в абсолютный указатель. `offset == 0` → `nullptr`.
 
 ---
 
@@ -214,7 +215,9 @@ std::size_t free_size() const;
 std::size_t fragmentation() const;
 ```
 
-Возвращает суммарный объём памяти в свободных блоках, которые нельзя использовать из-за фрагментации (разница между общим свободным пространством и размером наибольшего свободного блока).
+Возвращает количество лишних свободных фрагментов (число свободных блоков минус один).
+
+`0` — нет фрагментации, `> 0` — есть несмежные свободные регионы.
 
 ---
 
@@ -247,7 +250,120 @@ void dump_stats() const;
 
 ---
 
+## Класс `pptr<T>`
+
+```cpp
+namespace pmm {
+    template <class T>
+    class pptr;
+}
+```
+
+Персистный типизированный указатель. Хранит смещение от начала управляемой области вместо абсолютного адреса, что обеспечивает корректную работу после загрузки образа по другому базовому адресу.
+
+**Требование:** `sizeof(pptr<T>) == sizeof(void*)`.
+
+### Конструкторы
+
+```cpp
+pptr();                               // нулевой указатель
+explicit pptr(std::ptrdiff_t offset); // из смещения (используется менеджером)
+pptr(const pptr<T>&) = default;
+```
+
+### Проверка на null
+
+```cpp
+bool is_null() const noexcept;
+explicit operator bool() const noexcept;
+```
+
+### Получение смещения
+
+```cpp
+std::ptrdiff_t offset() const noexcept;
+```
+
+### Разыменование через синглтон
+
+```cpp
+T*  get() const noexcept;          // указатель на объект
+T&  operator*() const noexcept;    // разыменование
+T*  operator->() const noexcept;   // доступ к членам
+T*  get_at(std::size_t index) const noexcept;  // элемент массива
+```
+
+Используют `PersistMemoryManager::instance()` автоматически.
+
+### Разыменование с явным менеджером
+
+```cpp
+T*       resolve(PersistMemoryManager* mgr) const noexcept;
+const T* resolve(const PersistMemoryManager* mgr) const noexcept;
+T*       resolve_at(PersistMemoryManager* mgr, std::size_t index) const noexcept;
+```
+
+### Операторы сравнения
+
+```cpp
+bool operator==(const pptr<T>& other) const noexcept;
+bool operator!=(const pptr<T>& other) const noexcept;
+```
+
+### Пример использования
+
+```cpp
+// Создать менеджер
+auto* mgr = pmm::PersistMemoryManager::create(std::malloc(1 << 20), 1 << 20);
+
+// Выделить и использовать типизированный указатель
+pmm::pptr<int> p = mgr->allocate_typed<int>();
+*p = 123;
+
+// Сохранить смещение для восстановления после перезагрузки
+std::ptrdiff_t saved = p.offset();
+
+// Сохранить образ в файл
+pmm::save(mgr, "heap.dat");
+pmm::PersistMemoryManager::destroy();
+
+// Загрузить образ
+auto* mgr2 = pmm::load_from_file("heap.dat", std::malloc(1 << 20), 1 << 20);
+pmm::pptr<int> p2(saved);
+assert(*p2 == 123);
+pmm::PersistMemoryManager::destroy();
+```
+
+---
+
 ## Свободные функции
+
+### `save()`
+
+```cpp
+namespace pmm {
+    bool save(const PersistMemoryManager* mgr, const char* filename);
+}
+```
+
+Сохраняет образ управляемой области памяти в двоичный файл.
+
+**Параметры:**
+- `mgr` — указатель на менеджер. Не должен быть `nullptr`.
+- `filename` — путь к выходному файлу. Не должен быть `nullptr`.
+
+**Возвращает:** `true` при успешной записи, `false` при ошибке.
+
+**Пример:**
+```cpp
+#include "persist_memory_io.h"
+
+if (!pmm::save(mgr, "heap.dat")) {
+    // ошибка записи
+}
+```
+
+---
 
 ### `load_from_file()`
 
@@ -270,16 +386,10 @@ namespace pmm {
 
 **Возвращает:** указатель на восстановленный менеджер или `nullptr` при ошибке.
 
-**Алгоритм:**
-1. Проверить аргументы на null/0.
-2. Открыть файл в режиме `"rb"`.
-3. Определить размер файла через `fseek(SEEK_END)` + `ftell()`.
-4. Если `file_size > size` → вернуть `nullptr`.
-5. Прочитать файл в `memory`.
-6. Вызвать `PersistMemoryManager::load(memory, file_size)`.
-
 **Пример:**
 ```cpp
+#include "persist_memory_io.h"
+
 void* buf = std::malloc(1024 * 1024);
 auto* mgr = pmm::load_from_file("heap.dat", buf, 1024 * 1024);
 if (mgr != nullptr && mgr->validate()) {
@@ -299,11 +409,6 @@ namespace pmm {
 
 Возвращает структуру со статистикой состояния менеджера.
 
-**Параметры:**
-- `mgr` — указатель на менеджер. Не должен быть `nullptr`.
-
-**Возвращает:** `MemoryStats` с заполненными полями.
-
 ---
 
 ### `get_info()`
@@ -314,13 +419,7 @@ namespace pmm {
 }
 ```
 
-Возвращает информацию о конкретном выделенном блоке.
-
-**Параметры:**
-- `mgr` — указатель на менеджер.
-- `ptr` — указатель на пользовательские данные (полученный из `allocate()`).
-
-**Возвращает:** `AllocationInfo`. Поле `is_valid = false`, если блок не найден.
+Возвращает информацию о конкретном выделенном блоке по абсолютному указателю на данные пользователя.
 
 ---
 
@@ -354,32 +453,6 @@ struct AllocationInfo {
 
 ---
 
-### `ErrorCode`
-
-```cpp
-enum class ErrorCode {
-    OK = 0,             // Успешное завершение
-    OUT_OF_MEMORY,      // Недостаточно памяти
-    INVALID_POINTER,    // Неверный указатель
-    INVALID_ALIGNMENT,  // Неверное выравнивание (не степень двойки или вне [8,4096])
-    CORRUPTED_METADATA, // Повреждённые метаданные (неверное магическое число)
-    FILE_IO_ERROR       // Ошибка файлового ввода/вывода
-};
-```
-
----
-
-### `Result`
-
-```cpp
-struct Result {
-    ErrorCode   code;    // Код ошибки
-    const char* message; // Текстовое описание
-};
-```
-
----
-
 ## Константы
 
 | Константа | Значение | Описание |
@@ -389,21 +462,21 @@ struct Result {
 | `kMaxAlignment` | 4096 | Максимальное выравнивание (байт) |
 | `kMinMemorySize` | 4096 | Минимальный размер буфера (байт) |
 | `kMinBlockSize` | 32 | Минимальный размер блока данных (байт) |
+| `kGrowNumerator` | 5 | Числитель коэффициента расширения (5/4 = 25%) |
+| `kGrowDenominator` | 4 | Знаменатель коэффициента расширения |
 
 ---
 
-## Коды ошибок и поведение граничных условий
+## Поведение граничных условий
 
 | Условие | Возвращаемое значение |
 |---------|----------------------|
 | `create(nullptr, size)` | `nullptr` |
 | `create(mem, < 4096)` | `nullptr` |
-| `allocate(0)` | `nullptr` |
-| `allocate(size, нечётное)` | `nullptr` |
-| `allocate(size, > 4096)` | `nullptr` |
-| `allocate(> free_size)` | `nullptr` |
-| `deallocate(nullptr)` | нет операции |
-| `save(nullptr)` | `false` |
+| `allocate_typed<T>()` при нехватке памяти | автоматическое расширение на 25% |
+| `deallocate_typed(null pptr)` | нет операции |
+| `save(nullptr, ...)` | `false` |
+| `save(mgr, nullptr)` | `false` |
 | `load_from_file(nullptr, ...)` | `nullptr` |
 | `load_from_file(file, nullptr, ...)` | `nullptr` |
 | `load_from_file(несуществующий файл, ...)` | `nullptr` |
@@ -414,17 +487,19 @@ struct Result {
 
 ## Потокобезопасность
 
-Текущая реализация (Фазы 1–4) **не является потокобезопасной**. Все операции должны вызываться из одного потока или защищаться внешней синхронизацией.
+Все публичные методы потокобезопасны. Используется `std::shared_mutex`:
+- методы чтения (`total_size`, `used_size`, `free_size`, `fragmentation`, `validate`, `dump_stats`, `get_stats`, `get_info`) захватывают разделённую блокировку (`shared_lock`) и могут выполняться параллельно;
+- методы записи (`create`, `load`, `destroy`, `allocate_typed`, `deallocate_typed`) захватывают эксклюзивную блокировку (`unique_lock`).
 
 ---
 
 ## Ограничения
 
 - Файловый ввод/вывод: только `stdio` (`fopen`/`fread`/`fwrite`/`fclose`). Нет поддержки `mmap`.
-- Алгоритм поиска блока: first-fit (линейный). Оптимизация — в Фазе 5.
+- Алгоритм поиска свободного блока: first-fit по отдельному списку свободных блоков.
 - Нет сжатия или шифрования образа.
-- Нет поддержки `reallocate()` (будет в Фазе 5).
+- Одновременно может существовать только один экземпляр менеджера (синглтон).
 
 ---
 
-*Документ версии 1.0. Соответствует версии библиотеки 0.4.0 (Фаза 4).*
+*Версия документа 2.0. Соответствует версии библиотеки 1.0.0.*
