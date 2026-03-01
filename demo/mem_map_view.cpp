@@ -109,9 +109,10 @@ void MemMapView::update_snapshot( pmm::PersistMemoryManager* mgr )
                          } );
 
     // ── Phase 11: Overview-mode tile snapshot (full PMM, N bytes per tile) ───
-    // Compute bytes_per_tile so that the total tile count <= kMaxTiles.
+    // For small PMM (<= kDetailLimit) tiles map 1:1 to bytes (bytes_per_tile == 1).
+    // For large PMM (> kDetailLimit) we cap tile count at kMaxTiles.
     bytes_per_tile_ = 1;
-    if ( total_bytes_ > kMaxTiles )
+    if ( total_bytes_ > kDetailLimit )
         bytes_per_tile_ = ( total_bytes_ + kMaxTiles - 1 ) / kMaxTiles;
 
     const std::size_t num_tiles = ( total_bytes_ + bytes_per_tile_ - 1 ) / bytes_per_tile_;
