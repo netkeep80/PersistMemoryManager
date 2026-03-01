@@ -134,9 +134,31 @@ pmm::PersistMemoryManager::instance()->validate(); // → true
 
 Поскольку все метаданные хранятся как **смещения** (а не абсолютные указатели), образ корректно загружается по любому базовому адресу без пересчёта.
 
-## Возможности
-
 - **Слияние блоков (coalescing)** — при освобождении блока автоматически объединяются соседние свободные блоки, что снижает фрагментацию до нуля при полном освобождении памяти
+
+## Визуальное демо
+
+Демонстрационное приложение `pmm_demo` визуализирует работу PMM в реальном времени.
+Построено на базе [Dear ImGui](https://github.com/ocornut/imgui) + OpenGL 3.3 + GLFW 3.4.
+Работает на Windows, Linux и macOS без изменений кода.
+
+**Возможности демо:**
+- **Карта памяти** — каждый байт управляемой области отображается цветным пикселем в реальном времени
+- **Метрики** — used/free, фрагментация, ops/s с историческими scrolling-графиками
+- **Дерево структур** — ManagerHeader и все BlockHeader с кликабельной подсветкой на карте
+- **7 сценариев нагрузки** — Linear Fill, Random Stress, Fragmentation Demo, Large Blocks,
+  Tiny Blocks, Mixed Sizes, Persistence Cycle
+
+**Сборка демо:**
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DPMM_BUILD_DEMO=ON
+cmake --build build --target pmm_demo
+./build/demo/pmm_demo
+```
+
+Зависимости (Dear ImGui, GLFW) устанавливаются автоматически через CMake FetchContent.
+Подробное техническое задание: [demo.md](demo.md) | План разработки: [plan.md](plan.md)
 
 ## Стресс-тест и бенчмарк
 
@@ -159,34 +181,45 @@ cmake --build build
 ```
 PersistMemoryManager/
 ├── include/
-│   └── persist_memory_manager.h    # Single-header реализация
+│   ├── persist_memory_manager.h    # Single-header реализация
+│   └── persist_memory_io.h         # Утилиты save/load
 ├── examples/
-│   ├── basic_usage.cpp             # Базовое использование (Фаза 1)
-│   ├── persistence_demo.cpp        # Демонстрация персистентности (Фаза 3)
-│   ├── stress_test.cpp             # Стресс-тест 100K/1M операций (Фаза 4)
-│   ├── benchmark.cpp               # Бенчмарк производительности (Фаза 6)
+│   ├── basic_usage.cpp             # Базовое использование
+│   ├── persistence_demo.cpp        # Демонстрация персистентности
+│   ├── stress_test.cpp             # Стресс-тест 100K/1M операций
+│   ├── benchmark.cpp               # Бенчмарк производительности
 │   └── CMakeLists.txt
 ├── tests/
-│   ├── test_allocate.cpp           # Тесты выделения (Фаза 1)
-│   ├── test_deallocate.cpp         # Тесты освобождения (Фаза 1)
-│   ├── test_coalesce.cpp           # Тесты слияния блоков (Фаза 2)
-│   ├── test_persistence.cpp        # Тесты персистентности (Фаза 3)
-│   ├── test_pptr.cpp               # Тесты персистного указателя pptr<T> (Фаза 5)
-│   ├── test_performance.cpp        # Тесты производительности (Фаза 6)
-│   ├── test_stress_realistic.cpp   # Реалистичный стресс-тест (Фаза 8)
-│   ├── test_thread_safety.cpp      # Тесты потокобезопасности (Фаза 9)
-│   ├── test_shared_mutex.cpp       # Тесты разделённых блокировок (Фаза 10)
+│   ├── test_allocate.cpp           # Тесты выделения
+│   ├── test_deallocate.cpp         # Тесты освобождения
+│   ├── test_coalesce.cpp           # Тесты слияния блоков
+│   ├── test_persistence.cpp        # Тесты персистентности
+│   ├── test_pptr.cpp               # Тесты pptr<T>
+│   ├── test_performance.cpp        # Тесты производительности
+│   ├── test_stress_realistic.cpp   # Реалистичный стресс-тест
+│   ├── test_thread_safety.cpp      # Тесты потокобезопасности
+│   ├── test_shared_mutex.cpp       # Тесты разделённых блокировок
 │   └── CMakeLists.txt
+├── demo/                           # Визуальное демо (Dear ImGui + OpenGL)
+│   ├── CMakeLists.txt
+│   ├── main.cpp
+│   ├── demo_app.h/.cpp             # Главный класс приложения
+│   ├── mem_map_view.h/.cpp         # Виджет карты памяти
+│   ├── metrics_view.h/.cpp         # Виджет метрик
+│   ├── struct_tree_view.h/.cpp     # Виджет дерева структур
+│   ├── scenario_manager.h/.cpp     # Управление тестовыми потоками
+│   └── scenarios.h/.cpp            # 7 сценариев нагрузки
 ├── docs/
 │   ├── architecture.md             # Архитектура
-│   ├── api_reference.md            # Справочник по API (Фаза 4)
-│   └── performance.md              # Производительность (Фаза 4)
-├── plan.md                         # План разработки
+│   ├── api_reference.md            # Справочник по API
+│   └── performance.md              # Производительность
+├── demo.md                         # Техническое задание на демо
+├── plan.md                         # План разработки демо
 ├── CMakeLists.txt
 └── LICENSE
 ```
 
-Подробнее: [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md)
+Подробнее: [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md) | [demo.md](demo.md) | [plan.md](plan.md)
 
 ## Лицензия
 
