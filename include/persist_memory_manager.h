@@ -662,12 +662,20 @@ class PersistMemoryManager
             detail::ManagerHeader* hdr = s_instance->header();
             hdr->magic                 = 0;
             bool  owns                 = hdr->owns_memory;
+            void* buf                  = s_instance->base_ptr();
             void* prev                 = hdr->prev_base;
             bool  prev_owns            = hdr->prev_owns;
-            void* buf                  = s_instance->base_ptr();
             s_instance                 = nullptr;
-            if ( prev != nullptr && prev_owns )
+            // Освобождаем всю цепочку предыдущих буферов (grandparent и далее)
+            while ( prev != nullptr && prev_owns )
+            {
+                detail::ManagerHeader* ph        = reinterpret_cast<detail::ManagerHeader*>( prev );
+                void*                  next_prev = ph->prev_base;
+                bool                   next_owns = ph->prev_owns;
                 std::free( prev );
+                prev      = next_prev;
+                prev_owns = next_owns;
+            }
             if ( owns )
                 std::free( buf );
         }
@@ -746,23 +754,11 @@ class PersistMemoryManager
     {
         std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( ptr == nullptr )
-        {
             return;
-        }
-
+        ptr                         = translate_ptr( ptr );
         std::uint8_t*          base = base_ptr();
         detail::ManagerHeader* hdr  = header();
-
-        // Транслируем указатель из предыдущего буфера (после expand()) в текущий
-        if ( hdr->prev_base != nullptr && hdr->prev_total_size > 0 )
-        {
-            std::uint8_t* prev = static_cast<std::uint8_t*>( hdr->prev_base );
-            std::uint8_t* raw  = static_cast<std::uint8_t*>( ptr );
-            if ( raw >= prev && raw < prev + hdr->prev_total_size )
-                ptr = base + ( raw - prev );
-        }
-
-        detail::BlockHeader* blk = detail::header_from_ptr( base, ptr );
+        detail::BlockHeader*   blk  = detail::header_from_ptr( base, ptr );
         if ( blk == nullptr || !blk->used )
             return;
 
@@ -796,17 +792,9 @@ class PersistMemoryManager
         }
 
         std::unique_lock<std::shared_mutex> lock( s_mutex );
-        std::uint8_t*                       base = base_ptr();
-        detail::ManagerHeader*              hdr  = header();
-        // Транслируем указатель из предыдущего буфера (после expand()) в текущий
-        if ( hdr->prev_base != nullptr && hdr->prev_total_size > 0 )
-        {
-            std::uint8_t* prev = static_cast<std::uint8_t*>( hdr->prev_base );
-            std::uint8_t* raw  = static_cast<std::uint8_t*>( ptr );
-            if ( raw >= prev && raw < prev + hdr->prev_total_size )
-                ptr = base + ( raw - prev );
-        }
-        detail::BlockHeader* blk = detail::header_from_ptr( base, ptr );
+        ptr                       = translate_ptr( ptr );
+        std::uint8_t*        base = base_ptr();
+        detail::BlockHeader* blk  = detail::header_from_ptr( base, ptr );
         if ( blk == nullptr || !blk->used )
             return nullptr;
         if ( new_size <= blk->user_size )
@@ -1140,11 +1128,10 @@ class PersistMemoryManager
 
         new_hdr->total_size = new_size;
 
-        // Освобождаем дедушку-буфер; старый буфер сохраняем как prev_base для
-        // трансляции указателей в deallocate() — будет освобождён при следующем
-        // expand() или destroy().
-        if ( hdr->prev_base != nullptr && hdr->prev_owns )
-            std::free( hdr->prev_base );
+        // Старый буфер сохраняем как prev_base для трансляции указателей в
+        // deallocate(). Все предыдущие буферы в цепочке (grandparent и далее)
+        // остаются живыми: new_hdr->prev_base->prev_base -> ... образуют цепочку,
+        // которая полностью освобождается при destroy().
         new_hdr->prev_base       = base_ptr();
         new_hdr->prev_total_size = old_size;
         new_hdr->prev_owns       = old_owns;
@@ -1165,19 +1152,32 @@ class PersistMemoryManager
         while ( offset != detail::kNoBlock )
         {
             detail::BlockHeader* blk = detail::block_at( base, offset );
+            blk->free_prev_offset    = detail::kNoBlock;
+            blk->free_next_offset    = detail::kNoBlock;
             if ( !blk->used )
-            {
-                blk->free_prev_offset = detail::kNoBlock;
-                blk->free_next_offset = detail::kNoBlock;
                 detail::free_list_insert( base, hdr, blk );
-            }
-            else
-            {
-                blk->free_prev_offset = detail::kNoBlock;
-                blk->free_next_offset = detail::kNoBlock;
-            }
             offset = blk->next_offset;
         }
+    }
+
+    /// @brief Транслировать указатель из любого буфера в цепочке prev_base в текущий буфер.
+    void* translate_ptr( void* ptr ) const noexcept
+    {
+        std::uint8_t*                base     = const_cast<PersistMemoryManager*>( this )->base_ptr();
+        const detail::ManagerHeader* hdr      = header();
+        std::uint8_t*                raw      = static_cast<std::uint8_t*>( ptr );
+        void*                        prev_buf = hdr->prev_base;
+        std::size_t                  prev_sz  = hdr->prev_total_size;
+        while ( prev_buf != nullptr && prev_sz > 0 )
+        {
+            std::uint8_t* prev = static_cast<std::uint8_t*>( prev_buf );
+            if ( raw >= prev && raw < prev + prev_sz )
+                return base + ( raw - prev );
+            detail::ManagerHeader* ph = reinterpret_cast<detail::ManagerHeader*>( prev_buf );
+            prev_buf                  = ph->prev_base;
+            prev_sz                   = ph->prev_total_size;
+        }
+        return ptr;
     }
 
     /**
