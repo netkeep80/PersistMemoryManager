@@ -56,7 +56,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-## Персистный указатель pptr<T> (Фаза 5, обновлено в Фазе 7)
+## Персистный указатель pptr<T>
 
 `pptr<T>` — типизированный персистный указатель, который хранит смещение (offset) от базы менеджера памяти вместо абсолютного адреса. Начиная с Фазы 7, `pptr<T>` использует синглтон автоматически и не требует явной передачи менеджера.
 
@@ -113,7 +113,7 @@ int main() {
 - `offset()` — хранимое смещение (для сохранения/восстановления)
 - Операторы `==` и `!=`
 
-## Персистентность (Фаза 3)
+## Персистентность
 
 Сохранение и восстановление кучи:
 
@@ -134,7 +134,7 @@ pmm::PersistMemoryManager::instance()->validate(); // → true
 
 Поскольку все метаданные хранятся как **смещения** (а не абсолютные указатели), образ корректно загружается по любому базовому адресу без пересчёта.
 
-## Возможности (Фаза 2)
+## Возможности
 
 - **Слияние блоков (coalescing)** — при освобождении блока автоматически объединяются соседние свободные блоки, что снижает фрагментацию до нуля при полном освобождении памяти
 
@@ -182,101 +182,11 @@ PersistMemoryManager/
 │   ├── api_reference.md            # Справочник по API (Фаза 4)
 │   └── performance.md              # Производительность (Фаза 4)
 ├── plan.md                         # План разработки
-├── phase1.md                       # Фаза 1: Базовая структура
-├── phase2.md                       # Фаза 2: Слияние блоков
-├── phase3.md                       # Фаза 3: Персистентность
-├── phase4.md                       # Фаза 4: Тесты и документация
-├── phase6.md                       # Фаза 6: Оптимизация производительности
-├── phase9.md                       # Фаза 9: Потокобезопасность
-├── phase10.md                      # Фаза 10: std::shared_mutex
-├── tz.md                           # Техническое задание
 ├── CMakeLists.txt
 └── LICENSE
 ```
 
-## Завершённые фазы
-
-### Фаза 1 — Базовая структура
-
-- `PersistMemoryManager::create()` — инициализация менеджера
-- `PersistMemoryManager::load()` — загрузка из существующего образа
-- `PersistMemoryManager::destroy()` — уничтожение
-- `PersistMemoryManager::allocate()` — выделение памяти
-- `PersistMemoryManager::deallocate()` — освобождение памяти
-- `PersistMemoryManager::reallocate()` — перевыделение
-- Метрики: `total_size()`, `used_size()`, `free_size()`, `fragmentation()`
-- Диагностика: `validate()`, `dump_stats()`
-- Вспомогательные функции: `get_stats()`, `get_info()`
-
-### Фаза 2 — Слияние блоков (coalescing)
-
-- Приватный метод `coalesce()` объединяет соседние свободные блоки при освобождении
-- Слияние с левым соседом, правым соседом или обоими одновременно
-- Фрагментация снижается до нуля после освобождения всех блоков
-
-### Фаза 3 — Персистентность (save/load)
-
-- `pmm::save(mgr, filename)` — запись образа кучи в двоичный файл (в `persist_memory_io.h`)
-- `pmm::load_from_file(filename, memory, size)` — загрузка образа из файла в буфер (в `persist_memory_io.h`)
-- Корректная работа по любому базовому адресу (все ссылки — смещения)
-- Определение повреждённых образов через магическое число
-
-### Фаза 4 — Тесты и документация
-
-- `examples/stress_test.cpp` — стресс-тест: 100 000 последовательных аллокаций + 1 000 000 чередующихся операций
-- `docs/api_reference.md` — полный справочник по API
-- `docs/performance.md` — результаты тестов и анализ производительности
-- Сборка примеров через `examples/CMakeLists.txt`
-
-### Фаза 5 — Персистный указатель pptr<T>
-
-- `pptr<T>` — шаблонный класс персистного типизированного указателя
-- `sizeof(pptr<T>) == sizeof(void*)` — размер как у обычного указателя
-- Хранит смещение от базы менеджера (не абсолютный адрес)
-- Корректно восстанавливается после save/load по любому базовому адресу
-- `allocate_typed<T>()` / `allocate_typed<T>(count)` — выделение объекта/массива
-- `deallocate_typed(pptr<T>)` — освобождение памяти
-- 14 тестов в `tests/test_pptr.cpp`
-
-### Фаза 6 — Оптимизация производительности
-
-- Отдельный двусвязный список свободных блоков (`first_free_offset` в заголовке)
-- `allocate()` обходит только свободные блоки — O(f) вместо O(n)
-- При паттерне «выделить всё подряд»: O(N) вместо O(N²)
-- `rebuild_free_list()` — восстановление при загрузке образа через `load()`
-- 8 тестов производительности в `tests/test_performance.cpp`
-- Бенчмарк в `examples/benchmark.cpp`
-- Результат: allocate 100K блоков ~7 мс (цель ≤ 100 мс ✅, ускорение ~2200×)
-
-### Фаза 8 — Реалистичный стресс-тест
-
-- Четырёхфазный тест жизненного цикла: прогрев (10K блоков), рост (66/33), равновесие (50/50), дренаж (33/66)
-- `tests/test_stress_realistic.cpp` — 339 строк, время выполнения ~3.5 с (Release)
-
-### Фаза 9 — Потокобезопасность
-
-- `std::recursive_mutex` — базовая потокобезопасность всех публичных методов
-- `create()`, `load()`, `destroy()`, `allocate()`, `deallocate()`, `reallocate()` защищены `lock_guard`
-- 4 теста в `tests/test_thread_safety.cpp`: конкурентный allocate, чередование alloc/dealloc, reallocate, проверка отсутствия гонок данных
-
-### Фаза 10 — std::shared_mutex (разделённые блокировки)
-
-- `std::shared_mutex s_mutex` — единый статический мьютекс для синглтона
-- Писатели (`create`, `load`, `destroy`, `allocate`, `deallocate`): `unique_lock<shared_mutex>`
-- Читатели (`validate`, `save`, `dump_stats`): `shared_lock<shared_mutex>` — несколько потоков могут читать параллельно
-- `reallocate()` рефакторирован: освобождает `unique_lock` перед вызовом `allocate()`/`deallocate()` (устранение deadlock с нерекурсивным `shared_mutex`)
-- 4 теста в `tests/test_shared_mutex.cpp`: параллельный `validate`, читатели+писатели, корректность `reallocate`, параллельный `get_stats`
-
-### Фаза 7 — Синглтон + автоматическое расширение памяти
-
-- `PersistMemoryManager::instance()` — глобальный доступ к единственному активному менеджеру
-- `create()` и `load()` / `load_from_file()` устанавливают синглтон
-- `destroy()` стал **статическим** и автоматически освобождает управляемый буфер (`std::free`)
-- `expand()` — при нехватке памяти менеджер выделяет новый буфер на 25% больше, копирует данные и освобождает старый
-- `pptr<T>::get()`, `operator*`, `operator->` — разыменование через синглтон без передачи менеджера
-- Все тесты и примеры обновлены для нового API
-
-Подробнее: [plan.md](plan.md) | [phase1.md](phase1.md) | [phase2.md](phase2.md) | [phase3.md](phase3.md) | [phase4.md](phase4.md) | [phase6.md](phase6.md) | [phase9.md](phase9.md) | [phase10.md](phase10.md) | [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md)
+Подробнее: [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md)
 
 ## Лицензия
 
