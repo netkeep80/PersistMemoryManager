@@ -64,7 +64,7 @@ static void test_concurrent_allocate()
     for ( int t = 0; t < kThreads; ++t )
     {
         threads.emplace_back(
-            [t, &results]()
+            [t, &results, kPerThread, kBlockSize]()
             {
                 auto* mgr = pmm::PersistMemoryManager::instance();
                 for ( int i = 0; i < kPerThread; ++i )
@@ -128,7 +128,7 @@ static void test_concurrent_alloc_dealloc()
     for ( int t = 0; t < kThreads; ++t )
     {
         threads.emplace_back(
-            [t, &errors]()
+            [t, kIter]()
             {
                 auto* mgr = pmm::PersistMemoryManager::instance();
                 // Простой LCG для воспроизводимой псевдослучайности
@@ -256,7 +256,7 @@ static void test_no_data_races()
     for ( int t = 0; t < kThreads; ++t )
     {
         threads.emplace_back(
-            [t, &mismatches]()
+            [t, &mismatches, kPerThread]()
             {
                 auto*                              mgr = pmm::PersistMemoryManager::instance();
                 std::vector<std::pair<void*, int>> allocs;
