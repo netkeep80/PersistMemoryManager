@@ -70,6 +70,9 @@ static double elapsed_ms( std::chrono::high_resolution_clock::time_point start,
 
 // ─── Псевдослучайный генератор (LCG) ──────────────────────────────────────────
 
+namespace
+{
+
 struct Rng
 {
     uint32_t state;
@@ -90,6 +93,8 @@ struct Rng
         return static_cast<std::size_t>( ( next_n( 32 ) + 1 ) * 8 );
     }
 };
+
+} // namespace
 
 // ─── Тест 1: однократный expand ───────────────────────────────────────────────
 
