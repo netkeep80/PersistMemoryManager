@@ -165,8 +165,8 @@ static bool test_shredder()
         }
     }
 
-    std::cout << "    Выделено: " << all_ptrs.size() << " / 10000"
-              << "  неудачно: " << failed << "  время: " << elapsed_ms( t0, now() ) << " мс\n";
+    std::cout << "    Выделено: " << all_ptrs.size() << " / 10000" << "  неудачно: " << failed
+              << "  время: " << elapsed_ms( t0, now() ) << " мс\n";
 
     PMM_TEST( pmm::PersistMemoryManager::instance()->validate() );
 
@@ -267,9 +267,9 @@ static bool test_shredder()
  */
 struct Node
 {
-    int              id;
-    pmm::pptr<Node>  next;
-    unsigned int     checksum; ///< простая контрольная сумма id + smещения
+    int             id;
+    pmm::pptr<Node> next;
+    unsigned int    checksum; ///< простая контрольная сумма id + smещения
 };
 
 /**
@@ -292,9 +292,9 @@ static unsigned int compute_checksum( int id, std::ptrdiff_t next_offset )
  */
 static bool test_persistent_cycle()
 {
-    const std::size_t memory_size   = 4UL * 1024 * 1024; // 4 МБ — достаточно для 1000 узлов
-    const char*       filename      = "test_issue34_heap.dat";
-    const int         node_count    = 1000;
+    const std::size_t memory_size = 4UL * 1024 * 1024; // 4 МБ — достаточно для 1000 узлов
+    const char*       filename    = "test_issue34_heap.dat";
+    const int         node_count  = 1000;
 
     // ── Фаза 1: построение связного списка ────────────────────────────────────
     {
@@ -345,7 +345,7 @@ static bool test_persistent_cycle()
     // Записываем контрольные суммы
     for ( int i = 0; i < node_count; ++i )
     {
-        Node* n = nodes[i].get();
+        Node* n     = nodes[i].get();
         n->checksum = compute_checksum( n->id, n->next.offset() );
     }
 
@@ -360,8 +360,8 @@ static bool test_persistent_cycle()
         std::cout << "  Фаза 2: сохранение в файл '" << filename << "'...\n";
     }
 
-    auto t0     = now();
-    bool saved  = pmm::save( mgr1, filename );
+    auto t0    = now();
+    bool saved = pmm::save( mgr1, filename );
     PMM_TEST( saved );
     std::cout << "    Сохранено за " << elapsed_ms( t0, now() ) << " мс\n";
 
@@ -382,7 +382,7 @@ static bool test_persistent_cycle()
         return false;
     }
 
-    auto t1     = now();
+    auto                       t1   = now();
     pmm::PersistMemoryManager* mgr2 = pmm::load_from_file( filename, mem2, memory_size );
     if ( mgr2 == nullptr )
     {
@@ -431,8 +431,8 @@ static bool test_persistent_cycle()
         unsigned int expected_cs = compute_checksum( n->id, n->next.offset() );
         if ( n->checksum != expected_cs )
         {
-            std::cerr << "  ОШИБКА: контрольная сумма узла " << traversed << " не совпадает"
-                      << " (ожидалась " << expected_cs << ", получена " << n->checksum << ")\n";
+            std::cerr << "  ОШИБКА: контрольная сумма узла " << traversed << " не совпадает" << " (ожидалась "
+                      << expected_cs << ", получена " << n->checksum << ")\n";
             data_ok = false;
             break;
         }
@@ -501,8 +501,8 @@ static bool test_marathon()
     std::vector<void*> live;
     live.reserve( 50000 );
 
-    const int total_iterations   = 1000000;
-    const int validate_interval  = 10000;
+    const int total_iterations  = 1000000;
+    const int validate_interval = 10000;
 
     int  alloc_ok     = 0;
     int  alloc_fail   = 0;
@@ -569,12 +569,10 @@ static bool test_marathon()
             if ( ( iter + 1 ) % 100000 == 0 )
             {
                 auto stats = pmm::get_stats( pmm::PersistMemoryManager::instance() );
-                std::cout << "    iter=" << ( iter + 1 ) << "  живых=" << live.size()
-                          << "  alloc=" << alloc_ok << "  fail=" << alloc_fail
-                          << "  free=" << dealloc_cnt << "\n"
-                          << "    used=" << used_now / 1024 << " КБ"
-                          << "  frag=" << stats.total_fragmentation / 1024 << " КБ"
-                          << "  free_blocks=" << stats.free_blocks << "\n";
+                std::cout << "    iter=" << ( iter + 1 ) << "  живых=" << live.size() << "  alloc=" << alloc_ok
+                          << "  fail=" << alloc_fail << "  free=" << dealloc_cnt << "\n"
+                          << "    used=" << used_now / 1024 << " КБ" << "  frag=" << stats.total_fragmentation / 1024
+                          << " КБ" << "  free_blocks=" << stats.free_blocks << "\n";
             }
         }
     }
@@ -600,8 +598,8 @@ static bool test_marathon()
     PMM_TEST( final_stats.allocated_blocks == 0 );
 
     double total_ms = elapsed_ms( t0, now() );
-    std::cout << "  Итого: " << total_iterations << " итераций, " << alloc_ok << " аллокаций"
-              << "  (" << alloc_fail << " неудач), " << dealloc_cnt << " освобождений\n";
+    std::cout << "  Итого: " << total_iterations << " итераций, " << alloc_ok << " аллокаций" << "  (" << alloc_fail
+              << " неудач), " << dealloc_cnt << " освобождений\n";
     std::cout << "  validate() вызван " << validate_cnt << " раз, всегда true\n";
     std::cout << "  Общее время: " << total_ms << " мс\n";
 
