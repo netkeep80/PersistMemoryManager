@@ -158,6 +158,27 @@ cmake --build build --target pmm_demo
 ```
 
 Зависимости (Dear ImGui, GLFW) устанавливаются автоматически через CMake FetchContent.
+
+**Headless-тесты демо (Фаза 8):**
+
+При сборке с `PMM_BUILD_DEMO=ON` дополнительно компилируются три headless-теста:
+
+```bash
+# Сборка с демо-тестами
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DPMM_BUILD_DEMO=ON
+cmake --build build
+
+# Запуск всех тестов, включая тесты демо
+ctest --test-dir build --output-on-failure
+
+# Запуск только тестов демо
+ctest --test-dir build -R "test_demo_headless|test_mem_map_view|test_scenario_manager" --output-on-failure
+```
+
+- `test_demo_headless` — запускает все 7 сценариев на 2 с, проверяет `validate()` и завершение потоков
+- `test_mem_map_view` — тесты `MemMapView::update_snapshot()` без графического окна
+- `test_scenario_manager` — тесты жизненного цикла `ScenarioManager::stop_all()` / `join_all()`
+
 Подробное техническое задание: [demo.md](demo.md) | План разработки: [plan.md](plan.md)
 
 ## Стресс-тест и бенчмарк
@@ -199,6 +220,9 @@ PersistMemoryManager/
 │   ├── test_stress_realistic.cpp   # Реалистичный стресс-тест
 │   ├── test_thread_safety.cpp      # Тесты потокобезопасности
 │   ├── test_shared_mutex.cpp       # Тесты разделённых блокировок
+│   ├── test_demo_headless.cpp      # Фаза 8: headless smoke-тест 7 сценариев
+│   ├── test_mem_map_view.cpp       # Фаза 8: тесты MemMapView::update_snapshot
+│   ├── test_scenario_manager.cpp   # Фаза 8: тесты ScenarioManager lifecycle
 │   └── CMakeLists.txt
 ├── demo/                           # Визуальное демо (Dear ImGui + OpenGL)
 │   ├── CMakeLists.txt
@@ -212,7 +236,9 @@ PersistMemoryManager/
 ├── docs/
 │   ├── architecture.md             # Архитектура
 │   ├── api_reference.md            # Справочник по API
-│   └── performance.md              # Производительность
+│   ├── performance.md              # Производительность
+│   ├── phase-1-infrastructure.md   # Отчёт о реализации Фазы 1
+│   └── phase-8-tests.md            # Отчёт о реализации Фазы 8
 ├── demo.md                         # Техническое задание на демо
 ├── plan.md                         # План разработки демо
 ├── CMakeLists.txt
