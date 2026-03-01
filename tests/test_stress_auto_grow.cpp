@@ -325,7 +325,7 @@ static bool test_multi_expand()
  * Нарастающий объём живых блоков вынуждает expand(). Проверяется
  * корректность трансляции указателей и validate().
  *
- * Ограничен 2000 итерациями для предсказуемого времени выполнения.
+ * Ограничен 200000 итерациями для предсказуемого времени выполнения.
  *
  * @return true при успешном прохождении.
  */
@@ -351,15 +351,15 @@ static bool test_expand_with_mixed_ops()
 
     std::vector<void*>       live;
     std::vector<std::size_t> live_sizes;
-    live.reserve( 1000 );
-    live_sizes.reserve( 1000 );
+    live.reserve( 100000 );
+    live_sizes.reserve( 100000 );
 
     std::size_t prev_total   = pmm::PersistMemoryManager::instance()->total_size();
     int         expand_count = 0;
     int         alloc_ok     = 0;
     int         dealloc_cnt  = 0;
-    const int max_expands = 5; // ограничиваем expand() для корректной работы translate_ptr
-    const int max_iter = 2000;
+    const int max_expands = 50; // ограничиваем expand() для корректной работы translate_ptr
+    const int max_iter = 200000;
 
     auto t0 = now();
 
