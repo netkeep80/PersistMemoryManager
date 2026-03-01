@@ -59,10 +59,17 @@ Smoke-тест всего демо без окна:
 ### CI (GitHub Actions)
 
 Job `build-demo` в `.github/workflows/ci.yml` уже присутствовал с Фазы 1.
-В рамках Фазы 8 подтверждено:
+В рамках Фазы 8 подтверждено и дополнено:
 
 - Сборка проходит на ubuntu-latest, windows-latest, macos-latest.
 - Linux: установка `libgl1-mesa-dev` и зависимостей X11/Wayland в CI.
+- Шаг Build теперь собирает все цели (`cmake --build build --config Release`),
+  включая headless-тесты.
+- Добавлен шаг **Test** — запускает все три headless-теста через `ctest`:
+  ```
+  ctest --test-dir build --build-config Release --output-on-failure \
+    -R "test_demo_headless|test_mem_map_view|test_scenario_manager"
+  ```
 
 ---
 
@@ -94,6 +101,7 @@ ctest --test-dir build -R "test_demo_headless|test_mem_map_view|test_scenario_ma
 | `cppcheck` проходит без ошибок | ✅ |
 | Все файлы ≤ 1500 строк | ✅ |
 | `cmake --build build --target pmm_demo` — успешно | ✅ |
+| CI job `build-demo` запускает headless-тесты через `ctest` | ✅ |
 | Документация обновлена в `README.md` и `docs/` | ✅ |
 
 ---
