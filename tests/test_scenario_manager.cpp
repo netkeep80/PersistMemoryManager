@@ -9,6 +9,10 @@
  *  - count() returns the expected number of scenarios (7).
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
+ *
+ * NOTE: Uses std::malloc for the PMM buffer so that destroy() can safely
+ * free it (consistent with all other PMM tests and the PMM contract where
+ * owns_memory=true means the buffer was malloc'd).
  */
 
 #include "scenario_manager.h"
@@ -17,9 +21,9 @@
 
 #include <chrono>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <thread>
-#include <vector>
 
 // ─── Test helpers ─────────────────────────────────────────────────────────────
 
@@ -50,19 +54,24 @@
 
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
-static std::vector<std::uint8_t> g_buf;
+static constexpr std::size_t kDefaultPmmSize = 16 * 1024 * 1024;
+static void*                 g_buf           = nullptr;
 
-static void pmm_setup( std::size_t size = 16 * 1024 * 1024 )
+static void pmm_setup( std::size_t size = kDefaultPmmSize )
 {
-    g_buf.assign( size, std::uint8_t{ 0 } );
-    pmm::PersistMemoryManager::create( g_buf.data(), size );
+    g_buf = std::malloc( size );
+    if ( g_buf )
+    {
+        std::memset( g_buf, 0, size );
+        pmm::PersistMemoryManager::create( g_buf, size );
+    }
 }
 
 static void pmm_teardown()
 {
     if ( pmm::PersistMemoryManager::instance() )
-        pmm::PersistMemoryManager::destroy();
-    g_buf.clear();
+        pmm::PersistMemoryManager::destroy(); // frees g_buf (owns_memory=true)
+    g_buf = nullptr;
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
