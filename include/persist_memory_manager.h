@@ -193,6 +193,19 @@ struct ManagerHeader
     /// Смещение до первого свободного блока в отдельном списке свободных блоков.
     /// Позволяет выделению памяти сразу находить свободный блок, не обходя занятые.
     std::ptrdiff_t first_free_offset;
+    /// true если буфер выделен через std::malloc() внутри expand() и должен
+    /// быть освобождён через std::free(); false если буфер передан пользователем.
+    bool owns_memory;
+    std::uint8_t _hdr_pad[7]; ///< выравнивание до 8 байт
+    /// Размер предыдущего буфера до последнего expand() (0 если expand() не вызывался).
+    /// Используется для трансляции указателей из старого буфера в новый.
+    std::size_t   prev_total_size;
+    /// Базовый адрес предыдущего буфера (nullptr если expand() не вызывался).
+    /// Позволяет deallocate() принимать указатели, выданные до расширения кучи.
+    void*         prev_base;
+    /// true если prev_base был выделен через malloc() и нужно его освободить при следующем expand()/destroy().
+    bool          prev_owns;
+    std::uint8_t  _prev_pad[7];
 };
 
 static_assert( sizeof( ManagerHeader ) % 8 == 0, "ManagerHeader must be 8-byte aligned" );
@@ -253,6 +266,12 @@ inline void* user_ptr( BlockHeader* block )
  * @brief Получить заголовок блока из указателя на пользовательские данные.
  *
  * Сканирует назад от ptr в поисках магического числа BlockHeader.
+ * Пользовательские данные расположены по адресу:
+ *   user_ptr = align_up(block + sizeof(BlockHeader), block->alignment)
+ * Поэтому заголовок находится в диапазоне
+ *   [ptr - sizeof(BlockHeader) - (kMaxAlignment-1), ptr - sizeof(BlockHeader)]
+ * Шаг поиска kMinAlignment: не более kMaxAlignment/kMinAlignment итераций (O(1)).
+ *
  * @param base  Начало управляемой области.
  * @param ptr   Указатель на пользовательские данные.
  * @return Заголовок блока или nullptr, если не найден.
@@ -263,32 +282,32 @@ inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr )
     {
         return nullptr;
     }
-    // Сканируем назад от ptr до base + sizeof(ManagerHeader)
-    std::uint8_t* p        = reinterpret_cast<std::uint8_t*>( ptr );
     std::uint8_t* min_addr = base + sizeof( ManagerHeader );
-    while ( p > min_addr )
+    std::uint8_t* raw_ptr  = reinterpret_cast<std::uint8_t*>( ptr );
+
+    // Заголовок блока находится не далее (kMaxAlignment - 1) байт до ptr - sizeof(BlockHeader).
+    // Шагаем с шагом kMinAlignment — максимум kMaxAlignment/kMinAlignment = 512 итераций (O(1)).
+    for ( std::size_t padding = 0; padding < kMaxAlignment; padding += kMinAlignment )
     {
-        // Отступить на sizeof(BlockHeader) и проверить магическое число
-        if ( p - sizeof( BlockHeader ) >= min_addr )
+        // Кандидат: ptr - sizeof(BlockHeader) - padding
+        if ( raw_ptr < min_addr + sizeof( BlockHeader ) + padding )
         {
-            p -= sizeof( BlockHeader );
-            BlockHeader* candidate = reinterpret_cast<BlockHeader*>( p );
-            if ( candidate->magic == kBlockMagic && candidate->used )
-            {
-                // Проверяем, что user_ptr этого кандидата совпадает с исходным ptr
-                if ( user_ptr( candidate ) == ptr )
-                {
-                    return candidate;
-                }
-            }
+            break; // Вышли за пределы допустимой области
         }
-        else
+        std::uint8_t* candidate_addr = raw_ptr - sizeof( BlockHeader ) - padding;
+        if ( candidate_addr < min_addr )
         {
             break;
         }
-        // Шагаем назад по выравниванию
-        p = reinterpret_cast<std::uint8_t*>( ptr ) - sizeof( BlockHeader );
-        break;
+        BlockHeader* candidate = reinterpret_cast<BlockHeader*>( candidate_addr );
+        if ( candidate->magic == kBlockMagic && candidate->used )
+        {
+            // Проверяем, что user_ptr этого кандидата совпадает с исходным ptr
+            if ( user_ptr( candidate ) == ptr )
+            {
+                return candidate;
+            }
+        }
     }
     return nullptr;
 }
@@ -324,15 +343,21 @@ inline BlockHeader* find_block_by_ptr( std::uint8_t* base, const ManagerHeader* 
 /**
  * @brief Вычислить минимальный размер блока для запроса user_size с заданным выравниванием.
  *
- * total_size = sizeof(BlockHeader) + padding_for_alignment + user_size
+ * total_size = align_up(sizeof(BlockHeader) + padding_for_alignment + user_size, kMinAlignment)
  * Гарантируется не менее kMinBlockSize.
+ * Выравнивание до kMinAlignment гарантирует, что все заголовки блоков располагаются
+ * на kMinAlignment-выровненных адресах — необходимое условие для O(1) поиска
+ * заголовка в header_from_ptr (шаг сканирования = kMinAlignment).
  */
 inline std::size_t required_block_size( std::size_t user_size, std::size_t alignment )
 {
     // Максимально возможный padding до alignment (в худшем случае alignment-1 байт)
     std::size_t max_padding = alignment - 1;
     std::size_t min_total   = sizeof( BlockHeader ) + max_padding + user_size;
-    return std::max( min_total, kMinBlockSize );
+    // Выравниваем результат до kMinAlignment, чтобы все заголовки блоков находились
+    // на kMinAlignment-выровненных адресах. Это обеспечивает корректную работу
+    // header_from_ptr, которая сканирует с шагом kMinAlignment.
+    return align_up( std::max( min_total, kMinBlockSize ), kMinAlignment );
 }
 
 /**
@@ -605,6 +630,12 @@ class PersistMemoryManager
         hdr->alloc_count        = 0;
         hdr->first_block_offset = detail::kNoBlock;
         hdr->first_free_offset  = detail::kNoBlock;
+        hdr->owns_memory        = true;   // create() принимает владение буфером — destroy() освободит его
+        std::memset( hdr->_hdr_pad, 0, sizeof( hdr->_hdr_pad ) );
+        hdr->prev_total_size    = 0;
+        hdr->prev_base          = nullptr;
+        hdr->prev_owns          = false;
+        std::memset( hdr->_prev_pad, 0, sizeof( hdr->_prev_pad ) );
 
         std::size_t    hdr_end = detail::align_up( sizeof( detail::ManagerHeader ), kDefaultAlignment );
         std::ptrdiff_t blk_off = static_cast<std::ptrdiff_t>( hdr_end );
@@ -656,23 +687,40 @@ class PersistMemoryManager
             return nullptr;
         }
         // Перестраиваем список свободных блоков после загрузки образа
+        hdr->owns_memory     = true;   // load() принимает владение буфером — destroy() освободит его
+        hdr->prev_total_size = 0;
+        hdr->prev_base       = nullptr;
+        hdr->prev_owns       = false;
+        std::memset( hdr->_prev_pad, 0, sizeof( hdr->_prev_pad ) );
         auto* mgr = reinterpret_cast<PersistMemoryManager*>( base );
         mgr->rebuild_free_list();
         s_instance = mgr;
         return mgr;
     }
 
-    /// @brief Уничтожить синглтон: обнулить магическое число, освободить буфер (std::free), сбросить s_instance.
+    /// @brief Уничтожить синглтон: обнулить магическое число, освободить буферы, сбросить s_instance.
     static void destroy()
     {
         std::lock_guard<std::recursive_mutex> lock( s_mutex );
         if ( s_instance != nullptr )
         {
-            detail::ManagerHeader* hdr = s_instance->header();
-            hdr->magic                 = 0;
-            void* buf                  = s_instance->base_ptr();
-            s_instance                 = nullptr;
-            std::free( buf );
+            detail::ManagerHeader* hdr  = s_instance->header();
+            hdr->magic                  = 0;
+            bool  owns                  = hdr->owns_memory;
+            void* prev                  = hdr->prev_base;
+            bool  prev_owns             = hdr->prev_owns;
+            void* buf                   = s_instance->base_ptr();
+            s_instance                  = nullptr;
+            // Освобождаем отложенный предыдущий буфер (если принадлежит нам)
+            if ( prev != nullptr && prev_owns )
+            {
+                std::free( prev );
+            }
+            // Освобождаем текущий буфер (если принадлежит нам)
+            if ( owns )
+            {
+                std::free( buf );
+            }
         }
     }
 
@@ -756,7 +804,23 @@ class PersistMemoryManager
         std::uint8_t*          base = base_ptr();
         detail::ManagerHeader* hdr  = header();
 
-        detail::BlockHeader* blk = detail::find_block_by_ptr( base, hdr, ptr );
+        // Если ptr указывает в предыдущий буфер (после expand()), транслируем
+        // адрес в текущий буфер по смещению: offset = ptr - prev_base,
+        // new_ptr = base + offset.
+        if ( hdr->prev_base != nullptr && hdr->prev_total_size > 0 )
+        {
+            std::uint8_t* prev = static_cast<std::uint8_t*>( hdr->prev_base );
+            std::uint8_t* raw  = static_cast<std::uint8_t*>( ptr );
+            if ( raw >= prev && raw < prev + hdr->prev_total_size )
+            {
+                std::ptrdiff_t offset = raw - prev;
+                ptr = base + offset;
+            }
+        }
+
+        // O(1) поиск заголовка блока по указателю пользователя.
+        // header_from_ptr сканирует не более kMaxAlignment/kMinAlignment кандидатов.
+        detail::BlockHeader* blk = detail::header_from_ptr( base, ptr );
         if ( blk == nullptr || !blk->used )
         {
             // Неверный указатель — игнорируем (не бросаем исключение)
@@ -797,7 +861,19 @@ class PersistMemoryManager
 
         std::uint8_t*          base = base_ptr();
         detail::ManagerHeader* hdr  = header();
-        detail::BlockHeader*   blk  = detail::find_block_by_ptr( base, hdr, ptr );
+
+        // Транслируем указатель из предыдущего буфера (после expand()) в текущий
+        if ( hdr->prev_base != nullptr && hdr->prev_total_size > 0 )
+        {
+            std::uint8_t* prev = static_cast<std::uint8_t*>( hdr->prev_base );
+            std::uint8_t* raw  = static_cast<std::uint8_t*>( ptr );
+            if ( raw >= prev && raw < prev + hdr->prev_total_size )
+            {
+                ptr = base + ( raw - prev );
+            }
+        }
+
+        detail::BlockHeader* blk  = detail::header_from_ptr( base, ptr );
         if ( blk == nullptr || !blk->used )
         {
             return nullptr;
@@ -1072,10 +1148,13 @@ class PersistMemoryManager
             return false;
         }
 
+        bool old_owns = hdr->owns_memory;  // запомнить до memcpy
+
         std::memcpy( new_memory, base_ptr(), old_size );
 
         detail::ManagerHeader* new_hdr  = reinterpret_cast<detail::ManagerHeader*>( new_memory );
         std::uint8_t*          new_base = static_cast<std::uint8_t*>( new_memory );
+        new_hdr->owns_memory            = true;  // новый буфер выделен через malloc — принадлежит нам
 
         std::ptrdiff_t extra_offset = static_cast<std::ptrdiff_t>( old_size );
         std::size_t    extra_size   = new_size - old_size;
@@ -1137,8 +1216,23 @@ class PersistMemoryManager
 
         new_hdr->total_size = new_size;
 
-        void* old_memory = base_ptr();
-        std::free( old_memory );
+        // Перед заменой: освобождаем дедушку-буфер (если он нам принадлежал).
+        // Дедушка — это prev_base текущего (старого) буфера.
+        if ( hdr->prev_base != nullptr && hdr->prev_owns )
+        {
+            std::free( hdr->prev_base );
+        }
+
+        // Сохраняем старый буфер как prev_base нового буфера:
+        // deallocate() использует prev_base для трансляции указателей из старого буфера.
+        // Старый буфер НЕ освобождается прямо сейчас — он нужен, пока пользователь
+        // не передаст последний указатель на него в deallocate()/reallocate().
+        // Он будет освобождён при следующем expand() или при destroy().
+        void* old_memory              = base_ptr();
+        new_hdr->prev_base            = old_memory;
+        new_hdr->prev_total_size      = old_size;
+        new_hdr->prev_owns            = old_owns;
+        std::memset( new_hdr->_prev_pad, 0, sizeof( new_hdr->_prev_pad ) );
 
         s_instance = reinterpret_cast<PersistMemoryManager*>( new_memory );
 
