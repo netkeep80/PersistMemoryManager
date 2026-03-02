@@ -81,16 +81,16 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Block header (Issue #59: 32 bytes = 2 granules). All _offset fields are granule indices (uint32_t); kNoBlock = 0xFFFFFFFF. used_size=0 means free block. User data starts 32 bytes (2 granules) after block start. total_size = next_offset - idx. Issue #69: magic field removed; validity checked via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: used_size&lt;total_gran,...">is_valid_block()</a> structural invariants.  
+<p>Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx.  
  <a href="structpmm_1_1detail_1_1BlockHeader.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a9c93a94da45df48e33402e7e4771093e" id="r_a9c93a94da45df48e33402e7e4771093e"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a9c93a94da45df48e33402e7e4771093e">used_size</a></td></tr>
-<tr class="memdesc:a9c93a94da45df48e33402e7e4771093e"><td class="mdescLeft">&#160;</td><td class="mdescRight">[1] Занятый размер в гранулах (0 = свободный блок)  <br /></td></tr>
-<tr class="separator:a9c93a94da45df48e33402e7e4771093e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3aaacb0639cf012b2414cf9b39737c63" id="r_a3aaacb0639cf012b2414cf9b39737c63"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a3aaacb0639cf012b2414cf9b39737c63">size</a></td></tr>
+<tr class="memdesc:a3aaacb0639cf012b2414cf9b39737c63"><td class="mdescLeft">&#160;</td><td class="mdescRight">[1] Занятый размер в гранулах (0 = свободный блок, Issue #75)  <br /></td></tr>
+<tr class="separator:a3aaacb0639cf012b2414cf9b39737c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeabee7ef2a65e7808f039ec61d35b932" id="r_aeabee7ef2a65e7808f039ec61d35b932"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#aeabee7ef2a65e7808f039ec61d35b932">prev_offset</a></td></tr>
 <tr class="memdesc:aeabee7ef2a65e7808f039ec61d35b932"><td class="mdescLeft">&#160;</td><td class="mdescRight">[2] Предыдущий блок (гранульный индекс)  <br /></td></tr>
 <tr class="separator:aeabee7ef2a65e7808f039ec61d35b932"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -112,14 +112,14 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a61ab4fd7a0dfa248c537926b3c003f41" id="r_a61ab4fd7a0dfa248c537926b3c003f41"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a61ab4fd7a0dfa248c537926b3c003f41">_pad</a></td></tr>
 <tr class="memdesc:a61ab4fd7a0dfa248c537926b3c003f41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Зарезервировано (Issue #69: previously held magic[3:2])  <br /></td></tr>
 <tr class="separator:a61ab4fd7a0dfa248c537926b3c003f41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1751645a6fc7a1b5d8920a9b91f39c2" id="r_ad1751645a6fc7a1b5d8920a9b91f39c2"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#ad1751645a6fc7a1b5d8920a9b91f39c2">_reserved</a></td></tr>
-<tr class="memdesc:ad1751645a6fc7a1b5d8920a9b91f39c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Зарезервировано (Issue #69: freed from magic field)  <br /></td></tr>
-<tr class="separator:ad1751645a6fc7a1b5d8920a9b91f39c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8424d513d549723a8e7539731da79d0f" id="r_a8424d513d549723a8e7539731da79d0f"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a8424d513d549723a8e7539731da79d0f">root_offset</a></td></tr>
+<tr class="memdesc:a8424d513d549723a8e7539731da79d0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">0=свободный блок (дерево свободных); own_idx=занятый (Issue #75)  <br /></td></tr>
+<tr class="separator:a8424d513d549723a8e7539731da79d0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Block header (Issue #59: 32 bytes = 2 granules). All _offset fields are granule indices (uint32_t); kNoBlock = 0xFFFFFFFF. used_size=0 means free block. User data starts 32 bytes (2 granules) after block start. total_size = next_offset - idx. Issue #69: magic field removed; validity checked via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: used_size&lt;total_gran,...">is_valid_block()</a> structural invariants. </p>
+<div class="textblock"><p>Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00164">164</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00166">166</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="a61ab4fd7a0dfa248c537926b3c003f41" name="a61ab4fd7a0dfa248c537926b3c003f41"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a61ab4fd7a0dfa248c537926b3c003f41">&#9670;&#160;</a></span>_pad</h2>
@@ -135,25 +135,7 @@ Public Attributes</h2></td></tr>
 
 <p>Зарезервировано (Issue #69: previously held magic[3:2]) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00173">173</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
-
-</div>
-</div>
-<a id="ad1751645a6fc7a1b5d8920a9b91f39c2" name="ad1751645a6fc7a1b5d8920a9b91f39c2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1751645a6fc7a1b5d8920a9b91f39c2">&#9670;&#160;</a></span>_reserved</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::uint32_t pmm::detail::BlockHeader::_reserved</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Зарезервировано (Issue #69: freed from magic field) </p>
-
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00174">174</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00175">175</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -171,7 +153,7 @@ Public Attributes</h2></td></tr>
 
 <p>Высота AVL-поддерева (0 = не в дереве) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00172">172</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00174">174</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -189,7 +171,7 @@ Public Attributes</h2></td></tr>
 
 <p>[4] Левый дочерний узел AVL-дерева (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00169">169</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00171">171</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -207,7 +189,7 @@ Public Attributes</h2></td></tr>
 
 <p>[3] Следующий блок (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00168">168</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00170">170</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -225,7 +207,7 @@ Public Attributes</h2></td></tr>
 
 <p>[6] Родительский узел AVL-дерева (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00171">171</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00173">173</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -243,7 +225,7 @@ Public Attributes</h2></td></tr>
 
 <p>[2] Предыдущий блок (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00167">167</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00169">169</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -261,25 +243,43 @@ Public Attributes</h2></td></tr>
 
 <p>[5] Правый дочерний узел AVL-дерева (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00170">170</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00172">172</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
-<a id="a9c93a94da45df48e33402e7e4771093e" name="a9c93a94da45df48e33402e7e4771093e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c93a94da45df48e33402e7e4771093e">&#9670;&#160;</a></span>used_size</h2>
+<a id="a8424d513d549723a8e7539731da79d0f" name="a8424d513d549723a8e7539731da79d0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8424d513d549723a8e7539731da79d0f">&#9670;&#160;</a></span>root_offset</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::uint32_t pmm::detail::BlockHeader::used_size</td>
+          <td class="memname">std::uint32_t pmm::detail::BlockHeader::root_offset</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>[1] Занятый размер в гранулах (0 = свободный блок) </p>
+<p>0=свободный блок (дерево свободных); own_idx=занятый (Issue #75) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00166">166</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00176">176</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a3aaacb0639cf012b2414cf9b39737c63" name="a3aaacb0639cf012b2414cf9b39737c63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3aaacb0639cf012b2414cf9b39737c63">&#9670;&#160;</a></span>size</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint32_t pmm::detail::BlockHeader::size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>[1] Занятый размер в гранулах (0 = свободный блок, Issue #75) </p>
+
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00168">168</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
