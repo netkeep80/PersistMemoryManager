@@ -45,3 +45,6 @@ pmm_add_test(test_scenarios_issue34 test_scenarios_issue34.cpp)
 
 # ─── Тесты нового алгоритма (Issue #55): AVL-дерево свободных блоков ──────────
 pmm_add_test(test_avl_allocator test_avl_allocator.cpp)
+
+# ─── Тесты reallocate_typed (Issue #67) ───────────────────────────────────────
+pmm_add_test(test_reallocate test_reallocate.cpp)

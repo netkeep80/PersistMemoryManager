@@ -66,6 +66,10 @@
  *  18. Fixed coalesce() to update hdr->used_size when merging block headers.
  *  19. Fixed expand() growth computation to avoid size_t overflow.
  *  20. Replaced void* prev_base_ptr in ManagerHeader with uint64_t prev_base_ptr_offset (persistent-safe).
+ *
+ * Bug fix (Issue #67):
+ *   1. Fixed reallocate_typed: after allocate_typed (which may trigger expand), re-derive the source
+ *      pointer from the current s_instance base so the memcpy always reads from the live buffer.
  */
 
 #pragma once
@@ -814,15 +818,19 @@ class PersistMemoryManager
         if ( new_granules <= blk->used_size )
             return p;
 
-        std::size_t old_bytes = detail::granules_to_bytes( blk->used_size );
-        pptr<T>     new_p     = allocate_typed<T>( count );
+        std::size_t   old_bytes  = detail::granules_to_bytes( blk->used_size );
+        std::uint32_t old_offset = p.offset();
+        pptr<T>       new_p      = allocate_typed<T>( count );
         if ( new_p.is_null() )
             return pptr<T>();
 
-        // After allocate_typed, s_instance may have changed (auto-expand)
-        std::uint8_t* new_base = s_instance->base_ptr();
-        void*         new_raw  = new_base + detail::idx_to_byte_off( new_p.offset() );
-        std::memcpy( new_raw, old_raw, old_bytes );
+        // After allocate_typed, s_instance may have changed (auto-expand copied
+        // the entire old buffer into a new one).  Re-derive old_raw from the
+        // current base so we always read from the valid, up-to-date buffer.
+        std::uint8_t* cur_base = s_instance->base_ptr();
+        void*         new_raw  = cur_base + detail::idx_to_byte_off( new_p.offset() );
+        void*         cur_old  = cur_base + detail::idx_to_byte_off( old_offset );
+        std::memcpy( new_raw, cur_old, old_bytes );
         deallocate_typed( p );
         return new_p;
     }

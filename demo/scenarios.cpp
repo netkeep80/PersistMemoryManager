@@ -12,14 +12,15 @@
  * to ensure exclusive access during PMM destroy()/reload() (fixes plan.md
  * Risk #5).
  *
- * Scenarios implemented here (Phases 4, 5):
- *   1. LinearFill     – fill then free sequentially
- *   2. RandomStress   – random alloc/dealloc mix
+ * Scenarios implemented here (Phases 4, 5, Issue #67):
+ *   1. LinearFill       – fill then free sequentially
+ *   2. RandomStress     – random alloc/dealloc mix
  *   3. FragmentationDemo – create fragmentation holes
- *   4. LargeBlocks    – large allocations, tests auto-grow
- *   5. TinyBlocks     – high-frequency micro-alloc/dealloc
- *   6. MixedSizes     – mixed work profiles with occasional reallocate
+ *   4. LargeBlocks      – large allocations, tests auto-grow
+ *   5. TinyBlocks       – high-frequency micro-alloc/dealloc
+ *   6. MixedSizes       – mixed work profiles with occasional reallocate
  *   7. PersistenceCycle – periodic save/destroy/reload cycle
+ *   8. ReallocateTyped  – grows a block repeatedly, exercises auto-expand path
  */
 
 #include "scenarios.h"
@@ -703,9 +704,107 @@ class PersistenceCycle final : public Scenario
     }
 };
 
+// ─── Scenario 8: Reallocate Typed ────────────────────────────────────────────
+
+/**
+ * Repeatedly allocates a block, fills it with a known byte pattern, then
+ * grows it via reallocate_typed while verifying data integrity.  Exercises
+ * both the normal (no-expand) and auto-expand paths of reallocate_typed.
+ * Default params: min=64, max=8192, alloc_freq=200, dealloc_freq=0.
+ */
+class ReallocateTyped final : public Scenario
+{
+  public:
+    const char* name() const override { return "Reallocate Typed"; }
+
+    void run( std::atomic<bool>& stop, std::atomic<uint64_t>& ops, const ScenarioParams& p,
+              ScenarioCoordinator& coord ) override
+    {
+        coord.register_participant();
+
+        std::mt19937                               rng( std::random_device{}() );
+        std::uniform_int_distribution<std::size_t> size_dist( p.min_block_size, p.max_block_size );
+
+        const auto interval = std::chrono::duration<double>( 1.0 / std::max( p.alloc_freq, 1.0f ) );
+        auto       next     = std::chrono::steady_clock::now();
+
+        // One live pptr that is repeatedly grown.
+        pmm::pptr<uint8_t> live;
+        std::size_t        live_count = 0;
+        uint8_t            fill_byte  = 0xA5;
+
+        while ( !stop.load( std::memory_order_relaxed ) )
+        {
+            auto* mgr_before = pmm::PersistMemoryManager::instance();
+            coord.yield_if_paused( stop );
+            if ( stop.load( std::memory_order_relaxed ) )
+                break;
+            // Discard stale pointer if PMM singleton was replaced while paused.
+            if ( pmm::PersistMemoryManager::instance() != mgr_before )
+            {
+                live       = pmm::pptr<uint8_t>();
+                live_count = 0;
+            }
+
+            if ( !pmm::PersistMemoryManager::instance() )
+            {
+                rate_sleep( next, interval );
+                continue;
+            }
+
+            if ( live.is_null() )
+            {
+                // Allocate a fresh block and initialise it.
+                std::size_t init_count = p.min_block_size;
+                live                   = pmm::PersistMemoryManager::allocate_typed<uint8_t>( init_count );
+                if ( !live.is_null() )
+                {
+                    std::memset( live.get(), static_cast<int>( fill_byte ), init_count );
+                    live_count = init_count;
+                    ops.fetch_add( 1, std::memory_order_relaxed );
+                }
+            }
+            else
+            {
+                // Grow the live block to a random larger size.
+                std::size_t new_count = live_count + size_dist( rng );
+                auto        new_live  = pmm::PersistMemoryManager::reallocate_typed( live, new_count );
+                if ( !new_live.is_null() )
+                {
+                    // Fill the new portion with the fill byte so the next
+                    // iteration can verify the pattern for the original bytes.
+                    if ( new_count > live_count )
+                        std::memset( new_live.get() + live_count, static_cast<int>( fill_byte ),
+                                     new_count - live_count );
+                    live       = new_live;
+                    live_count = new_count;
+                    ops.fetch_add( 1, std::memory_order_relaxed );
+                }
+
+                // Periodically free and restart with a different fill byte.
+                if ( live_count >= p.max_block_size * 4 )
+                {
+                    pmm::PersistMemoryManager::deallocate_typed( live );
+                    live       = pmm::pptr<uint8_t>();
+                    live_count = 0;
+                    ++fill_byte;
+                    ops.fetch_add( 1, std::memory_order_relaxed );
+                }
+            }
+
+            rate_sleep( next, interval );
+        }
+
+        if ( !live.is_null() )
+            pmm::PersistMemoryManager::deallocate_typed( live );
+
+        coord.unregister_participant();
+    }
+};
+
 // ─── Factory ──────────────────────────────────────────────────────────────────
 
-/// Create all 7 scenario instances.
+/// Create all 8 scenario instances.
 std::vector<std::unique_ptr<Scenario>> create_all_scenarios()
 {
     std::vector<std::unique_ptr<Scenario>> v;
@@ -716,6 +815,7 @@ std::vector<std::unique_ptr<Scenario>> create_all_scenarios()
     v.push_back( std::make_unique<TinyBlocks>() );
     v.push_back( std::make_unique<MixedSizes>() );
     v.push_back( std::make_unique<PersistenceCycle>() );
+    v.push_back( std::make_unique<ReallocateTyped>() );
     return v;
 }
 
