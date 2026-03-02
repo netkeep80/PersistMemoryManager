@@ -1,4 +1,4 @@
-# Атомизация записи и модернизация блока (Issue #69)
+# Атомизация записи и модернизация блока (Issue #69, Issue #75)
 
 ## Обзор
 
@@ -13,7 +13,7 @@
 ### ManagerHeader (64 байта, 4 гранулы)
 
 ```
-Байты 0-7:   magic           — магическое число менеджера ("PMM_V040")
+Байты 0-7:   magic           — магическое число менеджера ("PMM_V050")
 Байты 8-15:  total_size      — полный размер управляемой области в байтах
 Байты 16-19: used_size       — занятый размер в гранулах
 Байты 20-23: block_count     — общее число блоков
@@ -29,10 +29,10 @@
 Байты 56-63: prev_base_ptr   — runtime-only (не персистентно)
 ```
 
-### BlockHeader (28 байт без magic, 2 гранулы = 32 байта с выравниванием)
+### BlockHeader (32 байта = 2 гранулы, Issue #75)
 
 ```
-Байты 0-3:   used_size     — [1] занятый размер в гранулах (0 = свободный блок)
+Байты 0-3:   size          — [1] занятый размер в гранулах (0 = свободный блок, Issue #75)
 Байты 4-7:   prev_offset   — [2] предыдущий блок (гранульный индекс)
 Байты 8-11:  next_offset   — [3] следующий блок (гранульный индекс)
 Байты 12-15: left_offset   — [4] левый дочерний узел AVL-дерева (гранульный индекс)
@@ -40,9 +40,13 @@
 Байты 20-23: parent_offset — [6] родительский узел AVL-дерева (гранульный индекс)
 Байты 24-25: avl_height    — высота AVL-поддерева (0 = не в дереве)
 Байты 26-27: _pad          — зарезервировано
+Байты 28-31: root_offset   — корень дерева: 0 = дерево свободных блоков;
+                              own_index = занятый блок является корнем своего AVL-дерева (Issue #75)
 ```
 
-**Примечание:** поле `magic` удалено из `BlockHeader` в рамках данного issue. Валидность блока теперь определяется структурными инвариантами (см. раздел "Верификация блока").
+**Issue #69:** поле `magic` удалено из `BlockHeader`. Валидность блока теперь определяется структурными инвариантами (см. раздел "Верификация блока").
+
+**Issue #75:** поля переименованы: `used_size` → `size`, `_reserved` → `root_offset`. Семантика `root_offset`: значение `0` означает принадлежность дереву свободных блоков; значение равное собственному гранульному индексу означает, что блок является корнем своего AVL-дерева (задел для будущей типизации на основе ПАП-блоков).
 
 ---
 
@@ -50,7 +54,7 @@
 
 Блок считается валидным, если **все** следующие условия выполнены:
 
-1. **`used_size < total_granules`**: `used_size` строго меньше числа гранул до следующего блока (вычисляемого через `next_offset`).
+1. **`size < total_granules`**: `size` строго меньше числа гранул до следующего блока (вычисляемого через `next_offset`).
 2. **`prev_offset < this_idx < next_offset`**: гранульный индекс данного блока строго между `prev_offset` и `next_offset` (если они не равны `kNoBlock`).
 3. **`avl_height < 32`**: высота AVL-поддерева не превышает 32 (разумный предел для дерева, которое может содержать до 2^32 узлов).
 4. **AVL-указатели**: либо все из `left_offset`, `right_offset`, `parent_offset` равны `kNoBlock` (блок не в дереве), либо ни один не совпадает с другим (они все разные).
@@ -64,9 +68,9 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
 
     const BlockHeader* blk = block_at(base, idx);
 
-    // 1. Проверка used_size vs total_granules
+    // 1. Проверка size vs total_granules
     uint32_t total_gran = block_total_granules(base, hdr, blk);
-    if (blk->used_size >= total_gran) return false;  // used_size должен быть СТРОГО меньше
+    if (blk->size >= total_gran) return false;  // size должен быть СТРОГО меньше
 
     // 2. Проверка prev_offset < this_idx < next_offset
     if (blk->prev_offset != kNoBlock && blk->prev_offset >= idx) return false;
@@ -120,7 +124,7 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
 | 9 | `W(hdr->free_count, hdr->free_count + 1)` | НЕ КРИТИЧНО | Счётчик перестраивается при `load()`. |
 | 10 | `W(hdr->used_size, hdr->used_size + kBlockHeaderGranules)` | НЕ КРИТИЧНО | Вычисляется при `load()`. |
 | 11 | `avl_insert(new_idx)` — вставить новый свободный блок в AVL | НЕ КРИТИЧНО | AVL перестраивается при `load()`. |
-| 12 | `W(blk->used_size, data_gran)` | КРИТИЧНО | Это маркирует блок как занятый. До этого блок считается свободным. |
+| 12 | `W(blk->size, data_gran)` + `W(blk->root_offset, blk_idx)` | КРИТИЧНО | Это маркирует блок как занятый и устанавливает его корень (Issue #75). |
 | 13 | `W(blk->avl_height, 0)` + обнуление AVL-ссылок blk | НЕ КРИТИЧНО | AVL перестраивается при `load()`. |
 | 14 | `W(hdr->alloc_count, hdr->alloc_count + 1)` | НЕ КРИТИЧНО | Перестраивается при `load()`. |
 | 15 | `W(hdr->free_count, hdr->free_count - 1)` | НЕ КРИТИЧНО | Перестраивается при `load()`. |
@@ -138,7 +142,7 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
 
 **Прерывание после шага 6, до шага 12** (новый блок включён, но разбиваемый ещё помечен как свободный):
 - Состояние: линейный список согласован, блок `blk` в AVL-дереве (точнее, был удалён в шаге 1, но ещё не переинсертирован как занятый).
-- Восстановление: при load() rebuild_free_tree() видит блок со старым `used_size=0` и вставляет его в AVL как свободный. Это корректно, но означает "утечку" — блок был выдан пользователю, но после recovery снова свободен. Данные пользователя потеряны (допустимо при crash recovery).
+- Восстановление: при load() rebuild_free_tree() видит блок со старым `size=0` и вставляет его в AVL как свободный. Это корректно, но означает "утечку" — блок был выдан пользователю, но после recovery снова свободен. Данные пользователя потеряны (допустимо при crash recovery).
 
 ---
 
@@ -148,7 +152,7 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
 
 | # | Операция | КРИТИЧНО? | Обоснование |
 |---|----------|-----------|-------------|
-| 1 | `W(blk->used_size, 0)` | КРИТИЧНО | Маркирует блок как свободный. Это первый и ключевой шаг. |
+| 1 | `W(blk->size, 0)` + `W(blk->root_offset, 0)` | КРИТИЧНО | Маркирует блок как свободный и сбрасывает корень (Issue #75). |
 | 2 | `W(hdr->alloc_count, -1)` | НЕ КРИТИЧНО | Счётчик, перестраивается при load(). |
 | 3 | `W(hdr->free_count, +1)` | НЕ КРИТИЧНО | Счётчик, перестраивается при load(). |
 | 4 | `W(hdr->used_size, -= freed)` | НЕ КРИТИЧНО | Вычисляется при load(). |
@@ -211,7 +215,7 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
 ### Фаза 1: Верификация ManagerHeader
 
 ```
-1. Проверить hdr->magic == kMagic ("PMM_V040")
+1. Проверить hdr->magic == kMagic ("PMM_V050")
 2. Проверить hdr->total_size == переданный size
 3. Если не прошло — ошибка загрузки, образ недействителен
 ```
@@ -225,7 +229,7 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
 2. Сбросить hdr->last_block_offset = kNoBlock
 3. Сбросить все AVL-ссылки (left/right/parent/height) каждого блока в 0/kNoBlock
 4. Проходить по линейному списку (first_block_offset → next_offset):
-   - Для каждого свободного блока (used_size == 0): avl_insert
+   - Для каждого свободного блока (size == 0): avl_insert
    - Отслеживать last_block_offset
 ```
 
@@ -253,7 +257,7 @@ for each block B at index idx (traversing forward):
 - Диагноз: Алгоритм 2, прерывание на шаге 5e (или 6e) — заголовок не обнулён.
 - Восстановление: Обнулить (`memset`) недостижимый заголовок.
 
-**Случай C: `blk->used_size = 0`, но был предоставлен пользователю**
+**Случай C: `blk->size = 0`, но был предоставлен пользователю**
 - Диагноз: Алгоритм 1, прерывание между шагами 1 и 12 (блок удалён из AVL, но ещё не помечен как занятый).
 - Восстановление: Блок считается свободным (данные пользователя потеряны). Корректное поведение crash recovery.
 
@@ -309,9 +313,9 @@ void recompute_counters(uint8_t* base, ManagerHeader* hdr) {
         block_count++;
         used_gran += kBlockHeaderGranules;  // Overhead заголовка
 
-        if (blk->used_size > 0) {
+        if (blk->size > 0) {
             alloc_count++;
-            used_gran += blk->used_size;
+            used_gran += blk->size;
         } else {
             free_count++;
         }
@@ -335,7 +339,7 @@ void recompute_counters(uint8_t* base, ManagerHeader* hdr) {
 
 2. **Структурная валидация блока**: Функция `is_valid_block()` должна проверять все 4 инварианта (см. выше) вместо проверки magic.
 
-3. **`header_from_ptr()` без magic**: Использовать `is_valid_block()` и `blk->used_size > 0` вместо `blk->magic == kBlockMagic`.
+3. **`header_from_ptr()` без magic**: Использовать `is_valid_block()` и `blk->size > 0` вместо `blk->magic == kBlockMagic`.
 
 4. **`validate()` без magic**: Использовать `is_valid_block()` при проходе по списку.
 
@@ -343,7 +347,7 @@ void recompute_counters(uint8_t* base, ManagerHeader* hdr) {
 
 6. **`recompute_counters()`**: Вызывать при load() для пересчёта счётчиков (block_count, free_count, alloc_count, used_size) из актуального состояния блоков.
 
-7. **Обновить magic менеджера**: Изменить `kMagic` на `"PMM_V040"` для отказа от несовместимых старых образов (без поля magic в BlockHeader).
+7. **Обновить magic менеджера**: Изменить `kMagic` на `"PMM_V050"` для отказа от несовместимых старых образов (Issue #75: переименование `used_size`/`_reserved`).
 
 ### Гарантии корректности при crash recovery
 
