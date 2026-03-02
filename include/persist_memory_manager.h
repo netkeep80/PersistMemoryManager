@@ -132,32 +132,26 @@ struct BlockView
     bool           used;
 };
 
+/// @brief View of a single free block in the AVL tree for visualisation (Issue #65).
+/// All _offset fields are byte offsets in the managed region, or -1 when absent.
+struct FreeBlockView
+{
+    std::ptrdiff_t offset;
+    std::size_t    total_size;
+    std::size_t    free_size;
+    std::ptrdiff_t left_offset;
+    std::ptrdiff_t right_offset;
+    std::ptrdiff_t parent_offset;
+    int            avl_height;
+    int            avl_depth;
+};
+
 namespace detail
 {
 
-/**
- * @brief Заголовок блока памяти (Issue #59: 32 байта = 2 гранулы по 16 байт).
- *
- * Issue #59: Адресация в гранулах по 16 байт (kGranuleSize).
- *   - Все _offset поля — гранульные индексы (uint32_t), а не байтовые смещения.
- *   - Индекс i → байтовый адрес: base + i * kGranuleSize.
- *   - kNoBlock = 0xFFFFFFFF — отсутствие блока.
- *   - Поддерживает до 64 ГБ на один менеджер (2^32 * 16 = 64 ГБ).
- *
- * Структура (32 байта):
- *   - magic (4B) + used_size (4B) = 8 байт
- *   - prev_offset (4B) + next_offset (4B) = 8 байт
- *   - left_offset (4B) + right_offset (4B) = 8 байт
- *   - parent_offset (4B) + avl_height (2B) + _pad (2B) = 8 байт
- *   Итого: 32 байта = 2 гранулы
- *
- * Удалено: total_size (вычисляется через next_offset), alignment (не нужен).
- * used_size хранится в гранулах (потолок байт / kGranuleSize).
- * Пользовательские данные всегда начинаются через 32 байта после начала блока.
- *
- * Поля: used_size (1), prev_offset (2), next_offset (3),
- *       left_offset (4), right_offset (5), parent_offset (6).
- */
+/// @brief Block header (Issue #59: 32 bytes = 2 granules). All _offset fields are
+/// granule indices (uint32_t); kNoBlock = 0xFFFFFFFF. used_size=0 means free block.
+/// User data starts 32 bytes (2 granules) after block start. total_size = next_offset - idx.
 struct BlockHeader
 {
     std::uint32_t magic;     ///< Магическое число (4 байта)
@@ -180,22 +174,8 @@ inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( BlockHeader ) / kG
 inline constexpr std::uint32_t kBlockMagic = 0x424C4B32U; // "BLK2" (Issue #59 version)
 inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: нет блока (гранульный индекс)
 
-/**
- * @brief Заголовок менеджера памяти (Issue #59: 64 байта, 16-байтное выравнивание).
- *
- * Оптимизированная структура с 32-битными гранульными индексами:
- *   - magic (8B) + total_size (8B) = 16 байт      [total_size в байтах]
- *   - used_size (4B) + block_count (4B) + free_count (4B) + alloc_count (4B) = 16 байт
- *     [used_size в гранулах]
- *   - first_block_offset (4B) + last_block_offset (4B) + free_tree_root (4B) + owns_memory(1B)+pad(3B) = 16 байт
- *     [смещения — гранульные индексы]
- *   - prev_total_size (8B) + prev_base_ptr (8B) = 16 байт  [runtime-only; not persisted]
- *   Итого: 64 байта
- *
- * NOTE: prev_base_ptr is a runtime-only field. It stores the raw pointer to the previous
- * buffer after an expand() operation. This field is nulled out by load() because raw
- * virtual addresses are not meaningful after a reload. Never persist and reload this field.
- */
+/// @brief Manager header (Issue #59: 64 bytes). All _offset fields are granule indices.
+/// prev_base_ptr / prev_total_size are runtime-only (nulled by load() — not persisted).
 struct ManagerHeader
 {
     std::uint64_t magic;       ///< Магическое число менеджера
@@ -562,20 +542,8 @@ inline std::uint32_t avl_find_best_fit( std::uint8_t* base, ManagerHeader* hdr, 
 
 // ─── Персистный типизированный указатель ──────────────────────────────────────
 
-/**
- * @brief Персистный типизированный указатель (Issue #59: 4 байта, гранульный индекс).
- *
- * Issue #59: хранит гранульный индекс (uint32_t).
- *   - Индекс i → байтовый адрес: base + i * kGranuleSize.
- *   - 0 означает nullptr (нулевой индекс зарезервирован для ManagerHeader).
- *   - Размер: 4 байта (уменьшен с 8 до 4 байт).
- *   - Максимальный размер PAS: 2^32 * 16 = 64 ГБ.
- *
- * Issue #61: pptr<T> использует только статические методы PersistMemoryManager.
- *   - Метод resolve(PersistMemoryManager*) удалён — используйте get() через синглтон.
- *   - Операции pptr<T>++ и pptr<T>-- запрещены.
- *   - pptr<T>[i] адресует i-й элемент типа T с проверкой размера блока.
- */
+/// @brief Persistent typed pointer (Issue #59: 4 bytes, granule index).
+/// Index 0 means null. get() resolves via singleton. pptr++/-- are forbidden.
 template <class T> class pptr
 {
     std::uint32_t _idx; ///< Гранульный индекс пользовательских данных
@@ -992,6 +960,7 @@ class PersistMemoryManager
     friend MemoryStats                       get_stats();
     friend ManagerInfo                       get_manager_info();
     template <typename Callback> friend void for_each_block( Callback&& cb );
+    template <typename Callback> friend void for_each_free_block_avl( Callback&& cb );
 
     // ─── Внутренний доступ для demo и других модулей ─────────────────────────
 
@@ -1474,6 +1443,47 @@ template <typename Callback> inline void for_each_block( Callback&& cb )
         view.used        = ( blk->used_size > 0 );
         cb( view );
         ++index;
+        idx = blk->next_offset;
+    }
+}
+
+/// @brief Iterate over all free blocks in the AVL free-block tree (linear pass, Issue #65).
+/// Callback receives a FreeBlockView with AVL structural links; avl_depth is always 0
+/// (depth is computed by the caller from AVL parent/child links if needed).
+/// @warning The callback MUST NOT call any mutating PersistMemoryManager methods (deadlock).
+template <typename Callback> inline void for_each_free_block_avl( Callback&& cb )
+{
+    PersistMemoryManager* mgr = PersistMemoryManager::instance();
+    if ( mgr == nullptr )
+        return;
+    std::shared_lock<std::shared_mutex> lock( PersistMemoryManager::s_mutex );
+    const std::uint8_t*                 base   = mgr->const_base_ptr();
+    const detail::ManagerHeader*        hdr    = mgr->header();
+    auto                                to_off = []( std::uint32_t i ) -> std::ptrdiff_t
+    { return ( i != detail::kNoBlock ) ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( i ) ) : -1; };
+    for ( std::uint32_t idx = hdr->first_block_offset; idx != detail::kNoBlock; )
+    {
+        if ( detail::idx_to_byte_off( idx ) >= hdr->total_size )
+            break;
+        const detail::BlockHeader* blk = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
+        if ( blk->used_size == 0 )
+        {
+            std::uint32_t gran = ( blk->next_offset != detail::kNoBlock )
+                                     ? ( blk->next_offset - idx )
+                                     : ( detail::byte_off_to_idx( hdr->total_size ) - idx );
+            FreeBlockView view;
+            view.offset        = to_off( idx );
+            view.total_size    = detail::granules_to_bytes( gran );
+            view.free_size     = ( gran > detail::kBlockHeaderGranules )
+                                     ? detail::granules_to_bytes( gran - detail::kBlockHeaderGranules )
+                                     : 0;
+            view.left_offset   = to_off( blk->left_offset );
+            view.right_offset  = to_off( blk->right_offset );
+            view.parent_offset = to_off( blk->parent_offset );
+            view.avl_height    = static_cast<int>( blk->avl_height );
+            view.avl_depth     = 0;
+            cb( view );
+        }
         idx = blk->next_offset;
     }
 }

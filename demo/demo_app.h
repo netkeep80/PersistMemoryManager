@@ -12,10 +12,14 @@
  * kValidateIntervalSec seconds and forwards the result to MetricsView.
  * The user can also trigger an immediate validate() via the "Validate now"
  * button in the Metrics panel.
+ *
+ * Issue #65 addition: AvlTreeView and ManualAllocView panels.
  */
 
 #pragma once
 
+#include "avl_tree_view.h"
+#include "manual_alloc_view.h"
 #include "mem_map_view.h"
 #include "metrics_view.h"
 #include "scenario_manager.h"
@@ -56,6 +60,8 @@ class DemoApp
     std::unique_ptr<MetricsView>     metrics_view_;
     std::unique_ptr<StructTreeView>  struct_tree_view_;
     std::unique_ptr<ScenarioManager> scenario_manager_;
+    std::unique_ptr<AvlTreeView>     avl_tree_view_;     ///< Issue #65: AVL free-block tree
+    std::unique_ptr<ManualAllocView> manual_alloc_view_; ///< Issue #65: manual alloc/free
 
     // ── UI state ──────────────────────────────────────────────────────────────
     bool        show_help_         = false;

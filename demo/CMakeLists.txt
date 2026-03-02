@@ -45,6 +45,8 @@ add_library(pmm_demo_lib STATIC
     struct_tree_view.cpp
     scenario_manager.cpp
     scenarios.cpp
+    avl_tree_view.cpp       # Issue #65: AVL free-block tree visualisation
+    manual_alloc_view.cpp   # Issue #65: manual alloc/free panel
     ${IMGUI_SOURCES}
 )
 
@@ -104,3 +106,5 @@ pmm_demo_test(test_mem_map_view_tile     ${CMAKE_CURRENT_SOURCE_DIR}/../tests/te
 pmm_demo_test(test_scenario_manager      ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_scenario_manager.cpp)
 pmm_demo_test(test_scenario_coordinator  ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_scenario_coordinator.cpp)
 pmm_demo_test(test_background_validator  ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_background_validator.cpp)
+pmm_demo_test(test_avl_tree_view         ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_avl_tree_view.cpp)  # Issue #65
+pmm_demo_test(test_manual_alloc_view     ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_manual_alloc_view.cpp)  # Issue #65

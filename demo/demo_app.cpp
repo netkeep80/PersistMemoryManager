@@ -6,6 +6,9 @@
  * seconds (and on the very first frame) to detect structural corruption in the
  * PMM heap. The user can also trigger it on demand via the "Validate now" button
  * in the Metrics panel.
+ *
+ * Issue #65: AvlTreeView (AVL free-block tree visualisation) and ManualAllocView
+ * (interactive step-by-step alloc/free) panels added.
  */
 
 #include "demo_app.h"
@@ -34,6 +37,7 @@ static constexpr const char* kPmmSizeLabels[] = { "1 MB", "8 MB", "32 MB", "256 
 DemoApp::DemoApp()
     : mem_map_view_( std::make_unique<MemMapView>() ), metrics_view_( std::make_unique<MetricsView>() ),
       struct_tree_view_( std::make_unique<StructTreeView>() ), scenario_manager_( std::make_unique<ScenarioManager>() ),
+      avl_tree_view_( std::make_unique<AvlTreeView>() ), manual_alloc_view_( std::make_unique<ManualAllocView>() ),
       last_ops_sample_( std::chrono::steady_clock::now() )
 {
     pmm_size_ = kPmmSizes[pmm_size_idx_];
@@ -45,6 +49,9 @@ DemoApp::~DemoApp()
 {
     scenario_manager_->stop_all();
     scenario_manager_->join_all();
+
+    // Free manually-allocated blocks before destroying PMM.
+    manual_alloc_view_->clear();
 
     if ( pmm::PersistMemoryManager::instance() )
         pmm::PersistMemoryManager::destroy();
@@ -64,6 +71,7 @@ void DemoApp::render()
     {
         mem_map_view_->update_snapshot( mgr );
         struct_tree_view_->update_snapshot( mgr );
+        avl_tree_view_->update_snapshot( mgr );
 
         // Build MetricsSnapshot
         auto            stats = pmm::get_stats();
@@ -101,6 +109,8 @@ void DemoApp::render()
     struct_tree_view_->render( highlighted_block_ );
     metrics_view_->render();
     scenario_manager_->render();
+    avl_tree_view_->render();     // Issue #65: AVL free-block tree
+    manual_alloc_view_->render(); // Issue #65: manual alloc/free
 
     // ── Phase 12: handle "Validate now" button press ──────────────────────────
     if ( metrics_view_->validate_requested() && mgr )
@@ -172,6 +182,8 @@ void DemoApp::render_help_window()
     ImGui::BulletText( "Press > next to a scenario to start it." );
     ImGui::BulletText( "Click on a block in Struct Tree to highlight it on the map." );
     ImGui::BulletText( "Use Settings to change PMM size or theme." );
+    ImGui::BulletText( "AVL Free Tree: shows the free-block AVL tree hierarchy." );
+    ImGui::BulletText( "Manual Alloc: use Alloc / Free buttons for step-by-step testing." );
 
     ImGui::End();
 }
@@ -240,6 +252,9 @@ void DemoApp::apply_pmm_size()
 {
     scenario_manager_->stop_all();
     scenario_manager_->join_all();
+
+    // Free manually-allocated blocks before destroying PMM.
+    manual_alloc_view_->clear();
 
     if ( pmm::PersistMemoryManager::instance() )
         pmm::PersistMemoryManager::destroy();
