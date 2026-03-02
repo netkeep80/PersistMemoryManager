@@ -70,8 +70,8 @@ void AvlTreeView::render_node( std::ptrdiff_t node_offset, int /*depth*/ )
 
     // Build a label that summarises this node.
     char label[256];
-    std::snprintf( label, sizeof( label ), "offset=+%td  size=%zu B  free=%zu B  h=%d",
-                   ns->offset, ns->total_size, ns->free_size, ns->avl_height );
+    std::snprintf( label, sizeof( label ), "offset=+%td  size=%zu B  free=%zu B  h=%d", ns->offset, ns->total_size,
+                   ns->free_size, ns->avl_height );
 
     bool has_children = ( ns->left_offset >= 0 || ns->right_offset >= 0 );
 

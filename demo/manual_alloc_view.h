@@ -28,10 +28,10 @@ namespace demo
  */
 struct ManualBlock
 {
-    pmm::pptr<std::uint8_t> ptr;       ///< Persistent pointer returned by allocate_typed
-    std::size_t             size;      ///< Requested size in bytes
-    std::ptrdiff_t          offset;    ///< Byte offset in managed region (for display)
-    std::string             label;     ///< Short human-readable label "Alloc #N"
+    pmm::pptr<std::uint8_t> ptr;    ///< Persistent pointer returned by allocate_typed
+    std::size_t             size;   ///< Requested size in bytes
+    std::ptrdiff_t          offset; ///< Byte offset in managed region (for display)
+    std::string             label;  ///< Short human-readable label "Alloc #N"
 };
 
 /**
@@ -53,7 +53,7 @@ class ManualAllocView
     std::size_t live_count() const noexcept { return blocks_.size(); }
 
   private:
-    std::vector<ManualBlock> blocks_;           ///< All live manually-allocated blocks
+    std::vector<ManualBlock> blocks_;            ///< All live manually-allocated blocks
     int                      selected_idx_ = -1; ///< Index of selected block for free, or -1
     int                      alloc_size_   = 64; ///< Requested size for next allocation (bytes)
     std::uint64_t            alloc_serial_ = 0;  ///< Monotonic counter for block labels

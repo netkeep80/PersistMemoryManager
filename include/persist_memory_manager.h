@@ -1550,22 +1550,22 @@ template <typename Callback> inline void for_each_free_block_avl( Callback&& cb 
                                  : ( detail::byte_off_to_idx( hdr->total_size ) - cur_idx );
 
         FreeBlockView view;
-        view.offset      = static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( cur_idx ) );
-        view.total_size  = detail::granules_to_bytes( gran );
-        view.free_size   = ( gran > detail::kBlockHeaderGranules )
-                               ? detail::granules_to_bytes( gran - detail::kBlockHeaderGranules )
-                               : 0;
-        view.left_offset = ( blk->left_offset != detail::kNoBlock )
-                               ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->left_offset ) )
-                               : -1;
-        view.right_offset = ( blk->right_offset != detail::kNoBlock )
-                                ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->right_offset ) )
-                                : -1;
+        view.offset        = static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( cur_idx ) );
+        view.total_size    = detail::granules_to_bytes( gran );
+        view.free_size     = ( gran > detail::kBlockHeaderGranules )
+                                 ? detail::granules_to_bytes( gran - detail::kBlockHeaderGranules )
+                                 : 0;
+        view.left_offset   = ( blk->left_offset != detail::kNoBlock )
+                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->left_offset ) )
+                                 : -1;
+        view.right_offset  = ( blk->right_offset != detail::kNoBlock )
+                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->right_offset ) )
+                                 : -1;
         view.parent_offset = ( blk->parent_offset != detail::kNoBlock )
                                  ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->parent_offset ) )
                                  : -1;
-        view.avl_height = static_cast<int>( blk->avl_height );
-        view.avl_depth  = cur_depth;
+        view.avl_height    = static_cast<int>( blk->avl_height );
+        view.avl_depth     = cur_depth;
 
         cb( view );
 

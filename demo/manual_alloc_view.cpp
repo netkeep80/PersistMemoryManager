@@ -57,8 +57,7 @@ void ManualAllocView::render()
 
     if ( ImGui::Button( "Alloc" ) && can_alloc )
     {
-        auto ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>(
-            static_cast<std::size_t>( alloc_size_ ) );
+        auto ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( static_cast<std::size_t>( alloc_size_ ) );
         if ( !ptr.is_null() )
         {
             ManualBlock blk;
@@ -84,8 +83,7 @@ void ManualAllocView::render()
     // ── Free controls ─────────────────────────────────────────────────────────
     ImGui::SameLine();
 
-    bool can_free = ( mgr != nullptr && selected_idx_ >= 0 &&
-                      selected_idx_ < static_cast<int>( blocks_.size() ) );
+    bool can_free = ( mgr != nullptr && selected_idx_ >= 0 && selected_idx_ < static_cast<int>( blocks_.size() ) );
     if ( !can_free )
         ImGui::BeginDisabled();
 
@@ -128,8 +126,7 @@ void ManualAllocView::render()
         ImGui::Spacing();
 
         if ( ImGui::BeginTable( "manual_blocks_tbl", 3,
-                                ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
-                                    ImGuiTableFlags_ScrollY,
+                                ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY,
                                 ImVec2( 0.0f, 200.0f ) ) )
         {
             ImGui::TableSetupScrollFreeze( 0, 1 );
@@ -148,8 +145,7 @@ void ManualAllocView::render()
                 bool selected = ( i == selected_idx_ );
                 char sel_id[32];
                 std::snprintf( sel_id, sizeof( sel_id ), "##row%d", i );
-                if ( ImGui::Selectable( sel_id, selected,
-                                        ImGuiSelectableFlags_SpanAllColumns ) )
+                if ( ImGui::Selectable( sel_id, selected, ImGuiSelectableFlags_SpanAllColumns ) )
                 {
                     selected_idx_ = selected ? -1 : i;
                 }

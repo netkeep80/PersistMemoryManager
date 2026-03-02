@@ -68,7 +68,7 @@ class AvlTreeView
     const std::vector<AvlNodeSnapshot>& snapshot() const noexcept { return snapshot_; }
 
   private:
-    std::vector<AvlNodeSnapshot> snapshot_; ///< Pre-order snapshot of the AVL tree
+    std::vector<AvlNodeSnapshot> snapshot_;         ///< Pre-order snapshot of the AVL tree
     std::ptrdiff_t               root_offset_ = -1; ///< Byte offset of the root node, or -1
 
     /// Recursively render one AVL node and its subtree using the snapshot.

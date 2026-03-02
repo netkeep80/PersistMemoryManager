@@ -144,9 +144,9 @@ int main()
     std::cout << "=== test_manual_alloc_view ===\n";
     bool all_passed = true;
 
-    PMM_RUN( "clear_empty_view",   test_clear_empty_view );
+    PMM_RUN( "clear_empty_view", test_clear_empty_view );
     PMM_RUN( "clear_frees_blocks", test_clear_frees_blocks );
-    PMM_RUN( "repeated_clear",     test_repeated_clear );
+    PMM_RUN( "repeated_clear", test_repeated_clear );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;

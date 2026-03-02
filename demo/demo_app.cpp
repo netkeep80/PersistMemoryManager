@@ -109,8 +109,8 @@ void DemoApp::render()
     struct_tree_view_->render( highlighted_block_ );
     metrics_view_->render();
     scenario_manager_->render();
-    avl_tree_view_->render();      // Issue #65: AVL free-block tree
-    manual_alloc_view_->render();  // Issue #65: manual alloc/free
+    avl_tree_view_->render();     // Issue #65: AVL free-block tree
+    manual_alloc_view_->render(); // Issue #65: manual alloc/free
 
     // ── Phase 12: handle "Validate now" button press ──────────────────────────
     if ( metrics_view_->validate_requested() && mgr )

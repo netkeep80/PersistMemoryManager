@@ -285,12 +285,12 @@ int main()
     std::cout << "=== test_avl_tree_view ===\n";
     bool all_passed = true;
 
-    PMM_RUN( "empty_pmm_has_one_free_block",        test_empty_pmm_has_one_free_block );
-    PMM_RUN( "fully_allocated_has_empty_snapshot",  test_fully_allocated_has_empty_snapshot );
-    PMM_RUN( "snapshot_count_matches_free_count",   test_snapshot_count_matches_free_count );
-    PMM_RUN( "avl_parent_child_links_consistent",   test_avl_parent_child_links_consistent );
-    PMM_RUN( "null_mgr_no_crash",                   test_null_mgr_no_crash );
-    PMM_RUN( "for_each_free_block_avl_count",       test_for_each_free_block_avl_count );
+    PMM_RUN( "empty_pmm_has_one_free_block", test_empty_pmm_has_one_free_block );
+    PMM_RUN( "fully_allocated_has_empty_snapshot", test_fully_allocated_has_empty_snapshot );
+    PMM_RUN( "snapshot_count_matches_free_count", test_snapshot_count_matches_free_count );
+    PMM_RUN( "avl_parent_child_links_consistent", test_avl_parent_child_links_consistent );
+    PMM_RUN( "null_mgr_no_crash", test_null_mgr_no_crash );
+    PMM_RUN( "for_each_free_block_avl_count", test_for_each_free_block_avl_count );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;
