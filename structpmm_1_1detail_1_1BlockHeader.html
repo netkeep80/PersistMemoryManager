@@ -119,7 +119,7 @@ Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00166">166</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00131">131</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="a61ab4fd7a0dfa248c537926b3c003f41" name="a61ab4fd7a0dfa248c537926b3c003f41"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a61ab4fd7a0dfa248c537926b3c003f41">&#9670;&#160;</a></span>_pad</h2>
@@ -135,7 +135,7 @@ Public Attributes</h2></td></tr>
 
 <p>Зарезервировано (Issue #69: previously held magic[3:2]) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00175">175</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00140">140</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -153,7 +153,7 @@ Public Attributes</h2></td></tr>
 
 <p>Высота AVL-поддерева (0 = не в дереве) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00174">174</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00139">139</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -171,7 +171,7 @@ Public Attributes</h2></td></tr>
 
 <p>[4] Левый дочерний узел AVL-дерева (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00171">171</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00136">136</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -189,7 +189,7 @@ Public Attributes</h2></td></tr>
 
 <p>[3] Следующий блок (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00170">170</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00135">135</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -207,7 +207,7 @@ Public Attributes</h2></td></tr>
 
 <p>[6] Родительский узел AVL-дерева (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00173">173</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00138">138</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -225,7 +225,7 @@ Public Attributes</h2></td></tr>
 
 <p>[2] Предыдущий блок (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00169">169</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00134">134</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -243,7 +243,7 @@ Public Attributes</h2></td></tr>
 
 <p>[5] Правый дочерний узел AVL-дерева (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00172">172</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00137">137</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -261,7 +261,7 @@ Public Attributes</h2></td></tr>
 
 <p>0=свободный блок (дерево свободных); own_idx=занятый (Issue #75) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00176">176</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00141">141</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -279,7 +279,7 @@ Public Attributes</h2></td></tr>
 
 <p>[1] Занятый размер в гранулах (0 = свободный блок, Issue #75) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00168">168</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00133">133</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>

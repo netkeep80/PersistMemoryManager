@@ -223,8 +223,8 @@ Variables</h2></td></tr>
 <tr class="memitem:aac0fe3da5d3b9cd59050b3de60f8deda" id="r_aac0fe3da5d3b9cd59050b3de60f8deda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#aac0fe3da5d3b9cd59050b3de60f8deda">pmm::kMinBlockSize</a></td></tr>
 <tr class="memdesc:aac0fe3da5d3b9cd59050b3de60f8deda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum block size in bytes = BlockHeader (32) + 1 data granule (16)  <br /></td></tr>
 <tr class="separator:aac0fe3da5d3b9cd59050b3de60f8deda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a716afdc66bf1abf5f0f7feec75d0c1e8" id="r_a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8">pmm::kMagic</a> = 0x504D4D5F56303530ULL</td></tr>
-<tr class="memdesc:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"PMM_V050" (#75: size+root_offset)  <br /></td></tr>
+<tr class="memitem:a716afdc66bf1abf5f0f7feec75d0c1e8" id="r_a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8">pmm::kMagic</a> = 0x504D4D5F56303630ULL</td></tr>
+<tr class="memdesc:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"PMM_V060" (#75: homogeneous PAP)  <br /></td></tr>
 <tr class="separator:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5097f0cbd02fa383aea3fd4e17e8e6f9" id="r_a5097f0cbd02fa383aea3fd4e17e8e6f9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5097f0cbd02fa383aea3fd4e17e8e6f9">pmm::kGrowNumerator</a> = 5</td></tr>
 <tr class="separator:a5097f0cbd02fa383aea3fd4e17e8e6f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -252,60 +252,13 @@ Variables</h2></td></tr>
 <li>parent_offset — родительский узел AVL-дерева</li>
 </ol>
 <p>Поиск свободного блока: best-fit через AVL-дерево (O(log n)). При освобождении: слияние с соседними свободными блоками.</p>
-<dl class="section version"><dt>Version</dt><dd>5.0.0 Block modernization (Issue #69): removed BlockHeader.magic; validity via is_valid_block() structural invariants (size &lt; total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs). kMagic updated to "PMM_V040"; load() calls repair_linked_list()+recompute_counters() for recovery.</dd></dl>
-<p>Refactoring (Issue #75): BlockHeader.used_size → size; BlockHeader._reserved → root_offset. root_offset=0: block belongs to free-blocks tree. root_offset=own_idx: allocated block is root of its own AVL tree (PAP forest groundwork). kMagic updated to "PMM_V050".</p>
-<p>Optimizations (Issue #57):</p><ol type="1">
-<li>O(1) back-pointer (boundary tag) in header_from_ptr — O(1) instead of up to 512 iterations.</li>
-<li>Restructured deallocate()+coalesce() — max 2 removes + 1 insert instead of insert+removes+insert.</li>
-<li>Actual-padding computation in allocate_from_block() — less internal fragmentation.</li>
-<li>last_block_offset in ManagerHeader — O(1) last-block lookup in expand().</li>
-</ol>
-<p>Optimizations (Issue #59):</p><ol type="1">
-<li>16-byte granule addressing — all indices are in units of 16 bytes (kGranuleSize).</li>
-<li>32-bit granule indices for all block offsets — supports up to 64 GB per manager (2^32 * 16).</li>
-<li>BlockHeader reduced to 32 bytes = 2 granules (removed total_size, alignment fields).</li>
-<li>total_size computed from next_offset - this_offset (last block uses manager total_size).</li>
-<li>used_size stored in granules (ceiling of bytes / kGranuleSize).</li>
-<li>alignment is no longer needed — minimum allocation is 16 bytes (1 granule).</li>
-<li>pptr&lt;T&gt; reduced to 4 bytes (uint32_t granule index) — halves pointer memory in JSON structures.</li>
-<li>pptr&lt;T&gt;++ and pptr&lt;T&gt;&ndash; are forbidden (deleted).</li>
-<li>pptr&lt;T&gt;[i] addresses elements of type T with block-size bounds checking.</li>
-</ol>
-<p>header_from_ptr is O(1) without back-pointer tag: user_ptr = block + 2 granules always.</p>
-<p>Refactoring (Issue #61):</p><ol type="1">
-<li>PersistMemoryManager is a fully static class — no instances, no PersistMemoryManager* in public API.</li>
-<li>Public API uses only pptr&lt;T&gt; and PersistMemoryManager::static_method() calls.</li>
-<li>pptr&lt;T&gt; uses only PersistMemoryManager::static methods — no PersistMemoryManager* parameter.</li>
-<li>Removed raw void* allocate/deallocate/reallocate from public API.</li>
-<li>Removed pptr&lt;T&gt;::resolve(PersistMemoryManager*) — use get() via singleton instead.</li>
-<li>Removed AllocationInfo struct and get_info() free function.</li>
-</ol>
-<p>Code review fixes (Issue #63):</p><ol type="1">
-<li>Replaced static constexpr with inline constexpr at namespace scope (no internal linkage per TU).</li>
-<li>Removed #include &lt;iostream&gt; from header; dump_stats() now uses ostream parameter.</li>
-<li>Updated kMagic to encode format version 3 ("PMM_V030") to reject incompatible persisted files.</li>
-<li>Fixed is_valid_alignment to correctly check for kGranuleSize-only alignment.</li>
-<li>Added assert to avl_update_height to guard against int16_t height overflow.</li>
-<li>Added upper-bound check in header_from_ptr to prevent out-of-range reads.</li>
-<li>Fixed AVL tiebreaker to use strict &lt; instead of &lt;= for correct strict weak ordering.</li>
-<li>Fixed bytes_to_granules overflow: added SIZE_MAX proximity guard and uint32_t overflow check.</li>
-<li>Fixed sizeof(T)*count overflow in allocate_typed(count) and reallocate_typed.</li>
-</ol>
-<p>Fixed unsigned underflow in block_data_size_bytes when data_idx &lt; kBlockHeaderGranules.</p><ol type="1">
-<li>Fixed pptr::operator[] bounds check: replaced (i+1)*sizeof(T) with overflow-safe i &gt;= N form.</li>
-<li>Made pptr constructors and comparison operators constexpr.</li>
-<li>Fixed total_fragmentation in get_stats() to include all free blocks.</li>
-<li>Replaced magic literal 0xFFFFFFFFULL with std::numeric_limits&lt;std::uint32_t&gt;::max().</li>
-<li>Added inline to free function forward declarations to match definitions.</li>
-<li>Documented that for_each_block callbacks must not call mutating PMM methods.</li>
-<li>Documented expand() lock precondition; added lock state assertion.</li>
-<li>Fixed coalesce() to update hdr-&gt;used_size when merging block headers.</li>
-<li>Fixed expand() growth computation to avoid size_t overflow.</li>
-<li>Replaced void* prev_base_ptr in ManagerHeader with uint64_t prev_base_ptr_offset (persistent-safe).</li>
-</ol>
-<p>Bug fix (Issue #67):</p><ol type="1">
-<li>Fixed reallocate_typed: after allocate_typed (which may trigger expand), re-derive the source pointer from the current s_instance base so the memcpy always reads from the live buffer. </li>
-</ol>
+<dl class="section version"><dt>Version</dt><dd>6.0.0 Block modernization (Issue #69): removed BlockHeader.magic; validity via is_valid_block() structural invariants (size &lt; total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs). kMagic updated to "PMM_V040"; load() calls repair_linked_list()+recompute_counters() for recovery.</dd></dl>
+<p>Refactoring (Issue #75): BlockHeader.used_size → size; BlockHeader._reserved → root_offset. root_offset=0: block belongs to free-blocks tree. root_offset=own_idx: allocated block is root of its own AVL tree (PAP forest groundwork). kMagic updated to "PMM_V050". PAP homogenization: ManagerHeader now resides inside BlockHeader_0 (the first allocated block at granule index 0). Layout: [BlockHeader_0][ManagerHeader][BlockHeader_1][user_data...] BlockHeader_0 has size=kManagerHeaderGranules, root_offset=0 (own index). kMagic → "PMM_V060".</p>
+<p>Optimizations (Issue #57): O(1) header_from_ptr, coalesce (max 2 removes + 1 insert), actual-padding in allocate_from_block, last_block_offset in ManagerHeader.</p>
+<p>Optimizations (Issue #59): 16-byte granule addressing; 32-bit granule indices (up to 64 GB); BlockHeader = 32 bytes; total_size via next_offset; pptr&lt;T&gt; = 4 bytes.</p>
+<p>Refactoring (Issue #61): fully static PersistMemoryManager; pptr&lt;T&gt;-only public API.</p>
+<p>Code review fixes (Issue #63): inline constexpr, ostream dump, kMagic version encoding, AVL height assert, header_from_ptr upper-bound, strict-weak-ordering tiebreaker, overflow guards in bytes_to_granules/allocate_typed/operator[]; constexpr pptr ctors.</p>
+<p>Bug fix (Issue #67): reallocate_typed re-derives old pointer after possible expand(). </p>
 
 <p class="definition">Definition in file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 </div></div><!-- contents -->
