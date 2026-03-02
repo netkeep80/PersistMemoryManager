@@ -1,0 +1,12 @@
+var searchData=
+[
+  ['block_5fat_0',['block_at',['../namespacepmm_1_1detail.html#aaa3eed572fc991f5a8dc88b77d789cda',1,'pmm::detail']]],
+  ['block_5fcount_1',['block_count',['../structpmm_1_1ManagerInfo.html#a010c99560178075ba7a9dd55bd75e135',1,'pmm::ManagerInfo::block_count'],['../structpmm_1_1detail_1_1ManagerHeader.html#aea2cb09874399a51a0fe0f04b54511ac',1,'pmm::detail::ManagerHeader::block_count']]],
+  ['block_5fdata_5fsize_5fbytes_2',['block_data_size_bytes',['../classpmm_1_1PersistMemoryManager.html#a783112b634e4889446538613eb330225',1,'pmm::PersistMemoryManager']]],
+  ['block_5fidx_3',['block_idx',['../namespacepmm_1_1detail.html#a181b2f5855181619597f9d2ef8901427',1,'pmm::detail']]],
+  ['block_5ftotal_5fgranules_4',['block_total_granules',['../namespacepmm_1_1detail.html#a7566b1b5755c189b14a7c73c36bee876',1,'pmm::detail']]],
+  ['blockheader_5',['BlockHeader',['../structpmm_1_1detail_1_1BlockHeader.html',1,'pmm::detail']]],
+  ['blockview_6',['BlockView',['../structpmm_1_1BlockView.html',1,'pmm']]],
+  ['byte_5foff_5fto_5fidx_7',['byte_off_to_idx',['../namespacepmm_1_1detail.html#a96fd1e856308cf358d6a9ad0f232ddfc',1,'pmm::detail']]],
+  ['bytes_5fto_5fgranules_8',['bytes_to_granules',['../namespacepmm_1_1detail.html#ac6f59a24706e7ffd4ed36e1db6795d51',1,'pmm::detail']]]
+];
