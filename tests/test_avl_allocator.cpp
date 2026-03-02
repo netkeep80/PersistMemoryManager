@@ -6,7 +6,7 @@
  * - Корректность best-fit поиска через AVL-дерево
  * - Слияние блоков при освобождении
  * - Целостность AVL-дерева после серии операций
- * - Корректность 6 полей блока (used_size, prev, next, left, right, parent)
+ * - Корректность 6 полей блока (size, prev, next, left, right, parent)
  */
 
 #include "persist_memory_manager.h"
@@ -43,8 +43,8 @@
         }                                                                                                              \
     } while ( false )
 
-/// Блок с used_size==0 должен считаться свободным
-static bool test_free_block_has_zero_used_size()
+/// Блок с size==0 должен считаться свободным (Issue #75: переименовано из used_size)
+static bool test_free_block_has_zero_size()
 {
     const std::size_t size = 64 * 1024;
     void*             mem  = std::malloc( size );
@@ -56,7 +56,7 @@ static bool test_free_block_has_zero_used_size()
     auto info = pmm::get_manager_info();
     PMM_TEST( info.free_count == 1 );
 
-    // Обойдём все блоки и убедимся, что свободный имеет used_size==0
+    // Обойдём все блоки и убедимся, что свободный имеет size==0
     int  free_blocks        = 0;
     bool all_free_zero_used = true;
     pmm::for_each_block(
@@ -364,12 +364,53 @@ static bool test_reallocate_works()
     return true;
 }
 
+/// Issue #75: root_offset semantics — 0 for free blocks, own-index for allocated blocks.
+static bool test_root_offset_semantics()
+{
+    const std::size_t size = 64 * 1024;
+    void*             mem  = std::malloc( size );
+    PMM_TEST( mem != nullptr );
+
+    PMM_TEST( pmm::PersistMemoryManager::create( mem, size ) );
+
+    // After creation: single free block must have root_offset == 0
+    {
+        const auto*   base     = static_cast<const std::uint8_t*>( mem );
+        const auto*   hdr      = reinterpret_cast<const pmm::detail::ManagerHeader*>( base );
+        std::uint32_t free_idx = hdr->first_block_offset;
+        PMM_TEST( free_idx != pmm::detail::kNoBlock );
+        const auto* blk = reinterpret_cast<const pmm::detail::BlockHeader*>( base + free_idx * pmm::kGranuleSize );
+        PMM_TEST( blk->size == 0 );        // free block
+        PMM_TEST( blk->root_offset == 0 ); // belongs to free-blocks tree
+    }
+
+    // Allocate a block: root_offset must equal its own granule index
+    pmm::pptr<std::uint32_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint32_t>( 4 );
+    PMM_TEST( !p.is_null() );
+    {
+        const auto*   base     = static_cast<const std::uint8_t*>( mem );
+        std::uint32_t data_idx = p.offset();
+        std::uint32_t blk_idx  = data_idx - pmm::detail::kBlockHeaderGranules;
+        const auto*   blk = reinterpret_cast<const pmm::detail::BlockHeader*>( base + blk_idx * pmm::kGranuleSize );
+        PMM_TEST( blk->size > 0 );               // allocated block
+        PMM_TEST( blk->root_offset == blk_idx ); // is root of its own tree
+    }
+
+    // After deallocation: root_offset must be 0 again
+    pmm::PersistMemoryManager::deallocate_typed( p );
+    PMM_TEST( pmm::PersistMemoryManager::validate() );
+
+    pmm::PersistMemoryManager::destroy();
+    std::free( mem );
+    return true;
+}
+
 int main()
 {
     std::cout << "=== test_avl_allocator ===\n";
     bool all_passed = true;
 
-    PMM_RUN( "free_block_has_zero_used_size", test_free_block_has_zero_used_size );
+    PMM_RUN( "free_block_has_zero_size", test_free_block_has_zero_size );
     PMM_RUN( "best_fit_selection", test_best_fit_selection );
     PMM_RUN( "avl_integrity_stress", test_avl_integrity_stress );
     PMM_RUN( "coalesce_three_way", test_coalesce_three_way );
@@ -377,6 +418,7 @@ int main()
     PMM_RUN( "avl_survives_save_load", test_avl_survives_save_load );
     PMM_RUN( "best_fit_chooses_smallest_fitting", test_best_fit_chooses_smallest_fitting );
     PMM_RUN( "reallocate_works", test_reallocate_works );
+    PMM_RUN( "root_offset_semantics", test_root_offset_semantics );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;
