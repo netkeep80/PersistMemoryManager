@@ -151,7 +151,7 @@ static bool test_avl_integrity_stress()
     // После полного освобождения должен быть 1 свободный блок
     auto stats = pmm::get_stats();
     PMM_TEST( stats.free_blocks == 1 );
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 (ManagerHeader) always allocated
 
     pmm::PersistMemoryManager::destroy();
     std::free( mem );
@@ -231,7 +231,7 @@ static bool test_block_view_fields()
             }
         } );
     PMM_TEST( fields_consistent );
-    PMM_TEST( used_blocks == 2 );
+    PMM_TEST( used_blocks == 3 ); // Issue #75: +1 for BlockHeader_0 holding ManagerHeader
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     pmm::PersistMemoryManager::deallocate_typed( p1 );
@@ -373,11 +373,15 @@ static bool test_root_offset_semantics()
 
     PMM_TEST( pmm::PersistMemoryManager::create( mem, size ) );
 
+    // Issue #75: ManagerHeader is now inside BlockHeader_0 (granule 0);
+    // use public API to find free block instead of direct ManagerHeader access.
     // After creation: single free block must have root_offset == 0
     {
         const auto*   base     = static_cast<const std::uint8_t*>( mem );
-        const auto*   hdr      = reinterpret_cast<const pmm::detail::ManagerHeader*>( base );
-        std::uint32_t free_idx = hdr->first_block_offset;
+        auto          info     = pmm::get_manager_info();
+        std::uint32_t free_idx = info.first_free_offset >= 0
+                                     ? static_cast<std::uint32_t>( info.first_free_offset / pmm::kGranuleSize )
+                                     : pmm::detail::kNoBlock;
         PMM_TEST( free_idx != pmm::detail::kNoBlock );
         const auto* blk = reinterpret_cast<const pmm::detail::BlockHeader*>( base + free_idx * pmm::kGranuleSize );
         PMM_TEST( blk->size == 0 );        // free block

@@ -173,7 +173,7 @@ static bool test_shredder()
         std::cout << "    Наибольший свободный: " << stats.largest_free / 1024 << " КБ"
                   << "  фрагментация: " << stats.total_fragmentation / 1024 << " КБ\n";
 
-        PMM_TEST( stats.allocated_blocks == sorted_half.size() );
+        PMM_TEST( stats.allocated_blocks == sorted_half.size() + 1 ); // Issue #75: +1 for BlockHeader_0
         PMM_TEST( stats.free_blocks >= 1 );
     }
 
@@ -206,7 +206,7 @@ static bool test_shredder()
                   << "  занятых: " << stats.allocated_blocks << "\n";
         std::cout << "    Наибольший свободный: " << stats.largest_free / 1024 << " КБ\n";
 
-        PMM_TEST( stats.allocated_blocks == 0 );
+        PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
         PMM_TEST( stats.free_blocks <= 10 );
         PMM_TEST( stats.largest_free > memory_size / 2 );
     }
@@ -390,7 +390,7 @@ static bool test_persistent_cycle()
 
     PMM_TEST( pmm::PersistMemoryManager::validate() );
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     pmm::PersistMemoryManager::destroy();
     std::free( mem2 );
@@ -494,7 +494,7 @@ static bool test_marathon()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto final_stats = pmm::get_stats();
-    PMM_TEST( final_stats.allocated_blocks == 0 );
+    PMM_TEST( final_stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double total_ms = elapsed_ms( t0, now() );
     std::cout << "  Итого: " << total_iterations << " итераций, " << alloc_ok << " аллокаций" << "  (" << alloc_fail

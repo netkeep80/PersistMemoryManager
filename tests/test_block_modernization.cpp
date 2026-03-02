@@ -84,7 +84,7 @@ static bool test_basic_alloc_validate()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 (ManagerHeader) always allocated
 
     pmm::PersistMemoryManager::destroy();
     std::free( mem );
@@ -117,7 +117,7 @@ static bool test_save_load_new_format()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats1 = pmm::get_stats();
-    PMM_TEST( stats1.allocated_blocks == 2 );
+    PMM_TEST( stats1.allocated_blocks == 3 ); // Issue #75: 2 user blocks + BlockHeader_0
 
     std::uint32_t off1 = p1.offset();
     std::uint32_t off3 = p3.offset();
@@ -184,7 +184,7 @@ static bool test_coalesced_header_invalid()
     PMM_TEST( old_block_size == 0 ); // Старый блок теперь не валиден — данные удалены
 
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 (ManagerHeader) always allocated
     PMM_TEST( stats.free_blocks >= 1 );
 
     pmm::PersistMemoryManager::destroy();

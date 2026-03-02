@@ -290,7 +290,7 @@ static bool test_stress_realistic()
         PMM_TEST( pmm::PersistMemoryManager::validate() );
 
         auto stats = pmm::get_stats();
-        PMM_TEST( stats.allocated_blocks == 0 );
+        PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
     }
 
     double total_ms = elapsed_ms( total_start, now() );

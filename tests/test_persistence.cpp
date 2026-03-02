@@ -116,7 +116,7 @@ static bool test_persistence_user_data_preserved()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats2 = pmm::get_stats();
-    PMM_TEST( stats2.allocated_blocks == 1 );
+    PMM_TEST( stats2.allocated_blocks == 2 ); // Issue #75: 1 user block + BlockHeader_0
 
     // Восстанавливаем pptr по сохранённому смещению
     pmm::pptr<std::uint8_t> ptr2( saved_offset );
@@ -202,7 +202,7 @@ static bool test_persistence_allocate_after_load()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats2 = pmm::get_stats();
-    PMM_TEST( stats2.allocated_blocks == 2 );
+    PMM_TEST( stats2.allocated_blocks == 3 ); // Issue #75: 1 pre-load + 1 new user + BlockHeader_0
 
     pmm::PersistMemoryManager::deallocate_typed( p2 );
     PMM_TEST( pmm::PersistMemoryManager::validate() );
@@ -366,7 +366,7 @@ static bool test_persistence_empty_manager()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats2 = pmm::get_stats();
-    PMM_TEST( stats2.allocated_blocks == 0 );
+    PMM_TEST( stats2.allocated_blocks == 1 ); // Issue #75: only BlockHeader_0 remains
     PMM_TEST( stats2.free_blocks == stats1.free_blocks );
 
     pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 512 );
@@ -417,7 +417,7 @@ static bool test_persistence_deallocate_after_load()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats2 = pmm::get_stats();
-    PMM_TEST( stats2.allocated_blocks == 0 );
+    PMM_TEST( stats2.allocated_blocks == 1 ); // Issue #75: only BlockHeader_0 remains
 
     pmm::PersistMemoryManager::destroy();
     std::free( mem2 );

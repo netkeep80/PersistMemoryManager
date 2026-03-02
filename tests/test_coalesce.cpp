@@ -251,9 +251,10 @@ static bool test_coalesce_zero_fragmentation_after_all_free()
 
     PMM_TEST( pmm::PersistMemoryManager::fragmentation() == 0 );
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.total_blocks == 1 );
+    // Issue #75: BlockHeader_0 (ManagerHeader) always present as allocated block
+    PMM_TEST( stats.total_blocks == 2 );
     PMM_TEST( stats.free_blocks == 1 );
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 );
 
     pmm::PersistMemoryManager::destroy();
     std::free( mem );
@@ -283,7 +284,8 @@ static bool test_coalesce_lifo_results_in_one_block()
     }
 
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.total_blocks == 1 );
+    // Issue #75: BlockHeader_0 (ManagerHeader) always present as allocated block
+    PMM_TEST( stats.total_blocks == 2 );
     PMM_TEST( stats.free_blocks == 1 );
 
     pmm::PersistMemoryManager::destroy();
@@ -314,7 +316,8 @@ static bool test_coalesce_fifo_results_in_one_block()
     }
 
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.total_blocks == 1 );
+    // Issue #75: BlockHeader_0 (ManagerHeader) always present as allocated block
+    PMM_TEST( stats.total_blocks == 2 );
     PMM_TEST( stats.free_blocks == 1 );
 
     pmm::PersistMemoryManager::destroy();

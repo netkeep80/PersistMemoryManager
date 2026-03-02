@@ -13,7 +13,7 @@
 ### ManagerHeader (64 байта, 4 гранулы)
 
 ```
-Байты 0-7:   magic           — магическое число менеджера ("PMM_V050")
+Байты 0-7:   magic           — магическое число менеджера ("PMM_V060")
 Байты 8-15:  total_size      — полный размер управляемой области в байтах
 Байты 16-19: used_size       — занятый размер в гранулах
 Байты 20-23: block_count     — общее число блоков
@@ -46,7 +46,9 @@
 
 **Issue #69:** поле `magic` удалено из `BlockHeader`. Валидность блока теперь определяется структурными инвариантами (см. раздел "Верификация блока").
 
-**Issue #75:** поля переименованы: `used_size` → `size`, `_reserved` → `root_offset`. Семантика `root_offset`: значение `0` означает принадлежность дереву свободных блоков; значение равное собственному гранульному индексу означает, что блок является корнем своего AVL-дерева (задел для будущей типизации на основе ПАП-блоков).
+**Issue #75 (v5.0):** поля переименованы: `used_size` → `size`, `_reserved` → `root_offset`. Семантика `root_offset`: значение `0` означает принадлежность дереву свободных блоков; значение равное собственному гранульному индексу означает, что блок является корнем своего AVL-дерева.
+
+**Issue #75 (v6.0):** PAP-гомогенизация — `ManagerHeader` перемещён внутрь `BlockHeader_0`. Теперь `BlockHeader_0` находится по смещению 0 (гранула 0), а `ManagerHeader` начинается по смещению `sizeof(BlockHeader) = 32 байта`. Пользовательские блоки начинаются с гранулы 6 (96 байт от начала). Все образы PMM_V050 несовместимы с PMM_V060.
 
 ---
 
@@ -215,7 +217,7 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
 ### Фаза 1: Верификация ManagerHeader
 
 ```
-1. Проверить hdr->magic == kMagic ("PMM_V050")
+1. Проверить hdr->magic == kMagic ("PMM_V060")
 2. Проверить hdr->total_size == переданный size
 3. Если не прошло — ошибка загрузки, образ недействителен
 ```
@@ -265,8 +267,8 @@ for each block B at index idx (traversing forward):
 
 ```cpp
 bool load_with_recovery(void* memory, size_t size) {
-    // Фаза 1: Проверить ManagerHeader
-    ManagerHeader* hdr = (ManagerHeader*)memory;
+    // Фаза 1: Проверить ManagerHeader (находится в BlockHeader_0, смещение sizeof(BlockHeader))
+    auto* hdr = reinterpret_cast<ManagerHeader*>((uint8_t*)memory + sizeof(BlockHeader));
     if (hdr->magic != kMagic || hdr->total_size != size)
         return false;  // Образ недействителен
 
@@ -305,7 +307,7 @@ void repair_linked_list(uint8_t* base, ManagerHeader* hdr) {
 
 void recompute_counters(uint8_t* base, ManagerHeader* hdr) {
     uint32_t block_count = 0, free_count = 0, alloc_count = 0;
-    uint32_t used_gran = kManagerHeaderGranules;  // Начальный overhead
+    uint32_t used_gran = 0;  // Все заголовки учтены в блоках
 
     uint32_t idx = hdr->first_block_offset;
     while (idx != kNoBlock) {
@@ -347,7 +349,7 @@ void recompute_counters(uint8_t* base, ManagerHeader* hdr) {
 
 6. **`recompute_counters()`**: Вызывать при load() для пересчёта счётчиков (block_count, free_count, alloc_count, used_size) из актуального состояния блоков.
 
-7. **Обновить magic менеджера**: Изменить `kMagic` на `"PMM_V050"` для отказа от несовместимых старых образов (Issue #75: переименование `used_size`/`_reserved`).
+7. **Обновить magic менеджера**: Изменить `kMagic` на `"PMM_V060"` для отказа от несовместимых старых образов (Issue #75: PAP-гомогенизация — `ManagerHeader` внутри `BlockHeader_0`).
 
 ### Гарантии корректности при crash recovery
 

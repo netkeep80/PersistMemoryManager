@@ -303,6 +303,9 @@ PersistMemoryManager/
 
 Подробнее: [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md) | [demo.md](demo.md) | [plan.md](plan.md) | [Doxygen API](https://netkeep80.github.io/PersistMemoryManager/)
 
+**Версия 6.0.0** — PAP-гомогенизация: `ManagerHeader` встроен в `BlockHeader_0` (Issue #75).
+PAP стал полностью однородным: весь образ — это лес блоков, первый из которых (`BlockHeader_0`) хранит метаданные менеджера.
+
 ## Лицензия
 
 Unlicense — общественное достояние. Подробности в файле `LICENSE`.

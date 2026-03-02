@@ -178,7 +178,7 @@ static bool test_single_expand()
 
     PMM_TEST( pmm::PersistMemoryManager::validate() );
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";
@@ -282,7 +282,7 @@ static bool test_multi_expand()
 
     PMM_TEST( pmm::PersistMemoryManager::validate() );
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";
@@ -378,7 +378,7 @@ static bool test_expand_with_mixed_ops()
 
     PMM_TEST( pmm::PersistMemoryManager::validate() );
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";
@@ -537,7 +537,7 @@ static bool test_grow_factor()
 
     PMM_TEST( pmm::PersistMemoryManager::validate() );
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";

@@ -161,7 +161,8 @@ static void test_concurrent_alloc_dealloc()
     PMM_TEST( errors.load() == 0, "concurrent_alloc_dealloc: нет ошибок в потоках" );
 
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0, "concurrent_alloc_dealloc: все блоки освобождены" );
+    // Issue #75: BlockHeader_0 (ManagerHeader) always allocated
+    PMM_TEST( stats.allocated_blocks == 1, "concurrent_alloc_dealloc: все блоки освобождены" );
 
     pmm::PersistMemoryManager::destroy();
 }

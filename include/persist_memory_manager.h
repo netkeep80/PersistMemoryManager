@@ -17,7 +17,7 @@
  * Поиск свободного блока: best-fit через AVL-дерево (O(log n)).
  * При освобождении: слияние с соседними свободными блоками.
  *
- * @version 5.0.0
+ * @version 6.0.0
  * Block modernization (Issue #69): removed BlockHeader.magic; validity via is_valid_block()
  * structural invariants (size < total_gran, prev<idx<next, avl_height<32, distinct AVL refs).
  * kMagic updated to "PMM_V040"; load() calls repair_linked_list()+recompute_counters() for recovery.
@@ -25,58 +25,23 @@
  * Refactoring (Issue #75): BlockHeader.used_size → size; BlockHeader._reserved → root_offset.
  *   root_offset=0: block belongs to free-blocks tree. root_offset=own_idx: allocated block is
  *   root of its own AVL tree (PAP forest groundwork). kMagic updated to "PMM_V050".
+ *   PAP homogenization: ManagerHeader now resides inside BlockHeader_0 (the first allocated block
+ *   at granule index 0). Layout: [BlockHeader_0][ManagerHeader][BlockHeader_1][user_data...]
+ *   BlockHeader_0 has size=kManagerHeaderGranules, root_offset=0 (own index). kMagic → "PMM_V060".
  *
- * Optimizations (Issue #57):
- *   1. O(1) back-pointer (boundary tag) in header_from_ptr — O(1) instead of up to 512 iterations.
- *   2. Restructured deallocate()+coalesce() — max 2 removes + 1 insert instead of insert+removes+insert.
- *   3. Actual-padding computation in allocate_from_block() — less internal fragmentation.
- *   4. last_block_offset in ManagerHeader — O(1) last-block lookup in expand().
+ * Optimizations (Issue #57): O(1) header_from_ptr, coalesce (max 2 removes + 1 insert),
+ *   actual-padding in allocate_from_block, last_block_offset in ManagerHeader.
  *
- * Optimizations (Issue #59):
- *   1. 16-byte granule addressing — all indices are in units of 16 bytes (kGranuleSize).
- *   2. 32-bit granule indices for all block offsets — supports up to 64 GB per manager (2^32 * 16).
- *   3. BlockHeader reduced to 32 bytes = 2 granules (removed total_size, alignment fields).
- *   4. total_size computed from next_offset - this_offset (last block uses manager total_size).
- *   5. used_size stored in granules (ceiling of bytes / kGranuleSize).
- *   6. alignment is no longer needed — minimum allocation is 16 bytes (1 granule).
- *   7. pptr<T> reduced to 4 bytes (uint32_t granule index) — halves pointer memory in JSON structures.
- *   8. pptr<T>++ and pptr<T>-- are forbidden (deleted).
- *   9. pptr<T>[i] addresses elements of type T with block-size bounds checking.
- *  10. header_from_ptr is O(1) without back-pointer tag: user_ptr = block + 2 granules always.
+ * Optimizations (Issue #59): 16-byte granule addressing; 32-bit granule indices (up to 64 GB);
+ *   BlockHeader = 32 bytes; total_size via next_offset; pptr<T> = 4 bytes.
  *
- * Refactoring (Issue #61):
- *   1. PersistMemoryManager is a fully static class — no instances, no PersistMemoryManager* in public API.
- *   2. Public API uses only pptr<T> and PersistMemoryManager::static_method() calls.
- *   3. pptr<T> uses only PersistMemoryManager::static methods — no PersistMemoryManager* parameter.
- *   4. Removed raw void* allocate/deallocate/reallocate from public API.
- *   5. Removed pptr<T>::resolve(PersistMemoryManager*) — use get() via singleton instead.
- *   6. Removed AllocationInfo struct and get_info() free function.
+ * Refactoring (Issue #61): fully static PersistMemoryManager; pptr<T>-only public API.
  *
- * Code review fixes (Issue #63):
- *   1. Replaced static constexpr with inline constexpr at namespace scope (no internal linkage per TU).
- *   2. Removed #include <iostream> from header; dump_stats() now uses ostream parameter.
- *   3. Updated kMagic to encode format version 3 ("PMM_V030") to reject incompatible persisted files.
- *   4. Fixed is_valid_alignment to correctly check for kGranuleSize-only alignment.
- *   5. Added assert to avl_update_height to guard against int16_t height overflow.
- *   6. Added upper-bound check in header_from_ptr to prevent out-of-range reads.
- *   7. Fixed AVL tiebreaker to use strict < instead of <= for correct strict weak ordering.
- *   8. Fixed bytes_to_granules overflow: added SIZE_MAX proximity guard and uint32_t overflow check.
- *   9. Fixed sizeof(T)*count overflow in allocate_typed(count) and reallocate_typed.
- *  10. Fixed unsigned underflow in block_data_size_bytes when data_idx < kBlockHeaderGranules.
- *  11. Fixed pptr::operator[] bounds check: replaced (i+1)*sizeof(T) with overflow-safe i >= N form.
- *  12. Made pptr constructors and comparison operators constexpr.
- *  13. Fixed total_fragmentation in get_stats() to include all free blocks.
- *  14. Replaced magic literal 0xFFFFFFFFULL with std::numeric_limits<std::uint32_t>::max().
- *  15. Added inline to free function forward declarations to match definitions.
- *  16. Documented that for_each_block callbacks must not call mutating PMM methods.
- *  17. Documented expand() lock precondition; added lock state assertion.
- *  18. Fixed coalesce() to update hdr->used_size when merging block headers.
- *  19. Fixed expand() growth computation to avoid size_t overflow.
- *  20. Replaced void* prev_base_ptr in ManagerHeader with uint64_t prev_base_ptr_offset (persistent-safe).
+ * Code review fixes (Issue #63): inline constexpr, ostream dump, kMagic version encoding,
+ *   AVL height assert, header_from_ptr upper-bound, strict-weak-ordering tiebreaker,
+ *   overflow guards in bytes_to_granules/allocate_typed/operator[]; constexpr pptr ctors.
  *
- * Bug fix (Issue #67):
- *   1. Fixed reallocate_typed: after allocate_typed (which may trigger expand), re-derive the source
- *      pointer from the current s_instance base so the memcpy always reads from the live buffer.
+ * Bug fix (Issue #67): reallocate_typed re-derives old pointer after possible expand().
  */
 
 #pragma once
@@ -104,7 +69,7 @@ inline constexpr std::size_t kMaxAlignment     = 16; ///< Issue #59: only 16-byt
 inline constexpr std::size_t kMinMemorySize    = 4096;
 inline constexpr std::size_t kMinBlockSize =
     48; ///< Minimum block size in bytes = BlockHeader (32) + 1 data granule (16)
-inline constexpr std::uint64_t kMagic           = 0x504D4D5F56303530ULL; ///< "PMM_V050" (#75: size+root_offset)
+inline constexpr std::uint64_t kMagic           = 0x504D4D5F56303630ULL; ///< "PMM_V060" (#75: homogeneous PAP)
 inline constexpr std::size_t   kGrowNumerator   = 5;
 inline constexpr std::size_t   kGrowDenominator = 4;
 
@@ -317,8 +282,9 @@ inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t 
 {
     if ( ptr == nullptr )
         return nullptr;
-    std::uint8_t* raw_ptr  = reinterpret_cast<std::uint8_t*>( ptr );
-    std::uint8_t* min_addr = base + sizeof( ManagerHeader ) + sizeof( BlockHeader );
+    std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
+    // First user data starts after BlockHeader_0 + ManagerHeader + BlockHeader_1 (Issue #75)
+    std::uint8_t* min_addr = base + sizeof( BlockHeader ) + sizeof( ManagerHeader ) + sizeof( BlockHeader );
     if ( raw_ptr < min_addr )
         return nullptr;
     if ( raw_ptr > base + total_size )
@@ -638,27 +604,44 @@ class PersistMemoryManager
         if ( size % kGranuleSize != 0 )
             size -= ( size % kGranuleSize );
 
-        std::uint8_t*          base = static_cast<std::uint8_t*>( memory );
-        detail::ManagerHeader* hdr  = reinterpret_cast<detail::ManagerHeader*>( base );
+        std::uint8_t* base = static_cast<std::uint8_t*>( memory );
+        // Issue #75: PAP homogenization — BlockHeader_0 at granule 0 holds ManagerHeader as user data.
+        // Layout: [BlockHeader_0(0)][ManagerHeader(2)][BlockHeader_free(6)][free_space...]
+        static constexpr std::uint32_t kHdrBlkIdx  = 0; // BlockHeader_0 granule index
+        static constexpr std::uint32_t kFreeBlkIdx =    // first free block
+            detail::kBlockHeaderGranules + detail::kManagerHeaderGranules;
+
+        if ( detail::idx_to_byte_off( kFreeBlkIdx ) + sizeof( detail::BlockHeader ) + kMinBlockSize > size )
+            return false;
+
+        // Set up BlockHeader_0 — the allocated block that holds ManagerHeader
+        detail::BlockHeader* hdr_blk = detail::block_at( base, kHdrBlkIdx );
+        std::memset( hdr_blk, 0, sizeof( detail::BlockHeader ) );
+        hdr_blk->size          = detail::kManagerHeaderGranules; // holds ManagerHeader (4 gran)
+        hdr_blk->prev_offset   = detail::kNoBlock;
+        hdr_blk->next_offset   = kFreeBlkIdx;
+        hdr_blk->left_offset   = detail::kNoBlock;
+        hdr_blk->right_offset  = detail::kNoBlock;
+        hdr_blk->parent_offset = detail::kNoBlock;
+        hdr_blk->avl_height    = 0;
+        hdr_blk->root_offset   = kHdrBlkIdx; // own_idx==0: root of PAP meta-tree (Issue #75)
+
+        // Initialise ManagerHeader inside BlockHeader_0's user data
+        detail::ManagerHeader* hdr = reinterpret_cast<detail::ManagerHeader*>( base + sizeof( detail::BlockHeader ) );
         std::memset( hdr, 0, sizeof( detail::ManagerHeader ) );
         hdr->magic              = kMagic;
         hdr->total_size         = size;
-        hdr->first_block_offset = detail::kNoBlock;
-        hdr->last_block_offset  = detail::kNoBlock;
+        hdr->first_block_offset = kHdrBlkIdx;
+        hdr->last_block_offset  = detail::kNoBlock; // filled below
         hdr->free_tree_root     = detail::kNoBlock;
-        hdr->owns_memory        = false; // external memory — caller is responsible
+        hdr->owns_memory        = false;
         hdr->prev_owns_memory   = false;
 
-        // First block starts right after ManagerHeader (granule-aligned)
-        std::uint32_t blk_idx = detail::kManagerHeaderGranules;
-
-        if ( detail::idx_to_byte_off( blk_idx ) + sizeof( detail::BlockHeader ) + kMinBlockSize > size )
-            return false;
-
-        detail::BlockHeader* blk = detail::block_at( base, blk_idx );
+        // Set up first free block at kFreeBlkIdx
+        detail::BlockHeader* blk = detail::block_at( base, kFreeBlkIdx );
         std::memset( blk, 0, sizeof( detail::BlockHeader ) );
         blk->size          = 0; // free block
-        blk->prev_offset   = detail::kNoBlock;
+        blk->prev_offset   = kHdrBlkIdx;
         blk->next_offset   = detail::kNoBlock;
         blk->left_offset   = detail::kNoBlock;
         blk->right_offset  = detail::kNoBlock;
@@ -666,13 +649,13 @@ class PersistMemoryManager
         blk->avl_height    = 1;
         blk->root_offset   = 0; // free-blocks tree (Issue #75)
 
-        hdr->first_block_offset = blk_idx;
-        hdr->last_block_offset  = blk_idx;
-        hdr->free_tree_root     = blk_idx;
-        hdr->block_count        = 1;
-        hdr->free_count         = 1;
-        // used_size in granules: ManagerHeader + BlockHeader
-        hdr->used_size = blk_idx + detail::kBlockHeaderGranules;
+        hdr->last_block_offset = kFreeBlkIdx;
+        hdr->free_tree_root    = kFreeBlkIdx;
+        hdr->block_count       = 2; // BlockHeader_0 + free block
+        hdr->free_count        = 1;
+        hdr->alloc_count       = 1; // BlockHeader_0 is allocated (holds ManagerHeader)
+        // used_size: BlockHeader_0 header (2) + ManagerHeader data (4) + free BlockHeader (2)
+        hdr->used_size = kFreeBlkIdx + detail::kBlockHeaderGranules;
 
         s_instance = reinterpret_cast<PersistMemoryManager*>( base );
         return true;
@@ -684,19 +667,17 @@ class PersistMemoryManager
         std::unique_lock<std::shared_mutex> lock( s_mutex );
         if ( memory == nullptr || size < kMinMemorySize )
             return false;
-        std::uint8_t*          base = static_cast<std::uint8_t*>( memory );
-        detail::ManagerHeader* hdr  = reinterpret_cast<detail::ManagerHeader*>( base );
+        std::uint8_t* base = static_cast<std::uint8_t*>( memory );
+        // Issue #75: ManagerHeader at base + sizeof(BlockHeader) (inside BlockHeader_0)
+        auto* hdr = reinterpret_cast<detail::ManagerHeader*>( base + sizeof( detail::BlockHeader ) );
         if ( hdr->magic != kMagic || hdr->total_size != size )
             return false;
-        hdr->owns_memory      = false; // external memory — caller is responsible
-        hdr->prev_owns_memory = false;
-        hdr->prev_total_size  = 0;
-        hdr->prev_base_ptr    = nullptr;
-        auto* mgr             = reinterpret_cast<PersistMemoryManager*>( base );
-        // Issue #69: repair doubly-linked list consistency before rebuilding AVL tree
-        mgr->repair_linked_list();
-        // Issue #69: recompute counters from actual block state (handles crash recovery)
-        mgr->recompute_counters();
+        hdr->owns_memory = hdr->prev_owns_memory = false;
+        hdr->prev_total_size                     = 0;
+        hdr->prev_base_ptr                       = nullptr;
+        auto* mgr                                = reinterpret_cast<PersistMemoryManager*>( base );
+        mgr->repair_linked_list(); // Issue #69: fix prev_offset consistency
+        mgr->recompute_counters(); // Issue #69: recompute from actual block state
         mgr->rebuild_free_tree();
         s_instance = mgr;
         return true;
@@ -717,9 +698,11 @@ class PersistMemoryManager
         s_instance                 = nullptr;
         while ( prev != nullptr )
         {
-            detail::ManagerHeader* ph        = reinterpret_cast<detail::ManagerHeader*>( prev );
-            void*                  next_prev = ph->prev_base_ptr;
-            bool                   next_owns = ph->prev_owns_memory;
+            // Issue #75: ManagerHeader at prev_base + sizeof(BlockHeader)
+            auto* ph        = reinterpret_cast<detail::ManagerHeader*>( static_cast<std::uint8_t*>( prev ) +
+                                                                        sizeof( detail::BlockHeader ) );
+            void* next_prev = ph->prev_base_ptr;
+            bool  next_owns = ph->prev_owns_memory;
             if ( prev_owns )
                 std::free( prev );
             prev      = next_prev;
@@ -832,7 +815,8 @@ class PersistMemoryManager
             return 0;
         std::uint8_t* base    = s_instance->base_ptr();
         std::uint32_t blk_idx = data_idx - detail::kBlockHeaderGranules;
-        if ( blk_idx * kGranuleSize < sizeof( detail::ManagerHeader ) )
+        // Block 0 holds ManagerHeader (Issue #75); exclude it from user data (Issue #75)
+        if ( blk_idx == 0 )
             return 0;
         const detail::ManagerHeader* hdr = s_instance->header();
         if ( !detail::is_valid_block( base, hdr, blk_idx ) )
@@ -848,7 +832,11 @@ class PersistMemoryManager
         return s_instance ? static_cast<std::size_t>( s_instance->header()->total_size ) : 0;
     }
 
-    static std::size_t manager_header_size() noexcept { return sizeof( detail::ManagerHeader ); }
+    // Issue #75: returns total reserved zone: BlockHeader_0 header + ManagerHeader data
+    static std::size_t manager_header_size() noexcept
+    {
+        return sizeof( detail::BlockHeader ) + sizeof( detail::ManagerHeader );
+    }
 
     /// @brief Использованный размер в байтах (Issue #59: внутри хранится в гранулах).
     static std::size_t used_size() noexcept
@@ -956,10 +944,17 @@ class PersistMemoryManager
     static PersistMemoryManager* s_instance;
     static std::shared_mutex     s_mutex;
 
-    std::uint8_t*                base_ptr() { return reinterpret_cast<std::uint8_t*>( this ); }
-    const std::uint8_t*          const_base_ptr() const { return reinterpret_cast<const std::uint8_t*>( this ); }
-    detail::ManagerHeader*       header() { return reinterpret_cast<detail::ManagerHeader*>( this ); }
-    const detail::ManagerHeader* header() const { return reinterpret_cast<const detail::ManagerHeader*>( this ); }
+    std::uint8_t*       base_ptr() { return reinterpret_cast<std::uint8_t*>( this ); }
+    const std::uint8_t* const_base_ptr() const { return reinterpret_cast<const std::uint8_t*>( this ); }
+    // Issue #75: ManagerHeader lives inside BlockHeader_0 (granule 2, after BlockHeader at granule 0)
+    detail::ManagerHeader* header()
+    {
+        return reinterpret_cast<detail::ManagerHeader*>( base_ptr() + sizeof( detail::BlockHeader ) );
+    }
+    const detail::ManagerHeader* header() const
+    {
+        return reinterpret_cast<const detail::ManagerHeader*>( const_base_ptr() + sizeof( detail::BlockHeader ) );
+    }
 
     /// @brief Выделить сырую память (внутреннее использование).
     void* allocate_raw( std::size_t user_size )
@@ -1041,10 +1036,11 @@ class PersistMemoryManager
             return false;
 
         std::memcpy( new_memory, base_ptr(), old_size );
-        detail::ManagerHeader* nh       = reinterpret_cast<detail::ManagerHeader*>( new_memory );
-        std::uint8_t*          nb       = static_cast<std::uint8_t*>( new_memory );
-        nh->owns_memory                 = true;
-        std::uint32_t        extra_idx  = detail::byte_off_to_idx( old_size );
+        std::uint8_t* nb = static_cast<std::uint8_t*>( new_memory );
+        // Issue #75: ManagerHeader at nb + sizeof(BlockHeader) (inside BlockHeader_0)
+        detail::ManagerHeader* nh      = reinterpret_cast<detail::ManagerHeader*>( nb + sizeof( detail::BlockHeader ) );
+        nh->owns_memory                = true;
+        std::uint32_t        extra_idx = detail::byte_off_to_idx( old_size );
         std::size_t          extra_size = new_size - old_size;
         detail::BlockHeader* last_blk =
             ( nh->last_block_offset != detail::kNoBlock ) ? detail::block_at( nb, nh->last_block_offset ) : nullptr;
@@ -1143,8 +1139,9 @@ class PersistMemoryManager
         std::uint8_t*          base        = base_ptr();
         detail::ManagerHeader* hdr         = header();
         std::uint32_t          block_count = 0, free_count = 0, alloc_count = 0;
-        std::uint32_t          used_gran = detail::kManagerHeaderGranules;
-        std::uint32_t          idx       = hdr->first_block_offset;
+        // Issue #75: no separate ManagerHeader overhead; BlockHeader_0 is in the block list
+        std::uint32_t used_gran = 0;
+        std::uint32_t idx       = hdr->first_block_offset;
         while ( idx != detail::kNoBlock )
         {
             if ( detail::idx_to_byte_off( idx ) + sizeof( detail::BlockHeader ) > hdr->total_size )
@@ -1178,12 +1175,13 @@ class PersistMemoryManager
         std::size_t                  prev_sz  = hdr->prev_total_size;
         while ( prev_buf != nullptr && prev_sz > 0 )
         {
-            std::uint8_t* prev = static_cast<std::uint8_t*>( prev_buf );
+            auto* prev = static_cast<std::uint8_t*>( prev_buf );
             if ( raw >= prev && raw < prev + prev_sz )
                 return base + ( raw - prev );
-            detail::ManagerHeader* ph = reinterpret_cast<detail::ManagerHeader*>( prev_buf );
-            prev_buf                  = ph->prev_base_ptr;
-            prev_sz                   = ph->prev_total_size;
+            // Issue #75: ManagerHeader at prev + sizeof(BlockHeader)
+            auto* ph = reinterpret_cast<detail::ManagerHeader*>( prev + sizeof( detail::BlockHeader ) );
+            prev_buf = ph->prev_base_ptr;
+            prev_sz  = ph->prev_total_size;
         }
         return ptr;
     }
@@ -1422,7 +1420,8 @@ inline ManagerInfo get_manager_info()
                                            ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( hdr->free_tree_root ) )
                                            : -1;
     info.last_free_offset            = -1;
-    info.manager_header_size         = sizeof( detail::ManagerHeader );
+    // Issue #75: total reserved zone = BlockHeader_0 + ManagerHeader
+    info.manager_header_size = sizeof( detail::BlockHeader ) + sizeof( detail::ManagerHeader );
     return info;
 }
 

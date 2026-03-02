@@ -8,7 +8,7 @@
 
 **Issue #59:** 16-байтная гранулярность — все смещения хранятся как `uint32_t` гранульные индексы (1 гранула = 16 байт), что обеспечивает адресацию до 64 ГБ при `sizeof(pptr<T>) == 4`.
 
-**Issue #75:** Рефакторинг `BlockHeader`: `used_size` → `size`, `_reserved` → `root_offset`. ПАП теперь унифицированно представляет собой лес AVL-деревьев. `root_offset=0` — блок принадлежит дереву свободных блоков; `root_offset=own_index` — занятый блок является корнем своего AVL-дерева.
+**Issue #75:** Рефакторинг `BlockHeader`: `used_size` → `size`, `_reserved` → `root_offset`. ПАП теперь унифицированно представляет собой лес AVL-деревьев. `root_offset=0` — блок принадлежит дереву свободных блоков; `root_offset=own_index` — занятый блок является корнем своего AVL-дерева. **Гомогенизация ПАП:** `ManagerHeader` теперь хранится внутри `BlockHeader_0` (гранула 0) — первого аллоцированного блока. Всё ПАП является однородным лесом блоков.
 
 ---
 
@@ -33,20 +33,21 @@
 ## Структура управляемой области памяти
 
 ```
-[ManagerHeader]
-[BlockHeader_0][user_data_0.....][padding]
+[BlockHeader_0][[ManagerHeader]]              ← гранулы 0-5 (2+4 гранул)
 [BlockHeader_1][user_data_1...............][padding]
 ...
 [BlockHeader_N][свободное пространство....]
 ```
 
+**Issue #75 (гомогенизация ПАП):** `ManagerHeader` теперь хранится как пользовательские данные `BlockHeader_0` (гранула 0). Структура ПАП полностью однородна — каждый регион является блоком. `BlockHeader_0` имеет `root_offset=0` (собственный индекс равен 0) и `size=kManagerHeaderGranules`.
+
 ### ManagerHeader
 
-Расположен в начале буфера (offset 0). Содержит:
+Расположен внутри `BlockHeader_0` (смещение `sizeof(BlockHeader)` = 32 байта от начала буфера). Содержит:
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| `magic` | `uint64_t` | Магическое число `"PMM_V050"` для валидации |
+| `magic` | `uint64_t` | Магическое число `"PMM_V060"` для валидации |
 | `total_size` | `size_t` | Полный размер управляемой области |
 | `used_size` | `size_t` | Занятый объём (метаданные + данные) |
 | `block_count` | `size_t` | Общее количество блоков |
@@ -182,24 +183,28 @@
 ## Диаграмма структур данных
 
 ```
-base_ptr
+base_ptr (= BlockHeader_0)
 │
-├── ManagerHeader
-│     first_block_offset ──────┐
-│     first_free_offset  ──────┼──┐
-│                               │  │
-├── BlockHeader_0 ◄─────────────┘  │ (free block)
-│     prev_offset = -1             │
-│     next_offset ──────────────┐  │
-│     free_prev_offset = -1     │  │
-│     free_next_offset ─────────┼──┘ (points to next free)
-│     used = false              │
-│     [free space]              │
+├── BlockHeader_0 (granule 0, root_offset=0, allocated — holds ManagerHeader)
+│     size = kManagerHeaderGranules
+│     prev_offset = kNoBlock
+│     next_offset ──────────────┐
+│     root_offset = 0 (own idx) │
+│   [ManagerHeader inside:]     │
+│     magic = "PMM_V060"        │
+│     first_block_offset = 0 ───┘ (points to self = BlockHeader_0)
+│     free_tree_root ──────────┐
+│                              │
+├── BlockHeader_free ◄─────────┘ (granule 6, free block)
+│     size = 0
+│     prev_offset = 0 (BlockHeader_0)
+│     next_offset ──────────────┐
+│     root_offset = 0           │
+│     [free space...]           │
 │                               │
-├── BlockHeader_1 ◄─────────────┘ (used block)
-│     prev_offset ──────────────► (back to BlockHeader_0)
-│     next_offset = -1
-│     used = true
+├── BlockHeader_N ◄─────────────┘ (allocated user block)
+│     size > 0
+│     root_offset = own_idx
 │     [user data...]
 │
 └── (end of managed area)

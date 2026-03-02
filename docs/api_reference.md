@@ -532,4 +532,4 @@ struct MemoryStats {
 
 ---
 
-*Версия документа 5.0. Соответствует версии библиотеки 5.0.0 (Issue #75: `BlockHeader.size` + `root_offset`).*
+*Версия документа 6.0. Соответствует версии библиотеки 6.0.0 (Issue #75: PAP-гомогенизация — `ManagerHeader` внутри `BlockHeader_0`).*

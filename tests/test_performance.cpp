@@ -166,7 +166,7 @@ static bool test_alloc_dealloc_validate()
 
     auto stats = pmm::get_stats();
     PMM_TEST( stats.free_blocks == 1 );
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     pmm::PersistMemoryManager::destroy();
     std::free( mem );
@@ -216,7 +216,7 @@ static bool test_memory_reuse()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     pmm::PersistMemoryManager::destroy();
     std::free( mem );
@@ -276,7 +276,7 @@ static bool test_free_list_after_load()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     pmm::PersistMemoryManager::destroy();
     std::free( mem_copy );
@@ -365,7 +365,7 @@ static bool test_full_coalesce_after_alloc_dealloc()
     PMM_TEST( pmm::PersistMemoryManager::validate() );
 
     auto stats = pmm::get_stats();
-    PMM_TEST( stats.allocated_blocks == 0 );
+    PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
     PMM_TEST( stats.free_blocks == 1 );
 
     PMM_TEST( pmm::PersistMemoryManager::free_size() > 0 );
