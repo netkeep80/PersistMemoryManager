@@ -80,7 +80,9 @@ void MemMapView::update_snapshot( pmm::PersistMemoryManager* mgr )
     for ( std::size_t i = 0; i < mark_hdr; ++i )
         snapshot_[i].type = ByteInfo::Type::ManagerHeader;
 
-    // Walk block linked list via the public for_each_block() iterator
+    // Walk block linked list via the public for_each_block() iterator.
+    // Skip bytes already marked as ManagerHeader (first mgr_hdr_sz bytes = BlockHeader_0
+    // + embedded ManagerHeader data, Issue #75).
     pmm::for_each_block(
         [&]( const pmm::BlockView& blk )
         {
@@ -92,16 +94,20 @@ void MemMapView::update_snapshot( pmm::PersistMemoryManager* mgr )
             const std::size_t hdr_end   = blk_start + blk.header_size;
             const std::size_t blk_end   = blk_start + blk.total_size;
 
-            // Mark BlockHeader bytes
+            // Mark BlockHeader bytes (skip the ManagerHeader reserved region)
             for ( std::size_t b = blk_start; b < hdr_end && b < display_bytes; ++b )
             {
+                if ( b < mark_hdr )
+                    continue; // preserve ManagerHeader colouring for block 0
                 snapshot_[b].type        = hdr_type;
                 snapshot_[b].block_index = blk.index;
             }
 
-            // Mark user data bytes
+            // Mark user data bytes (skip the ManagerHeader reserved region)
             for ( std::size_t b = hdr_end; b < blk_end && b < display_bytes; ++b )
             {
+                if ( b < mark_hdr )
+                    continue; // preserve ManagerHeader colouring for block 0
                 snapshot_[b].type        = data_type;
                 snapshot_[b].block_index = blk.index;
             }
