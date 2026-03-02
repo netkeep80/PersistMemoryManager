@@ -48,3 +48,6 @@ pmm_add_test(test_avl_allocator test_avl_allocator.cpp)
 
 # ─── Тесты reallocate_typed (Issue #67) ───────────────────────────────────────
 pmm_add_test(test_reallocate test_reallocate.cpp)
+
+# ─── Тесты модернизации блока без magic (Issue #69) ──────────────────────────
+pmm_add_test(test_block_modernization test_block_modernization.cpp)

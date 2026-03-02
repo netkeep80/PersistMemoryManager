@@ -17,7 +17,18 @@
  * Поиск свободного блока: best-fit через AVL-дерево (O(log n)).
  * При освобождении: слияние с соседними свободными блоками.
  *
- * @version 3.0.0
+ * @version 4.0.0
+ *
+ * Block modernization (Issue #69):
+ *   1. Removed magic field from BlockHeader — freed 4 bytes for future use (e.g. string dict).
+ *   2. Block validity now checked via structural invariants (is_valid_block()):
+ *        a. used_size < total_granules (computed from next_offset)
+ *        b. prev_offset < this_idx < next_offset (strict ordering)
+ *        c. avl_height < 32
+ *        d. AVL offsets are all kNoBlock, or all distinct
+ *   3. Updated kMagic to "PMM_V040" to reject incompatible (magic-bearing) persisted images.
+ *   4. load() now calls repair_linked_list() and recompute_counters() for crash recovery.
+ *   5. Added docs/atomic_writes.md: analysis of write atomicity and recovery algorithms.
  *
  * Optimizations (Issue #57):
  *   1. O(1) back-pointer (boundary tag) in header_from_ptr — O(1) instead of up to 512 iterations.
@@ -97,7 +108,7 @@ inline constexpr std::size_t kMaxAlignment     = 16; ///< Issue #59: only 16-byt
 inline constexpr std::size_t kMinMemorySize    = 4096;
 inline constexpr std::size_t kMinBlockSize =
     48; ///< Minimum block size in bytes = BlockHeader (32) + 1 data granule (16)
-inline constexpr std::uint64_t kMagic           = 0x504D4D5F56303330ULL; ///< "PMM_V030" — format version 3
+inline constexpr std::uint64_t kMagic           = 0x504D4D5F56303430ULL; ///< "PMM_V040" — format version 4 (no BlockHeader.magic)
 inline constexpr std::size_t   kGrowNumerator   = 5;
 inline constexpr std::size_t   kGrowDenominator = 4;
 
@@ -156,9 +167,9 @@ namespace detail
 /// @brief Block header (Issue #59: 32 bytes = 2 granules). All _offset fields are
 /// granule indices (uint32_t); kNoBlock = 0xFFFFFFFF. used_size=0 means free block.
 /// User data starts 32 bytes (2 granules) after block start. total_size = next_offset - idx.
+/// Issue #69: magic field removed; validity checked via is_valid_block() structural invariants.
 struct BlockHeader
 {
-    std::uint32_t magic;     ///< Магическое число (4 байта)
     std::uint32_t used_size; ///< [1] Занятый размер в гранулах (0 = свободный блок)
     std::uint32_t prev_offset; ///< [2] Предыдущий блок (гранульный индекс)
     std::uint32_t next_offset; ///< [3] Следующий блок (гранульный индекс)
@@ -166,7 +177,8 @@ struct BlockHeader
     std::uint32_t right_offset; ///< [5] Правый дочерний узел AVL-дерева (гранульный индекс)
     std::uint32_t parent_offset; ///< [6] Родительский узел AVL-дерева (гранульный индекс)
     std::int16_t  avl_height; ///< Высота AVL-поддерева (0 = не в дереве)
-    std::uint16_t _pad;       ///< Зарезервировано
+    std::uint16_t _pad;       ///< Зарезервировано (Issue #69: previously held magic[3:2])
+    std::uint32_t _reserved;  ///< Зарезервировано (Issue #69: freed from magic field)
 };
 
 static_assert( sizeof( BlockHeader ) == 32, "BlockHeader must be exactly 32 bytes (Issue #59)" );
@@ -175,7 +187,7 @@ static_assert( sizeof( BlockHeader ) % kGranuleSize == 0, "BlockHeader must be g
 /// @brief Число гранул в BlockHeader (2 гранулы = 32 байта)
 inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( BlockHeader ) / kGranuleSize;
 
-inline constexpr std::uint32_t kBlockMagic = 0x424C4B32U; // "BLK2" (Issue #59 version)
+// kBlockMagic removed (Issue #69): block validity now uses is_valid_block() structural invariants.
 inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: нет блока (гранульный индекс)
 
 /// @brief Manager header (Issue #59: 64 bytes). All _offset fields are granule indices.
@@ -273,6 +285,58 @@ inline std::uint32_t block_total_granules( const std::uint8_t* base, const Manag
     return byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - this_idx;
 }
 
+/// @brief Issue #69: Проверить структурную валидность блока без magic-числа.
+///
+/// Блок считается валидным, если все инварианты выполнены:
+///   1. used_size < total_granules     (занятость строго меньше размера блока)
+///   2. prev_offset < idx < next_offset (строгий порядок индексов в линейном списке)
+///   3. avl_height < 32                (разумный предел для AVL-дерева)
+///   4. AVL-ссылки все kNoBlock, либо все попарно различны
+///
+/// @param base     Базовый адрес управляемой области.
+/// @param hdr      Заголовок менеджера (для total_size при вычислении total_granules).
+/// @param idx      Гранульный индекс проверяемого блока.
+/// @return true если блок структурно валиден, false в противном случае.
+inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, std::uint32_t idx )
+{
+    if ( idx == kNoBlock )
+        return false;
+    if ( idx_to_byte_off( idx ) + sizeof( BlockHeader ) > hdr->total_size )
+        return false;
+
+    const BlockHeader* blk = reinterpret_cast<const BlockHeader*>( base + idx_to_byte_off( idx ) );
+
+    // 1. used_size < total_granules
+    std::uint32_t total_gran = ( blk->next_offset != kNoBlock )
+                                   ? ( blk->next_offset - idx )
+                                   : ( byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - idx );
+    if ( blk->used_size >= total_gran )
+        return false;
+
+    // 2. prev_offset < idx < next_offset (strict ordering)
+    if ( blk->prev_offset != kNoBlock && blk->prev_offset >= idx )
+        return false;
+    if ( blk->next_offset != kNoBlock && blk->next_offset <= idx )
+        return false;
+
+    // 3. avl_height < 32
+    if ( blk->avl_height >= 32 )
+        return false;
+
+    // 4. AVL-ссылки: либо все kNoBlock, либо все попарно различны
+    const bool l = ( blk->left_offset   != kNoBlock );
+    const bool r = ( blk->right_offset  != kNoBlock );
+    const bool p = ( blk->parent_offset != kNoBlock );
+    if ( l || r || p )
+    {
+        if ( l && r && blk->left_offset == blk->right_offset )   return false;
+        if ( l && p && blk->left_offset == blk->parent_offset )  return false;
+        if ( r && p && blk->right_offset == blk->parent_offset ) return false;
+    }
+
+    return true;
+}
+
 /// @brief Вычислить адрес пользовательских данных для блока.
 /// Issue #59: user_ptr всегда ровно через kBlockHeaderGranules гранул после начала блока.
 /// Выравнивание по kGranuleSize = 16 байт гарантировано самой структурой адресации.
@@ -283,7 +347,7 @@ inline void* user_ptr( BlockHeader* block )
 
 /// @brief O(1) восстановление заголовка блока по user_ptr (Issue #59).
 /// user_ptr всегда = block + sizeof(BlockHeader), поэтому header = ptr - sizeof(BlockHeader).
-/// Проверка через magic и used_size > 0.
+/// Issue #69: проверка через is_valid_block() и used_size > 0 (без magic).
 /// @param base     Базовый адрес управляемой области.
 /// @param ptr      Указатель на пользовательские данные (должен быть внутри [base, base+total_size)).
 /// @param total_size Полный размер управляемой области в байтах (для проверки верхней границы).
@@ -304,10 +368,15 @@ inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t 
     // Must be granule-aligned
     if ( ( reinterpret_cast<std::size_t>( cand_addr ) - reinterpret_cast<std::size_t>( base ) ) % kGranuleSize != 0 )
         return nullptr;
+    // Issue #69: structural validity check instead of magic
+    std::uint32_t        cand_idx  = static_cast<std::uint32_t>( ( cand_addr - base ) / kGranuleSize );
+    const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base );
+    if ( !is_valid_block( base, hdr_const, cand_idx ) )
+        return nullptr;
     BlockHeader* cand = reinterpret_cast<BlockHeader*>( cand_addr );
-    if ( cand->magic == kBlockMagic && cand->used_size > 0 )
-        return cand;
-    return nullptr;
+    if ( cand->used_size == 0 )
+        return nullptr;
+    return cand;
 }
 
 /// @brief Минимальный размер блока в гранулах для заданного числа байт пользователя.
@@ -648,7 +717,6 @@ class PersistMemoryManager
 
         detail::BlockHeader* blk = detail::block_at( base, blk_idx );
         std::memset( blk, 0, sizeof( detail::BlockHeader ) );
-        blk->magic         = detail::kBlockMagic;
         blk->used_size     = 0;
         blk->prev_offset   = detail::kNoBlock;
         blk->next_offset   = detail::kNoBlock;
@@ -693,6 +761,10 @@ class PersistMemoryManager
         hdr->prev_total_size  = 0;
         hdr->prev_base_ptr    = nullptr;
         auto* mgr             = reinterpret_cast<PersistMemoryManager*>( base );
+        // Issue #69: repair doubly-linked list consistency before rebuilding AVL tree
+        mgr->repair_linked_list();
+        // Issue #69: recompute counters from actual block state (handles crash recovery)
+        mgr->recompute_counters();
         mgr->rebuild_free_tree();
         s_instance = mgr;
         return true;
@@ -858,8 +930,12 @@ class PersistMemoryManager
         std::uint32_t blk_idx = data_idx - detail::kBlockHeaderGranules;
         if ( blk_idx * kGranuleSize < sizeof( detail::ManagerHeader ) )
             return 0;
+        // Issue #69: structural validity check instead of magic
+        const detail::ManagerHeader* hdr = s_instance->header();
+        if ( !detail::is_valid_block( base, hdr, blk_idx ) )
+            return 0;
         const detail::BlockHeader* blk = detail::block_at( base, blk_idx );
-        if ( blk->magic != detail::kBlockMagic || blk->used_size == 0 )
+        if ( blk->used_size == 0 )
             return 0;
         return detail::granules_to_bytes( blk->used_size );
     }
@@ -909,11 +985,10 @@ class PersistMemoryManager
         std::uint32_t idx = hdr->first_block_offset;
         while ( idx != detail::kNoBlock )
         {
-            if ( detail::idx_to_byte_off( idx ) >= hdr->total_size )
+            // Issue #69: structural validity check instead of magic
+            if ( !detail::is_valid_block( base, hdr, idx ) )
                 return false;
             const detail::BlockHeader* blk = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
-            if ( blk->magic != detail::kBlockMagic )
-                return false;
             block_count++;
             if ( blk->used_size > 0 )
                 alloc_count++;
@@ -1096,7 +1171,6 @@ class PersistMemoryManager
             }
             detail::BlockHeader* nb_blk = detail::block_at( nb, extra_idx );
             std::memset( nb_blk, 0, sizeof( detail::BlockHeader ) );
-            nb_blk->magic         = detail::kBlockMagic;
             nb_blk->used_size     = 0;
             nb_blk->left_offset   = detail::kNoBlock;
             nb_blk->right_offset  = detail::kNoBlock;
@@ -1150,6 +1224,69 @@ class PersistMemoryManager
         }
     }
 
+    /// @brief Issue #69: Repair doubly-linked list forward/backward consistency.
+    ///
+    /// After a crash during a block split or coalesce, the prev_offset of some block
+    /// may not match the actual preceding block in forward traversal.
+    /// This pass fixes any such inconsistency by re-deriving prev_offset from
+    /// the actual forward traversal order.
+    void repair_linked_list()
+    {
+        std::uint8_t*          base = base_ptr();
+        detail::ManagerHeader* hdr  = header();
+        std::uint32_t          idx  = hdr->first_block_offset;
+        std::uint32_t          prev = detail::kNoBlock;
+        while ( idx != detail::kNoBlock )
+        {
+            if ( detail::idx_to_byte_off( idx ) + sizeof( detail::BlockHeader ) > hdr->total_size )
+                break; // Safety: stop at out-of-range index
+            detail::BlockHeader* blk = detail::block_at( base, idx );
+            if ( blk->prev_offset != prev )
+                blk->prev_offset = prev; // Fix inconsistent backward link
+            prev = idx;
+            idx  = blk->next_offset;
+        }
+    }
+
+    /// @brief Issue #69: Recompute block/free/alloc counters and used_size from actual block state.
+    ///
+    /// After crash recovery, counters in ManagerHeader may be inconsistent with
+    /// the actual block list. This pass recomputes them from scratch.
+    void recompute_counters()
+    {
+        std::uint8_t*          base        = base_ptr();
+        detail::ManagerHeader* hdr         = header();
+        std::uint32_t          block_count = 0, free_count = 0, alloc_count = 0;
+        // Overhead: ManagerHeader occupies kManagerHeaderGranules granules
+        std::uint32_t used_gran = detail::kManagerHeaderGranules;
+
+        std::uint32_t idx = hdr->first_block_offset;
+        while ( idx != detail::kNoBlock )
+        {
+            if ( detail::idx_to_byte_off( idx ) + sizeof( detail::BlockHeader ) > hdr->total_size )
+                break; // Safety: stop at out-of-range index
+            detail::BlockHeader* blk = detail::block_at( base, idx );
+            block_count++;
+            used_gran += detail::kBlockHeaderGranules; // Block header overhead
+
+            if ( blk->used_size > 0 )
+            {
+                alloc_count++;
+                used_gran += blk->used_size;
+            }
+            else
+            {
+                free_count++;
+            }
+            idx = blk->next_offset;
+        }
+
+        hdr->block_count = block_count;
+        hdr->free_count  = free_count;
+        hdr->alloc_count = alloc_count;
+        hdr->used_size   = used_gran;
+    }
+
     void* translate_ptr( void* ptr ) const noexcept
     {
         std::uint8_t*                base     = const_cast<PersistMemoryManager*>( this )->base_ptr();
@@ -1192,7 +1329,9 @@ class PersistMemoryManager
                     detail::block_at( base, nxt->next_offset )->prev_offset = b_idx;
                 else
                     hdr->last_block_offset = b_idx;
-                nxt->magic = 0;
+                // Issue #69: zero out the merged header (no magic field); next_offset=0 makes
+                // is_valid_block() return false (violates idx < next_offset for any idx > 0).
+                std::memset( nxt, 0, sizeof( detail::BlockHeader ) );
                 hdr->block_count--;
                 hdr->free_count--;
                 // Merged block header (kBlockHeaderGranules granules) is now reclaimed as free space
@@ -1214,7 +1353,8 @@ class PersistMemoryManager
                     detail::block_at( base, blk->next_offset )->prev_offset = prv_idx;
                 else
                     hdr->last_block_offset = prv_idx;
-                blk->magic = 0;
+                // Issue #69: zero out the merged header (no magic field)
+                std::memset( blk, 0, sizeof( detail::BlockHeader ) );
                 hdr->block_count--;
                 hdr->free_count--;
                 // Merged block header (kBlockHeaderGranules granules) is now reclaimed as free space
@@ -1251,7 +1391,6 @@ class PersistMemoryManager
             std::uint32_t        new_idx = blk_idx + needed_gran;
             detail::BlockHeader* new_blk = detail::block_at( base, new_idx );
             std::memset( new_blk, 0, sizeof( detail::BlockHeader ) );
-            new_blk->magic         = detail::kBlockMagic;
             new_blk->used_size     = 0;
             new_blk->prev_offset   = blk_idx;
             new_blk->next_offset   = blk->next_offset;
@@ -1289,8 +1428,11 @@ class PersistMemoryManager
             return true;
         if ( detail::idx_to_byte_off( node_idx ) >= hdr->total_size )
             return false;
+        // Issue #69: structural validity check instead of magic
+        if ( !detail::is_valid_block( base, hdr, node_idx ) )
+            return false;
         const detail::BlockHeader* node = detail::block_at( const_cast<std::uint8_t*>( base ), node_idx );
-        if ( node->magic != detail::kBlockMagic || node->used_size != 0 )
+        if ( node->used_size != 0 )
             return false;
         count++;
         if ( !validate_avl( base, hdr, node->left_offset, count ) )
