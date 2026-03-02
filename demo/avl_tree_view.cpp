@@ -50,12 +50,12 @@ void AvlTreeView::update_snapshot( pmm::PersistMemoryManager* mgr )
 
 // ─── Recursive node renderer ──────────────────────────────────────────────────
 
-void AvlTreeView::render_node( std::ptrdiff_t node_offset, int /*depth*/ )
+void AvlTreeView::render_node( std::ptrdiff_t node_offset, int depth )
 {
     if ( node_offset < 0 )
         return;
 
-    // Find the node in the snapshot (pre-order, so children appear after parent).
+    // Find the node in the snapshot by offset (snapshot is in linear block order).
     const AvlNodeSnapshot* ns = nullptr;
     for ( const auto& n : snapshot_ )
     {
@@ -89,7 +89,7 @@ void AvlTreeView::render_node( std::ptrdiff_t node_offset, int /*depth*/ )
         ImGui::Text( "Total size:   %zu bytes", ns->total_size );
         ImGui::Text( "Free data:    %zu bytes", ns->free_size );
         ImGui::Text( "AVL height:   %d", ns->avl_height );
-        ImGui::Text( "AVL depth:    %d", ns->avl_depth );
+        ImGui::Text( "AVL depth:    %d", depth );
         if ( ns->left_offset >= 0 )
             ImGui::Text( "Left child:   +%td", ns->left_offset );
         else
@@ -108,9 +108,9 @@ void AvlTreeView::render_node( std::ptrdiff_t node_offset, int /*depth*/ )
     if ( open && has_children )
     {
         if ( ns->left_offset >= 0 )
-            render_node( ns->left_offset, ns->avl_depth + 1 );
+            render_node( ns->left_offset, depth + 1 );
         if ( ns->right_offset >= 0 )
-            render_node( ns->right_offset, ns->avl_depth + 1 );
+            render_node( ns->right_offset, depth + 1 );
         ImGui::TreePop();
     }
 }
