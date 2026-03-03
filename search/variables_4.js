@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['header_5fsize_0',['header_size',['../structpmm_1_1BlockView.html#a9609631e9f6946e6a4591c38535345dd',1,'pmm::BlockView']]]
+  ['granule_5fsize_0',['granule_size',['../structpmm_1_1config_1_1PMMConfig.html#ac37996a35e5b715b3620ae357dc5ec29',1,'pmm::config::PMMConfig']]]
 ];

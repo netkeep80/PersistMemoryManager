@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['right_5foffset_0',['right_offset',['../structpmm_1_1FreeBlockView.html#a4f24c808c2f295e8e12359ec81852f66',1,'pmm::FreeBlockView::right_offset'],['../structpmm_1_1detail_1_1BlockHeader.html#a0bfa822721227c751120dfbf7e82a27e',1,'pmm::detail::BlockHeader::right_offset']]],
-  ['root_5foffset_1',['root_offset',['../structpmm_1_1detail_1_1BlockHeader.html#a8424d513d549723a8e7539731da79d0f',1,'pmm::detail::BlockHeader']]]
+  ['parent_5foffset_0',['parent_offset',['../structpmm_1_1FreeBlockView.html#aea1f57f5c5b0eaf525417546e0860c31',1,'pmm::FreeBlockView::parent_offset'],['../structpmm_1_1detail_1_1BlockHeader.html#a2a13a9adaa31b0c4bf7d083f026ec798',1,'pmm::detail::BlockHeader::parent_offset']]],
+  ['prev_5fbase_5fptr_1',['prev_base_ptr',['../structpmm_1_1detail_1_1ManagerHeader.html#a1bb56fffdeca92384e21d17e6ed8133b',1,'pmm::detail::ManagerHeader']]],
+  ['prev_5foffset_2',['prev_offset',['../structpmm_1_1detail_1_1BlockHeader.html#aeabee7ef2a65e7808f039ec61d35b932',1,'pmm::detail::BlockHeader']]],
+  ['prev_5fowns_5fmemory_3',['prev_owns_memory',['../structpmm_1_1detail_1_1ManagerHeader.html#ac4d518b1787bb7897f1537e53c140037',1,'pmm::detail::ManagerHeader']]],
+  ['prev_5ftotal_5fsize_4',['prev_total_size',['../structpmm_1_1detail_1_1ManagerHeader.html#aa2c18d6c49db61acbbd79984c7c457c5',1,'pmm::detail::ManagerHeader']]]
 ];

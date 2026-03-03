@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['validate_0',['validate',['../classpmm_1_1PersistMemoryManager.html#a18866a3f5962dde1ebe31040c54e8f4e',1,'pmm::PersistMemoryManager']]]
+  ['validate_0',['validate',['../classpmm_1_1ValidationMixin.html#a06fedf9ffe25ff87031478b058faabd5',1,'pmm::ValidationMixin']]]
 ];
