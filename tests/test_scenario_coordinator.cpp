@@ -71,14 +71,14 @@ static void pmm_setup( std::size_t size = kDefaultPmmSize )
     if ( g_buf )
     {
         std::memset( g_buf, 0, size );
-        pmm::PersistMemoryManager::create( g_buf, size );
+        pmm::PersistMemoryManager<>::create( g_buf, size );
     }
 }
 
 static void pmm_teardown()
 {
-    if ( pmm::PersistMemoryManager::instance() )
-        pmm::PersistMemoryManager::destroy();
+    if ( pmm::PersistMemoryManager<>::instance() )
+        pmm::PersistMemoryManager<>::destroy();
     g_buf = nullptr;
 }
 
@@ -240,9 +240,9 @@ static bool test_persistence_cycle_safety()
         sm.join_all();
     }
 
-    auto* inst = pmm::PersistMemoryManager::instance();
+    auto* inst = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     pmm_teardown();
     return true;

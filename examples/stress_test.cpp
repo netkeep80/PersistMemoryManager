@@ -59,7 +59,7 @@ static bool test_100k_allocations()
     }
 
     // Issue #61: create() возвращает bool
-    if ( !pmm::PersistMemoryManager::create( mem, memory_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, memory_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -76,7 +76,7 @@ static bool test_100k_allocations()
     for ( int i = 0; i < N; i++ )
     {
         // Issue #61: allocate_typed<uint8_t>(N) — N это количество uint8_t = байт
-        ptrs[i] = pmm::PersistMemoryManager::allocate_typed<uint8_t>( BSIZ );
+        ptrs[i] = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( BSIZ );
         if ( ptrs[i].is_null() )
         {
             std::cout << "  Достигнут лимит при i=" << i << " (не хватило памяти в буфере)\n";
@@ -112,10 +112,10 @@ static bool test_100k_allocations()
     }
 
     // Issue #61: статический вызов validate()
-    if ( !pmm::PersistMemoryManager::validate() )
+    if ( !pmm::PersistMemoryManager<>::validate() )
     {
         std::cerr << "  ОШИБКА: validate() провалился после аллокаций\n";
-        pmm::PersistMemoryManager::destroy();
+        pmm::PersistMemoryManager<>::destroy();
         std::free( mem );
         return false;
     }
@@ -125,29 +125,29 @@ static bool test_100k_allocations()
     for ( int i = 0; i < allocated; i++ )
     {
         // Issue #61: deallocate_typed(pptr)
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[i] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
     }
     auto   t3         = now();
     double ms_dealloc = elapsed_ms( t2, t3 );
 
     std::cout << "  Время освобождения: " << ms_dealloc << " мс\n";
 
-    if ( !pmm::PersistMemoryManager::validate() )
+    if ( !pmm::PersistMemoryManager<>::validate() )
     {
         std::cerr << "  ОШИБКА: validate() провалился после освобождений\n";
-        pmm::PersistMemoryManager::destroy();
+        pmm::PersistMemoryManager<>::destroy();
         std::free( mem );
         return false;
     }
 
     // Проверяем статистику через статические методы (Issue #61)
-    std::size_t free_after = pmm::PersistMemoryManager::free_size();
-    std::size_t used_after = pmm::PersistMemoryManager::used_size();
+    std::size_t free_after = pmm::PersistMemoryManager<>::free_size();
+    std::size_t used_after = pmm::PersistMemoryManager<>::used_size();
     std::cout << "  Свободно после освобождений: " << free_after << " байт\n";
     std::cout << "  Занято (метаданные)         : " << used_after << " байт\n";
 
     // Issue #61: после destroy() нужно вручную освободить буфер
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem );
 
     bool passed = data_ok && ( allocated > 0 );
@@ -179,7 +179,7 @@ static bool test_1m_alternating()
     }
 
     // Issue #61: create() возвращает bool
-    if ( !pmm::PersistMemoryManager::create( mem, memory_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, memory_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -213,7 +213,7 @@ static bool test_1m_alternating()
         {
             // Аллоцируем (Issue #61: allocate_typed<uint8_t>)
             std::size_t sz   = SIZES[next_rng() % 8];
-            pool[slot]       = pmm::PersistMemoryManager::allocate_typed<uint8_t>( sz );
+            pool[slot]       = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( sz );
             pool_sizes[slot] = sz;
             if ( !pool[slot].is_null() )
             {
@@ -231,7 +231,7 @@ static bool test_1m_alternating()
         else
         {
             // Освобождаем (Issue #61: deallocate_typed)
-            pmm::PersistMemoryManager::deallocate_typed( pool[slot] );
+            pmm::PersistMemoryManager<>::deallocate_typed( pool[slot] );
             pool_sizes[slot] = 0;
             dealloc_ops++;
         }
@@ -271,18 +271,18 @@ static bool test_1m_alternating()
     {
         if ( !pool[i].is_null() )
         {
-            pmm::PersistMemoryManager::deallocate_typed( pool[i] );
+            pmm::PersistMemoryManager<>::deallocate_typed( pool[i] );
         }
     }
 
-    bool validate_ok = pmm::PersistMemoryManager::validate();
+    bool validate_ok = pmm::PersistMemoryManager<>::validate();
     if ( !validate_ok )
     {
         std::cerr << "  ОШИБКА: validate() провалился после теста\n";
     }
 
     // Issue #61: после destroy() нужно вручную освободить буфер
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem );
 
     bool passed = data_ok && validate_ok;

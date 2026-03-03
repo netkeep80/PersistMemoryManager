@@ -97,7 +97,7 @@ static bool test_shredder()
         return false;
     }
 
-    if ( !pmm::PersistMemoryManager::create( mem, memory_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, memory_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -119,7 +119,7 @@ static bool test_shredder()
     for ( int i = 0; i < 10000; ++i )
     {
         std::size_t             sz  = rng.next_block_size_shredder();
-        pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+        pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( sz );
         if ( !ptr.is_null() )
         {
             std::memset( ptr.get(), static_cast<int>( i & 0xFF ), sz );
@@ -134,7 +134,7 @@ static bool test_shredder()
     std::cout << "    Выделено: " << all_ptrs.size() << " / 10000" << "  неудачно: " << failed
               << "  время: " << elapsed_ms( t0, now() ) << " мс\n";
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     // Перемешиваем порядок указателей
     for ( std::size_t i = all_ptrs.size() - 1; i > 0; --i )
@@ -157,12 +157,12 @@ static bool test_shredder()
     auto t1 = now();
     for ( auto& p : random_half )
     {
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
     }
 
     std::cout << "    Освобождено: " << random_half.size() << " блоков  время: " << elapsed_ms( t1, now() ) << " мс\n";
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     // ── Фаза 3: проверка фрагментации ─────────────────────────────────────────
     {
@@ -190,7 +190,7 @@ static bool test_shredder()
     auto t2 = now();
     for ( auto& p : sorted_half )
     {
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
     }
 
     std::cout << "    Освобождено: " << sorted_half.size() << " блоков  время: " << elapsed_ms( t2, now() ) << " мс\n";
@@ -199,7 +199,7 @@ static bool test_shredder()
     {
         std::cout << "  Фаза 5: финальная валидация после полного освобождения:\n";
 
-        PMM_TEST( pmm::PersistMemoryManager::validate() );
+        PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
         auto stats = pmm::get_stats();
         std::cout << "    Всего блоков: " << stats.total_blocks << "  свободных: " << stats.free_blocks
@@ -214,7 +214,7 @@ static bool test_shredder()
     double total_ms = elapsed_ms( t0, now() );
     std::cout << "  Общее время: " << total_ms << " мс\n";
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem );
     return true;
 }
@@ -251,7 +251,7 @@ static bool test_persistent_cycle()
         return false;
     }
 
-    if ( !pmm::PersistMemoryManager::create( mem1, memory_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem1, memory_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem1 );
@@ -263,11 +263,11 @@ static bool test_persistent_cycle()
 
     for ( int i = 0; i < node_count; ++i )
     {
-        pmm::pptr<Node> np = pmm::PersistMemoryManager::allocate_typed<Node>();
+        pmm::pptr<Node> np = pmm::PersistMemoryManager<>::allocate_typed<Node>();
         if ( np.is_null() )
         {
             std::cerr << "  ОШИБКА: не удалось выделить узел " << i << "\n";
-            pmm::PersistMemoryManager::destroy();
+            pmm::PersistMemoryManager<>::destroy();
             std::free( mem1 );
             return false;
         }
@@ -290,7 +290,7 @@ static bool test_persistent_cycle()
 
     std::uint32_t head_offset = nodes[0].offset();
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
     std::cout << "    Список построен, смещение головы: " << head_offset << "\n";
 
     // ── Фаза 2: сохранение образа ─────────────────────────────────────────────
@@ -308,7 +308,7 @@ static bool test_persistent_cycle()
         std::cout << "  Фаза 3: уничтожение и загрузка в новый буфер...\n";
     }
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem1 );
 
     void* mem2 = std::malloc( memory_size );
@@ -330,7 +330,7 @@ static bool test_persistent_cycle()
     }
     std::cout << "    Загружено за " << elapsed_ms( t1, now() ) << " мс  (новый базовый адрес: " << mem2 << ")\n";
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     // ── Фаза 4: верификация списка через pptr::resolve() ─────────────────────
     {
@@ -384,15 +384,15 @@ static bool test_persistent_cycle()
     while ( !cur.is_null() )
     {
         pmm::pptr<Node> next_node = cur.get()->next;
-        pmm::PersistMemoryManager::deallocate_typed( cur );
+        pmm::PersistMemoryManager<>::deallocate_typed( cur );
         cur = next_node;
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
     auto stats = pmm::get_stats();
     PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem2 );
     std::remove( filename );
     return true;
@@ -410,7 +410,7 @@ static bool test_marathon()
         return false;
     }
 
-    if ( !pmm::PersistMemoryManager::create( mem, memory_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, memory_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -439,7 +439,7 @@ static bool test_marathon()
         if ( rng.next_n( 10 ) < 6 || live.empty() )
         {
             std::size_t             sz  = rng.next_block_size_marathon();
-            pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+            pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( sz );
             if ( !ptr.is_null() )
             {
                 live.push_back( ptr );
@@ -453,7 +453,7 @@ static bool test_marathon()
         else
         {
             uint32_t idx = rng.next_n( static_cast<uint32_t>( live.size() ) );
-            pmm::PersistMemoryManager::deallocate_typed( live[idx] );
+            pmm::PersistMemoryManager<>::deallocate_typed( live[idx] );
             live[idx] = live.back();
             live.pop_back();
             dealloc_cnt++;
@@ -462,7 +462,7 @@ static bool test_marathon()
         if ( ( iter + 1 ) % validate_interval == 0 )
         {
             validate_cnt++;
-            if ( !pmm::PersistMemoryManager::validate() )
+            if ( !pmm::PersistMemoryManager<>::validate() )
             {
                 std::cerr << "  ОШИБКА: validate() вернул false на итерации " << ( iter + 1 ) << "\n";
                 validate_ok = false;
@@ -472,7 +472,7 @@ static bool test_marathon()
             if ( ( iter + 1 ) % 100000 == 0 )
             {
                 auto        stats    = pmm::get_stats();
-                std::size_t used_now = pmm::PersistMemoryManager::used_size();
+                std::size_t used_now = pmm::PersistMemoryManager<>::used_size();
                 std::cout << "    iter=" << ( iter + 1 ) << "  живых=" << live.size() << "  alloc=" << alloc_ok
                           << "  fail=" << alloc_fail << "  free=" << dealloc_cnt << "\n"
                           << "    used=" << used_now / 1024 << " КБ" << "  frag=" << stats.total_fragmentation / 1024
@@ -487,11 +487,11 @@ static bool test_marathon()
     std::cout << "  Освобождение " << live.size() << " оставшихся блоков...\n";
     for ( auto& p : live )
     {
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
     }
     live.clear();
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     auto final_stats = pmm::get_stats();
     PMM_TEST( final_stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
@@ -502,7 +502,7 @@ static bool test_marathon()
     std::cout << "  validate() вызван " << validate_cnt << " раз, всегда true\n";
     std::cout << "  Общее время: " << total_ms << " мс\n";
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem );
     return true;
 }

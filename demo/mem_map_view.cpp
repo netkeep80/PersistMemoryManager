@@ -56,12 +56,12 @@ static ImU32 type_to_color( ByteInfo::Type t )
 
 // ─── Snapshot builder ─────────────────────────────────────────────────────────
 
-void MemMapView::update_snapshot( pmm::PersistMemoryManager* mgr )
+void MemMapView::update_snapshot( pmm::PersistMemoryManager<>* mgr )
 {
     if ( !mgr )
         return;
 
-    total_bytes_ = pmm::PersistMemoryManager::total_size();
+    total_bytes_ = pmm::PersistMemoryManager<>::total_size();
 
     // ── Detail-mode snapshot (first 512 KB, 1 byte = 1 entry) ────────────────
     const std::size_t display_bytes = ( total_bytes_ > kDetailLimit ) ? kDetailLimit : total_bytes_;
@@ -75,7 +75,7 @@ void MemMapView::update_snapshot( pmm::PersistMemoryManager* mgr )
     }
 
     // Mark ManagerHeader region using the public API
-    const std::size_t mgr_hdr_sz = pmm::PersistMemoryManager::manager_header_size();
+    const std::size_t mgr_hdr_sz = pmm::PersistMemoryManager<>::manager_header_size();
     const std::size_t mark_hdr   = ( mgr_hdr_sz < display_bytes ) ? mgr_hdr_sz : display_bytes;
     for ( std::size_t i = 0; i < mark_hdr; ++i )
         snapshot_[i].type = ByteInfo::Type::ManagerHeader;

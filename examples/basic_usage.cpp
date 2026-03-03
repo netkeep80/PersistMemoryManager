@@ -31,7 +31,7 @@ int main()
     }
 
     // ── 2. Создание менеджера (Issue #61: create() возвращает bool) ──────────
-    if ( !pmm::PersistMemoryManager::create( memory, memory_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( memory, memory_size ) )
     {
         std::cerr << "Не удалось создать PersistMemoryManager\n";
         std::free( memory );
@@ -40,14 +40,14 @@ int main()
     std::cout << "Менеджер создан. Управляемая область: " << memory_size / 1024 << " КБ\n\n";
 
     // ── 3. Выделение блоков (Issue #61: allocate_typed<uint8_t>(N)) ──────────
-    pmm::pptr<uint8_t> block1 = pmm::PersistMemoryManager::allocate_typed<uint8_t>( 256 );
-    pmm::pptr<uint8_t> block2 = pmm::PersistMemoryManager::allocate_typed<uint8_t>( 1024 );
-    pmm::pptr<uint8_t> block3 = pmm::PersistMemoryManager::allocate_typed<uint8_t>( 4096 );
+    pmm::pptr<uint8_t> block1 = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( 256 );
+    pmm::pptr<uint8_t> block2 = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( 1024 );
+    pmm::pptr<uint8_t> block3 = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( 4096 );
 
     if ( block1.is_null() || block2.is_null() || block3.is_null() )
     {
         std::cerr << "Ошибка выделения блоков\n";
-        pmm::PersistMemoryManager::destroy();
+        pmm::PersistMemoryManager<>::destroy();
         std::free( memory );
         return 1;
     }
@@ -78,7 +78,7 @@ int main()
 
     // ── 5. Статистика после выделений ─────────────────────────────────────────
     std::cout << "Статистика после выделений:\n";
-    pmm::PersistMemoryManager::dump_stats( std::cout );
+    pmm::PersistMemoryManager<>::dump_stats( std::cout );
     std::cout << "\n";
 
     // Issue #61: get_stats() больше не принимает mgr
@@ -91,19 +91,19 @@ int main()
 
     // ── 6. Информация о конкретном блоке (Issue #61: get_info() удалён) ──────
     // Используем block_data_size_bytes() для получения размера блока block2
-    std::size_t block2_data_size = pmm::PersistMemoryManager::block_data_size_bytes( block2.offset() );
+    std::size_t block2_data_size = pmm::PersistMemoryManager<>::block_data_size_bytes( block2.offset() );
     std::cout << "Информация о block2:\n"
               << "  Размер данных    : " << block2_data_size << " байт\n\n";
 
     // ── 7. Освобождение блока 1 (Issue #61: deallocate_typed) ────────────────
-    pmm::PersistMemoryManager::deallocate_typed( block1 );
+    pmm::PersistMemoryManager<>::deallocate_typed( block1 );
     std::cout << "block1 освобождён.\n";
     std::cout << "Статистика после освобождения block1:\n";
-    pmm::PersistMemoryManager::dump_stats( std::cout );
+    pmm::PersistMemoryManager<>::dump_stats( std::cout );
     std::cout << "\n";
 
     // ── 8. Перевыделение block2 (Issue #61: reallocate_typed, N — это кол-во T) ──
-    pmm::pptr<uint8_t> block2_new = pmm::PersistMemoryManager::reallocate_typed( block2, 2048 );
+    pmm::pptr<uint8_t> block2_new = pmm::PersistMemoryManager<>::reallocate_typed( block2, 2048 );
     if ( block2_new.is_null() )
     {
         std::cerr << "Ошибка перевыделения block2\n";
@@ -115,18 +115,18 @@ int main()
     }
 
     // ── 9. Валидация структур (Issue #61: статический вызов) ─────────────────
-    bool valid = pmm::PersistMemoryManager::validate();
+    bool valid = pmm::PersistMemoryManager<>::validate();
     std::cout << "Валидация структур менеджера: " << ( valid ? "OK" : "FAIL" ) << "\n\n";
 
     // ── 10. Освобождение оставшихся блоков ────────────────────────────────────
-    pmm::PersistMemoryManager::deallocate_typed( block2 );
-    pmm::PersistMemoryManager::deallocate_typed( block3 );
+    pmm::PersistMemoryManager<>::deallocate_typed( block2 );
+    pmm::PersistMemoryManager<>::deallocate_typed( block3 );
     std::cout << "Все блоки освобождены.\n";
     std::cout << "Финальная статистика:\n";
-    pmm::PersistMemoryManager::dump_stats( std::cout );
+    pmm::PersistMemoryManager<>::dump_stats( std::cout );
 
     // ── 11. Уничтожение менеджера (Issue #61: после destroy() — free вручную) ─
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( memory );
 
     std::cout << "\nПример завершён успешно.\n";

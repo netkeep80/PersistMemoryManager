@@ -20,13 +20,13 @@ namespace demo
 
 void ManualAllocView::clear()
 {
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     if ( mgr )
     {
         for ( auto& blk : blocks_ )
         {
             if ( !blk.ptr.is_null() )
-                pmm::PersistMemoryManager::deallocate_typed( blk.ptr );
+                pmm::PersistMemoryManager<>::deallocate_typed( blk.ptr );
         }
     }
     blocks_.clear();
@@ -39,7 +39,7 @@ void ManualAllocView::render()
 {
     ImGui::Begin( "Manual Alloc" );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
 
     // ── Allocation controls ───────────────────────────────────────────────────
     ImGui::TextUnformatted( "Allocation size (bytes):" );
@@ -57,7 +57,7 @@ void ManualAllocView::render()
 
     if ( ImGui::Button( "Alloc" ) && can_alloc )
     {
-        auto ptr = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( static_cast<std::size_t>( alloc_size_ ) );
+        auto ptr = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( static_cast<std::size_t>( alloc_size_ ) );
         if ( !ptr.is_null() )
         {
             ManualBlock blk;
@@ -91,7 +91,7 @@ void ManualAllocView::render()
     {
         auto& blk = blocks_[static_cast<std::size_t>( selected_idx_ )];
         if ( !blk.ptr.is_null() )
-            pmm::PersistMemoryManager::deallocate_typed( blk.ptr );
+            pmm::PersistMemoryManager<>::deallocate_typed( blk.ptr );
         blocks_.erase( blocks_.begin() + selected_idx_ );
         selected_idx_ = -1;
     }

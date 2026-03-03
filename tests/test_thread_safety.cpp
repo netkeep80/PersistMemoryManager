@@ -37,7 +37,7 @@
 static void make_manager( std::size_t size )
 {
     void* mem = std::malloc( size );
-    pmm::PersistMemoryManager::create( mem, size );
+    pmm::PersistMemoryManager<>::create( mem, size );
 }
 
 // ─── Тесты ────────────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ static void test_concurrent_allocate()
             {
                 for ( int i = 0; i < kPerThread; ++i )
                 {
-                    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( kBlockSize );
+                    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( kBlockSize );
                     if ( !p.is_null() )
                     {
                         results[t].push_back( p );
@@ -83,12 +83,12 @@ static void test_concurrent_allocate()
     {
         for ( auto& p : vec )
         {
-            pmm::PersistMemoryManager::deallocate_typed( p );
+            pmm::PersistMemoryManager<>::deallocate_typed( p );
         }
     }
 
     // Проверяем целостность
-    PMM_TEST( pmm::PersistMemoryManager::validate(), "concurrent_allocate: validate() после параллельных аллокаций" );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate(), "concurrent_allocate: validate() после параллельных аллокаций" );
 
     int total = 0;
     for ( auto& vec : results )
@@ -97,7 +97,7 @@ static void test_concurrent_allocate()
     }
     PMM_TEST( total > 0, "concurrent_allocate: хотя бы один блок выделен" );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
 }
 
 /**
@@ -130,7 +130,7 @@ static void test_concurrent_alloc_dealloc()
 
                     if ( live.empty() || ( state >> 31 ) == 0 )
                     {
-                        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+                        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( sz );
                         if ( !p.is_null() )
                         {
                             live.push_back( p );
@@ -139,14 +139,14 @@ static void test_concurrent_alloc_dealloc()
                     else
                     {
                         std::size_t idx = ( state >> 16 ) % live.size();
-                        pmm::PersistMemoryManager::deallocate_typed( live[idx] );
+                        pmm::PersistMemoryManager<>::deallocate_typed( live[idx] );
                         live.erase( live.begin() + static_cast<std::ptrdiff_t>( idx ) );
                     }
                 }
 
                 for ( auto& p : live )
                 {
-                    pmm::PersistMemoryManager::deallocate_typed( p );
+                    pmm::PersistMemoryManager<>::deallocate_typed( p );
                 }
             } );
     }
@@ -156,7 +156,7 @@ static void test_concurrent_alloc_dealloc()
         th.join();
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate(),
+    PMM_TEST( pmm::PersistMemoryManager<>::validate(),
               "concurrent_alloc_dealloc: validate() после чередующихся операций" );
     PMM_TEST( errors.load() == 0, "concurrent_alloc_dealloc: нет ошибок в потоках" );
 
@@ -164,7 +164,7 @@ static void test_concurrent_alloc_dealloc()
     // Issue #75: BlockHeader_0 (ManagerHeader) always allocated
     PMM_TEST( stats.allocated_blocks == 1, "concurrent_alloc_dealloc: все блоки освобождены" );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
 }
 
 /**
@@ -181,7 +181,7 @@ static void test_concurrent_reallocate()
     std::vector<pmm::pptr<std::uint8_t>> blocks( kThreads );
     for ( int t = 0; t < kThreads; ++t )
     {
-        blocks[t] = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
+        blocks[t] = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 64 );
     }
 
     std::vector<std::thread> threads;
@@ -193,7 +193,7 @@ static void test_concurrent_reallocate()
                 for ( int i = 0; i < kIter; ++i )
                 {
                     std::size_t             new_sz = 64 + static_cast<std::size_t>( i % 8 ) * 64;
-                    pmm::pptr<std::uint8_t> p      = pmm::PersistMemoryManager::reallocate_typed( blocks[t], new_sz );
+                    pmm::pptr<std::uint8_t> p      = pmm::PersistMemoryManager<>::reallocate_typed( blocks[t], new_sz );
                     if ( !p.is_null() )
                     {
                         blocks[t] = p;
@@ -210,13 +210,13 @@ static void test_concurrent_reallocate()
     for ( int t = 0; t < kThreads; ++t )
     {
         if ( !blocks[t].is_null() )
-            pmm::PersistMemoryManager::deallocate_typed( blocks[t] );
+            pmm::PersistMemoryManager<>::deallocate_typed( blocks[t] );
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate(),
+    PMM_TEST( pmm::PersistMemoryManager<>::validate(),
               "concurrent_reallocate: validate() после параллельного reallocate" );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
 }
 
 /**
@@ -243,7 +243,7 @@ static void test_no_data_races()
                 for ( int i = 0; i < kPerThread; ++i )
                 {
                     pmm::pptr<std::uint8_t> p =
-                        pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sizeof( int ) );
+                        pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( sizeof( int ) );
                     if ( !p.is_null() )
                     {
                         int val = t * 1000 + i;
@@ -260,7 +260,7 @@ static void test_no_data_races()
                     {
                         mismatches.fetch_add( 1 );
                     }
-                    pmm::PersistMemoryManager::deallocate_typed( p );
+                    pmm::PersistMemoryManager<>::deallocate_typed( p );
                 }
             } );
     }
@@ -270,10 +270,10 @@ static void test_no_data_races()
         th.join();
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate(), "no_data_races: validate() пройдена" );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate(), "no_data_races: validate() пройдена" );
     PMM_TEST( mismatches.load() == 0, "no_data_races: данные в блоках не повреждены" );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
 }
 
 // ─── main ──────────────────────────────────────────────────────────────────

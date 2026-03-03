@@ -61,9 +61,9 @@ static bool test_empty_pmm_has_one_free_block()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::AvlTreeView view;
@@ -72,7 +72,7 @@ static bool test_empty_pmm_has_one_free_block()
     // Freshly created PMM: one large free block covering the whole managed region.
     PMM_TEST( view.snapshot().size() == 1 );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -87,16 +87,16 @@ static bool test_fully_allocated_has_empty_snapshot()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     // Allocate until OOM
     std::vector<pmm::pptr<std::uint8_t>> ptrs;
     while ( true )
     {
-        auto p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 16 );
+        auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 16 );
         if ( p.is_null() )
             break;
         ptrs.push_back( p );
@@ -110,13 +110,13 @@ static bool test_fully_allocated_has_empty_snapshot()
 
     // Free everything and check the snapshot is non-empty again.
     for ( auto& p : ptrs )
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
 
     view.update_snapshot( mgr );
     PMM_TEST( !view.snapshot().empty() );
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
-    pmm::PersistMemoryManager::destroy();
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -131,22 +131,22 @@ static bool test_snapshot_count_matches_free_count()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     // Allocate and free in a pattern that creates fragmentation.
     std::vector<pmm::pptr<std::uint8_t>> ptrs;
     for ( int i = 0; i < 20; ++i )
     {
-        auto p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 512 );
+        auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 512 );
         PMM_TEST( !p.is_null() );
         ptrs.push_back( p );
     }
     // Free every other block to create fragmentation.
     for ( int i = 0; i < 20; i += 2 )
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[static_cast<std::size_t>( i )] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[static_cast<std::size_t>( i )] );
 
     demo::AvlTreeView view;
     view.update_snapshot( mgr );
@@ -154,8 +154,8 @@ static bool test_snapshot_count_matches_free_count()
     pmm::ManagerInfo info = pmm::get_manager_info();
     PMM_TEST( view.snapshot().size() == info.free_count );
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
-    pmm::PersistMemoryManager::destroy();
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -172,9 +172,9 @@ static bool test_avl_parent_child_links_consistent()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     // Build a fragmented free tree with several nodes.
@@ -182,14 +182,14 @@ static bool test_avl_parent_child_links_consistent()
     for ( int i = 0; i < 30; ++i )
     {
         std::size_t sz = static_cast<std::size_t>( 64 + i * 32 ); // varying sizes
-        auto        p  = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+        auto        p  = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( sz );
         if ( p.is_null() )
             break;
         ptrs.push_back( p );
     }
     // Free every other block so several separate free blocks exist.
     for ( std::size_t i = 0; i < ptrs.size(); i += 2 )
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[i] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
 
     demo::AvlTreeView view;
     view.update_snapshot( mgr );
@@ -226,8 +226,8 @@ static bool test_avl_parent_child_links_consistent()
         PMM_TEST( is_left || is_right );
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
-    pmm::PersistMemoryManager::destroy();
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -253,18 +253,18 @@ static bool test_for_each_free_block_avl_count()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
     // Allocate and free to create several free blocks.
     std::vector<pmm::pptr<std::uint8_t>> ptrs;
     for ( int i = 0; i < 10; ++i )
     {
-        auto p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 256 );
+        auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 256 );
         PMM_TEST( !p.is_null() );
         ptrs.push_back( p );
     }
     for ( int i = 0; i < 10; i += 2 )
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[static_cast<std::size_t>( i )] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[static_cast<std::size_t>( i )] );
 
     std::size_t avl_count = 0;
     pmm::for_each_free_block_avl( [&]( const pmm::FreeBlockView& ) { ++avl_count; } );
@@ -272,8 +272,8 @@ static bool test_for_each_free_block_avl_count()
     pmm::ManagerInfo info = pmm::get_manager_info();
     PMM_TEST( avl_count == info.free_count );
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
-    pmm::PersistMemoryManager::destroy();
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }

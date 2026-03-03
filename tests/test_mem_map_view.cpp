@@ -60,18 +60,18 @@ static bool test_manager_header_region()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
     view.update_snapshot( mgr );
 
     // Primary check: update_snapshot completes without crash on valid PMM
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -86,36 +86,36 @@ static bool test_snapshot_after_alloc()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     std::vector<pmm::pptr<std::uint8_t>> ptrs;
     for ( int i = 0; i < 10; ++i )
     {
-        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 512 );
+        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 512 );
         PMM_TEST( !p.is_null() );
         ptrs.push_back( p );
     }
 
     demo::MemMapView view;
     view.update_snapshot( mgr );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     for ( std::size_t i = 0; i < ptrs.size() / 2; ++i )
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[i] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
 
     view.update_snapshot( mgr );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     for ( std::size_t i = ptrs.size() / 2; i < ptrs.size(); ++i )
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[i] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
 
     view.update_snapshot( mgr );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -140,12 +140,12 @@ static bool test_highlighted_block_preserved()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
-    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
+    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 64 );
     PMM_TEST( !p.is_null() );
 
     demo::MemMapView view;
@@ -154,8 +154,8 @@ static bool test_highlighted_block_preserved()
 
     PMM_TEST( view.highlighted_block == 0 );
 
-    pmm::PersistMemoryManager::deallocate_typed( p );
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::deallocate_typed( p );
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }

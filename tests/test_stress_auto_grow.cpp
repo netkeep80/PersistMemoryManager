@@ -111,7 +111,7 @@ static bool test_single_expand()
         return false;
     }
 
-    if ( !pmm::PersistMemoryManager::create( mem, initial_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, initial_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -125,19 +125,19 @@ static bool test_single_expand()
     const uint8_t pattern = 0xAB;
     auto          t0      = now();
 
-    std::size_t total_before = pmm::PersistMemoryManager::total_size();
+    std::size_t total_before = pmm::PersistMemoryManager<>::total_size();
     int         expand_count = 0;
 
     for ( int i = 0; i < 300 && expand_count < 2; ++i )
     {
-        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( block_size );
+        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( block_size );
         if ( p.is_null() )
             break;
 
         std::memset( p.get(), static_cast<int>( pattern ), block_size );
         ptrs.push_back( p );
 
-        std::size_t cur = pmm::PersistMemoryManager::total_size();
+        std::size_t cur = pmm::PersistMemoryManager<>::total_size();
         if ( cur > total_before )
         {
             expand_count++;
@@ -148,7 +148,7 @@ static bool test_single_expand()
     }
 
     PMM_TEST( expand_count >= 1 ); // Должен был произойти хотя бы один expand
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     // Фаза 2: проверка данных всех блоков
     bool data_ok = true;
@@ -172,18 +172,18 @@ static bool test_single_expand()
     // Фаза 3: освободить все блоки
     for ( auto& p : ptrs )
     {
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
     }
     ptrs.clear();
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
     auto stats = pmm::get_stats();
     PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     // After auto-expand, original mem is no longer used — no need to free it
     return true;
 }
@@ -203,7 +203,7 @@ static bool test_multi_expand()
         return false;
     }
 
-    if ( !pmm::PersistMemoryManager::create( mem, initial_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, initial_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -217,7 +217,7 @@ static bool test_multi_expand()
     ptrs.reserve( 500 );
     sizes.reserve( 500 );
 
-    std::size_t prev_total    = pmm::PersistMemoryManager::total_size();
+    std::size_t prev_total    = pmm::PersistMemoryManager<>::total_size();
     int         expand_count  = 0;
     const int   max_expands   = 5;
     const int   max_alloc_cnt = 500;
@@ -227,11 +227,11 @@ static bool test_multi_expand()
     for ( int i = 0; i < max_alloc_cnt && expand_count < max_expands; ++i )
     {
         std::size_t             sz = rng.next_block_size_small();
-        pmm::pptr<std::uint8_t> p  = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+        pmm::pptr<std::uint8_t> p  = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( sz );
         if ( p.is_null() )
         {
             std::cerr << "  ОШИБКА: allocate вернул nullptr при i=" << i << "\n";
-            pmm::PersistMemoryManager::destroy();
+            pmm::PersistMemoryManager<>::destroy();
             return false;
         }
 
@@ -239,20 +239,21 @@ static bool test_multi_expand()
         ptrs.push_back( p );
         sizes.push_back( sz );
 
-        std::size_t cur = pmm::PersistMemoryManager::total_size();
+        std::size_t cur = pmm::PersistMemoryManager<>::total_size();
         if ( cur > prev_total )
         {
             expand_count++;
             prev_total = cur;
-            std::cout << "    expand #" << expand_count << ": буфер " << pmm::PersistMemoryManager::total_size() / 1024
-                      << " КБ, " << "живых блоков: " << ptrs.size() << "\n";
+            std::cout << "    expand #" << expand_count << ": буфер "
+                      << pmm::PersistMemoryManager<>::total_size() / 1024 << " КБ, " << "живых блоков: " << ptrs.size()
+                      << "\n";
         }
     }
 
     std::cout << "    Выделено: " << ptrs.size() << " блоков, expand() вызван: " << expand_count << " раз\n";
 
     PMM_TEST( expand_count >= max_expands );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     // Проверяем данные всех блоков
     bool data_ok = true;
@@ -276,18 +277,18 @@ static bool test_multi_expand()
 
     for ( auto& p : ptrs )
     {
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
     }
     ptrs.clear();
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
     auto stats = pmm::get_stats();
     PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     return true;
 }
 
@@ -306,7 +307,7 @@ static bool test_expand_with_mixed_ops()
         return false;
     }
 
-    if ( !pmm::PersistMemoryManager::create( mem, initial_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, initial_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -320,7 +321,7 @@ static bool test_expand_with_mixed_ops()
     live.reserve( 100000 );
     live_sizes.reserve( 100000 );
 
-    std::size_t prev_total   = pmm::PersistMemoryManager::total_size();
+    std::size_t prev_total   = pmm::PersistMemoryManager<>::total_size();
     int         expand_count = 0;
     int         alloc_ok     = 0;
     int         dealloc_cnt  = 0;
@@ -334,7 +335,7 @@ static bool test_expand_with_mixed_ops()
         if ( rng.next_n( 10 ) < 7 || live.empty() )
         {
             std::size_t             sz = rng.next_block_size_small();
-            pmm::pptr<std::uint8_t> p  = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( sz );
+            pmm::pptr<std::uint8_t> p  = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( sz );
             if ( !p.is_null() )
             {
                 std::memset( p.get(), static_cast<int>( alloc_ok & 0xFF ), sz );
@@ -346,7 +347,7 @@ static bool test_expand_with_mixed_ops()
         else
         {
             uint32_t idx = rng.next_n( static_cast<uint32_t>( live.size() ) );
-            pmm::PersistMemoryManager::deallocate_typed( live[idx] );
+            pmm::PersistMemoryManager<>::deallocate_typed( live[idx] );
             live[idx]       = live.back();
             live_sizes[idx] = live_sizes.back();
             live.pop_back();
@@ -354,7 +355,7 @@ static bool test_expand_with_mixed_ops()
             dealloc_cnt++;
         }
 
-        std::size_t cur = pmm::PersistMemoryManager::total_size();
+        std::size_t cur = pmm::PersistMemoryManager<>::total_size();
         if ( cur > prev_total )
         {
             expand_count++;
@@ -368,22 +369,22 @@ static bool test_expand_with_mixed_ops()
     std::cout << "    Живых блоков: " << live.size() << "  expand() вызван: " << expand_count << " раз\n";
 
     PMM_TEST( expand_count >= 1 );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     for ( auto& p : live )
     {
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
     }
     live.clear();
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
     auto stats = pmm::get_stats();
     PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     return true;
 }
 
@@ -402,7 +403,7 @@ static bool test_reallocate_triggers_expand()
         return false;
     }
 
-    if ( !pmm::PersistMemoryManager::create( mem, initial_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, initial_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -418,22 +419,22 @@ static bool test_reallocate_triggers_expand()
 
     for ( int i = 0; i < n_blocks; ++i )
     {
-        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( block_sz );
+        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( block_sz );
         PMM_TEST( !p.is_null() );
         std::memset( p.get(), i + 1, block_sz );
         ptrs.push_back( p );
     }
 
     std::cout << "    Выделено " << n_blocks << " блоков перед reallocate\n";
-    std::size_t size_before = pmm::PersistMemoryManager::total_size();
+    std::size_t size_before = pmm::PersistMemoryManager<>::total_size();
 
     const std::size_t big_sz  = initial_size * 2;
     const uint8_t     pattern = static_cast<uint8_t>( 1 );
 
-    pmm::pptr<std::uint8_t> p2 = pmm::PersistMemoryManager::reallocate_typed( ptrs[0], big_sz );
+    pmm::pptr<std::uint8_t> p2 = pmm::PersistMemoryManager<>::reallocate_typed( ptrs[0], big_sz );
     PMM_TEST( !p2.is_null() );
 
-    std::size_t size_after = pmm::PersistMemoryManager::total_size();
+    std::size_t size_after = pmm::PersistMemoryManager<>::total_size();
     bool        did_expand = size_after > size_before;
     std::cout << "    reallocate expand: " << ( did_expand ? "да" : "нет" ) << "\n";
     std::cout << "    Буфер: " << size_before / 1024 << " КБ → " << size_after / 1024 << " КБ\n";
@@ -452,20 +453,20 @@ static bool test_reallocate_triggers_expand()
         }
     }
     PMM_TEST( data_ok );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
-    pmm::PersistMemoryManager::deallocate_typed( p2 );
+    pmm::PersistMemoryManager<>::deallocate_typed( p2 );
     for ( int i = 1; i < n_blocks; ++i )
     {
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[i] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     return true;
 }
 
@@ -484,7 +485,7 @@ static bool test_grow_factor()
         return false;
     }
 
-    if ( !pmm::PersistMemoryManager::create( mem, initial_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, initial_size ) )
     {
         std::cerr << "  ОШИБКА: не удалось создать PersistMemoryManager\n";
         std::free( mem );
@@ -493,7 +494,7 @@ static bool test_grow_factor()
 
     auto t0 = now();
 
-    std::size_t last_size     = pmm::PersistMemoryManager::total_size();
+    std::size_t last_size     = pmm::PersistMemoryManager<>::total_size();
     int         expand_count  = 0;
     bool        grow_ok       = true;
     const int   max_expands   = 5;
@@ -503,16 +504,16 @@ static bool test_grow_factor()
 
     for ( int i = 0; i < max_alloc_cnt && expand_count < max_expands; ++i )
     {
-        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
+        pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 64 );
         if ( p.is_null() )
         {
             std::cerr << "  ОШИБКА: allocate вернул nullptr при i=" << i << "\n";
-            pmm::PersistMemoryManager::destroy();
+            pmm::PersistMemoryManager<>::destroy();
             return false;
         }
         ptrs.push_back( p );
 
-        std::size_t cur = pmm::PersistMemoryManager::total_size();
+        std::size_t cur = pmm::PersistMemoryManager<>::total_size();
         if ( cur > last_size )
         {
             expand_count++;
@@ -528,21 +529,21 @@ static bool test_grow_factor()
 
     PMM_TEST( grow_ok );
     PMM_TEST( expand_count >= max_expands );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     for ( auto& p : ptrs )
     {
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
     auto stats = pmm::get_stats();
     PMM_TEST( stats.allocated_blocks == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Время: " << ms << " мс\n";
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     return true;
 }
 

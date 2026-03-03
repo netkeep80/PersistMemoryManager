@@ -55,9 +55,9 @@ static bool test_small_pmm_tile_size()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -67,7 +67,7 @@ static bool test_small_pmm_tile_size()
     PMM_TEST( view.bytes_per_tile() == 1 );
     PMM_TEST( view.tile_snapshot().size() == kPmmSize );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -83,9 +83,9 @@ static bool test_large_pmm_tile_count()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -97,7 +97,7 @@ static bool test_large_pmm_tile_count()
     const std::size_t expected_tiles = ( kPmmSize + view.bytes_per_tile() - 1 ) / view.bytes_per_tile();
     PMM_TEST( view.tile_snapshot().size() == expected_tiles );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -112,9 +112,9 @@ static bool test_first_tile_is_manager_header()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -123,7 +123,7 @@ static bool test_first_tile_is_manager_header()
     PMM_TEST( !view.tile_snapshot().empty() );
     PMM_TEST( view.tile_snapshot()[0].dominant_type == demo::ByteInfo::Type::ManagerHeader );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -139,12 +139,12 @@ static bool test_used_block_reflected_in_tiles()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
-    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 32 * 1024 );
+    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 32 * 1024 );
     PMM_TEST( !p.is_null() );
 
     demo::MemMapView view;
@@ -162,8 +162,8 @@ static bool test_used_block_reflected_in_tiles()
     }
     PMM_TEST( found_used );
 
-    pmm::PersistMemoryManager::deallocate_typed( p );
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::deallocate_typed( p );
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -179,14 +179,14 @@ static bool test_freed_blocks_revert_in_tiles()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
-    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 32 * 1024 );
+    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 32 * 1024 );
     PMM_TEST( !p.is_null() );
-    pmm::PersistMemoryManager::deallocate_typed( p );
+    pmm::PersistMemoryManager<>::deallocate_typed( p );
 
     demo::MemMapView view;
     view.update_snapshot( mgr );
@@ -203,7 +203,7 @@ static bool test_freed_blocks_revert_in_tiles()
     }
     PMM_TEST( !found_used );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -218,9 +218,9 @@ static bool test_tile_offsets_correct()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -233,7 +233,7 @@ static bool test_tile_offsets_correct()
         PMM_TEST( view.tile_snapshot()[i].bytes_per_tile == bpt );
     }
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -264,14 +264,14 @@ static bool test_very_large_pmm_tile_bound()
         return true;
     }
     std::memset( buf, 0, kPmmSize );
-    if ( !pmm::PersistMemoryManager::create( buf, kPmmSize ) )
+    if ( !pmm::PersistMemoryManager<>::create( buf, kPmmSize ) )
     {
         std::free( buf );
         std::cout << "(skipped — PMM create failed) ";
         return true;
     }
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
     demo::MemMapView view;
@@ -279,7 +279,7 @@ static bool test_very_large_pmm_tile_bound()
 
     PMM_TEST( view.tile_snapshot().size() <= 65536 );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }

@@ -42,7 +42,7 @@ DemoApp::DemoApp()
 {
     pmm_size_ = kPmmSizes[pmm_size_idx_];
     pmm_buffer_.resize( pmm_size_ );
-    pmm::PersistMemoryManager::create( pmm_buffer_.data(), pmm_size_ );
+    pmm::PersistMemoryManager<>::create( pmm_buffer_.data(), pmm_size_ );
 }
 
 DemoApp::~DemoApp()
@@ -53,8 +53,8 @@ DemoApp::~DemoApp()
     // Free manually-allocated blocks before destroying PMM.
     manual_alloc_view_->clear();
 
-    if ( pmm::PersistMemoryManager::instance() )
-        pmm::PersistMemoryManager::destroy();
+    if ( pmm::PersistMemoryManager<>::instance() )
+        pmm::PersistMemoryManager<>::destroy();
 }
 
 // ─── Render (called every frame) ─────────────────────────────────────────────
@@ -64,7 +64,7 @@ void DemoApp::render()
     render_dockspace();
     render_main_menu();
 
-    auto* mgr = pmm::PersistMemoryManager::instance();
+    auto* mgr = pmm::PersistMemoryManager<>::instance();
 
     // ── Collect snapshots (PMM methods are individually thread-safe) ──────────
     if ( mgr )
@@ -76,9 +76,9 @@ void DemoApp::render()
         // Build MetricsSnapshot
         auto            stats = pmm::get_stats();
         MetricsSnapshot snap;
-        snap.total_size       = pmm::PersistMemoryManager::total_size();
-        snap.used_size        = pmm::PersistMemoryManager::used_size();
-        snap.free_size        = pmm::PersistMemoryManager::free_size();
+        snap.total_size       = pmm::PersistMemoryManager<>::total_size();
+        snap.used_size        = pmm::PersistMemoryManager<>::used_size();
+        snap.free_size        = pmm::PersistMemoryManager<>::free_size();
         snap.total_blocks     = stats.total_blocks;
         snap.allocated_blocks = stats.allocated_blocks;
         snap.free_blocks      = stats.free_blocks;
@@ -256,12 +256,12 @@ void DemoApp::apply_pmm_size()
     // Free manually-allocated blocks before destroying PMM.
     manual_alloc_view_->clear();
 
-    if ( pmm::PersistMemoryManager::instance() )
-        pmm::PersistMemoryManager::destroy();
+    if ( pmm::PersistMemoryManager<>::instance() )
+        pmm::PersistMemoryManager<>::destroy();
 
     pmm_size_ = kPmmSizes[pmm_size_idx_];
     pmm_buffer_.assign( pmm_size_, std::uint8_t{ 0 } );
-    pmm::PersistMemoryManager::create( pmm_buffer_.data(), pmm_size_ );
+    pmm::PersistMemoryManager<>::create( pmm_buffer_.data(), pmm_size_ );
 
     // Reset validate state so a fresh check runs on the new PMM instance.
     first_validate_  = true;
@@ -273,7 +273,7 @@ void DemoApp::apply_pmm_size()
 void DemoApp::run_validate()
 {
     last_validate_time_        = std::chrono::steady_clock::now();
-    bool ok                    = pmm::PersistMemoryManager::validate();
+    bool ok                    = pmm::PersistMemoryManager<>::validate();
     last_validation_.state     = ok ? ValidationResult::State::Ok : ValidationResult::State::Failed;
     last_validation_.timestamp = last_validate_time_;
     metrics_view_->update_validation( last_validation_ );

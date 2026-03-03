@@ -37,7 +37,7 @@ int main()
     }
 
     // Issue #61: create() возвращает bool
-    if ( !pmm::PersistMemoryManager::create( mem1, memory_size ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem1, memory_size ) )
     {
         std::cerr << "Не удалось создать PersistMemoryManager\n";
         std::free( mem1 );
@@ -50,14 +50,14 @@ int main()
     const std::size_t size2 = 1024;
     const std::size_t size3 = 256;
 
-    pmm::pptr<uint8_t> p1 = pmm::PersistMemoryManager::allocate_typed<uint8_t>( size1 );
-    pmm::pptr<uint8_t> p2 = pmm::PersistMemoryManager::allocate_typed<uint8_t>( size2 );
-    pmm::pptr<uint8_t> p3 = pmm::PersistMemoryManager::allocate_typed<uint8_t>( size3 );
+    pmm::pptr<uint8_t> p1 = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( size1 );
+    pmm::pptr<uint8_t> p2 = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( size2 );
+    pmm::pptr<uint8_t> p3 = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( size3 );
 
     if ( p1.is_null() || p2.is_null() || p3.is_null() )
     {
         std::cerr << "Ошибка выделения блоков\n";
-        pmm::PersistMemoryManager::destroy();
+        pmm::PersistMemoryManager<>::destroy();
         std::free( mem1 );
         return 1;
     }
@@ -76,19 +76,19 @@ int main()
     std::cout << "[A] Выделено 3 блока. Данные записаны.\n";
 
     // Освобождаем p3 (чтобы показать, что свободные блоки тоже сохраняются)
-    pmm::PersistMemoryManager::deallocate_typed( p3 );
+    pmm::PersistMemoryManager<>::deallocate_typed( p3 );
     std::cout << "[A] Блок p3 освобождён (для демонстрации частично свободной кучи).\n";
 
-    if ( !pmm::PersistMemoryManager::validate() )
+    if ( !pmm::PersistMemoryManager<>::validate() )
     {
         std::cerr << "Валидация перед сохранением провалилась\n";
-        pmm::PersistMemoryManager::destroy();
+        pmm::PersistMemoryManager<>::destroy();
         std::free( mem1 );
         return 1;
     }
 
     std::cout << "\nСтатистика перед сохранением:\n";
-    pmm::PersistMemoryManager::dump_stats( std::cout );
+    pmm::PersistMemoryManager<>::dump_stats( std::cout );
 
     // Запоминаем смещения (гранульные индексы) выделенных блоков
     // (они останутся такими же в восстановленном образе)
@@ -101,7 +101,7 @@ int main()
     if ( !pmm::save( IMAGE_FILE ) )
     {
         std::cerr << "Ошибка сохранения образа в файл: " << IMAGE_FILE << "\n";
-        pmm::PersistMemoryManager::destroy();
+        pmm::PersistMemoryManager<>::destroy();
         std::free( mem1 );
         return 1;
     }
@@ -109,7 +109,7 @@ int main()
 
     // Уничтожаем первый менеджер — имитируем завершение программы
     // Issue #61: после destroy() нужно вручную освободить буфер
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem1 );
     mem1 = nullptr;
     std::cout << "[B] Первый менеджер уничтожен (имитация завершения программы).\n";
@@ -133,17 +133,17 @@ int main()
         return 1;
     }
 
-    if ( !pmm::PersistMemoryManager::validate() )
+    if ( !pmm::PersistMemoryManager<>::validate() )
     {
         std::cerr << "Валидация после загрузки провалилась\n";
-        pmm::PersistMemoryManager::destroy();
+        pmm::PersistMemoryManager<>::destroy();
         std::free( mem2 );
         return 1;
     }
 
     std::cout << "[C] Образ успешно загружен и валиден.\n";
     std::cout << "\nСтатистика после загрузки:\n";
-    pmm::PersistMemoryManager::dump_stats( std::cout );
+    pmm::PersistMemoryManager<>::dump_stats( std::cout );
 
     // ─── Фаза D: Проверка данных ──────────────────────────────────────────────
 
@@ -183,12 +183,12 @@ int main()
 
     std::cout << "\n[E] Продолжение работы с восстановленным менеджером:\n";
 
-    pmm::pptr<uint8_t> p_new = pmm::PersistMemoryManager::allocate_typed<uint8_t>( 128 );
+    pmm::pptr<uint8_t> p_new = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( 128 );
     if ( !p_new.is_null() )
     {
         std::memset( p_new.get(), 0xAB, 128 );
         std::cout << "  Новый блок выделен: offset=" << p_new.offset() << "\n";
-        pmm::PersistMemoryManager::deallocate_typed( p_new );
+        pmm::PersistMemoryManager<>::deallocate_typed( p_new );
         std::cout << "  Новый блок освобождён.\n";
     }
     else
@@ -197,7 +197,7 @@ int main()
         data_ok = false;
     }
 
-    if ( pmm::PersistMemoryManager::validate() )
+    if ( pmm::PersistMemoryManager<>::validate() )
     {
         std::cout << "  Валидация финального состояния: OK\n";
     }
@@ -210,7 +210,7 @@ int main()
     // ─── Завершение ───────────────────────────────────────────────────────────
 
     // Issue #61: после destroy() нужно вручную освободить буфер
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem2 );
     std::remove( IMAGE_FILE );
 

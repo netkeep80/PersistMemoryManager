@@ -37,7 +37,7 @@
 static void make_manager( std::size_t size )
 {
     void* mem = std::malloc( size );
-    pmm::PersistMemoryManager::create( mem, size );
+    pmm::PersistMemoryManager<>::create( mem, size );
 }
 
 // ─── Тесты ─────────────────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ static void test_concurrent_validate()
     // Выделяем несколько блоков для нетривиального состояния
     for ( int i = 0; i < 20; ++i )
     {
-        pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
+        pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 64 );
     }
 
     std::atomic<int>         failures{ 0 };
@@ -69,7 +69,7 @@ static void test_concurrent_validate()
             {
                 for ( int i = 0; i < kIter; ++i )
                 {
-                    if ( !pmm::PersistMemoryManager::validate() )
+                    if ( !pmm::PersistMemoryManager<>::validate() )
                     {
                         failures.fetch_add( 1 );
                     }
@@ -84,7 +84,7 @@ static void test_concurrent_validate()
 
     PMM_TEST( failures.load() == 0, "concurrent_validate: все validate() вернули true" );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
 }
 
 /**
@@ -111,7 +111,7 @@ static void test_readers_writers()
             {
                 while ( !stop.load() )
                 {
-                    if ( !pmm::PersistMemoryManager::validate() )
+                    if ( !pmm::PersistMemoryManager<>::validate() )
                     {
                         invalid_reads.fetch_add( 1 );
                     }
@@ -129,20 +129,20 @@ static void test_readers_writers()
                 ptrs.reserve( 32 );
                 for ( int i = 0; i < kIter; ++i )
                 {
-                    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 128 );
+                    pmm::pptr<std::uint8_t> p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 128 );
                     if ( !p.is_null() )
                     {
                         ptrs.push_back( p );
                     }
                     if ( ptrs.size() > 16 )
                     {
-                        pmm::PersistMemoryManager::deallocate_typed( ptrs.front() );
+                        pmm::PersistMemoryManager<>::deallocate_typed( ptrs.front() );
                         ptrs.erase( ptrs.begin() );
                     }
                 }
                 for ( auto& p : ptrs )
                 {
-                    pmm::PersistMemoryManager::deallocate_typed( p );
+                    pmm::PersistMemoryManager<>::deallocate_typed( p );
                 }
             } );
     }
@@ -158,10 +158,10 @@ static void test_readers_writers()
         threads[t].join();
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate(), "readers_writers: validate() после смешанных операций" );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate(), "readers_writers: validate() после смешанных операций" );
     PMM_TEST( invalid_reads.load() == 0, "readers_writers: читатели не видели инвалидного состояния" );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
 }
 
 /**
@@ -178,7 +178,7 @@ static void test_reallocate_correctness()
     std::vector<pmm::pptr<std::uint8_t>> ptrs( kThreads );
     for ( int t = 0; t < kThreads; ++t )
     {
-        ptrs[t] = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
+        ptrs[t] = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 64 );
         std::memset( ptrs[t].get(), t + 1, 64 );
     }
 
@@ -193,7 +193,7 @@ static void test_reallocate_correctness()
                 for ( int i = 0; i < kIter; ++i )
                 {
                     std::size_t             new_sz = 64 + static_cast<std::size_t>( ( i % 4 ) + 1 ) * 64;
-                    pmm::pptr<std::uint8_t> p      = pmm::PersistMemoryManager::reallocate_typed( ptrs[t], new_sz );
+                    pmm::pptr<std::uint8_t> p      = pmm::PersistMemoryManager<>::reallocate_typed( ptrs[t], new_sz );
                     if ( !p.is_null() )
                     {
                         unsigned char first = *p.get();
@@ -217,14 +217,14 @@ static void test_reallocate_correctness()
     {
         if ( !ptrs[t].is_null() )
         {
-            pmm::PersistMemoryManager::deallocate_typed( ptrs[t] );
+            pmm::PersistMemoryManager<>::deallocate_typed( ptrs[t] );
         }
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate(), "reallocate_correctness: validate() пройдена" );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate(), "reallocate_correctness: validate() пройдена" );
     PMM_TEST( corrupted.load() == 0, "reallocate_correctness: данные не повреждены при reallocate" );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
 }
 
 /**
@@ -240,7 +240,7 @@ static void test_concurrent_get_stats()
 
     for ( int i = 0; i < 30; ++i )
     {
-        pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 256 );
+        pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 256 );
     }
 
     std::atomic<int>         inconsistent{ 0 };
@@ -269,7 +269,7 @@ static void test_concurrent_get_stats()
 
     PMM_TEST( inconsistent.load() == 0, "concurrent_get_stats: счётчики согласованны при параллельном чтении" );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
 }
 
 // ─── main ──────────────────────────────────────────────────────────────────

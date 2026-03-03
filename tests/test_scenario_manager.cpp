@@ -63,14 +63,14 @@ static void pmm_setup( std::size_t size = kDefaultPmmSize )
     if ( g_buf )
     {
         std::memset( g_buf, 0, size );
-        pmm::PersistMemoryManager::create( g_buf, size );
+        pmm::PersistMemoryManager<>::create( g_buf, size );
     }
 }
 
 static void pmm_teardown()
 {
-    if ( pmm::PersistMemoryManager::instance() )
-        pmm::PersistMemoryManager::destroy(); // frees g_buf (owns_memory=true)
+    if ( pmm::PersistMemoryManager<>::instance() )
+        pmm::PersistMemoryManager<>::destroy(); // frees g_buf (owns_memory=true)
     g_buf = nullptr;
 }
 
@@ -139,9 +139,9 @@ static bool test_start_stop_single()
         mgr.join_all();
     }
 
-    auto* inst = pmm::PersistMemoryManager::instance();
+    auto* inst = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     pmm_teardown();
     return true;
@@ -162,9 +162,9 @@ static bool test_destructor_cleans_up()
         // Let destructor call stop_all + join_all
     }
 
-    auto* inst = pmm::PersistMemoryManager::instance();
+    auto* inst = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
     pmm_teardown();
     return true;

@@ -75,9 +75,9 @@ static bool test_clear_frees_blocks()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
-    const std::size_t used_before = pmm::PersistMemoryManager::used_size();
+    const std::size_t used_before = pmm::PersistMemoryManager<>::used_size();
 
     // Allocate some blocks directly and remember them via ManualAllocView's
     // internal state by calling clear() after manually populating via the
@@ -95,18 +95,18 @@ static bool test_clear_frees_blocks()
     std::vector<pmm::pptr<std::uint8_t>> ptrs;
     for ( int i = 0; i < 5; ++i )
     {
-        auto p = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 64 );
+        auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 64 );
         PMM_TEST( !p.is_null() );
         ptrs.push_back( p );
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::used_size() > used_before );
+    PMM_TEST( pmm::PersistMemoryManager<>::used_size() > used_before );
 
     for ( auto& p : ptrs )
-        pmm::PersistMemoryManager::deallocate_typed( p );
+        pmm::PersistMemoryManager<>::deallocate_typed( p );
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
-    pmm::PersistMemoryManager::destroy();
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -121,7 +121,7 @@ static bool test_repeated_clear()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
     {
         demo::ManualAllocView view;
@@ -131,8 +131,8 @@ static bool test_repeated_clear()
         PMM_TEST( view.live_count() == 0 );
     }
 
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
-    pmm::PersistMemoryManager::destroy();
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }

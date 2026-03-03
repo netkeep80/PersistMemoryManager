@@ -57,7 +57,7 @@ static bool bench_100k_alloc()
     }
 
     // Issue #61: create() возвращает bool
-    if ( !pmm::PersistMemoryManager::create( mem, MEMORY_SIZE ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, MEMORY_SIZE ) )
     {
         std::free( mem );
         return false;
@@ -70,7 +70,7 @@ static bool bench_100k_alloc()
     int  allocated = 0;
     for ( int i = 0; i < N; i++ )
     {
-        ptrs[i] = pmm::PersistMemoryManager::allocate_typed<uint8_t>( BLOCK_SIZE );
+        ptrs[i] = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( BLOCK_SIZE );
         if ( ptrs[i].is_null() )
             break;
         allocated++;
@@ -82,13 +82,13 @@ static bool bench_100k_alloc()
     auto t2 = now();
     for ( int i = 0; i < allocated; i++ )
     {
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[i] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
     }
     auto   t3         = now();
     double ms_dealloc = elapsed_ms( t2, t3 );
 
     // Issue #61: статический вызов validate()
-    bool valid      = pmm::PersistMemoryManager::validate();
+    bool valid      = pmm::PersistMemoryManager<>::validate();
     bool alloc_ok   = ( ms_alloc <= 100.0 );
     bool dealloc_ok = ( ms_dealloc <= 100.0 );
 
@@ -100,7 +100,7 @@ static bool bench_100k_alloc()
     std::cout << "  Validate           : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
     // Issue #61: после destroy() нужно вручную освободить буфер
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem );
 
     return alloc_ok && dealloc_ok && valid && ( allocated == N );
@@ -128,7 +128,7 @@ static bool bench_100k_mixed_sizes()
     }
 
     // Issue #61: create() возвращает bool
-    if ( !pmm::PersistMemoryManager::create( mem, MEMORY_SIZE ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, MEMORY_SIZE ) )
     {
         std::free( mem );
         return false;
@@ -144,7 +144,7 @@ static bool bench_100k_mixed_sizes()
     int  allocated = 0;
     for ( int i = 0; i < N; i++ )
     {
-        ptrs[i] = pmm::PersistMemoryManager::allocate_typed<uint8_t>( SIZES[i % 4] );
+        ptrs[i] = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( SIZES[i % 4] );
         if ( ptrs[i].is_null() )
             break;
         allocated++;
@@ -156,12 +156,12 @@ static bool bench_100k_mixed_sizes()
     auto t2 = now();
     for ( int i = 0; i < allocated; i++ )
     {
-        pmm::PersistMemoryManager::deallocate_typed( ptrs[i] );
+        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
     }
     auto   t3         = now();
     double ms_dealloc = elapsed_ms( t2, t3 );
 
-    bool valid      = pmm::PersistMemoryManager::validate();
+    bool valid      = pmm::PersistMemoryManager<>::validate();
     bool alloc_ok   = ( ms_alloc <= 100.0 );
     bool dealloc_ok = ( ms_dealloc <= 100.0 );
 
@@ -173,7 +173,7 @@ static bool bench_100k_mixed_sizes()
     std::cout << "  Validate           : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
     // Issue #61: после destroy() нужно вручную освободить буфер
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem );
 
     return alloc_ok && dealloc_ok && valid && ( allocated == N );
@@ -199,7 +199,7 @@ static bool bench_reallocate()
     }
 
     // Issue #61: create() возвращает bool
-    if ( !pmm::PersistMemoryManager::create( mem, MEMORY_SIZE ) )
+    if ( !pmm::PersistMemoryManager<>::create( mem, MEMORY_SIZE ) )
     {
         std::free( mem );
         return false;
@@ -210,7 +210,7 @@ static bool bench_reallocate()
     // Выделяем начальные блоки по 64 байта
     for ( int i = 0; i < N; i++ )
     {
-        ptrs[i] = pmm::PersistMemoryManager::allocate_typed<uint8_t>( 64 );
+        ptrs[i] = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>( 64 );
         if ( !ptrs[i].is_null() )
         {
             std::memset( ptrs[i].get(), i & 0xFF, 64 );
@@ -225,7 +225,7 @@ static bool bench_reallocate()
     {
         if ( ptrs[i].is_null() )
             continue;
-        pmm::pptr<uint8_t> new_ptr = pmm::PersistMemoryManager::reallocate_typed( ptrs[i], 128 );
+        pmm::pptr<uint8_t> new_ptr = pmm::PersistMemoryManager<>::reallocate_typed( ptrs[i], 128 );
         if ( !new_ptr.is_null() )
         {
             ptrs[i] = new_ptr;
@@ -235,14 +235,14 @@ static bool bench_reallocate()
     auto   t1 = now();
     double ms = elapsed_ms( t0, t1 );
 
-    bool valid = pmm::PersistMemoryManager::validate();
+    bool valid = pmm::PersistMemoryManager<>::validate();
 
     // Освобождаем
     for ( int i = 0; i < N; i++ )
     {
         if ( !ptrs[i].is_null() )
         {
-            pmm::PersistMemoryManager::deallocate_typed( ptrs[i] );
+            pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
         }
     }
 
@@ -251,7 +251,7 @@ static bool bench_reallocate()
     std::cout << "  Validate           : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
     // Issue #61: после destroy() нужно вручную освободить буфер
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( mem );
 
     return valid;

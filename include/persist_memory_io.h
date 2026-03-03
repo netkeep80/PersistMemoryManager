@@ -51,13 +51,13 @@ inline bool save( const char* filename )
 {
     if ( filename == nullptr )
         return false;
-    PersistMemoryManager* mgr = PersistMemoryManager::instance();
+    PersistMemoryManager<>* mgr = PersistMemoryManager<>::instance();
     if ( mgr == nullptr )
         return false;
     std::FILE* f = std::fopen( filename, "wb" );
     if ( f == nullptr )
         return false;
-    std::size_t total   = PersistMemoryManager::total_size();
+    std::size_t total   = PersistMemoryManager<>::total_size();
     const void* data    = static_cast<const void*>( mgr );
     std::size_t written = std::fwrite( data, 1, total, f );
     std::fclose( f );
@@ -116,7 +116,7 @@ inline bool load_from_file( const char* filename, void* memory, std::size_t size
     if ( read_bytes != file_size )
         return false;
 
-    return PersistMemoryManager::load( memory, file_size );
+    return PersistMemoryManager<>::load( memory, file_size );
 }
 
 } // namespace pmm

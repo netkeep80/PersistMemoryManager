@@ -40,24 +40,24 @@ static void fail( const char* name, const char* reason )
 
 // Create a fresh PMM singleton with the given size (in bytes).
 // Uses malloc so that PersistMemoryManager::destroy() can free the buffer.
-static pmm::PersistMemoryManager* make_pmm( std::size_t sz )
+static pmm::PersistMemoryManager<>* make_pmm( std::size_t sz )
 {
-    if ( pmm::PersistMemoryManager::instance() )
-        pmm::PersistMemoryManager::destroy();
+    if ( pmm::PersistMemoryManager<>::instance() )
+        pmm::PersistMemoryManager<>::destroy();
     void* buf = std::malloc( sz );
     if ( !buf )
     {
         std::fprintf( stderr, "malloc failed\n" );
         std::exit( 1 );
     }
-    pmm::PersistMemoryManager::create( buf, sz );
-    return pmm::PersistMemoryManager::instance();
+    pmm::PersistMemoryManager<>::create( buf, sz );
+    return pmm::PersistMemoryManager<>::instance();
 }
 
 static void destroy_pmm()
 {
-    if ( pmm::PersistMemoryManager::instance() )
-        pmm::PersistMemoryManager::destroy();
+    if ( pmm::PersistMemoryManager<>::instance() )
+        pmm::PersistMemoryManager<>::destroy();
 }
 
 // ─── test: ValidationResult default state ────────────────────────────────────
@@ -127,7 +127,7 @@ static void test_validate_fresh_pmm_returns_ok()
     if ( !mgr )
         fail( name, "PMM instance is null" );
 
-    bool ok = pmm::PersistMemoryManager::validate();
+    bool ok = pmm::PersistMemoryManager<>::validate();
     if ( !ok )
         fail( name, "validate() returned false on a freshly created PMM" );
 
@@ -144,20 +144,20 @@ static void test_validate_after_allocations()
     if ( !mgr )
         fail( name, "PMM instance is null" );
 
-    pmm::pptr<std::uint8_t> p1 = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 256 );
-    pmm::pptr<std::uint8_t> p2 = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 512 );
-    pmm::pptr<std::uint8_t> p3 = pmm::PersistMemoryManager::allocate_typed<std::uint8_t>( 1024 );
+    pmm::pptr<std::uint8_t> p1 = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 256 );
+    pmm::pptr<std::uint8_t> p2 = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 512 );
+    pmm::pptr<std::uint8_t> p3 = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 1024 );
     if ( p1.is_null() || p2.is_null() || p3.is_null() )
         fail( name, "allocate() returned null unexpectedly" );
 
-    pmm::PersistMemoryManager::deallocate_typed( p2 ); // free middle block to exercise coalescing
+    pmm::PersistMemoryManager<>::deallocate_typed( p2 ); // free middle block to exercise coalescing
 
-    bool ok = pmm::PersistMemoryManager::validate();
+    bool ok = pmm::PersistMemoryManager<>::validate();
     if ( !ok )
         fail( name, "validate() returned false after alloc/dealloc sequence" );
 
-    pmm::PersistMemoryManager::deallocate_typed( p1 );
-    pmm::PersistMemoryManager::deallocate_typed( p3 );
+    pmm::PersistMemoryManager<>::deallocate_typed( p1 );
+    pmm::PersistMemoryManager<>::deallocate_typed( p3 );
     destroy_pmm();
     pass( name );
 }
@@ -171,7 +171,7 @@ static void test_validation_timestamp_is_recent()
     if ( !mgr )
         fail( name, "PMM instance is null" );
 
-    bool ok    = pmm::PersistMemoryManager::validate();
+    bool ok    = pmm::PersistMemoryManager<>::validate();
     auto after = std::chrono::steady_clock::now();
 
     demo::ValidationResult r;

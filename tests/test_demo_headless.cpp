@@ -70,7 +70,7 @@ static bool test_all_scenarios_run()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
     {
         demo::ScenarioManager mgr;
@@ -88,13 +88,13 @@ static bool test_all_scenarios_run()
         PMM_TEST( std::chrono::steady_clock::now() < deadline );
     }
 
-    auto* inst = pmm::PersistMemoryManager::instance();
+    auto* inst = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
-    PMM_TEST( pmm::PersistMemoryManager::instance() == nullptr );
+    PMM_TEST( pmm::PersistMemoryManager<>::instance() == nullptr );
     return true;
 }
 
@@ -108,7 +108,7 @@ static bool test_ops_counter_increments()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
     uint64_t ops_before = 0;
     uint64_t ops_after  = 0;
@@ -138,11 +138,11 @@ static bool test_ops_counter_increments()
 
     PMM_TEST( ops_after > ops_before );
 
-    auto* inst = pmm::PersistMemoryManager::instance();
+    auto* inst = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager::validate() );
+    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
@@ -157,7 +157,7 @@ static bool test_stop_all_fast()
     void* buf = std::malloc( kPmmSize );
     PMM_TEST( buf != nullptr );
     std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager::create( buf, kPmmSize ) );
+    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
 
     {
         demo::ScenarioManager mgr;
@@ -174,7 +174,7 @@ static bool test_stop_all_fast()
         PMM_TEST( elapsed < std::chrono::seconds( 5 ) );
     }
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free( buf );
     return true;
 }
