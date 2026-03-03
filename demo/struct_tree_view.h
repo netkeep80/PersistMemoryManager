@@ -61,7 +61,7 @@ class StructTreeView
      * Must be called while holding a shared_lock on the PMM mutex.
      * @param mgr Live PMM instance (not null).
      */
-    void update_snapshot( pmm::PersistMemoryManager* mgr );
+    void update_snapshot( pmm::PersistMemoryManager<>* mgr );
 
     /**
      * @brief Render the Struct Tree ImGui panel.

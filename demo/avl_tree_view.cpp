@@ -18,7 +18,7 @@ namespace demo
 
 // ─── Snapshot builder ─────────────────────────────────────────────────────────
 
-void AvlTreeView::update_snapshot( pmm::PersistMemoryManager* mgr )
+void AvlTreeView::update_snapshot( pmm::PersistMemoryManager<>* mgr )
 {
     snapshot_.clear();
     root_offset_ = -1;

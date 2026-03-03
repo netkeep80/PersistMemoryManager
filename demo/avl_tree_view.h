@@ -58,7 +58,7 @@ class AvlTreeView
      * Calls for_each_free_block_avl() which acquires a shared_lock internally.
      * @param mgr Live PMM instance (not null).
      */
-    void update_snapshot( pmm::PersistMemoryManager* mgr );
+    void update_snapshot( pmm::PersistMemoryManager<>* mgr );
 
     /// Render the AVL Tree ImGui panel (call without holding any lock).
     void render();

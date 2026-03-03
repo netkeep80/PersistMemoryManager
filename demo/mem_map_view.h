@@ -80,7 +80,7 @@ class MemMapView
      * Must be called while holding a shared_lock on the PMM mutex.
      * @param mgr Live PMM instance (not null).
      */
-    void update_snapshot( pmm::PersistMemoryManager* mgr );
+    void update_snapshot( pmm::PersistMemoryManager<>* mgr );
 
     /// Render the Memory Map ImGui panel (call without holding any lock).
     void render();

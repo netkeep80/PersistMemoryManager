@@ -164,7 +164,7 @@ void MetricsView::render()
 
     if ( ImGui::Button( "Dump to stdout" ) )
     {
-        pmm::PersistMemoryManager::dump_stats( std::cout );
+        pmm::PersistMemoryManager<>::dump_stats( std::cout );
     }
 
     ImGui::End();

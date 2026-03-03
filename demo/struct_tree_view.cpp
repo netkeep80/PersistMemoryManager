@@ -14,7 +14,7 @@ namespace demo
 
 // ─── Snapshot builder ─────────────────────────────────────────────────────────
 
-void StructTreeView::update_snapshot( pmm::PersistMemoryManager* mgr )
+void StructTreeView::update_snapshot( pmm::PersistMemoryManager<>* mgr )
 {
     if ( !mgr )
         return;
