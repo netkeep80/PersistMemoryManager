@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['lock_5fpolicy_0',['lock_policy',['../structpmm_1_1config_1_1PMMConfig.html#a1e11914fe69acff1bb15abc00d9abc4c',1,'pmm::config::PMMConfig']]],
-  ['lockpolicy_1',['LockPolicy',['../classpmm_1_1PersistMemoryManager.html#ad60bdd149d933c4c5b5b46fa6f86b813',1,'pmm::PersistMemoryManager']]]
+  ['defaultaddresstraits_0',['DefaultAddressTraits',['../namespacepmm.html#a9ca69087900283384dda68352be048bb',1,'pmm']]],
+  ['defaultconfig_1',['DefaultConfig',['../namespacepmm_1_1config.html#acbc50ef04f2e309d5d87b0a512e4930d',1,'pmm::config']]],
+  ['derived_5ftype_2',['derived_type',['../classpmm_1_1PmmCore.html#ad534a80f588c2173df49b224afd8c2ae',1,'pmm::PmmCore']]]
 ];

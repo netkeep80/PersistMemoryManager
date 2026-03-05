@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['idx_5fto_5fbyte_5foff_0',['idx_to_byte_off',['../namespacepmm_1_1detail.html#a2bafdf8dfaa8633692a4451d986d37a1',1,'pmm::detail']]],
+  ['idx_5fto_5fbyte_5foff_0',['idx_to_byte_off',['../structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2',1,'pmm::AddressTraits::idx_to_byte_off()'],['../namespacepmm_1_1detail.html#a2bafdf8dfaa8633692a4451d986d37a1',1,'pmm::detail::idx_to_byte_off()']]],
   ['insert_1',['insert',['../classpmm_1_1PersistentAvlTree.html#ad3ad0bec7e86cd1ce91e5d78e6bbef6a',1,'pmm::PersistentAvlTree']]],
   ['instance_2',['instance',['../classpmm_1_1PersistMemoryManager.html#ad7f79a0921eb0a1522f87e9816bec5ce',1,'pmm::PersistMemoryManager']]],
   ['is_5finitialized_3',['is_initialized',['../classpmm_1_1PersistMemoryManager.html#aedc70bd3dafbe190c73fc9a52a416ae6',1,'pmm::PersistMemoryManager']]],

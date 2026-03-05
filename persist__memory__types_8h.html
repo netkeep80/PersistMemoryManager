@@ -85,7 +85,11 @@ $(function() {
 
 <p>Базовые типы данных и константы для PersistMemoryManager (Issue #73)  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;algorithm&gt;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="address__traits_8h_source.html">pmm/address_traits.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="block_8h_source.html">pmm/block.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="linked__list__node_8h_source.html">pmm/linked_list_node.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tree__node_8h_source.html">pmm/tree_node.h</a>&quot;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;cassert&gt;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
@@ -106,7 +110,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">View of a single free block in the AVL tree for visualisation (Issue #65). All _offset fields are byte offsets in the managed region, or -1 when absent.  <a href="structpmm_1_1FreeBlockView.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">pmm::detail::BlockHeader</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx.  <a href="structpmm_1_1detail_1_1BlockHeader.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx.  <a href="structpmm_1_1detail_1_1BlockHeader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_total_size are runtime-only (nulled by load() — not persisted).  <a href="structpmm_1_1detail_1_1ManagerHeader.html#details">More...</a><br /></td></tr>
@@ -164,7 +168,7 @@ Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:ad3e17dab8c53a80a62be5d276867a8ac" id="r_ad3e17dab8c53a80a62be5d276867a8ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">pmm::kGranuleSize</a> = 16</td></tr>
-<tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant.  <br /></td></tr>
+<tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a" title="Размер гранулы в байтах.">DefaultAddressTraits::granule_size</a>.  <br /></td></tr>
 <tr class="separator:ad3e17dab8c53a80a62be5d276867a8ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a716afdc66bf1abf5f0f7feec75d0c1e8" id="r_a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8">pmm::kMagic</a> = 0x504D4D5F56303833ULL</td></tr>
 <tr class="memdesc:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"PMM_V083" (Issue #83: granule_size in header)  <br /></td></tr>
@@ -173,7 +177,7 @@ Variables</h2></td></tr>
 <tr class="memdesc:af23d67417bc2bf63fe90bc2350a6ee95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Число гранул в <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> (2 гранулы = 32 байта)  <br /></td></tr>
 <tr class="separator:af23d67417bc2bf63fe90bc2350a6ee95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23294eec2b364ce17d1ec029963d885e" id="r_a23294eec2b364ce17d1ec029963d885e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e">pmm::detail::kNoBlock</a> = 0xFFFFFFFFU</td></tr>
-<tr class="memdesc:a23294eec2b364ce17d1ec029963d885e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sentinel: нет блока (гранульный индекс)  <br /></td></tr>
+<tr class="memdesc:a23294eec2b364ce17d1ec029963d885e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc" title="Sentinel «нет блока» — максимальное значение index_type.">DefaultAddressTraits::no_block</a>.  <br /></td></tr>
 <tr class="separator:a23294eec2b364ce17d1ec029963d885e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adda9afd5ae768545d32151ed800eb699" id="r_adda9afd5ae768545d32151ed800eb699"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#adda9afd5ae768545d32151ed800eb699">pmm::detail::kManagerHeaderGranules</a> = <a class="el" href="classpmm_1_1pptr.html">sizeof</a>( <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a> ) / <a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a></td></tr>
 <tr class="memdesc:adda9afd5ae768545d32151ed800eb699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Число гранул в <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a>.  <br /></td></tr>

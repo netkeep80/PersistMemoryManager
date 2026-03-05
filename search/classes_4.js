@@ -1,9 +1,7 @@
 var searchData=
 [
-  ['persistentavltree_0',['PersistentAvlTree',['../classpmm_1_1PersistentAvlTree.html',1,'pmm']]],
-  ['persistmemorymanager_1',['PersistMemoryManager',['../classpmm_1_1PersistMemoryManager.html',1,'pmm']]],
-  ['pmmconfig_2',['PMMConfig',['../structpmm_1_1config_1_1PMMConfig.html',1,'pmm::config']]],
-  ['pmmcore_3',['PmmCore',['../classpmm_1_1PmmCore.html',1,'pmm']]],
-  ['pmmcore_3c_20persistmemorymanager_3c_20config_20_3e_20_3e_4',['PmmCore&lt; PersistMemoryManager&lt; Config &gt; &gt;',['../classpmm_1_1PmmCore.html',1,'pmm']]],
-  ['pptr_5',['pptr',['../classpmm_1_1pptr.html',1,'pmm']]]
+  ['managerheader_0',['ManagerHeader',['../structpmm_1_1detail_1_1ManagerHeader.html',1,'pmm::detail']]],
+  ['managerinfo_1',['ManagerInfo',['../structpmm_1_1ManagerInfo.html',1,'pmm']]],
+  ['memorystats_2',['MemoryStats',['../structpmm_1_1MemoryStats.html',1,'pmm']]],
+  ['mutex_5ftype_3',['mutex_type',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html',1,'pmm::config::NoLock']]]
 ];

@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['validationmixin_0',['ValidationMixin',['../classpmm_1_1ValidationMixin.html',1,'pmm']]],
-  ['validationmixin_3c_20statsmixin_3c_20pmmcore_3c_20persistmemorymanager_3c_20config_20_3e_20_3e_20_3e_20_3e_1',['ValidationMixin&lt; StatsMixin&lt; PmmCore&lt; PersistMemoryManager&lt; Config &gt; &gt; &gt; &gt;',['../classpmm_1_1ValidationMixin.html',1,'pmm']]]
+  ['shared_5flock_5ftype_0',['shared_lock_type',['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html',1,'pmm::config::NoLock']]],
+  ['sharedmutexlock_1',['SharedMutexLock',['../structpmm_1_1config_1_1SharedMutexLock.html',1,'pmm::config']]],
+  ['statsmixin_2',['StatsMixin',['../classpmm_1_1StatsMixin.html',1,'pmm']]],
+  ['statsmixin_3c_20pmmcore_3c_20persistmemorymanager_3c_20config_20_3e_20_3e_20_3e_3',['StatsMixin&lt; PmmCore&lt; PersistMemoryManager&lt; Config &gt; &gt; &gt;',['../classpmm_1_1StatsMixin.html',1,'pmm']]]
 ];

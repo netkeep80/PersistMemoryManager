@@ -73,6 +73,7 @@ $(function() {
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">pmm Namespace Reference</div></div>
@@ -88,10 +89,19 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Traits адресного пространства ПАП.  <a href="structpmm_1_1AddressTraits.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html">Block</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Блок памяти ПАП — составной тип.  <a href="structpmm_1_1Block.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BlockView.html">BlockView</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1FreeBlockView.html">FreeBlockView</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">View of a single free block in the AVL tree for visualisation (Issue #65). All _offset fields are byte offsets in the managed region, or -1 when absent.  <a href="structpmm_1_1FreeBlockView.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html">LinkedListNode</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел двухсвязного списка для адресного пространства ПАП.  <a href="structpmm_1_1LinkedListNode.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1ManagerInfo.html">ManagerInfo</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -112,9 +122,27 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1StatsMixin.html">StatsMixin</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">CRTP-миксин, добавляющий статический метод <a class="el" href="classpmm_1_1StatsMixin.html#a7cb5539e2902c07d90ead621360dc720">get_stats()</a> (Issue #73 AR-01).  <a href="classpmm_1_1StatsMixin.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел AVL-дерева для адресного пространства ПАП.  <a href="structpmm_1_1TreeNode.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1ValidationMixin.html">ValidationMixin</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">CRTP-миксин, добавляющий статический метод <a class="el" href="classpmm_1_1ValidationMixin.html#a06fedf9ffe25ff87031478b058faabd5">validate()</a> (Issue #73 AR-01).  <a href="classpmm_1_1ValidationMixin.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:abb45c05352727cde1c45f1d73c0dad3b" id="r_abb45c05352727cde1c45f1d73c0dad3b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">TinyAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint8_t, 8 &gt;</td></tr>
+<tr class="memdesc:abb45c05352727cde1c45f1d73c0dad3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Минимальный 8-bit вариант (до 255 гранул по 8 байт = 2040 байт, embedded).  <br /></td></tr>
+<tr class="separator:abb45c05352727cde1c45f1d73c0dad3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b844fd7256d6a2706303a0281dfbea2" id="r_a0b844fd7256d6a2706303a0281dfbea2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">SmallAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint16_t, 16 &gt;</td></tr>
+<tr class="memdesc:a0b844fd7256d6a2706303a0281dfbea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">16-bit вариант (до 65535 гранул по 16 байт = ~1 МБ, small embedded).  <br /></td></tr>
+<tr class="separator:a0b844fd7256d6a2706303a0281dfbea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ca69087900283384dda68352be048bb" id="r_a9ca69087900283384dda68352be048bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint32_t, 16 &gt;</td></tr>
+<tr class="memdesc:a9ca69087900283384dda68352be048bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">32-bit вариант, 16-байтная гранула — текущий дефолт (совместим с BlockHeader).  <br /></td></tr>
+<tr class="separator:a9ca69087900283384dda68352be048bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fdf4565dee15a7a4ee46b0680df33f8" id="r_a0fdf4565dee15a7a4ee46b0680df33f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8">LargeAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint64_t, 64 &gt;</td></tr>
+<tr class="memdesc:a0fdf4565dee15a7a4ee46b0680df33f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">64-bit вариант, 64-байтная гранула (для крупных промышленных БД).  <br /></td></tr>
+<tr class="separator:a0fdf4565dee15a7a4ee46b0680df33f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -138,12 +166,85 @@ Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:ad3e17dab8c53a80a62be5d276867a8ac" id="r_ad3e17dab8c53a80a62be5d276867a8ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a> = 16</td></tr>
-<tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant.  <br /></td></tr>
+<tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a" title="Размер гранулы в байтах.">DefaultAddressTraits::granule_size</a>.  <br /></td></tr>
 <tr class="separator:ad3e17dab8c53a80a62be5d276867a8ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a716afdc66bf1abf5f0f7feec75d0c1e8" id="r_a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8">kMagic</a> = 0x504D4D5F56303833ULL</td></tr>
 <tr class="memdesc:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"PMM_V083" (Issue #83: granule_size in header)  <br /></td></tr>
 <tr class="separator:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="a9ca69087900283384dda68352be048bb" name="a9ca69087900283384dda68352be048bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ca69087900283384dda68352be048bb">&#9670;&#160;</a></span>DefaultAddressTraits</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint32_t, 16&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>32-bit вариант, 16-байтная гранула — текущий дефолт (совместим с BlockHeader). </p>
+
+<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00111">111</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
+
+</div>
+</div>
+<a id="a0fdf4565dee15a7a4ee46b0680df33f8" name="a0fdf4565dee15a7a4ee46b0680df33f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fdf4565dee15a7a4ee46b0680df33f8">&#9670;&#160;</a></span>LargeAddressTraits</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8">pmm::LargeAddressTraits</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint64_t, 64&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>64-bit вариант, 64-байтная гранула (для крупных промышленных БД). </p>
+
+<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00114">114</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
+
+</div>
+</div>
+<a id="a0b844fd7256d6a2706303a0281dfbea2" name="a0b844fd7256d6a2706303a0281dfbea2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b844fd7256d6a2706303a0281dfbea2">&#9670;&#160;</a></span>SmallAddressTraits</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">pmm::SmallAddressTraits</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint16_t, 16&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>16-bit вариант (до 65535 гранул по 16 байт = ~1 МБ, small embedded). </p>
+
+<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00108">108</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
+
+</div>
+</div>
+<a id="abb45c05352727cde1c45f1d73c0dad3b" name="abb45c05352727cde1c45f1d73c0dad3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb45c05352727cde1c45f1d73c0dad3b">&#9670;&#160;</a></span>TinyAddressTraits</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">pmm::TinyAddressTraits</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint8_t, 8&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Минимальный 8-bit вариант (до 255 гранул по 8 байт = 2040 байт, embedded). </p>
+
+<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00105">105</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a54aa17506c63e8230f30ae422ded8d45" name="a54aa17506c63e8230f30ae422ded8d45"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a54aa17506c63e8230f30ae422ded8d45">&#9670;&#160;</a></span>for_each_block()</h2>
@@ -379,9 +480,9 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p>Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. </p>
+<p>Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a" title="Размер гранулы в байтах.">DefaultAddressTraits::granule_size</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00030">30</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00036">36</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -407,7 +508,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 
 <p>"PMM_V083" (Issue #83: granule_size in header) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00033">33</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00041">41</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
