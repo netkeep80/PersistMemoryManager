@@ -517,8 +517,9 @@ static bool test_grow_factor()
         if ( cur > last_size )
         {
             expand_count++;
-            std::size_t min_expected = last_size * pmm::config::kDefaultGrowNumerator / pmm::config::kDefaultGrowDenominator;
-            bool        grew_enough  = ( cur >= min_expected );
+            std::size_t min_expected =
+                last_size * pmm::config::kDefaultGrowNumerator / pmm::config::kDefaultGrowDenominator;
+            bool grew_enough = ( cur >= min_expected );
             std::cout << "    expand #" << expand_count << ": " << last_size / 1024 << " КБ → " << cur / 1024
                       << " КБ (min=" << min_expected / 1024 << " КБ, " << ( grew_enough ? "OK" : "ОШИБКА" ) << ")\n";
             if ( !grew_enough )

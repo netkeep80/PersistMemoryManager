@@ -127,11 +127,11 @@ struct ManagerHeader
     std::uint32_t first_block_offset; ///< Первый блок (гранульный индекс)
     std::uint32_t last_block_offset; ///< [Issue #57 opt 4] Последний блок (гранульный индекс)
     std::uint32_t free_tree_root; ///< Корень AVL-дерева свободных блоков (гранульный индекс)
-    bool           owns_memory;      ///< Менеджер владеет буфером (runtime-only)
-    bool           prev_owns_memory; ///< prev_base_ptr был выделен менеджером (runtime-only)
-    std::uint16_t  granule_size;     ///< Issue #83: kGranuleSize at creation time; validated on load
-    std::uint64_t  prev_total_size;  ///< Размер предыдущего буфера в байтах (runtime-only)
-    void*          prev_base_ptr;    ///< Указатель на предыдущий буфер (runtime-only; nulled on load)
+    bool          owns_memory;      ///< Менеджер владеет буфером (runtime-only)
+    bool          prev_owns_memory; ///< prev_base_ptr был выделен менеджером (runtime-only)
+    std::uint16_t granule_size;     ///< Issue #83: kGranuleSize at creation time; validated on load
+    std::uint64_t prev_total_size;  ///< Размер предыдущего буфера в байтах (runtime-only)
+    void* prev_base_ptr; ///< Указатель на предыдущий буфер (runtime-only; nulled on load)
 };
 
 static_assert( sizeof( ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes (Issue #59, #73 FR-03)" );
@@ -264,7 +264,7 @@ inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t 
     std::uint8_t* cand_addr = raw_ptr - sizeof( BlockHeader );
     if ( ( reinterpret_cast<std::size_t>( cand_addr ) - reinterpret_cast<std::size_t>( base ) ) % kGranuleSize != 0 )
         return nullptr;
-    std::uint32_t        cand_idx  = static_cast<std::uint32_t>( ( cand_addr - base ) / kGranuleSize );
+    std::uint32_t cand_idx = static_cast<std::uint32_t>( ( cand_addr - base ) / kGranuleSize );
     // Issue #83: ManagerHeader is at base + sizeof(BlockHeader), not base.
     const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base + sizeof( BlockHeader ) );
     if ( !is_valid_block( base, hdr_const, cand_idx ) )

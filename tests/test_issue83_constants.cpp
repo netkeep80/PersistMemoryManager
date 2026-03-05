@@ -50,8 +50,7 @@
 
 // ─── #83-R1: Single granularity constant is a power of 2 ─────────────────────
 
-static_assert( ( pmm::kGranuleSize & ( pmm::kGranuleSize - 1 ) ) == 0,
-               "#83-R1: kGranuleSize must be a power of 2" );
+static_assert( ( pmm::kGranuleSize & ( pmm::kGranuleSize - 1 ) ) == 0, "#83-R1: kGranuleSize must be a power of 2" );
 
 // kDefaultAlignment, kMinAlignment, kMaxAlignment must NOT exist in pmm namespace
 // (compilation would fail if they did and these static_asserts passed)
@@ -61,9 +60,9 @@ static_assert( pmm::kGranuleSize == 16, "#83-R1: kGranuleSize must equal 16" );
 
 static_assert( pmm::detail::kMinBlockSize == sizeof( pmm::detail::BlockHeader ) + pmm::kGranuleSize,
                "#83-R2: kMinBlockSize must equal sizeof(BlockHeader) + kGranuleSize" );
-static_assert( pmm::detail::kMinMemorySize ==
-                   sizeof( pmm::detail::BlockHeader ) + sizeof( pmm::detail::ManagerHeader ) +
-                       sizeof( pmm::detail::BlockHeader ) + pmm::detail::kMinBlockSize,
+static_assert( pmm::detail::kMinMemorySize == sizeof( pmm::detail::BlockHeader ) +
+                                                  sizeof( pmm::detail::ManagerHeader ) +
+                                                  sizeof( pmm::detail::BlockHeader ) + pmm::detail::kMinBlockSize,
                "#83-R2: kMinMemorySize must be computed from struct sizes" );
 
 // ─── #83-R3: PMMConfig has grow_numerator / grow_denominator ─────────────────
@@ -77,8 +76,7 @@ static_assert( pmm::config::kDefaultGrowDenominator == 4, "#83-R3: default grow 
 
 // ─── #83-R4: ManagerHeader has granule_size field ────────────────────────────
 
-static_assert( sizeof( pmm::detail::ManagerHeader ) == 64,
-               "#83-R4: ManagerHeader must still be exactly 64 bytes" );
+static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "#83-R4: ManagerHeader must still be exactly 64 bytes" );
 
 // ─── Runtime tests ────────────────────────────────────────────────────────────
 
@@ -131,7 +129,7 @@ static bool test_custom_grow_config()
 static bool test_granule_size_in_header()
 {
     // After create(), ManagerHeader::granule_size must equal kGranuleSize
-    constexpr std::size_t buf_size = 4096;
+    constexpr std::size_t             buf_size = 4096;
     alignas( 16 ) static std::uint8_t buf[buf_size];
     std::memset( buf, 0, sizeof( buf ) );
 
@@ -148,7 +146,7 @@ static bool test_granule_size_in_header()
 static bool test_load_rejects_wrong_granule_size()
 {
     // Create a valid image, then corrupt granule_size to a different value and verify load() rejects it
-    constexpr std::size_t buf_size = 4096;
+    constexpr std::size_t             buf_size = 4096;
     alignas( 16 ) static std::uint8_t buf[buf_size];
     std::memset( buf, 0, sizeof( buf ) );
 
@@ -157,7 +155,7 @@ static bool test_load_rejects_wrong_granule_size()
     PMM::destroy();
 
     // Corrupt granule_size field (change 16 → 32)
-    auto* mhdr = reinterpret_cast<pmm::detail::ManagerHeader*>( buf + sizeof( pmm::detail::BlockHeader ) );
+    auto* mhdr         = reinterpret_cast<pmm::detail::ManagerHeader*>( buf + sizeof( pmm::detail::BlockHeader ) );
     mhdr->granule_size = 32; // wrong value
 
     bool loaded = PMM::load( buf, buf_size );
@@ -170,7 +168,7 @@ static bool test_load_accepts_correct_granule_size()
     // Simulate a persistence round-trip: create in one buffer, copy to another (simulating
     // disk save/load), then load from the copy. Copying before destroy() ensures the saved
     // image has the correct magic (destroy() zeros it in the original).
-    constexpr std::size_t buf_size = 4096;
+    constexpr std::size_t             buf_size = 4096;
     alignas( 16 ) static std::uint8_t src[buf_size];
     alignas( 16 ) static std::uint8_t dst[buf_size];
     std::memset( src, 0, sizeof( src ) );
@@ -197,7 +195,7 @@ static bool test_load_accepts_correct_granule_size()
 static bool test_create_below_min_memory_size_fails()
 {
     // Buffers smaller than kMinMemorySize must be rejected
-    constexpr std::size_t too_small = pmm::detail::kMinMemorySize - 16;
+    constexpr std::size_t             too_small = pmm::detail::kMinMemorySize - 16;
     alignas( 16 ) static std::uint8_t buf[pmm::detail::kMinMemorySize];
     std::memset( buf, 0, sizeof( buf ) );
 
