@@ -62,16 +62,30 @@ struct NoLock
     };
 };
 
-/// @brief Конфигурационный шаблон PersistMemoryManager (Issue #73 FR-05).
-/// @tparam GranuleSizeV  Размер гранулы в байтах (только 16 поддерживается, Issue #59).
-/// @tparam MaxMemoryGB   Максимальный объём памяти в ГБ (до 64 ГБ, Issue #59).
-/// @tparam LockPolicy    Политика блокировок (SharedMutexLock или NoLock).
-template <std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, typename LockPolicy = SharedMutexLock>
+/// @brief Issue #83: Default grow ratio numerator (heap grows by 5/4 = 25%).
+inline constexpr std::size_t kDefaultGrowNumerator = 5;
+
+/// @brief Issue #83: Default grow ratio denominator (heap grows by 5/4 = 25%).
+inline constexpr std::size_t kDefaultGrowDenominator = 4;
+
+/// @brief Конфигурационный шаблон PersistMemoryManager (Issue #73 FR-05, #83).
+/// @tparam GranuleSizeV       Размер гранулы в байтах (только 16 поддерживается, Issue #59).
+/// @tparam MaxMemoryGB        Максимальный объём памяти в ГБ (до 64 ГБ, Issue #59).
+/// @tparam LockPolicy         Политика блокировок (SharedMutexLock или NoLock).
+/// @tparam GrowNumeratorV     Issue #83: Числитель коэффициента роста (по умолчанию 5).
+/// @tparam GrowDenominatorV   Issue #83: Знаменатель коэффициента роста (по умолчанию 4).
+template <std::size_t  GranuleSizeV     = 16,
+          std::size_t  MaxMemoryGB      = 64,
+          typename     LockPolicy       = SharedMutexLock,
+          std::size_t  GrowNumeratorV   = kDefaultGrowNumerator,
+          std::size_t  GrowDenominatorV = kDefaultGrowDenominator>
 struct PMMConfig
 {
-    static constexpr std::size_t granule_size  = GranuleSizeV;
-    static constexpr std::size_t max_memory_gb = MaxMemoryGB;
-    using lock_policy                          = LockPolicy;
+    static constexpr std::size_t granule_size      = GranuleSizeV;
+    static constexpr std::size_t max_memory_gb     = MaxMemoryGB;
+    static constexpr std::size_t grow_numerator    = GrowNumeratorV;
+    static constexpr std::size_t grow_denominator  = GrowDenominatorV;
+    using lock_policy                              = LockPolicy;
 };
 
 /// @brief Конфигурация по умолчанию.

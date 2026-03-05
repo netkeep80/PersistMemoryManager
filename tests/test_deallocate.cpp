@@ -295,13 +295,13 @@ static bool test_block_data_size_bytes()
     pmm::pptr<std::uint8_t> ptr = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 512 );
     PMM_TEST( !ptr.is_null() );
 
-    // Issue #59: only 16-byte alignment is guaranteed
-    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr.get() ) % pmm::kMinAlignment == 0 );
+    // Issue #59, #83: only kGranuleSize (16-byte) alignment is guaranteed
+    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr.get() ) % pmm::kGranuleSize == 0 );
 
     // block_data_size_bytes reports allocated size in bytes (rounded up to granule)
     std::size_t blk_size = pmm::PersistMemoryManager<>::block_data_size_bytes( ptr.offset() );
     PMM_TEST( blk_size >= 512 );
-    PMM_TEST( blk_size % pmm::kMinAlignment == 0 );
+    PMM_TEST( blk_size % pmm::kGranuleSize == 0 );
 
     pmm::PersistMemoryManager<>::deallocate_typed( ptr );
     pmm::PersistMemoryManager<>::destroy();

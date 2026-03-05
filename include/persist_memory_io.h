@@ -83,7 +83,7 @@ inline bool save( const char* filename )
  */
 inline bool load_from_file( const char* filename, void* memory, std::size_t size )
 {
-    if ( filename == nullptr || memory == nullptr || size < kMinMemorySize )
+    if ( filename == nullptr || memory == nullptr || size < detail::kMinMemorySize )
         return false;
 
     std::FILE* f = std::fopen( filename, "rb" );

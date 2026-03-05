@@ -26,16 +26,11 @@ namespace pmm
 
 // ─── Константы ────────────────────────────────────────────────────────────────
 
-inline constexpr std::size_t kGranuleSize      = 16; ///< Issue #59: granule size in bytes
-inline constexpr std::size_t kDefaultAlignment = 16;
-inline constexpr std::size_t kMinAlignment     = 16;
-inline constexpr std::size_t kMaxAlignment     = 16; ///< Issue #59: only 16-byte alignment supported
-inline constexpr std::size_t kMinMemorySize    = 4096;
-inline constexpr std::size_t kMinBlockSize =
-    48; ///< Minimum block size in bytes = BlockHeader (32) + 1 data granule (16)
-inline constexpr std::uint64_t kMagic           = 0x504D4D5F56303630ULL; ///< "PMM_V060" (#75: homogeneous PAP)
-inline constexpr std::size_t   kGrowNumerator   = 5;
-inline constexpr std::size_t   kGrowDenominator = 4;
+/// @brief Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant.
+inline constexpr std::size_t kGranuleSize = 16;
+static_assert( ( kGranuleSize & ( kGranuleSize - 1 ) ) == 0, "kGranuleSize must be a power of 2 (Issue #83)" );
+
+inline constexpr std::uint64_t kMagic = 0x504D4D5F56303833ULL; ///< "PMM_V083" (Issue #83: granule_size in header)
 
 // ─── Публичные структуры данных ────────────────────────────────────────────────
 
@@ -70,7 +65,7 @@ struct BlockView
     std::size_t    total_size;  ///< Total block size in bytes
     std::size_t    header_size; ///< BlockHeader size in bytes
     std::size_t    user_size;   ///< User data size in bytes
-    std::size_t    alignment;   ///< Always kDefaultAlignment (Issue #59)
+    std::size_t    alignment;   ///< Always kGranuleSize (Issue #59, #83)
     bool           used;
 };
 
@@ -132,11 +127,11 @@ struct ManagerHeader
     std::uint32_t first_block_offset; ///< Первый блок (гранульный индекс)
     std::uint32_t last_block_offset; ///< [Issue #57 opt 4] Последний блок (гранульный индекс)
     std::uint32_t free_tree_root; ///< Корень AVL-дерева свободных блоков (гранульный индекс)
-    bool          owns_memory;      ///< Менеджер владеет буфером (runtime-only)
-    bool          prev_owns_memory; ///< prev_base_ptr был выделен менеджером (runtime-only)
-    std::uint8_t  _pad[2];          ///< Выравнивание
-    std::uint64_t prev_total_size;  ///< Размер предыдущего буфера в байтах (runtime-only)
-    void* prev_base_ptr; ///< Указатель на предыдущий буфер (runtime-only; nulled on load)
+    bool           owns_memory;      ///< Менеджер владеет буфером (runtime-only)
+    bool           prev_owns_memory; ///< prev_base_ptr был выделен менеджером (runtime-only)
+    std::uint16_t  granule_size;     ///< Issue #83: kGranuleSize at creation time; validated on load
+    std::uint64_t  prev_total_size;  ///< Размер предыдущего буфера в байтах (runtime-only)
+    void*          prev_base_ptr;    ///< Указатель на предыдущий буфер (runtime-only; nulled on load)
 };
 
 static_assert( sizeof( ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes (Issue #59, #73 FR-03)" );
@@ -145,6 +140,13 @@ static_assert( sizeof( ManagerHeader ) % kGranuleSize == 0,
 
 /// @brief Число гранул в ManagerHeader
 inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader ) / kGranuleSize;
+
+/// @brief Issue #83: Minimum block size = BlockHeader + 1 data granule (computed, not hardcoded).
+inline constexpr std::size_t kMinBlockSize = sizeof( BlockHeader ) + kGranuleSize;
+
+/// @brief Issue #83: Minimum memory size = BlockHeader_0 + ManagerHeader + BlockHeader_1 + kMinBlockSize (computed).
+inline constexpr std::size_t kMinMemorySize =
+    sizeof( BlockHeader ) + sizeof( ManagerHeader ) + sizeof( BlockHeader ) + kMinBlockSize;
 
 // ─── Конвертация байты ↔ гранулы ──────────────────────────────────────────────
 
@@ -263,7 +265,8 @@ inline BlockHeader* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t 
     if ( ( reinterpret_cast<std::size_t>( cand_addr ) - reinterpret_cast<std::size_t>( base ) ) % kGranuleSize != 0 )
         return nullptr;
     std::uint32_t        cand_idx  = static_cast<std::uint32_t>( ( cand_addr - base ) / kGranuleSize );
-    const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base );
+    // Issue #83: ManagerHeader is at base + sizeof(BlockHeader), not base.
+    const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base + sizeof( BlockHeader ) );
     if ( !is_valid_block( base, hdr_const, cand_idx ) )
         return nullptr;
     BlockHeader* cand = reinterpret_cast<BlockHeader*>( cand_addr );

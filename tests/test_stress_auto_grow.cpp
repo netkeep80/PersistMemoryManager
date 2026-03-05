@@ -195,7 +195,7 @@ static bool test_single_expand()
  */
 static bool test_multi_expand()
 {
-    const std::size_t initial_size = pmm::kMinMemorySize; // 4 КБ
+    const std::size_t initial_size = pmm::detail::kMinMemorySize; // minimum memory size
     void*             mem          = std::malloc( initial_size );
     if ( mem == nullptr )
     {
@@ -517,7 +517,7 @@ static bool test_grow_factor()
         if ( cur > last_size )
         {
             expand_count++;
-            std::size_t min_expected = last_size * pmm::kGrowNumerator / pmm::kGrowDenominator;
+            std::size_t min_expected = last_size * pmm::config::kDefaultGrowNumerator / pmm::config::kDefaultGrowDenominator;
             bool        grew_enough  = ( cur >= min_expected );
             std::cout << "    expand #" << expand_count << ": " << last_size / 1024 << " КБ → " << cur / 1024
                       << " КБ (min=" << min_expected / 1024 << " КБ, " << ( grew_enough ? "OK" : "ОШИБКА" ) << ")\n";

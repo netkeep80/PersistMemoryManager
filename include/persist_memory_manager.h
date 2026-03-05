@@ -269,11 +269,11 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
 
     // ─── Управление жизненным циклом ─────────────────────────────────────────
 
-    /// @brief Создать менеджер на буфере memory (>= kMinMemorySize, granule-aligned).
+    /// @brief Создать менеджер на буфере memory (>= detail::kMinMemorySize, granule-aligned).
     static bool create( void* memory, std::size_t size )
     {
         typename LockPolicy::unique_lock_type lock( s_mutex );
-        if ( memory == nullptr || size < kMinMemorySize )
+        if ( memory == nullptr || size < detail::kMinMemorySize )
             return false;
         if ( size > static_cast<std::uint64_t>( std::numeric_limits<std::uint32_t>::max() ) * kGranuleSize )
             return false;
@@ -285,7 +285,7 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
         static constexpr std::uint32_t kHdrBlkIdx  = 0;
         static constexpr std::uint32_t kFreeBlkIdx = detail::kBlockHeaderGranules + detail::kManagerHeaderGranules;
 
-        if ( detail::idx_to_byte_off( kFreeBlkIdx ) + sizeof( detail::BlockHeader ) + kMinBlockSize > size )
+        if ( detail::idx_to_byte_off( kFreeBlkIdx ) + sizeof( detail::BlockHeader ) + detail::kMinBlockSize > size )
             return false;
 
         detail::BlockHeader* hdr_blk = detail::block_at( base, kHdrBlkIdx );
@@ -308,6 +308,7 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
         hdr->free_tree_root     = detail::kNoBlock;
         hdr->owns_memory        = false;
         hdr->prev_owns_memory   = false;
+        hdr->granule_size       = static_cast<std::uint16_t>( kGranuleSize ); ///< Issue #83
 
         detail::BlockHeader* blk = detail::block_at( base, kFreeBlkIdx );
         std::memset( blk, 0, sizeof( detail::BlockHeader ) );
@@ -335,11 +336,13 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
     static bool load( void* memory, std::size_t size )
     {
         typename LockPolicy::unique_lock_type lock( s_mutex );
-        if ( memory == nullptr || size < kMinMemorySize )
+        if ( memory == nullptr || size < detail::kMinMemorySize )
             return false;
         std::uint8_t* base = static_cast<std::uint8_t*>( memory );
         auto*         hdr  = reinterpret_cast<detail::ManagerHeader*>( base + sizeof( detail::BlockHeader ) );
         if ( hdr->magic != kMagic || hdr->total_size != size )
+            return false;
+        if ( hdr->granule_size != static_cast<std::uint16_t>( kGranuleSize ) ) ///< Issue #83
             return false;
         hdr->owns_memory = hdr->prev_owns_memory = false;
         hdr->prev_total_size                     = 0;
@@ -607,7 +610,7 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
         std::size_t            old_size = hdr->total_size;
         std::uint32_t          needed   = detail::required_block_granules( user_size );
 
-        std::size_t growth   = ( old_size / kGrowDenominator ) * kGrowNumerator;
+        std::size_t growth   = ( old_size / Config::grow_denominator ) * Config::grow_numerator; ///< Issue #83
         std::size_t new_size = ( ( growth + kGranuleSize - 1 ) / kGranuleSize ) * kGranuleSize;
         if ( new_size <= old_size )
             new_size = old_size + kGranuleSize;
@@ -644,7 +647,7 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
         }
         else
         {
-            if ( extra_size < sizeof( detail::BlockHeader ) + kMinBlockSize )
+            if ( extra_size < sizeof( detail::BlockHeader ) + detail::kMinBlockSize )
             {
                 std::free( new_memory );
                 return false;
@@ -963,7 +966,7 @@ template <typename Callback> inline void for_each_block( Callback&& cb )
         view.total_size  = detail::granules_to_bytes( gran );
         view.header_size = sizeof( detail::BlockHeader );
         view.user_size   = detail::granules_to_bytes( blk->size );
-        view.alignment   = kDefaultAlignment;
+        view.alignment   = kGranuleSize; ///< Issue #83: replaced kDefaultAlignment
         view.used        = ( blk->size > 0 );
         cb( view );
         ++index;

@@ -54,3 +54,6 @@ pmm_add_test(test_block_modernization test_block_modernization.cpp)
 
 # ─── Тесты архитектурного рефакторинга (Issue #73) ───────────────────────────
 pmm_add_test(test_issue73_refactoring test_issue73_refactoring.cpp)
+
+# ─── Тесты оптимизации констант (Issue #83) ──────────────────────────────────
+pmm_add_test(test_issue83_constants test_issue83_constants.cpp)

@@ -380,7 +380,7 @@ static bool test_full_coalesce_after_alloc_dealloc()
 
 static bool test_minimum_buffer_size()
 {
-    const std::size_t MEMORY_SIZE = pmm::kMinMemorySize;
+    const std::size_t MEMORY_SIZE = pmm::detail::kMinMemorySize;
     void*             mem         = std::malloc( MEMORY_SIZE );
     PMM_TEST( mem != nullptr );
 
