@@ -69,3 +69,18 @@ pmm_add_test(test_issue87_phase2 test_issue87_phase2.cpp)
 
 # ─── Тесты Phase 3: Block<AddressTraits> (Issue #87) ─────────────────────────
 pmm_add_test(test_issue87_phase3 test_issue87_phase3.cpp)
+
+# ─── Тесты Phase 4: FreeBlockTree policy (Issue #87) ─────────────────────────
+pmm_add_test(test_issue87_phase4 test_issue87_phase4.cpp)
+
+# ─── Тесты Phase 5: StorageBackend (Issue #87) ────────────────────────────────
+pmm_add_test(test_issue87_phase5 test_issue87_phase5.cpp)
+
+# ─── Тесты Phase 6: AllocatorPolicy (Issue #87) ──────────────────────────────
+pmm_add_test(test_issue87_phase6 test_issue87_phase6.cpp)
+
+# ─── Тесты Phase 7: AbstractPersistMemoryManager (Issue #87) ─────────────────
+pmm_add_test(test_issue87_phase7 test_issue87_phase7.cpp)
+
+# ─── Тесты Phase 8: pmm_presets.h (Issue #87) ────────────────────────────────
+pmm_add_test(test_issue87_phase8 test_issue87_phase8.cpp)
