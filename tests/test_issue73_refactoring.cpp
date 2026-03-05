@@ -14,10 +14,10 @@
  * - AR-04: File separation: types, avl, manager, io
  */
 
-#include "persist_memory_manager.h"
-#include "persist_memory_types.h"
-#include "persist_avl_tree.h"
-#include "pmm_config.h"
+#include "pmm/legacy_manager.h"
+#include "pmm/types.h"
+#include "pmm/free_block_tree.h"
+#include "pmm/config.h"
 
 #include <cassert>
 #include <cstdlib>

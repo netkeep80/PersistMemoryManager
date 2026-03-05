@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cstddef>
 #include <cstdint>

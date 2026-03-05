@@ -7,7 +7,7 @@
  *   - Выделение через allocate_typed<T>(), освобождение через deallocate_typed().
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cassert>
 #include <cstdlib>

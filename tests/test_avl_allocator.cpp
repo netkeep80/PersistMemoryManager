@@ -9,7 +9,7 @@
  * - Корректность 6 полей блока (size, prev, next, left, right, parent)
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <algorithm>
 #include <cassert>

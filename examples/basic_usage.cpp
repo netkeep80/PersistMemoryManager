@@ -13,7 +13,7 @@
  * Issue #61: использует новый статический API PersistMemoryManager.
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cstdlib>
 #include <cstring>

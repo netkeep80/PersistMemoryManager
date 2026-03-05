@@ -20,7 +20,7 @@
  *   - После освобождения всех блоков allocated_blocks == 0.
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <chrono>
 #include <cstdlib>

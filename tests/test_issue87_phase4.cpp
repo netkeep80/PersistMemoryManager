@@ -13,7 +13,7 @@
  */
 
 #include "pmm/free_block_tree.h"
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cassert>
 #include <cstddef>

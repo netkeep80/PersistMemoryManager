@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "persist_memory_types.h"
+#include "pmm/types.h"
 #include "pmm/free_block_tree.h"
 
 #include <cassert>

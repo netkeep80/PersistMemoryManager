@@ -24,7 +24,7 @@
 #include "pmm/heap_storage.h"
 #include "pmm/mmap_storage.h"
 #include "pmm/static_storage.h"
-#include "pmm_config.h"
+#include "pmm/config.h"
 
 namespace pmm
 {

@@ -15,7 +15,7 @@
  */
 
 #include "pmm/block_state.h"
-#include "persist_memory_types.h"
+#include "pmm/types.h"
 
 #include <cassert>
 #include <cstddef>

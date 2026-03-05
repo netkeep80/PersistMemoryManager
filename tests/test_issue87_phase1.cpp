@@ -15,7 +15,7 @@
  */
 
 #include "pmm/address_traits.h"
-#include "persist_memory_types.h" // для обратной совместимости: kGranuleSize, kNoBlock
+#include "pmm/types.h" // для обратной совместимости: kGranuleSize, kNoBlock
 
 #include <cassert>
 #include <cstdlib>

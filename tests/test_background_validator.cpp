@@ -18,7 +18,7 @@
 
 #include "demo_app.h"
 #include "metrics_view.h"
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <chrono>
 #include <cstddef>

@@ -5,7 +5,7 @@
  * Фаза 7: синглтон, destroy() освобождает буфер.
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cassert>
 #include <chrono>

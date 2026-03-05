@@ -9,8 +9,8 @@
  *   Сценарий 5: «Марафон» — Долгосрочная стабильность.
  */
 
-#include "persist_memory_io.h"
-#include "persist_memory_manager.h"
+#include "pmm/io.h"
+#include "pmm/legacy_manager.h"
 
 #include <algorithm>
 #include <chrono>

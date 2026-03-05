@@ -15,7 +15,7 @@
 
 #include "manual_alloc_view.h"
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cassert>
 #include <cstdlib>

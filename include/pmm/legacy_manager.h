@@ -34,9 +34,9 @@
 
 #pragma once
 
-#include "persist_memory_types.h"
-#include "persist_avl_tree.h"
-#include "pmm_config.h"
+#include "pmm/types.h"
+#include "pmm/free_block_tree.h"
+#include "pmm/config.h"
 
 #include <cstdlib>
 #include <cstring>

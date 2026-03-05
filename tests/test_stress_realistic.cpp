@@ -12,7 +12,7 @@
  * Iteration counts are reduced in Debug/coverage builds to avoid OOM in CI.
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <chrono>
 #include <cstdlib>

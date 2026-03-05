@@ -25,7 +25,7 @@
 #include "scenario_manager.h"
 #include "struct_tree_view.h"
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <atomic>
 #include <chrono>

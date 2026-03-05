@@ -13,9 +13,9 @@
  *           stored granule_size != kGranuleSize.
  */
 
-#include "persist_memory_manager.h"
-#include "persist_memory_types.h"
-#include "pmm_config.h"
+#include "pmm/legacy_manager.h"
+#include "pmm/types.h"
+#include "pmm/config.h"
 
 #include <cassert>
 #include <cstdlib>

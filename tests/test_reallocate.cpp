@@ -9,7 +9,7 @@
  *   3. Good tests for reallocate_typed covering edge cases and the expand path.
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cassert>
 #include <cstdint>

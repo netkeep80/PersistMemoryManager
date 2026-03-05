@@ -11,8 +11,8 @@
  *
  * Использование:
  * @code
- * #include "persist_memory_manager.h"
- * #include "persist_memory_io.h"
+ * #include "pmm/legacy_manager.h"
+ * #include "pmm/io.h"
  *
  * // Сохранить образ в файл
  * bool ok = pmm::save( "heap.dat" );
@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cstdio>
 

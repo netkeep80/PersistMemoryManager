@@ -19,7 +19,7 @@
 
 #include "pmm/linked_list_node.h"
 #include "pmm/tree_node.h"
-#include "persist_memory_types.h" // для обратной совместимости: BlockHeader, kNoBlock
+#include "pmm/types.h" // для обратной совместимости: BlockHeader, kNoBlock
 
 #include <cassert>
 #include <cstddef>

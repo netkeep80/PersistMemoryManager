@@ -25,13 +25,13 @@
 
 #pragma once
 
-#include "persist_memory_types.h"
+#include "pmm/types.h"
 #include "pmm/address_traits.h"
 #include "pmm/allocator_policy.h"
 #include "pmm/free_block_tree.h"
 #include "pmm/heap_storage.h"
 #include "pmm/storage_backend.h"
-#include "pmm_config.h"
+#include "pmm/config.h"
 
 #include <cassert>
 #include <cstddef>

@@ -9,7 +9,7 @@
  *   - Автоматическое расширение памяти на 25% при нехватке.
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cassert>
 #include <cstdlib>

@@ -16,7 +16,7 @@
  */
 
 #include "pmm/block.h"
-#include "persist_memory_types.h" // для BlockHeader, kNoBlock
+#include "pmm/types.h" // для BlockHeader, kNoBlock
 
 #include <cassert>
 #include <cstddef>

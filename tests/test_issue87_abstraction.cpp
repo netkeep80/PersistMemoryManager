@@ -16,10 +16,10 @@
  * @version 0.1 (Issue #87 Phase 0)
  */
 
-#include "persist_memory_manager.h"
-#include "persist_memory_types.h"
-#include "persist_avl_tree.h"
-#include "pmm_config.h"
+#include "pmm/legacy_manager.h"
+#include "pmm/types.h"
+#include "pmm/free_block_tree.h"
+#include "pmm/config.h"
 #include "pmm/address_traits.h"
 
 #include <cassert>

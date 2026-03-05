@@ -9,7 +9,7 @@
 #include "avl_tree_view.h"
 
 #include "imgui.h"
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <cstdio>
 

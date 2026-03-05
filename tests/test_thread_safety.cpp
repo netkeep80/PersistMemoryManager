@@ -6,7 +6,7 @@
  * Использует std::thread для параллельного выделения и освобождения памяти.
  */
 
-#include "persist_memory_manager.h"
+#include "pmm/legacy_manager.h"
 
 #include <atomic>
 #include <cstdlib>
