@@ -92,15 +92,23 @@ static bool test_fully_allocated_has_empty_snapshot()
     auto* mgr = pmm::PersistMemoryManager<>::instance();
     PMM_TEST( mgr != nullptr );
 
-    // Allocate until OOM
+    // Allocate until no free blocks remain.
+    // Check free_count before each allocation to stop before auto-expand
+    // is triggered (expand() is called only when find_best_fit fails, which
+    // happens only when free_count == 0 or all free blocks are too small).
     std::vector<pmm::pptr<std::uint8_t>> ptrs;
-    while ( true )
+    for ( ;; )
     {
+        if ( pmm::get_manager_info().free_count == 0 )
+            break;
         auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 16 );
         if ( p.is_null() )
             break;
         ptrs.push_back( p );
     }
+
+    // Verify PMM is fully allocated (no free blocks remain).
+    PMM_TEST( pmm::get_manager_info().free_count == 0 );
 
     demo::AvlTreeView view;
     view.update_snapshot( mgr );
