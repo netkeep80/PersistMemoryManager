@@ -66,3 +66,6 @@ pmm_add_test(test_issue87_phase1 test_issue87_phase1.cpp)
 
 # ─── Тесты Phase 2: LinkedListNode + TreeNode (Issue #87) ────────────────────
 pmm_add_test(test_issue87_phase2 test_issue87_phase2.cpp)
+
+# ─── Тесты Phase 3: Block<AddressTraits> (Issue #87) ─────────────────────────
+pmm_add_test(test_issue87_phase3 test_issue87_phase3.cpp)

@@ -15,6 +15,7 @@
 #pragma once
 
 #include "pmm/address_traits.h"
+#include "pmm/block.h"
 #include "pmm/linked_list_node.h"
 #include "pmm/tree_node.h"
 
@@ -133,6 +134,9 @@ static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, parent_offset
                "TreeNode::parent_offset must be at offset 8 within TreeNode (Issue #87)" );
 static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, avl_height ) == 3 * sizeof( std::uint32_t ),
                "TreeNode::avl_height must be at offset 12 within TreeNode (Issue #87)" );
+// Issue #87 Phase 3: verify sizeof(Block<DefaultAddressTraits>) == sizeof(BlockHeader).
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
+               "Block<DefaultAddressTraits> must be 32 bytes (Issue #87)" );
 
 /// @brief Число гранул в BlockHeader (2 гранулы = 32 байта)
 inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( BlockHeader ) / kGranuleSize;

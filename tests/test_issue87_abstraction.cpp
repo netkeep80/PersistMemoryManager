@@ -342,23 +342,23 @@ static bool test_phase2_list_and_tree_nodes()
     return true;
 }
 
-// [Phase 3] Block
+// [Phase 3] Block — РЕАЛИЗОВАНО в include/pmm/block.h
 // ────────────────────────────────────────────────────────────────────────────
-// #include "pmm/block.h"
-//
-// static bool test_phase3_block_layout()
-// {
-//     using A = pmm::DefaultAddressTraits;
-//
-//     // Block<DefaultAddressTraits> бинарно совместим с BlockHeader
-//     static_assert(sizeof(pmm::Block<A>) == sizeof(pmm::detail::BlockHeader));
-//
-//     // Block наследует LinkedListNode и TreeNode
-//     static_assert(std::is_base_of<pmm::LinkedListNode<A>, pmm::Block<A>>::value);
-//     static_assert(std::is_base_of<pmm::TreeNode<A>, pmm::Block<A>>::value);
-//
-//     return true;
-// }
+#include "pmm/block.h"
+
+static bool test_phase3_block_layout()
+{
+    using A = pmm::DefaultAddressTraits;
+
+    // Block<DefaultAddressTraits> имеет тот же размер что и BlockHeader (32 байта)
+    static_assert( sizeof( pmm::Block<A> ) == sizeof( pmm::detail::BlockHeader ) );
+
+    // Block наследует LinkedListNode и TreeNode
+    static_assert( std::is_base_of<pmm::LinkedListNode<A>, pmm::Block<A>>::value );
+    static_assert( std::is_base_of<pmm::TreeNode<A>, pmm::Block<A>>::value );
+
+    return true;
+}
 
 // [Phase 5] StorageBackend
 // ────────────────────────────────────────────────────────────────────────────
@@ -598,6 +598,7 @@ int main()
     std::cout << "\n--- Part B: Phase beacons (implemented abstractions) ---\n";
     PMM_RUN( "B1: AddressTraits<> — 8/16/32-bit address buses and no_block", test_phase1_address_traits );
     PMM_RUN( "B2: LinkedListNode<A> + TreeNode<A> — parametric node types", test_phase2_list_and_tree_nodes );
+    PMM_RUN( "B3: Block<A> — composite type inheriting LinkedListNode + TreeNode", test_phase3_block_layout );
 
     std::cout << "\n--- Part C: Integration (must pass on all phases) ---\n";
     PMM_RUN( "C1: full lifecycle allocate/deallocate/validate", test_integration_full_lifecycle );
