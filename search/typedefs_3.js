@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['embeddedstatic1k_0',['EmbeddedStatic1K',['../namespacepmm_1_1presets.html#ae7c6fd7329eadc7f94d36ef043c7cd2d',1,'pmm::presets']]],
-  ['embeddedstatic4k_1',['EmbeddedStatic4K',['../namespacepmm_1_1presets.html#a3e3ded46509ef6fcad7235579cd68105',1,'pmm::presets']]]
+  ['defaultabstractpmm_0',['DefaultAbstractPMM',['../namespacepmm.html#a5de02bdf4c2b75d6865ace400b7d9629',1,'pmm']]],
+  ['defaultaddresstraits_1',['DefaultAddressTraits',['../namespacepmm.html#a9ca69087900283384dda68352be048bb',1,'pmm']]],
+  ['defaultallocatorpolicy_2',['DefaultAllocatorPolicy',['../namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7',1,'pmm']]],
+  ['defaultconfig_3',['DefaultConfig',['../namespacepmm_1_1config.html#acbc50ef04f2e309d5d87b0a512e4930d',1,'pmm::config']]],
+  ['derived_5ftype_4',['derived_type',['../classpmm_1_1PmmCore.html#ad534a80f588c2173df49b224afd8c2ae',1,'pmm::PmmCore']]]
 ];

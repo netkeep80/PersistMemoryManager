@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['freeblockview_0',['FreeBlockView',['../structpmm_1_1FreeBlockView.html',1,'pmm']]]
+  ['coalescingblock_0',['CoalescingBlock',['../classpmm_1_1CoalescingBlock.html',1,'pmm']]]
 ];

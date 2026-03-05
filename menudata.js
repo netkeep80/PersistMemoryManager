@@ -86,6 +86,7 @@ var menudata={children:[
 {text:"i",url:"functions_func.html#index_i"},
 {text:"l",url:"functions_func.html#index_l"},
 {text:"m",url:"functions_func.html#index_m"},
+{text:"n",url:"functions_func.html#index_n"},
 {text:"o",url:"functions_func.html#index_o"},
 {text:"p",url:"functions_func.html#index_p"},
 {text:"r",url:"functions_func.html#index_r"},
@@ -93,6 +94,7 @@ var menudata={children:[
 {text:"t",url:"functions_func.html#index_t"},
 {text:"u",url:"functions_func.html#index_u"},
 {text:"v",url:"functions_func.html#index_v"},
+{text:"w",url:"functions_func.html#index_w"},
 {text:"~",url:"functions_func.html#index__7E"}]},
 {text:"Variables",url:"functions_vars.html",children:[
 {text:"_",url:"functions_vars.html#index__5F"},
@@ -112,7 +114,18 @@ var menudata={children:[
 {text:"t",url:"functions_vars.html#index_t"},
 {text:"u",url:"functions_vars.html#index_u"},
 {text:"w",url:"functions_vars.html#index_w"}]},
-{text:"Typedefs",url:"functions_type.html"},
+{text:"Typedefs",url:"functions_type.html",children:[
+{text:"a",url:"functions_type.html#index_a"},
+{text:"b",url:"functions_type.html#index_b"},
+{text:"c",url:"functions_type.html#index_c"},
+{text:"d",url:"functions_type.html#index_d"},
+{text:"f",url:"functions_type.html#index_f"},
+{text:"i",url:"functions_type.html#index_i"},
+{text:"l",url:"functions_type.html#index_l"},
+{text:"m",url:"functions_type.html#index_m"},
+{text:"s",url:"functions_type.html#index_s"},
+{text:"t",url:"functions_type.html#index_t"},
+{text:"u",url:"functions_type.html#index_u"}]},
 {text:"Related Symbols",url:"functions_rela.html"}]}]},
 {text:"Files",url:"files.html",children:[
 {text:"File List",url:"files.html"}]}]}

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['_7eheapstorage_0',['~HeapStorage',['../classpmm_1_1HeapStorage.html#a902dc3ebfd8cedf98349e41c245ebe73',1,'pmm::HeapStorage']]],
-  ['_7emmapstorage_1',['~MMapStorage',['../classpmm_1_1MMapStorage.html#ae4a31c8ab07f0fa07cb507d16b069aa8',1,'pmm::MMapStorage']]],
-  ['_7epptr_2',['~pptr',['../classpmm_1_1pptr.html#ad1825b080332d4ad0b251b1a9a1918d0',1,'pmm::pptr']]]
+  ['validate_0',['validate',['../classpmm_1_1ValidationMixin.html#a06fedf9ffe25ff87031478b058faabd5',1,'pmm::ValidationMixin']]],
+  ['verify_5finvariants_1',['verify_invariants',['../classpmm_1_1FreeBlock.html#aa42f1282e63621c7b8795f1175ea4ade',1,'pmm::FreeBlock::verify_invariants()'],['../classpmm_1_1AllocatedBlock.html#a9eba97f1e5e4221a632689ac3b6100f1',1,'pmm::AllocatedBlock::verify_invariants()']]]
 ];

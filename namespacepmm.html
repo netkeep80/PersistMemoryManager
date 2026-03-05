@@ -97,6 +97,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Traits адресного пространства ПАП.  <a href="structpmm_1_1AddressTraits.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatedBlock.html">AllocatedBlock</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a> — занятый блок в корректном состоянии.  <a href="classpmm_1_1AllocatedBlock.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html">AllocatorPolicy</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Политика выделения и освобождения памяти для ПАП-менеджера.  <a href="classpmm_1_1AllocatorPolicy.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -106,7 +109,22 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html">Block</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Блок памяти ПАП — составной тип.  <a href="structpmm_1_1Block.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html">BlockStateBase</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Базовый класс блока для state machine.  <a href="classpmm_1_1BlockStateBase.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BlockView.html">BlockView</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1CoalescingBlock.html">CoalescingBlock</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями.">CoalescingBlock</a> — блок в процессе слияния с соседями.  <a href="classpmm_1_1CoalescingBlock.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1FreeBlock.html">FreeBlock</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> — свободный блок в корректном состоянии.  <a href="classpmm_1_1FreeBlock.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1FreeBlockNotInAVL.html">FreeBlockNotInAVL</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL.">FreeBlockNotInAVL</a> — только что освобождённый блок, ещё не в AVL.  <a href="classpmm_1_1FreeBlockNotInAVL.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1FreeBlockRemovedAVL.html">FreeBlockRemovedAVL</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева.">FreeBlockRemovedAVL</a> — свободный блок, удалённый из AVL-дерева.  <a href="classpmm_1_1FreeBlockRemovedAVL.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1FreeBlockView.html">FreeBlockView</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">View of a single free block in the AVL tree for visualisation (Issue #65). All _offset fields are byte offsets in the managed region, or -1 when absent.  <a href="structpmm_1_1FreeBlockView.html#details">More...</a><br /></td></tr>
@@ -135,6 +153,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html">pptr</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Persistent typed pointer (Issue #59: 4 bytes, granule index). Index 0 means null. <a class="el" href="classpmm_1_1pptr.html#ac8a89ae2713de9973f37709b9bd51c2d" title="Разыменовать через синглтон PersistMemoryManager&lt;&gt; (Issue #61).">get()</a> resolves via singleton. pptr++/&ndash; are forbidden.  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1SplittingBlock.html">SplittingBlock</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два.">SplittingBlock</a> — блок в процессе разбиения на два.  <a href="classpmm_1_1SplittingBlock.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1StaticStorage.html">StaticStorage</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Статический бэкенд хранилища — фиксированный буфер внутри объекта.  <a href="classpmm_1_1StaticStorage.html#details">More...</a><br /></td></tr>
@@ -191,6 +212,14 @@ Functions</h2></td></tr>
 <tr class="memitem:a34f233e9b661e849e4857369c468cbc3" id="r_a34f233e9b661e849e4857369c468cbc3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Callback</a> &gt; </td></tr>
 <tr class="memitem:a34f233e9b661e849e4857369c468cbc3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a34f233e9b661e849e4857369c468cbc3">for_each_free_block_avl</a> (<a class="el" href="classpmm_1_1pptr.html">Callback</a> &amp;&amp;<a class="el" href="classpmm_1_1pptr.html">cb</a>)</td></tr>
 <tr class="separator:a34f233e9b661e849e4857369c468cbc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b6c0f639691913c3e5d08e8961efa6b" id="r_a0b6c0f639691913c3e5d08e8961efa6b"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:a0b6c0f639691913c3e5d08e8961efa6b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">int</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0b6c0f639691913c3e5d08e8961efa6b">detect_block_state</a> (<a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="classpmm_1_1pptr.html">void</a> *<a class="el" href="classpmm_1_1pptr.html">raw_blk</a>, <a class="el" href="classpmm_1_1pptr.html">typename</a> AddressTraitsT::index_type <a class="el" href="classpmm_1_1pptr.html">own_idx</a>) <a class="el" href="classpmm_1_1pptr.html">noexcept</a></td></tr>
+<tr class="memdesc:a0b6c0f639691913c3e5d08e8961efa6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить состояние блока по сырым данным.  <br /></td></tr>
+<tr class="separator:a0b6c0f639691913c3e5d08e8961efa6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3" id="r_a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3">recover_block_state</a> (<a class="el" href="classpmm_1_1pptr.html">void</a> *<a class="el" href="classpmm_1_1pptr.html">raw_blk</a>, <a class="el" href="classpmm_1_1pptr.html">typename</a> AddressTraitsT::index_type <a class="el" href="classpmm_1_1pptr.html">own_idx</a>) <a class="el" href="classpmm_1_1pptr.html">noexcept</a></td></tr>
+<tr class="memdesc:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
+<tr class="separator:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -337,6 +366,62 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a0b6c0f639691913c3e5d08e8961efa6b" name="a0b6c0f639691913c3e5d08e8961efa6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b6c0f639691913c3e5d08e8961efa6b">&#9670;&#160;</a></span>detect_block_state()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">int</a> pmm::detect_block_state </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="classpmm_1_1pptr.html">void</a> *&#160;</td>
+          <td class="paramname"><em>raw_blk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">typename</a> AddressTraitsT::index_type&#160;</td>
+          <td class="paramname"><em>own_idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Определить состояние блока по сырым данным. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">raw_blk</td><td>Указатель на <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>. </td></tr>
+    <tr><td class="paramname">own_idx</td><td>Гранульный индекс данного блока. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 = <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a>, 1 = <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>, -1 = неопределённое/переходное. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00533">533</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+
+</div>
+</div>
 <a id="a54aa17506c63e8230f30ae422ded8d45" name="a54aa17506c63e8230f30ae422ded8d45"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a54aa17506c63e8230f30ae422ded8d45">&#9670;&#160;</a></span>for_each_block()</h2>
 
@@ -507,6 +592,62 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <p>Предусловие: filename != nullptr, memory != nullptr, size &gt;= kMinMemorySize. Постусловие: синглтон восстановлен из файла. </p>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__io_8h_source.html#l00084">84</a> of file <a class="el" href="persist__memory__io_8h_source.html">persist_memory_io.h</a>.</p>
+
+</div>
+</div>
+<a id="a5e9a3b51e3a66a8d725a027ef3f1d1d3" name="a5e9a3b51e3a66a8d725a027ef3f1d1d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e9a3b51e3a66a8d725a027ef3f1d1d3">&#9670;&#160;</a></span>recover_block_state()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">void</a> pmm::recover_block_state </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">void</a> *&#160;</td>
+          <td class="paramname"><em>raw_blk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">typename</a> AddressTraitsT::index_type&#160;</td>
+          <td class="paramname"><em>own_idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Восстановить блок в корректное состояние (при load()). </p>
+<p>Используется для восстановления после crash — приводит блок к корректному состоянию (<a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> или <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>) в зависимости от weight и root_offset.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">raw_blk</td><td>Указатель на блок. </td></tr>
+    <tr><td class="paramname">own_idx</td><td>Гранульный индекс данного блока. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00554">554</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
