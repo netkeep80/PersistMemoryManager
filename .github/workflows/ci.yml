@@ -190,5 +190,5 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      - name: Test (headless demo tests)
-        run: ctest --test-dir build --build-config Release --output-on-failure -R "test_demo_headless|test_mem_map_view|test_scenario_manager|test_scenario_coordinator|test_mem_map_view_tile|test_background_validator|test_avl_tree_view|test_manual_alloc_view"
+      - name: Test (all 23 tests)
+        run: ctest --test-dir build --build-config Release --output-on-failure
