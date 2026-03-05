@@ -311,29 +311,36 @@ static bool test_phase1_address_traits()
     return true;
 }
 
-// [Phase 2] LinkedListNode + TreeNode
+// [Phase 2] LinkedListNode + TreeNode — РЕАЛИЗОВАНО в include/pmm/linked_list_node.h и tree_node.h
 // ────────────────────────────────────────────────────────────────────────────
-// #include "pmm/linked_list_node.h"
-// #include "pmm/tree_node.h"
-//
-// static bool test_phase2_list_and_tree_nodes()
-// {
-//     using A = pmm::DefaultAddressTraits;
-//
-//     // LinkedListNode<A> содержит prev_offset и next_offset типа A::index_type
-//     static_assert(std::is_same<
-//         decltype(pmm::LinkedListNode<A>::prev_offset),
-//         typename A::index_type
-//     >::value);
-//
-//     // TreeNode<A> содержит left, right, parent, avl_height
-//     static_assert(std::is_same<
-//         decltype(pmm::TreeNode<A>::left_offset),
-//         typename A::index_type
-//     >::value);
-//
-//     return true;
-// }
+#include "pmm/linked_list_node.h"
+#include "pmm/tree_node.h"
+
+static bool test_phase2_list_and_tree_nodes()
+{
+    using A = pmm::DefaultAddressTraits;
+
+    // LinkedListNode<A> содержит prev_offset и next_offset типа A::index_type
+    static_assert( std::is_same<decltype( pmm::LinkedListNode<A>::prev_offset ), typename A::index_type>::value,
+                   "prev_offset must be index_type" );
+    static_assert( std::is_same<decltype( pmm::LinkedListNode<A>::next_offset ), typename A::index_type>::value,
+                   "next_offset must be index_type" );
+
+    // TreeNode<A> содержит left, right, parent, avl_height
+    static_assert( std::is_same<decltype( pmm::TreeNode<A>::left_offset ), typename A::index_type>::value,
+                   "left_offset must be index_type" );
+    static_assert( std::is_same<decltype( pmm::TreeNode<A>::right_offset ), typename A::index_type>::value,
+                   "right_offset must be index_type" );
+    static_assert( std::is_same<decltype( pmm::TreeNode<A>::parent_offset ), typename A::index_type>::value,
+                   "parent_offset must be index_type" );
+
+    // 8-bit адресация: поля LinkedListNode и TreeNode используют uint8_t
+    using A8 = pmm::TinyAddressTraits;
+    static_assert( std::is_same<decltype( pmm::LinkedListNode<A8>::prev_offset ), std::uint8_t>::value );
+    static_assert( std::is_same<decltype( pmm::TreeNode<A8>::left_offset ), std::uint8_t>::value );
+
+    return true;
+}
 
 // [Phase 3] Block
 // ────────────────────────────────────────────────────────────────────────────
@@ -588,8 +595,9 @@ int main()
     PMM_RUN( "A9: CRTP mixin chain works (good)", test_cr_crtp_mixin_chain );
     PMM_RUN( "A10: ThreadPolicy injection works (good)", test_cr_thread_policy_injection );
 
-    std::cout << "\n--- Part B: Phase 1 beacon (AddressTraits implemented) ---\n";
+    std::cout << "\n--- Part B: Phase beacons (implemented abstractions) ---\n";
     PMM_RUN( "B1: AddressTraits<> — 8/16/32-bit address buses and no_block", test_phase1_address_traits );
+    PMM_RUN( "B2: LinkedListNode<A> + TreeNode<A> — parametric node types", test_phase2_list_and_tree_nodes );
 
     std::cout << "\n--- Part C: Integration (must pass on all phases) ---\n";
     PMM_RUN( "C1: full lifecycle allocate/deallocate/validate", test_integration_full_lifecycle );
