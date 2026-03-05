@@ -123,9 +123,10 @@ static_assert( offsetof( pmm::LinkedListNode<pmm::DefaultAddressTraits>, prev_of
                "LinkedListNode::prev_offset must be at offset 0 (Issue #87)" );
 static_assert( offsetof( pmm::LinkedListNode<pmm::DefaultAddressTraits>, next_offset ) == sizeof( std::uint32_t ),
                "LinkedListNode::next_offset must be at offset 4 (Issue #87)" );
-// TreeNode<DefaultAddressTraits> maps to left/right/parent + avl_height/_pad (16 bytes).
-static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 3 * sizeof( std::uint32_t ) + 4,
-               "TreeNode<DefaultAddressTraits> must be 16 bytes (Issue #87)" );
+// TreeNode<DefaultAddressTraits> maps to left/right/parent + avl_height/_pad + weight + root_offset (24 bytes).
+// Phase 2 v0.2: weight and root_offset are now part of TreeNode (moved from Block own fields).
+static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 3 * sizeof( std::uint32_t ) + 4 + 2 * sizeof( std::uint32_t ),
+               "TreeNode<DefaultAddressTraits> must be 24 bytes (Issue #87)" );
 static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, left_offset ) == 0,
                "TreeNode::left_offset must be at offset 0 within TreeNode (Issue #87)" );
 static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, right_offset ) == sizeof( std::uint32_t ),
@@ -134,6 +135,10 @@ static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, parent_offset
                "TreeNode::parent_offset must be at offset 8 within TreeNode (Issue #87)" );
 static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, avl_height ) == 3 * sizeof( std::uint32_t ),
                "TreeNode::avl_height must be at offset 12 within TreeNode (Issue #87)" );
+static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, weight ) == 3 * sizeof( std::uint32_t ) + 4,
+               "TreeNode::weight must be at offset 16 within TreeNode (Issue #87)" );
+static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, root_offset ) == 4 * sizeof( std::uint32_t ) + 4,
+               "TreeNode::root_offset must be at offset 20 within TreeNode (Issue #87)" );
 // Issue #87 Phase 3: verify sizeof(Block<DefaultAddressTraits>) == sizeof(BlockHeader).
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
                "Block<DefaultAddressTraits> must be 32 bytes (Issue #87)" );
