@@ -1,7 +1,7 @@
 var searchData=
 [
   ['base_5fptr_0',['base_ptr',['../classpmm_1_1PmmCore.html#a52c4521141c1e0549e0b19f10b707762',1,'pmm::PmmCore']]],
-  ['block_5fat_1',['block_at',['../namespacepmm_1_1detail.html#aaa3eed572fc991f5a8dc88b77d789cda',1,'pmm::detail']]],
+  ['block_5fat_1',['block_at',['../namespacepmm_1_1detail.html#aaa3eed572fc991f5a8dc88b77d789cda',1,'pmm::detail::block_at(std::uint8_t *base, std::uint32_t idx)'],['../namespacepmm_1_1detail.html#ab3bb1488df9320c1e54262f5abf46659',1,'pmm::detail::block_at(const std::uint8_t *base, std::uint32_t idx)']]],
   ['block_5fdata_5fsize_5fbytes_2',['block_data_size_bytes',['../classpmm_1_1PersistMemoryManager.html#a33bfcfafb8eee0a48b5b90fd2a540bfb',1,'pmm::PersistMemoryManager']]],
   ['block_5fidx_3',['block_idx',['../namespacepmm_1_1detail.html#a181b2f5855181619597f9d2ef8901427',1,'pmm::detail']]],
   ['block_5ftotal_5fgranules_4',['block_total_granules',['../namespacepmm_1_1detail.html#a7566b1b5755c189b14a7c73c36bee876',1,'pmm::detail']]],

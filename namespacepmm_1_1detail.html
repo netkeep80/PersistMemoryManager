@@ -21,9 +21,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">PersistMemoryManager<span id="projectnumber">&#160;4.0.0</span>
+   <div id="projectname">PersistMemoryManager<span id="projectnumber">&#160;6.1.0</span>
    </div>
-   <div id="projectbrief">Single-header C++17 persistent heap memory manager</div>
+   <div id="projectbrief">Multi-header C++17 persistent heap memory manager</div>
   </td>
  </tr>
  </tbody>
@@ -111,6 +111,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aaa3eed572fc991f5a8dc88b77d789cda" id="r_aaa3eed572fc991f5a8dc88b77d789cda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#aaa3eed572fc991f5a8dc88b77d789cda">block_at</a> (std::uint8_t *<a class="el" href="classpmm_1_1pptr.html">base</a>, std::uint32_t <a class="el" href="classpmm_1_1pptr.html">idx</a>)</td></tr>
 <tr class="memdesc:aaa3eed572fc991f5a8dc88b77d789cda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить указатель на <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> по гранульному индексу.  <br /></td></tr>
 <tr class="separator:aaa3eed572fc991f5a8dc88b77d789cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3bb1488df9320c1e54262f5abf46659" id="r_ab3bb1488df9320c1e54262f5abf46659"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ab3bb1488df9320c1e54262f5abf46659">block_at</a> (<a class="el" href="classpmm_1_1pptr.html">const</a> std::uint8_t *<a class="el" href="classpmm_1_1pptr.html">base</a>, std::uint32_t <a class="el" href="classpmm_1_1pptr.html">idx</a>)</td></tr>
+<tr class="memdesc:ab3bb1488df9320c1e54262f5abf46659"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить константный указатель на <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> по гранульному индексу (read-only).  <br /></td></tr>
+<tr class="separator:ab3bb1488df9320c1e54262f5abf46659"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a181b2f5855181619597f9d2ef8901427" id="r_a181b2f5855181619597f9d2ef8901427"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a181b2f5855181619597f9d2ef8901427">block_idx</a> (<a class="el" href="classpmm_1_1pptr.html">const</a> std::uint8_t *<a class="el" href="classpmm_1_1pptr.html">base</a>, <a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *<a class="el" href="classpmm_1_1pptr.html">block</a>)</td></tr>
 <tr class="memdesc:a181b2f5855181619597f9d2ef8901427"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить гранульный индекс <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a>.  <br /></td></tr>
 <tr class="separator:a181b2f5855181619597f9d2ef8901427"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,8 +152,48 @@ Variables</h2></td></tr>
 <tr class="separator:a049a972c096254cddb69b417750c54da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="ab3bb1488df9320c1e54262f5abf46659" name="ab3bb1488df9320c1e54262f5abf46659"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3bb1488df9320c1e54262f5abf46659">&#9670;&#160;</a></span>block_at() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> * pmm::detail::block_at </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">const</a> std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::uint32_t&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Получить константный указатель на <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> по гранульному индексу (read-only). </p>
+
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00197">197</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+
+</div>
+</div>
 <a id="aaa3eed572fc991f5a8dc88b77d789cda" name="aaa3eed572fc991f5a8dc88b77d789cda"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa3eed572fc991f5a8dc88b77d789cda">&#9670;&#160;</a></span>block_at()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa3eed572fc991f5a8dc88b77d789cda">&#9670;&#160;</a></span>block_at() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -185,7 +228,7 @@ Variables</h2></td></tr>
 
 <p>Получить указатель на <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> по гранульному индексу. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00191">191</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00190">190</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -225,7 +268,7 @@ Variables</h2></td></tr>
 
 <p>Получить гранульный индекс <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00198">198</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00204">204</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -271,7 +314,7 @@ Variables</h2></td></tr>
 
 <p>Вычислить total_size блока в гранулах. Issue #59: total_size больше не хранится — вычисляется через next_offset. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00207">207</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00213">213</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -301,7 +344,7 @@ Variables</h2></td></tr>
 
 <p>Получить гранульный индекс из байтового смещения (кратно kGranuleSize). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00177">177</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00176">176</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -331,7 +374,7 @@ Variables</h2></td></tr>
 
 <p>Перевести байты в гранулы (потолок). Returns 0 on overflow. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00154">154</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00153">153</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -361,7 +404,7 @@ Variables</h2></td></tr>
 
 <p>Перевести гранулы в байты. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00165">165</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00164">164</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -407,7 +450,7 @@ Variables</h2></td></tr>
 
 <p>O(1) get <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> from user_ptr (ptr - sizeof(BlockHeader)); validated via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00253">253</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00259">259</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -437,7 +480,7 @@ Variables</h2></td></tr>
 
 <p>Получить байтовое смещение из гранульного индекса. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00171">171</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00170">170</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -467,7 +510,7 @@ Variables</h2></td></tr>
 
 <p>Returns true only for kGranuleSize (16-byte) alignment. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00185">185</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00184">184</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -513,7 +556,7 @@ Variables</h2></td></tr>
 
 <p>Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00217">217</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00223">223</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -543,7 +586,7 @@ Variables</h2></td></tr>
 
 <p>Minimum block granules for user_bytes (header + data, minimum 1 data granule). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00279">279</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00285">285</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -573,7 +616,7 @@ Variables</h2></td></tr>
 
 <p>Вычислить адрес пользовательских данных для блока (block + sizeof(BlockHeader)). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00247">247</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00253">253</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -600,7 +643,7 @@ Variables</h2></td></tr>
 
 <p>Число гранул в <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> (2 гранулы = 32 байта) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00112">112</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00111">111</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -626,7 +669,7 @@ Variables</h2></td></tr>
 
 <p>Число гранул в <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00142">142</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00141">141</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -652,7 +695,7 @@ Variables</h2></td></tr>
 
 <p>Issue #83: Minimum block size = <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> + 1 data granule (computed, not hardcoded). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00145">145</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00144">144</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -680,7 +723,7 @@ Variables</h2></td></tr>
 </div><!-- fragment -->
 <p>Issue #83: Minimum memory size = BlockHeader_0 + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a> + BlockHeader_1 + kMinBlockSize (computed). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00148">148</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00147">147</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -706,7 +749,7 @@ Variables</h2></td></tr>
 
 <p>Sentinel: нет блока (гранульный индекс) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00115">115</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00114">114</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>

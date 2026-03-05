@@ -21,9 +21,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">PersistMemoryManager<span id="projectnumber">&#160;4.0.0</span>
+   <div id="projectname">PersistMemoryManager<span id="projectnumber">&#160;6.1.0</span>
    </div>
-   <div id="projectbrief">Single-header C++17 persistent heap memory manager</div>
+   <div id="projectbrief">Multi-header C++17 persistent heap memory manager</div>
   </td>
  </tr>
  </tbody>
@@ -130,7 +130,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Менеджер персистентной кучи памяти для C++17. </p>
-<p>Single-header библиотека управления персистентной памятью. Предоставляет низкоуровневый менеджер памяти, хранящий все метаданные в управляемой области памяти для возможности персистентности между запусками.</p>
+<p>Multi-header библиотека управления персистентной памятью. Предоставляет низкоуровневый менеджер памяти, хранящий все метаданные в управляемой области памяти для возможности персистентности между запусками.</p>
 <p>Алгоритм (Issue #55): Каждый блок содержит 6 ключевых полей:</p><ol type="1">
 <li>size — занятый размер данных в гранулах (0 = свободный блок, Issue #75)</li>
 <li>prev_offset — индекс предыдущего блока (kNoBlock = нет)</li>
@@ -141,7 +141,7 @@ Functions</h2></td></tr>
 </ol>
 <p>Поиск свободного блока: best-fit через AVL-дерево (O(log n)). При освобождении: слияние с соседними свободными блоками.</p>
 <dl class="section version"><dt>Version</dt><dd>6.1.0 Refactoring (Issue #73): template&lt;Config&gt; PersistMemoryManager with CRTP mixins. PmmCore&lt;Derived&gt; base, StatsMixin&lt;Base&gt;, ValidationMixin&lt;Base&gt;. Config: pmm::config::PMMConfig&lt;GranuleSize, MaxMemoryGB, LockPolicy&gt;. AVL tree extracted to PersistentAvlTree (<a class="el" href="persist__avl__tree_8h.html" title="AVL-дерево свободных блоков для PersistMemoryManager (Issue #73)">persist_avl_tree.h</a>). Types extracted to <a class="el" href="persist__memory__types_8h.html" title="Базовые типы данных и константы для PersistMemoryManager (Issue #73)">persist_memory_types.h</a>. Backward compatible: pmm::PersistMemoryManager&lt;&gt; for default config.</dd></dl>
-<p>Block modernization (Issue #69): removed BlockHeader.magic; validity via is_valid_block() Refactoring (Issue #75): PAP homogenization. kMagic updated to "PMM_V060". Optimizations (Issue #57, #59): O(1) ops, 16-byte granule, 32-bit indices. Refactoring (Issue #61): fully static PersistMemoryManager; pptr&lt;T&gt;-only public API. Bug fix (Issue #67): reallocate_typed re-derives old pointer after possible expand(). </p>
+<p>Block modernization (Issue #69): removed BlockHeader.magic; validity via is_valid_block() Refactoring (Issue #75): PAP homogenization. kMagic updated to "PMM_V083" (Issue #83). Optimizations (Issue #57, #59): O(1) ops, 16-byte granule, 32-bit indices. Refactoring (Issue #61): fully static PersistMemoryManager; pptr&lt;T&gt;-only public API. Bug fix (Issue #67): reallocate_typed re-derives old pointer after possible expand(). </p>
 
 <p class="definition">Definition in file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 </div></div><!-- contents -->

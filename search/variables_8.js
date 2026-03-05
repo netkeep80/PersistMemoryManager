@@ -2,6 +2,5 @@ var searchData=
 [
   ['largest_5ffree_0',['largest_free',['../structpmm_1_1MemoryStats.html#af04f85408e3c8518f4cab238be67d6e8',1,'pmm::MemoryStats']]],
   ['last_5fblock_5foffset_1',['last_block_offset',['../structpmm_1_1detail_1_1ManagerHeader.html#a55c9b27bffc2b3df1a909019a280b484',1,'pmm::detail::ManagerHeader']]],
-  ['last_5ffree_5foffset_2',['last_free_offset',['../structpmm_1_1ManagerInfo.html#accacb9eb202684768918301173c2e97c',1,'pmm::ManagerInfo']]],
-  ['left_5foffset_3',['left_offset',['../structpmm_1_1FreeBlockView.html#a7016b91ed1e6775949a50d003bc297bf',1,'pmm::FreeBlockView::left_offset'],['../structpmm_1_1detail_1_1BlockHeader.html#ad1e8098dd60bfc0a9fd9a3a878f38d14',1,'pmm::detail::BlockHeader::left_offset']]]
+  ['left_5foffset_2',['left_offset',['../structpmm_1_1FreeBlockView.html#a7016b91ed1e6775949a50d003bc297bf',1,'pmm::FreeBlockView::left_offset'],['../structpmm_1_1detail_1_1BlockHeader.html#ad1e8098dd60bfc0a9fd9a3a878f38d14',1,'pmm::detail::BlockHeader::left_offset']]]
 ];
