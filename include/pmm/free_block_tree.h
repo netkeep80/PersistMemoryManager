@@ -126,13 +126,13 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
         bool          go_left = false;
         while ( cur != detail::kNoBlock )
         {
-            parent                         = cur;
-            detail::BlockHeader* n         = detail::block_at( base, cur );
-            std::uint32_t        n_gran    = ( n->next_offset != detail::kNoBlock ) ? ( n->next_offset - cur )
-                                                                                    : ( total_gran - cur );
-            bool                 smaller   = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx < cur );
-            go_left                        = smaller;
-            cur                            = smaller ? n->left_offset : n->right_offset;
+            parent                 = cur;
+            detail::BlockHeader* n = detail::block_at( base, cur );
+            std::uint32_t        n_gran =
+                ( n->next_offset != detail::kNoBlock ) ? ( n->next_offset - cur ) : ( total_gran - cur );
+            bool smaller = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx < cur );
+            go_left      = smaller;
+            cur          = smaller ? n->left_offset : n->right_offset;
         }
         blk->parent_offset = parent;
         if ( go_left )
@@ -239,8 +239,8 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
     }
 
     /// @brief Update parent → child link in tree.
-    static void set_child( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t parent, std::uint32_t old_child,
-                           std::uint32_t new_child )
+    static void set_child( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t parent,
+                           std::uint32_t old_child, std::uint32_t new_child )
     {
         if ( parent == detail::kNoBlock )
         {
