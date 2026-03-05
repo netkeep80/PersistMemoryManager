@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['total_5fsize_0',['total_size',['../classpmm_1_1PersistMemoryManager.html#acc0052f46b114e8b9189aeb6dd3d5a28',1,'pmm::PersistMemoryManager']]],
-  ['try_5flock_1',['try_lock',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a359b9ee51caa64aa2cabf0ff52c3ec67',1,'pmm::config::NoLock::mutex_type']]],
-  ['try_5flock_5fshared_2',['try_lock_shared',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#abbed0645f7147a00563030745e0400b3',1,'pmm::config::NoLock::mutex_type']]]
+  ['save_0',['save',['../namespacepmm.html#abfd5a1c07eb8af86044942de369b9c21',1,'pmm']]],
+  ['shared_5flock_5ftype_1',['shared_lock_type',['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html#ab3272189682b98943a4eb3acea887ce6',1,'pmm::config::NoLock::shared_lock_type']]],
+  ['staticstorage_2',['staticstorage',['../classpmm_1_1StaticStorage.html#a159d8a0b5b4b4cfb373ab243a3aaf946',1,'pmm::StaticStorage::StaticStorage() noexcept=default'],['../classpmm_1_1StaticStorage.html#abddd193aef5b482d840e2e591c4d4464',1,'pmm::StaticStorage::StaticStorage(const StaticStorage &amp;)=delete'],['../classpmm_1_1StaticStorage.html#ac49e4f5931e81a137c30ca0d3d79debf',1,'pmm::StaticStorage::StaticStorage(StaticStorage &amp;&amp;)=delete']]]
 ];

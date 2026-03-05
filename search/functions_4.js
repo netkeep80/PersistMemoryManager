@@ -1,8 +1,4 @@
 var searchData=
 [
-  ['find_5fbest_5ffit_0',['find_best_fit',['../classpmm_1_1PersistentAvlTree.html#a1dd999086f8aba3d290ee2acd84288c9',1,'pmm::PersistentAvlTree']]],
-  ['for_5feach_5fblock_1',['for_each_block',['../namespacepmm.html#a54aa17506c63e8230f30ae422ded8d45',1,'pmm']]],
-  ['for_5feach_5ffree_5fblock_5favl_2',['for_each_free_block_avl',['../namespacepmm.html#a34f233e9b661e849e4857369c468cbc3',1,'pmm']]],
-  ['fragmentation_3',['fragmentation',['../classpmm_1_1PersistMemoryManager.html#a5dc60b6a9fa166274ceeef6fa5d19bca',1,'pmm::PersistMemoryManager']]],
-  ['free_5fsize_4',['free_size',['../classpmm_1_1PersistMemoryManager.html#ae9f2c70eb40a3743fabd236b675ac864',1,'pmm::PersistMemoryManager']]]
+  ['expand_0',['expand',['../classpmm_1_1HeapStorage.html#a0b679f8fc17871cbd26dc24bd92e942d',1,'pmm::HeapStorage::expand()'],['../classpmm_1_1MMapStorage.html#a31f4cdc687c88e1e798af18ee279c1d9',1,'pmm::MMapStorage::expand()'],['../classpmm_1_1StaticStorage.html#a298e7f86b667f5d6b17f01c058da0e5d',1,'pmm::StaticStorage::expand()']]]
 ];

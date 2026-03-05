@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_7epptr_0',['~pptr',['../classpmm_1_1pptr.html#ad1825b080332d4ad0b251b1a9a1918d0',1,'pmm::pptr']]]
+  ['weight_0',['weight',['../structpmm_1_1TreeNode.html#a054b227ed3133233acb113deef6070c0',1,'pmm::TreeNode']]]
 ];

@@ -1,6 +1,10 @@
 var searchData=
 [
-  ['validate_0',['validate',['../classpmm_1_1ValidationMixin.html#a06fedf9ffe25ff87031478b058faabd5',1,'pmm::ValidationMixin']]],
-  ['validationmixin_1',['ValidationMixin',['../classpmm_1_1ValidationMixin.html',1,'pmm']]],
-  ['validationmixin_3c_20statsmixin_3c_20pmmcore_3c_20persistmemorymanager_3c_20config_20_3e_20_3e_20_3e_20_3e_2',['ValidationMixin&lt; StatsMixin&lt; PmmCore&lt; PersistMemoryManager&lt; Config &gt; &gt; &gt; &gt;',['../classpmm_1_1ValidationMixin.html',1,'pmm']]]
+  ['unique_5flock_5ftype_0',['unique_lock_type',['../structpmm_1_1config_1_1NoLock_1_1unique__lock__type.html',1,'pmm::config::NoLock::unique_lock_type'],['../structpmm_1_1config_1_1SharedMutexLock.html#a8c4cb328be5c173b8f7cfbf162fec0ad',1,'pmm::config::SharedMutexLock::unique_lock_type'],['../structpmm_1_1config_1_1NoLock_1_1unique__lock__type.html#a3468457255e5d1fb8fd2761ebb5968e3',1,'pmm::config::NoLock::unique_lock_type::unique_lock_type()']]],
+  ['unlock_1',['unlock',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a470dbe885a5caf385edf7fc522334c4d',1,'pmm::config::NoLock::mutex_type']]],
+  ['unlock_5fshared_2',['unlock_shared',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a0d61581a96dfc7a1813c370097cccbe3',1,'pmm::config::NoLock::mutex_type']]],
+  ['used_3',['used',['../structpmm_1_1BlockView.html#a72b31f6664325495e0ef5203a60e4671',1,'pmm::BlockView']]],
+  ['used_5fsize_4',['used_size',['../structpmm_1_1ManagerInfo.html#abeac45d57b420a1c7933d36b435ca8b8',1,'pmm::ManagerInfo::used_size'],['../structpmm_1_1detail_1_1ManagerHeader.html#a9d4a92b692a6dcd20bbfe445363ddf9d',1,'pmm::detail::ManagerHeader::used_size'],['../classpmm_1_1PersistMemoryManager.html#a77219053de7ce2ed8d6fe7684df90ebc',1,'pmm::PersistMemoryManager::used_size()'],['../classpmm_1_1AbstractPersistMemoryManager.html#a62886b5bfd6f4a7d28c07e399b631e54',1,'pmm::AbstractPersistMemoryManager::used_size()']]],
+  ['user_5fptr_5',['user_ptr',['../namespacepmm_1_1detail.html#a02de50186cd3b81c0dc3f7ff873a138f',1,'pmm::detail']]],
+  ['user_5fsize_6',['user_size',['../structpmm_1_1BlockView.html#ae1d45dcd73d208eb83e07d326c3e77a4',1,'pmm::BlockView']]]
 ];

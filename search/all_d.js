@@ -1,15 +1,6 @@
 var searchData=
 [
-  ['offset_0',['offset',['../structpmm_1_1FreeBlockView.html#a1646b317908a05f54ec49965238d4d76',1,'pmm::FreeBlockView::offset'],['../classpmm_1_1pptr.html#a8108efe689abe56e556d07f9b2e5a01f',1,'pmm::pptr::offset()'],['../structpmm_1_1BlockView.html#a045b6fa11a579b38a1a1f9851cd2ea84',1,'pmm::BlockView::offset']]],
-  ['offset_5fto_5fptr_1',['offset_to_ptr',['../classpmm_1_1PersistMemoryManager.html#ada525b3a41a6ad7d3c59e441f3b8f49a',1,'pmm::PersistMemoryManager']]],
-  ['operator_20bool_2',['operator bool',['../classpmm_1_1pptr.html#aff4bf521d68c3c8d083685bfa5d7e361',1,'pmm::pptr']]],
-  ['operator_21_3d_3',['operator!=',['../classpmm_1_1pptr.html#a3e6876f42b8c149fa6ace2b07fd6ff1d',1,'pmm::pptr']]],
-  ['operator_2a_4',['operator*',['../classpmm_1_1pptr.html#a5de07faf5c8d6559d074a0fdccbe69f9',1,'pmm::pptr']]],
-  ['operator_2b_2b_5',['operator++',['../classpmm_1_1pptr.html#aa72e078afaddd328b7e3dbd4321d3140',1,'pmm::pptr::operator++(int)=delete'],['../classpmm_1_1pptr.html#a517b6740cc74d195140c4655d5d6e5f9',1,'pmm::pptr::operator++()=delete']]],
-  ['operator_2d_2d_6',['operator--',['../classpmm_1_1pptr.html#a49267180ccf579dd1e8ef884c882ba69',1,'pmm::pptr::operator--()=delete'],['../classpmm_1_1pptr.html#a1698463524f6b86d2afae4cdb3d472a1',1,'pmm::pptr::operator--(int)=delete']]],
-  ['operator_2d_3e_7',['operator-&gt;',['../classpmm_1_1pptr.html#a17a150c11b89c8430c0fc082a4e07d68',1,'pmm::pptr']]],
-  ['operator_3d_8',['operator=',['../classpmm_1_1PersistentAvlTree.html#a665facb8ce20070520f0faa3da665674',1,'pmm::PersistentAvlTree::operator=()'],['../classpmm_1_1pptr.html#a5fbddd233ee3bed5cbb2db7161b934f5',1,'pmm::pptr::operator=(const pptr&lt; T &gt; &amp;) noexcept=default']]],
-  ['operator_3d_3d_9',['operator==',['../classpmm_1_1pptr.html#ae430f440bc26d551ac6cc8c4468806c8',1,'pmm::pptr']]],
-  ['operator_5b_5d_10',['operator[]',['../classpmm_1_1pptr.html#a56e4aba2a2151ea38334b29642c33ec5',1,'pmm::pptr']]],
-  ['owns_5fmemory_11',['owns_memory',['../structpmm_1_1detail_1_1ManagerHeader.html#a56a57d4f7cef869939e4ede031857666',1,'pmm::detail::ManagerHeader']]]
+  ['next_5foffset_0',['next_offset',['../structpmm_1_1detail_1_1BlockHeader.html#afe5b6bcb939e7f56d9b82306fda71f3a',1,'pmm::detail::BlockHeader::next_offset'],['../structpmm_1_1LinkedListNode.html#a1e710264daf7ead2f5a7910a6c24d34a',1,'pmm::LinkedListNode::next_offset']]],
+  ['no_5fblock_1',['no_block',['../structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc',1,'pmm::AddressTraits']]],
+  ['nolock_2',['NoLock',['../structpmm_1_1config_1_1NoLock.html',1,'pmm::config']]]
 ];

@@ -73,12 +73,19 @@ $(function() {
 <div class="textblock">Here is a list of all functions with links to the classes they belong to:</div>
 
 <h3><a id="index_a" name="index_a"></a>- a -</h3><ul>
+<li>alloc_block_count()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a1e7d4ef5f558d1bccf0bc1d174fb5f62">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
+<li>allocate()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#ab4cf2c23f04b4c30ebc50273a58910dd">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
+<li>allocate_from_block()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a9d21ff24cca425e57aaf5fea0b83cd10">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
 <li>allocate_typed()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#aab8d2e6b490d74b1f363ccb87c9627f0">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>AllocatorPolicy()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a7b9dae10356ce145bdd78921d50a8386">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
+<li>attach()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a61d1dc39749ecf7a1298712f3ae39732">pmm::HeapStorage&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_b" name="index_b"></a>- b -</h3><ul>
-<li>base_ptr()&#160;:&#160;<a class="el" href="classpmm_1_1PmmCore.html#a52c4521141c1e0549e0b19f10b707762">pmm::PmmCore&lt; Derived &gt;</a></li>
+<li>backend()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a31ac71a551c78211b661eb3ffd7e2b44">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
+<li>base_ptr()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a416432193e74d71cdc1127effcc6e8c7">pmm::HeapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1MMapStorage.html#a5a6f277fdd4186bde1244f4b61c75d03">pmm::MMapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1PmmCore.html#a52c4521141c1e0549e0b19f10b707762">pmm::PmmCore&lt; Derived &gt;</a>, <a class="el" href="classpmm_1_1StaticStorage.html#a48e457158badce26c50da0e8d7fc370e">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
+<li>block_count()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#afeda2f5a7d62acf50f820bc7e5eeeee1">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
 <li>block_data_size_bytes()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a33bfcfafb8eee0a48b5b90fd2a540bfb">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 <li>byte_off_to_idx()&#160;:&#160;<a class="el" href="structpmm_1_1AddressTraits.html#a02528e5dcadafce324a3e6061eb6182e">pmm::AddressTraits&lt; IndexT, GranuleSz &gt;</a></li>
 <li>bytes_to_granules()&#160;:&#160;<a class="el" href="structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75">pmm::AddressTraits&lt; IndexT, GranuleSz &gt;</a></li>
@@ -86,22 +93,31 @@ $(function() {
 
 
 <h3><a id="index_c" name="index_c"></a>- c -</h3><ul>
+<li>close()&#160;:&#160;<a class="el" href="classpmm_1_1MMapStorage.html#a6e20811680162e59d9227d1965152377">pmm::MMapStorage&lt; AddressTraitsT &gt;</a></li>
+<li>coalesce()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a9e56704665aefdd05ae0e26241d706a3">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
 <li>const_base_ptr()&#160;:&#160;<a class="el" href="classpmm_1_1PmmCore.html#a0f0b54ef130163741d7525c09c3dd154">pmm::PmmCore&lt; Derived &gt;</a></li>
-<li>create()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a282815aed899acf9d75313e8d8ffcab9">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>create()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#aa2f966efde8655ba97ba1c824d44cc21">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a282815aed899acf9d75313e8d8ffcab9">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_d" name="index_d"></a>- d -</h3><ul>
+<li>deallocate()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a20e9c1827f266a8eb7247cd0dddac0c0">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
 <li>deallocate_typed()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a26a01cbb2ff949629dc21939409646e8">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
-<li>destroy()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#ac637af04aeaf51a4da77287301b24c5e">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>destroy()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a0bc4f7fdc796ea2956d65defd8ad67c1">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#ac637af04aeaf51a4da77287301b24c5e">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 <li>dump_stats()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a243f70061044a6563ad63391fda8efd3">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 </ul>
 
 
+<h3><a id="index_e" name="index_e"></a>- e -</h3><ul>
+<li>expand()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a0b679f8fc17871cbd26dc24bd92e942d">pmm::HeapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1MMapStorage.html#a31f4cdc687c88e1e798af18ee279c1d9">pmm::MMapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1StaticStorage.html#a298e7f86b667f5d6b17f01c058da0e5d">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
+</ul>
+
+
 <h3><a id="index_f" name="index_f"></a>- f -</h3><ul>
-<li>find_best_fit()&#160;:&#160;<a class="el" href="classpmm_1_1PersistentAvlTree.html#a1dd999086f8aba3d290ee2acd84288c9">pmm::PersistentAvlTree</a></li>
+<li>find_best_fit()&#160;:&#160;<a class="el" href="structpmm_1_1AvlFreeTree.html#a6404447c36b2cb4af2107f99aa7479de">pmm::AvlFreeTree&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1PersistentAvlTree.html#a1dd999086f8aba3d290ee2acd84288c9">pmm::PersistentAvlTree</a></li>
 <li>fragmentation()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a5dc60b6a9fa166274ceeef6fa5d19bca">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
-<li>free_size()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#ae9f2c70eb40a3743fabd236b675ac864">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>free_block_count()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a20f79733cce6572efadc2c6d7f99d1b1">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
+<li>free_size()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#aef8de913b365c02b7d3f3cf08e1c0f22">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#ae9f2c70eb40a3743fabd236b675ac864">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 </ul>
 
 
@@ -115,20 +131,22 @@ $(function() {
 
 <h3><a id="index_h" name="index_h"></a>- h -</h3><ul>
 <li>header()&#160;:&#160;<a class="el" href="classpmm_1_1PmmCore.html#a5b39c735c03523e51f6568c4ec81f356">pmm::PmmCore&lt; Derived &gt;</a></li>
+<li>HeapStorage()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a81ea95cc053af3bc0eaf06b0fbdbc7cf">pmm::HeapStorage&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_i" name="index_i"></a>- i -</h3><ul>
 <li>idx_to_byte_off()&#160;:&#160;<a class="el" href="structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2">pmm::AddressTraits&lt; IndexT, GranuleSz &gt;</a></li>
-<li>insert()&#160;:&#160;<a class="el" href="classpmm_1_1PersistentAvlTree.html#ad3ad0bec7e86cd1ce91e5d78e6bbef6a">pmm::PersistentAvlTree</a></li>
+<li>insert()&#160;:&#160;<a class="el" href="structpmm_1_1AvlFreeTree.html#ac8cecebea9f68619628bad6d617836e4">pmm::AvlFreeTree&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1PersistentAvlTree.html#ad3ad0bec7e86cd1ce91e5d78e6bbef6a">pmm::PersistentAvlTree</a></li>
 <li>instance()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#ad7f79a0921eb0a1522f87e9816bec5ce">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
-<li>is_initialized()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#aedc70bd3dafbe190c73fc9a52a416ae6">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>is_initialized()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#ad2c95f748043b61402ea40932f62ab99">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#aedc70bd3dafbe190c73fc9a52a416ae6">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 <li>is_null()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#adac1a5126cdc1a0dc340c73083a43b1f">pmm::pptr&lt; T &gt;</a></li>
+<li>is_open()&#160;:&#160;<a class="el" href="classpmm_1_1MMapStorage.html#a7b6756bbf0a7929a36a227d59f098890">pmm::MMapStorage&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_l" name="index_l"></a>- l -</h3><ul>
-<li>load()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a78c119bbe5f206972fa472c2df46455e">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>load()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a16baa0061aad6ea622043e342e36b384">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a78c119bbe5f206972fa472c2df46455e">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 <li>lock()&#160;:&#160;<a class="el" href="structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a666bbb9033e98e055b1a00dc1289df2d">pmm::config::NoLock::mutex_type</a></li>
 <li>lock_shared()&#160;:&#160;<a class="el" href="structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a41cc66939ceb574327080920f7524dcc">pmm::config::NoLock::mutex_type</a></li>
 </ul>
@@ -136,21 +154,24 @@ $(function() {
 
 <h3><a id="index_m" name="index_m"></a>- m -</h3><ul>
 <li>manager_header_size()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a6270e1da8f85ccc36346b6eb6d72245e">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>MMapStorage()&#160;:&#160;<a class="el" href="classpmm_1_1MMapStorage.html#a0b5769057cad68693b2f94130d4ecffd">pmm::MMapStorage&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_o" name="index_o"></a>- o -</h3><ul>
 <li>offset()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a8108efe689abe56e556d07f9b2e5a01f">pmm::pptr&lt; T &gt;</a></li>
 <li>offset_to_ptr()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#ada525b3a41a6ad7d3c59e441f3b8f49a">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>open()&#160;:&#160;<a class="el" href="classpmm_1_1MMapStorage.html#aef07f10ac7145aad987b0f4c408915e7">pmm::MMapStorage&lt; AddressTraitsT &gt;</a></li>
 <li>operator bool()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#aff4bf521d68c3c8d083685bfa5d7e361">pmm::pptr&lt; T &gt;</a></li>
 <li>operator!=()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a3e6876f42b8c149fa6ace2b07fd6ff1d">pmm::pptr&lt; T &gt;</a></li>
 <li>operator*()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a5de07faf5c8d6559d074a0fdccbe69f9">pmm::pptr&lt; T &gt;</a></li>
 <li>operator++()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a517b6740cc74d195140c4655d5d6e5f9">pmm::pptr&lt; T &gt;</a></li>
 <li>operator--()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a49267180ccf579dd1e8ef884c882ba69">pmm::pptr&lt; T &gt;</a></li>
 <li>operator-&gt;()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a17a150c11b89c8430c0fc082a4e07d68">pmm::pptr&lt; T &gt;</a></li>
-<li>operator=()&#160;:&#160;<a class="el" href="classpmm_1_1PersistentAvlTree.html#a665facb8ce20070520f0faa3da665674">pmm::PersistentAvlTree</a>, <a class="el" href="classpmm_1_1pptr.html#a5fbddd233ee3bed5cbb2db7161b934f5">pmm::pptr&lt; T &gt;</a></li>
+<li>operator=()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a2d2abd744cc025677590051ea508172d">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1HeapStorage.html#a86fde3c370ac4715107d10ac728e803a">pmm::HeapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1MMapStorage.html#a88b0394f95dde616f99af855c9a8360b">pmm::MMapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1PersistentAvlTree.html#a665facb8ce20070520f0faa3da665674">pmm::PersistentAvlTree</a>, <a class="el" href="classpmm_1_1pptr.html#a5fbddd233ee3bed5cbb2db7161b934f5">pmm::pptr&lt; T &gt;</a>, <a class="el" href="classpmm_1_1StaticStorage.html#aaa3c21bbbea16b2f9bdb171d63316264">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
 <li>operator==()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#ae430f440bc26d551ac6cc8c4468806c8">pmm::pptr&lt; T &gt;</a></li>
 <li>operator[]()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a56e4aba2a2151ea38334b29642c33ec5">pmm::pptr&lt; T &gt;</a></li>
+<li>owns_memory()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a9bb257f0a7ecbb7798a3e42d3e917908">pmm::HeapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1MMapStorage.html#af0e187de88081c6f0b576c781d0a0e3b">pmm::MMapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1StaticStorage.html#a6e3622c92387e9e4adc4a9b6ecba2c2b">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
 </ul>
 
 
@@ -162,17 +183,21 @@ $(function() {
 
 <h3><a id="index_r" name="index_r"></a>- r -</h3><ul>
 <li>reallocate_typed()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#ab50e8a08887b3791c66e64ad2a67f795">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
-<li>remove()&#160;:&#160;<a class="el" href="classpmm_1_1PersistentAvlTree.html#a97a056f887fe558797dcc1b55a55e70a">pmm::PersistentAvlTree</a></li>
+<li>rebuild_free_tree()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a761c4bedece020f9f4602b6e633ca69b">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
+<li>recompute_counters()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#aab70fb1ed23da1333bb311081225d516">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
+<li>remove()&#160;:&#160;<a class="el" href="structpmm_1_1AvlFreeTree.html#a7c62e43141ebf180f192dc9e97d46ee2">pmm::AvlFreeTree&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1PersistentAvlTree.html#a97a056f887fe558797dcc1b55a55e70a">pmm::PersistentAvlTree</a></li>
+<li>repair_linked_list()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a76a73b9c5caae0fe2ed469ce05b83826">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_s" name="index_s"></a>- s -</h3><ul>
 <li>shared_lock_type()&#160;:&#160;<a class="el" href="structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html#ab3272189682b98943a4eb3acea887ce6">pmm::config::NoLock::shared_lock_type</a></li>
+<li>StaticStorage()&#160;:&#160;<a class="el" href="classpmm_1_1StaticStorage.html#a159d8a0b5b4b4cfb373ab243a3aaf946">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_t" name="index_t"></a>- t -</h3><ul>
-<li>total_size()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#acc0052f46b114e8b9189aeb6dd3d5a28">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>total_size()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a1e28e2da0e38993148ff9a039aa0b401">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1HeapStorage.html#af5df24635985108ab3356d8d8253ece4">pmm::HeapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1MMapStorage.html#a360a6769ab5fe0434c4a96e1db45470e">pmm::MMapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#acc0052f46b114e8b9189aeb6dd3d5a28">pmm::PersistMemoryManager&lt; Config &gt;</a>, <a class="el" href="classpmm_1_1StaticStorage.html#a5e7ea1fd75ff68f464f6ddd7892f3820">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
 <li>try_lock()&#160;:&#160;<a class="el" href="structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a359b9ee51caa64aa2cabf0ff52c3ec67">pmm::config::NoLock::mutex_type</a></li>
 <li>try_lock_shared()&#160;:&#160;<a class="el" href="structpmm_1_1config_1_1NoLock_1_1mutex__type.html#abbed0645f7147a00563030745e0400b3">pmm::config::NoLock::mutex_type</a></li>
 </ul>
@@ -182,7 +207,7 @@ $(function() {
 <li>unique_lock_type()&#160;:&#160;<a class="el" href="structpmm_1_1config_1_1NoLock_1_1unique__lock__type.html#a3468457255e5d1fb8fd2761ebb5968e3">pmm::config::NoLock::unique_lock_type</a></li>
 <li>unlock()&#160;:&#160;<a class="el" href="structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a470dbe885a5caf385edf7fc522334c4d">pmm::config::NoLock::mutex_type</a></li>
 <li>unlock_shared()&#160;:&#160;<a class="el" href="structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a0d61581a96dfc7a1813c370097cccbe3">pmm::config::NoLock::mutex_type</a></li>
-<li>used_size()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a77219053de7ce2ed8d6fe7684df90ebc">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>used_size()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a62886b5bfd6f4a7d28c07e399b631e54">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a77219053de7ce2ed8d6fe7684df90ebc">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 </ul>
 
 
@@ -192,6 +217,8 @@ $(function() {
 
 
 <h3><a id="index__7E" name="index__7E"></a>- ~ -</h3><ul>
+<li>~HeapStorage()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a902dc3ebfd8cedf98349e41c245ebe73">pmm::HeapStorage&lt; AddressTraitsT &gt;</a></li>
+<li>~MMapStorage()&#160;:&#160;<a class="el" href="classpmm_1_1MMapStorage.html#ae4a31c8ab07f0fa07cb507d16b069aa8">pmm::MMapStorage&lt; AddressTraitsT &gt;</a></li>
 <li>~pptr()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#ad1825b080332d4ad0b251b1a9a1918d0">pmm::pptr&lt; T &gt;</a></li>
 </ul>
 </div><!-- contents -->

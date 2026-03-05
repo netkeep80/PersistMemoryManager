@@ -1,4 +1,9 @@
 var searchData=
 [
-  ['allocate_5ftyped_0',['allocate_typed',['../classpmm_1_1PersistMemoryManager.html#aab8d2e6b490d74b1f363ccb87c9627f0',1,'pmm::PersistMemoryManager::allocate_typed()'],['../classpmm_1_1PersistMemoryManager.html#ade364a33cbdf37acbead238a1e6d3a3e',1,'pmm::PersistMemoryManager::allocate_typed(std::size_t count)']]]
+  ['alloc_5fblock_5fcount_0',['alloc_block_count',['../classpmm_1_1AbstractPersistMemoryManager.html#a1e7d4ef5f558d1bccf0bc1d174fb5f62',1,'pmm::AbstractPersistMemoryManager']]],
+  ['allocate_1',['allocate',['../classpmm_1_1AbstractPersistMemoryManager.html#ab4cf2c23f04b4c30ebc50273a58910dd',1,'pmm::AbstractPersistMemoryManager']]],
+  ['allocate_5ffrom_5fblock_2',['allocate_from_block',['../classpmm_1_1AllocatorPolicy.html#a9d21ff24cca425e57aaf5fea0b83cd10',1,'pmm::AllocatorPolicy']]],
+  ['allocate_5ftyped_3',['allocate_typed',['../classpmm_1_1PersistMemoryManager.html#aab8d2e6b490d74b1f363ccb87c9627f0',1,'pmm::PersistMemoryManager::allocate_typed()'],['../classpmm_1_1PersistMemoryManager.html#ade364a33cbdf37acbead238a1e6d3a3e',1,'pmm::PersistMemoryManager::allocate_typed(std::size_t count)']]],
+  ['allocatorpolicy_4',['allocatorpolicy',['../classpmm_1_1AllocatorPolicy.html#a7b9dae10356ce145bdd78921d50a8386',1,'pmm::AllocatorPolicy::AllocatorPolicy()=delete'],['../classpmm_1_1AllocatorPolicy.html#a66b39f43c432c0cdb17475c31946e4e4',1,'pmm::AllocatorPolicy::AllocatorPolicy(const AllocatorPolicy &amp;)=delete']]],
+  ['attach_5',['attach',['../classpmm_1_1HeapStorage.html#a61d1dc39749ecf7a1298712f3ae39732',1,'pmm::HeapStorage']]]
 ];

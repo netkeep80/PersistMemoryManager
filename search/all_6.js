@@ -1,11 +1,17 @@
 var searchData=
 [
-  ['get_0',['get',['../classpmm_1_1pptr.html#ac8a89ae2713de9973f37709b9bd51c2d',1,'pmm::pptr']]],
-  ['get_5fat_1',['get_at',['../classpmm_1_1pptr.html#a9ecacda2b09b9f43e1a175fcce2220b2',1,'pmm::pptr']]],
-  ['get_5fmanager_5finfo_2',['get_manager_info',['../classpmm_1_1PersistMemoryManager.html#ab4ce061a04dd03e54b98ead3269dd622',1,'pmm::PersistMemoryManager::get_manager_info'],['../namespacepmm.html#a0400f986d436b01776ae4acc83814441',1,'pmm::get_manager_info()']]],
-  ['get_5fstats_3',['get_stats',['../classpmm_1_1StatsMixin.html#a7cb5539e2902c07d90ead621360dc720',1,'pmm::StatsMixin::get_stats()'],['../classpmm_1_1PersistMemoryManager.html#ab1620784be4a26e5f27186eb9bb02e9e',1,'pmm::PersistMemoryManager::get_stats'],['../namespacepmm.html#a2481497e73d223b21f3edc9709817b04',1,'pmm::get_stats()']]],
-  ['granule_5fsize_4',['granule_size',['../structpmm_1_1detail_1_1ManagerHeader.html#afe097fa0656bab921bec5a1a5ed7ac1d',1,'pmm::detail::ManagerHeader::granule_size'],['../structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a',1,'pmm::AddressTraits::granule_size'],['../structpmm_1_1config_1_1PMMConfig.html#a1f1d6a6860323b5b8844e6138fefe70c',1,'pmm::config::PMMConfig::granule_size']]],
-  ['granules_5fto_5fbytes_5',['granules_to_bytes',['../structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7',1,'pmm::AddressTraits::granules_to_bytes()'],['../namespacepmm_1_1detail.html#a8b26126e4182bf35bdea93b5fbc4e867',1,'pmm::detail::granules_to_bytes()']]],
-  ['grow_5fdenominator_6',['grow_denominator',['../structpmm_1_1config_1_1PMMConfig.html#adf17f02e0f6325b6c0665bc7e9297b4b',1,'pmm::config::PMMConfig']]],
-  ['grow_5fnumerator_7',['grow_numerator',['../structpmm_1_1config_1_1PMMConfig.html#a4ff367c8bb25d4a2f122fe600ae0c05d',1,'pmm::config::PMMConfig']]]
+  ['find_5fbest_5ffit_0',['find_best_fit',['../classpmm_1_1PersistentAvlTree.html#a1dd999086f8aba3d290ee2acd84288c9',1,'pmm::PersistentAvlTree::find_best_fit()'],['../structpmm_1_1AvlFreeTree.html#a6404447c36b2cb4af2107f99aa7479de',1,'pmm::AvlFreeTree::find_best_fit()']]],
+  ['first_5fblock_5foffset_1',['first_block_offset',['../structpmm_1_1ManagerInfo.html#ae96d28fab8cdb8150f7987b3948c1b69',1,'pmm::ManagerInfo::first_block_offset'],['../structpmm_1_1detail_1_1ManagerHeader.html#a6c7158ef889525b96c7feefc41239aa7',1,'pmm::detail::ManagerHeader::first_block_offset']]],
+  ['first_5ffree_5foffset_2',['first_free_offset',['../structpmm_1_1ManagerInfo.html#a9619f531a4e79e0daa75890d3e9fb70c',1,'pmm::ManagerInfo']]],
+  ['for_5feach_5fblock_3',['for_each_block',['../classpmm_1_1PersistMemoryManager.html#a23eb6a196c40b37afe0131bac9f6bc57',1,'pmm::PersistMemoryManager::for_each_block'],['../namespacepmm.html#a54aa17506c63e8230f30ae422ded8d45',1,'pmm::for_each_block(Callback &amp;&amp;cb)']]],
+  ['for_5feach_5ffree_5fblock_5favl_4',['for_each_free_block_avl',['../namespacepmm.html#a34f233e9b661e849e4857369c468cbc3',1,'pmm::for_each_free_block_avl()'],['../classpmm_1_1PersistMemoryManager.html#aae39c519999d4348e191361f9845350c',1,'pmm::PersistMemoryManager::for_each_free_block_avl']]],
+  ['fragmentation_5',['fragmentation',['../classpmm_1_1PersistMemoryManager.html#a5dc60b6a9fa166274ceeef6fa5d19bca',1,'pmm::PersistMemoryManager']]],
+  ['free_5fblock_5fcount_6',['free_block_count',['../classpmm_1_1AbstractPersistMemoryManager.html#a20f79733cce6572efadc2c6d7f99d1b1',1,'pmm::AbstractPersistMemoryManager']]],
+  ['free_5fblock_5ftree_7',['free_block_tree',['../classpmm_1_1AbstractPersistMemoryManager.html#a02d5978194438de7c25ab740104b41f1',1,'pmm::AbstractPersistMemoryManager::free_block_tree'],['../classpmm_1_1AllocatorPolicy.html#ac7c45abb52719d611b4a013d199d54e4',1,'pmm::AllocatorPolicy::free_block_tree']]],
+  ['free_5fblock_5ftree_2eh_8',['free_block_tree.h',['../free__block__tree_8h.html',1,'']]],
+  ['free_5fblocks_9',['free_blocks',['../structpmm_1_1MemoryStats.html#a808dba4b6508e2e29232179ef2bb8ff6',1,'pmm::MemoryStats']]],
+  ['free_5fcount_10',['free_count',['../structpmm_1_1ManagerInfo.html#afb8d76713463278cc61106748f391e08',1,'pmm::ManagerInfo::free_count'],['../structpmm_1_1detail_1_1ManagerHeader.html#a2b092b237146c534590323c2ed5c6b4e',1,'pmm::detail::ManagerHeader::free_count']]],
+  ['free_5fsize_11',['free_size',['../structpmm_1_1FreeBlockView.html#ab5d38aaf78225dd8579bdd85180afb92',1,'pmm::FreeBlockView::free_size'],['../classpmm_1_1PersistMemoryManager.html#ae9f2c70eb40a3743fabd236b675ac864',1,'pmm::PersistMemoryManager::free_size()'],['../classpmm_1_1AbstractPersistMemoryManager.html#aef8de913b365c02b7d3f3cf08e1c0f22',1,'pmm::AbstractPersistMemoryManager::free_size()']]],
+  ['free_5ftree_5froot_12',['free_tree_root',['../structpmm_1_1detail_1_1ManagerHeader.html#a0bdbe2a563639a989f9eb61399b8d5b7',1,'pmm::detail::ManagerHeader']]],
+  ['freeblockview_13',['FreeBlockView',['../structpmm_1_1FreeBlockView.html',1,'pmm']]]
 ];

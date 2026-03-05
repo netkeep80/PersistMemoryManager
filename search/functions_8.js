@@ -1,7 +1,11 @@
 var searchData=
 [
-  ['load_0',['load',['../classpmm_1_1PersistMemoryManager.html#a78c119bbe5f206972fa472c2df46455e',1,'pmm::PersistMemoryManager']]],
-  ['load_5ffrom_5ffile_1',['load_from_file',['../namespacepmm.html#a2c5e3f74cada6c0226ef7441097920a2',1,'pmm']]],
-  ['lock_2',['lock',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a666bbb9033e98e055b1a00dc1289df2d',1,'pmm::config::NoLock::mutex_type']]],
-  ['lock_5fshared_3',['lock_shared',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a41cc66939ceb574327080920f7524dcc',1,'pmm::config::NoLock::mutex_type']]]
+  ['idx_5fto_5fbyte_5foff_0',['idx_to_byte_off',['../structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2',1,'pmm::AddressTraits::idx_to_byte_off()'],['../namespacepmm_1_1detail.html#a2bafdf8dfaa8633692a4451d986d37a1',1,'pmm::detail::idx_to_byte_off()']]],
+  ['insert_1',['insert',['../classpmm_1_1PersistentAvlTree.html#ad3ad0bec7e86cd1ce91e5d78e6bbef6a',1,'pmm::PersistentAvlTree::insert()'],['../structpmm_1_1AvlFreeTree.html#ac8cecebea9f68619628bad6d617836e4',1,'pmm::AvlFreeTree::insert()']]],
+  ['instance_2',['instance',['../classpmm_1_1PersistMemoryManager.html#ad7f79a0921eb0a1522f87e9816bec5ce',1,'pmm::PersistMemoryManager']]],
+  ['is_5finitialized_3',['is_initialized',['../classpmm_1_1PersistMemoryManager.html#aedc70bd3dafbe190c73fc9a52a416ae6',1,'pmm::PersistMemoryManager::is_initialized()'],['../classpmm_1_1AbstractPersistMemoryManager.html#ad2c95f748043b61402ea40932f62ab99',1,'pmm::AbstractPersistMemoryManager::is_initialized()']]],
+  ['is_5fnull_4',['is_null',['../classpmm_1_1pptr.html#adac1a5126cdc1a0dc340c73083a43b1f',1,'pmm::pptr']]],
+  ['is_5fopen_5',['is_open',['../classpmm_1_1MMapStorage.html#a7b6756bbf0a7929a36a227d59f098890',1,'pmm::MMapStorage']]],
+  ['is_5fvalid_5falignment_6',['is_valid_alignment',['../namespacepmm_1_1detail.html#a570c97994ec416915edafdbb1ed080b6',1,'pmm::detail']]],
+  ['is_5fvalid_5fblock_7',['is_valid_block',['../namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294',1,'pmm::detail']]]
 ];

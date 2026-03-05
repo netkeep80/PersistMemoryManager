@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['largeaddresstraits_0',['LargeAddressTraits',['../namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8',1,'pmm']]],
-  ['lock_5fpolicy_1',['lock_policy',['../structpmm_1_1config_1_1PMMConfig.html#a1e11914fe69acff1bb15abc00d9abc4c',1,'pmm::config::PMMConfig']]],
-  ['lockpolicy_2',['LockPolicy',['../classpmm_1_1PersistMemoryManager.html#ad60bdd149d933c4c5b5b46fa6f86b813',1,'pmm::PersistMemoryManager']]]
+  ['free_5fblock_5ftree_0',['free_block_tree',['../classpmm_1_1AbstractPersistMemoryManager.html#a02d5978194438de7c25ab740104b41f1',1,'pmm::AbstractPersistMemoryManager::free_block_tree'],['../classpmm_1_1AllocatorPolicy.html#ac7c45abb52719d611b4a013d199d54e4',1,'pmm::AllocatorPolicy::free_block_tree']]]
 ];

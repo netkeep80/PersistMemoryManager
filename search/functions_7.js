@@ -1,10 +1,6 @@
 var searchData=
 [
-  ['idx_5fto_5fbyte_5foff_0',['idx_to_byte_off',['../structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2',1,'pmm::AddressTraits::idx_to_byte_off()'],['../namespacepmm_1_1detail.html#a2bafdf8dfaa8633692a4451d986d37a1',1,'pmm::detail::idx_to_byte_off()']]],
-  ['insert_1',['insert',['../classpmm_1_1PersistentAvlTree.html#ad3ad0bec7e86cd1ce91e5d78e6bbef6a',1,'pmm::PersistentAvlTree']]],
-  ['instance_2',['instance',['../classpmm_1_1PersistMemoryManager.html#ad7f79a0921eb0a1522f87e9816bec5ce',1,'pmm::PersistMemoryManager']]],
-  ['is_5finitialized_3',['is_initialized',['../classpmm_1_1PersistMemoryManager.html#aedc70bd3dafbe190c73fc9a52a416ae6',1,'pmm::PersistMemoryManager']]],
-  ['is_5fnull_4',['is_null',['../classpmm_1_1pptr.html#adac1a5126cdc1a0dc340c73083a43b1f',1,'pmm::pptr']]],
-  ['is_5fvalid_5falignment_5',['is_valid_alignment',['../namespacepmm_1_1detail.html#a570c97994ec416915edafdbb1ed080b6',1,'pmm::detail']]],
-  ['is_5fvalid_5fblock_6',['is_valid_block',['../namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294',1,'pmm::detail']]]
+  ['header_0',['header',['../classpmm_1_1PmmCore.html#a5b39c735c03523e51f6568c4ec81f356',1,'pmm::PmmCore::header()'],['../classpmm_1_1PmmCore.html#aa621f752181bee15e1f910c77d6129e5',1,'pmm::PmmCore::header() const']]],
+  ['header_5ffrom_5fptr_1',['header_from_ptr',['../namespacepmm_1_1detail.html#a7d7f63452120beffc06eb2a6da58a26d',1,'pmm::detail']]],
+  ['heapstorage_2',['heapstorage',['../classpmm_1_1HeapStorage.html#a81ea95cc053af3bc0eaf06b0fbdbc7cf',1,'pmm::HeapStorage::HeapStorage() noexcept=default'],['../classpmm_1_1HeapStorage.html#ab11b995d8be186e10243d15509576e2c',1,'pmm::HeapStorage::HeapStorage(std::size_t initial_size) noexcept'],['../classpmm_1_1HeapStorage.html#af3a016a9684561d1f47b0c7c385defa0',1,'pmm::HeapStorage::HeapStorage(const HeapStorage &amp;)=delete'],['../classpmm_1_1HeapStorage.html#ae5058a34534863a6b8441d21f9f67239',1,'pmm::HeapStorage::HeapStorage(HeapStorage &amp;&amp;other) noexcept']]]
 ];

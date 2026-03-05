@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['shared_5flock_5ftype_0',['shared_lock_type',['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html',1,'pmm::config::NoLock']]],
-  ['sharedmutexlock_1',['SharedMutexLock',['../structpmm_1_1config_1_1SharedMutexLock.html',1,'pmm::config']]],
-  ['statsmixin_2',['StatsMixin',['../classpmm_1_1StatsMixin.html',1,'pmm']]],
-  ['statsmixin_3c_20pmmcore_3c_20persistmemorymanager_3c_20config_20_3e_20_3e_20_3e_3',['StatsMixin&lt; PmmCore&lt; PersistMemoryManager&lt; Config &gt; &gt; &gt;',['../classpmm_1_1StatsMixin.html',1,'pmm']]]
+  ['persistentavltree_0',['PersistentAvlTree',['../classpmm_1_1PersistentAvlTree.html',1,'pmm']]],
+  ['persistmemorymanager_1',['PersistMemoryManager',['../classpmm_1_1PersistMemoryManager.html',1,'pmm']]],
+  ['pmmconfig_2',['PMMConfig',['../structpmm_1_1config_1_1PMMConfig.html',1,'pmm::config']]],
+  ['pmmcore_3',['PmmCore',['../classpmm_1_1PmmCore.html',1,'pmm']]],
+  ['pmmcore_3c_20persistmemorymanager_3c_20config_20_3e_20_3e_4',['PmmCore&lt; PersistMemoryManager&lt; Config &gt; &gt;',['../classpmm_1_1PmmCore.html',1,'pmm']]],
+  ['pptr_5',['pptr',['../classpmm_1_1pptr.html',1,'pmm']]]
 ];
