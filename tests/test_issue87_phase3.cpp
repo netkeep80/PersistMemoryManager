@@ -187,8 +187,8 @@ static bool test_p3_block_tree_node_fields()
     b.parent_offset = A::no_block;
     b.avl_height    = 0;
     b._pad          = 0;
-    b.weight        = 0u;  // свободный блок: начальный вес
-    b.root_offset   = 0u;  // дерево свободных блоков
+    b.weight        = 0u; // свободный блок: начальный вес
+    b.root_offset   = 0u; // дерево свободных блоков
 
     PMM_TEST( b.left_offset == pmm::detail::kNoBlock );
     PMM_TEST( b.right_offset == pmm::detail::kNoBlock );
@@ -232,7 +232,7 @@ static bool test_p3_block_treenode_fields_runtime()
 
     // Занятый блок: weight — произвольный пользовательский вес, root_offset == собственный индекс
     Block alloc_blk{};
-    alloc_blk.weight      = 42u; // произвольный вес (определяется пользовательским деревом)
+    alloc_blk.weight = 42u; // произвольный вес (определяется пользовательским деревом)
     alloc_blk.root_offset = 20u; // корень дерева, которому принадлежит этот узел
 
     PMM_TEST( alloc_blk.weight == 42u );
@@ -321,8 +321,7 @@ int main()
     PMM_RUN( "P3-C2: TreeNode fields accessible via Block", test_p3_block_tree_node_fields );
 
     std::cout << "\n--- P3-D: Block — TreeNode fields (weight+root_offset) ---\n";
-    PMM_RUN( "P3-D1: Block weight+root_offset (from TreeNode) runtime init",
-             test_p3_block_treenode_fields_runtime );
+    PMM_RUN( "P3-D1: Block weight+root_offset (from TreeNode) runtime init", test_p3_block_treenode_fields_runtime );
     PMM_RUN( "P3-D2: Block<TinyAddressTraits> 8-bit weight+root_offset via TreeNode", test_p3_block_tiny_traits );
 
     std::cout << "\n--- P3-E: Block — type compatibility with BlockHeader ---\n";

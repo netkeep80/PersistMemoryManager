@@ -343,8 +343,8 @@ static bool test_p2_tree_node_runtime_init()
     n.parent_offset = A::no_block;
     n.avl_height    = 0;
     n._pad          = 0;
-    n.weight        = 0u; // свободный блок: вес будет вычислен при добавлении в дерево
-    n.root_offset   = 0u; // 0 = дерево свободных блоков
+    n.weight = 0u; // свободный блок: вес будет вычислен при добавлении в дерево
+    n.root_offset = 0u; // 0 = дерево свободных блоков
 
     PMM_TEST( n.left_offset == pmm::detail::kNoBlock );
     PMM_TEST( n.right_offset == pmm::detail::kNoBlock );
@@ -395,7 +395,7 @@ static bool test_p2_tiny_traits_nodes()
     tree_node.parent_offset = 0;
     tree_node.avl_height    = 1;
     tree_node._pad          = 0;
-    tree_node.weight        = 0u;  // свободный блок
+    tree_node.weight        = 0u; // свободный блок
     tree_node.root_offset   = 0u; // дерево свободных блоков
 
     PMM_TEST( tree_node.left_offset == 0xFFU );
@@ -437,8 +437,7 @@ int main()
     std::cout << "\n--- P2-C: Runtime initialization ---\n";
     PMM_RUN( "P2-C1: LinkedListNode runtime sentinel init", test_p2_list_node_runtime_init );
     PMM_RUN( "P2-C2: TreeNode runtime sentinel init (incl. weight+root_offset)", test_p2_tree_node_runtime_init );
-    PMM_RUN( "P2-C3: TinyAddressTraits nodes (8-bit indices, incl. weight+root_offset)",
-             test_p2_tiny_traits_nodes );
+    PMM_RUN( "P2-C3: TinyAddressTraits nodes (8-bit indices, incl. weight+root_offset)", test_p2_tiny_traits_nodes );
 
     std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
     return all_passed ? 0 : 1;

@@ -125,7 +125,8 @@ static_assert( offsetof( pmm::LinkedListNode<pmm::DefaultAddressTraits>, next_of
                "LinkedListNode::next_offset must be at offset 4 (Issue #87)" );
 // TreeNode<DefaultAddressTraits> maps to left/right/parent + avl_height/_pad + weight + root_offset (24 bytes).
 // Phase 2 v0.2: weight and root_offset are now part of TreeNode (moved from Block own fields).
-static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 3 * sizeof( std::uint32_t ) + 4 + 2 * sizeof( std::uint32_t ),
+static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) ==
+                   3 * sizeof( std::uint32_t ) + 4 + 2 * sizeof( std::uint32_t ),
                "TreeNode<DefaultAddressTraits> must be 24 bytes (Issue #87)" );
 static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, left_offset ) == 0,
                "TreeNode::left_offset must be at offset 0 within TreeNode (Issue #87)" );

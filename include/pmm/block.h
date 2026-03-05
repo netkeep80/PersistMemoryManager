@@ -54,8 +54,7 @@ namespace pmm
  * При AddressTraitsT = DefaultAddressTraits (uint32_t, 16):
  *   sizeof(Block<DefaultAddressTraits>) == 32 == sizeof(BlockHeader)
  */
-template <typename AddressTraitsT>
-struct Block : LinkedListNode<AddressTraitsT>, TreeNode<AddressTraitsT>
+template <typename AddressTraitsT> struct Block : LinkedListNode<AddressTraitsT>, TreeNode<AddressTraitsT>
 {
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
