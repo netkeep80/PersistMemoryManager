@@ -76,7 +76,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">pmm::config Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -87,7 +88,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Политика без блокировок (однопоточный режим, нет накладных расходов).  <a href="structpmm_1_1config_1_1NoLock.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html">PMMConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурационный шаблон <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr...">PersistMemoryManager</a> (Issue #73 FR-05).  <a href="structpmm_1_1config_1_1PMMConfig.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурационный шаблон <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr...">PersistMemoryManager</a> (Issue #73 FR-05, #83).  <a href="structpmm_1_1config_1_1PMMConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1SharedMutexLock.html">SharedMutexLock</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Политика блокировки с std::shared_mutex (многопоточная, по умолчанию).  <a href="structpmm_1_1config_1_1SharedMutexLock.html#details">More...</a><br /></td></tr>
@@ -98,6 +99,15 @@ Typedefs</h2></td></tr>
 <tr class="memitem:acbc50ef04f2e309d5d87b0a512e4930d" id="r_acbc50ef04f2e309d5d87b0a512e4930d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#acbc50ef04f2e309d5d87b0a512e4930d">DefaultConfig</a> = <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">PMMConfig</a>&lt; 16, 64, <a class="el" href="structpmm_1_1config_1_1SharedMutexLock.html">SharedMutexLock</a> &gt;</td></tr>
 <tr class="memdesc:acbc50ef04f2e309d5d87b0a512e4930d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация по умолчанию.  <br /></td></tr>
 <tr class="separator:acbc50ef04f2e309d5d87b0a512e4930d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a5eac9bf59cd079fa117844df64d89284" id="r_a5eac9bf59cd079fa117844df64d89284"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#a5eac9bf59cd079fa117844df64d89284">kDefaultGrowNumerator</a> = 5</td></tr>
+<tr class="memdesc:a5eac9bf59cd079fa117844df64d89284"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: Default grow ratio numerator (heap grows by 5/4 = 25%).  <br /></td></tr>
+<tr class="separator:a5eac9bf59cd079fa117844df64d89284"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a297ab6aca4139ac9f66a8e759ba9c70a" id="r_a297ab6aca4139ac9f66a8e759ba9c70a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#a297ab6aca4139ac9f66a8e759ba9c70a">kDefaultGrowDenominator</a> = 4</td></tr>
+<tr class="memdesc:a297ab6aca4139ac9f66a8e759ba9c70a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: Default grow ratio denominator (heap grows by 5/4 = 25%).  <br /></td></tr>
+<tr class="separator:a297ab6aca4139ac9f66a8e759ba9c70a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="acbc50ef04f2e309d5d87b0a512e4930d" name="acbc50ef04f2e309d5d87b0a512e4930d"></a>
@@ -114,7 +124,60 @@ Typedefs</h2></td></tr>
 
 <p>Конфигурация по умолчанию. </p>
 
-<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00078">78</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00089">89</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a297ab6aca4139ac9f66a8e759ba9c70a" name="a297ab6aca4139ac9f66a8e759ba9c70a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a297ab6aca4139ac9f66a8e759ba9c70a">&#9670;&#160;</a></span>kDefaultGrowDenominator</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::config::kDefaultGrowDenominator = 4</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Issue #83: Default grow ratio denominator (heap grows by 5/4 = 25%). </p>
+
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00069">69</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+
+</div>
+</div>
+<a id="a5eac9bf59cd079fa117844df64d89284" name="a5eac9bf59cd079fa117844df64d89284"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5eac9bf59cd079fa117844df64d89284">&#9670;&#160;</a></span>kDefaultGrowNumerator</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::config::kDefaultGrowNumerator = 5</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Issue #83: Default grow ratio numerator (heap grows by 5/4 = 25%). </p>
+
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00066">66</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
 
 </div>
 </div>

@@ -138,27 +138,11 @@ Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:ad3e17dab8c53a80a62be5d276867a8ac" id="r_ad3e17dab8c53a80a62be5d276867a8ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a> = 16</td></tr>
-<tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #59: granule size in bytes.  <br /></td></tr>
+<tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant.  <br /></td></tr>
 <tr class="separator:ad3e17dab8c53a80a62be5d276867a8ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b4ee0ba938a31e564ac2c255a71549b" id="r_a6b4ee0ba938a31e564ac2c255a71549b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a6b4ee0ba938a31e564ac2c255a71549b">kDefaultAlignment</a> = 16</td></tr>
-<tr class="separator:a6b4ee0ba938a31e564ac2c255a71549b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0570830721df8e1febc78b1ad48853d1" id="r_a0570830721df8e1febc78b1ad48853d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0570830721df8e1febc78b1ad48853d1">kMinAlignment</a> = 16</td></tr>
-<tr class="separator:a0570830721df8e1febc78b1ad48853d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fbf670a39662ceb83a425875f632e9e" id="r_a9fbf670a39662ceb83a425875f632e9e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a9fbf670a39662ceb83a425875f632e9e">kMaxAlignment</a> = 16</td></tr>
-<tr class="memdesc:a9fbf670a39662ceb83a425875f632e9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #59: only 16-byte alignment supported.  <br /></td></tr>
-<tr class="separator:a9fbf670a39662ceb83a425875f632e9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a893fc3cf86345b3d3dc0f7727cdb7f13" id="r_a893fc3cf86345b3d3dc0f7727cdb7f13"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a893fc3cf86345b3d3dc0f7727cdb7f13">kMinMemorySize</a> = 4096</td></tr>
-<tr class="separator:a893fc3cf86345b3d3dc0f7727cdb7f13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac0fe3da5d3b9cd59050b3de60f8deda" id="r_aac0fe3da5d3b9cd59050b3de60f8deda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#aac0fe3da5d3b9cd59050b3de60f8deda">kMinBlockSize</a></td></tr>
-<tr class="memdesc:aac0fe3da5d3b9cd59050b3de60f8deda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum block size in bytes = BlockHeader (32) + 1 data granule (16)  <br /></td></tr>
-<tr class="separator:aac0fe3da5d3b9cd59050b3de60f8deda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a716afdc66bf1abf5f0f7feec75d0c1e8" id="r_a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8">kMagic</a> = 0x504D4D5F56303630ULL</td></tr>
-<tr class="memdesc:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"PMM_V060" (#75: homogeneous PAP)  <br /></td></tr>
+<tr class="memitem:a716afdc66bf1abf5f0f7feec75d0c1e8" id="r_a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8">kMagic</a> = 0x504D4D5F56303833ULL</td></tr>
+<tr class="memdesc:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"PMM_V083" (Issue #83: granule_size in header)  <br /></td></tr>
 <tr class="separator:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5097f0cbd02fa383aea3fd4e17e8e6f9" id="r_a5097f0cbd02fa383aea3fd4e17e8e6f9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5097f0cbd02fa383aea3fd4e17e8e6f9">kGrowNumerator</a> = 5</td></tr>
-<tr class="separator:a5097f0cbd02fa383aea3fd4e17e8e6f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2bb28bf9b9f20a1b47ef71b6f861e6b" id="r_ad2bb28bf9b9f20a1b47ef71b6f861e6b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad2bb28bf9b9f20a1b47ef71b6f861e6b">kGrowDenominator</a> = 4</td></tr>
-<tr class="separator:ad2bb28bf9b9f20a1b47ef71b6f861e6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a54aa17506c63e8230f30ae422ded8d45" name="a54aa17506c63e8230f30ae422ded8d45"></a>
@@ -186,8 +170,9 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
   </tr>
 </table>
 </div><div class="memdoc">
+<p>&lt; Issue #83: replaced kDefaultAlignment</p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00941">941</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00944">944</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -217,7 +202,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00974">974</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00977">977</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -244,7 +229,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00917">917</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00920">920</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -271,7 +256,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00912">912</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00915">915</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -374,30 +359,6 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="a6b4ee0ba938a31e564ac2c255a71549b" name="a6b4ee0ba938a31e564ac2c255a71549b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b4ee0ba938a31e564ac2c255a71549b">&#9670;&#160;</a></span>kDefaultAlignment</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::kDefaultAlignment = 16</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00030">30</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
-
-</div>
-</div>
 <a id="ad3e17dab8c53a80a62be5d276867a8ac" name="ad3e17dab8c53a80a62be5d276867a8ac"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad3e17dab8c53a80a62be5d276867a8ac">&#9670;&#160;</a></span>kGranuleSize</h2>
 
@@ -418,57 +379,9 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p>Issue #59: granule size in bytes. </p>
+<p>Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00029">29</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
-
-</div>
-</div>
-<a id="ad2bb28bf9b9f20a1b47ef71b6f861e6b" name="ad2bb28bf9b9f20a1b47ef71b6f861e6b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad2bb28bf9b9f20a1b47ef71b6f861e6b">&#9670;&#160;</a></span>kGrowDenominator</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::kGrowDenominator = 4</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00038">38</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
-
-</div>
-</div>
-<a id="a5097f0cbd02fa383aea3fd4e17e8e6f9" name="a5097f0cbd02fa383aea3fd4e17e8e6f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5097f0cbd02fa383aea3fd4e17e8e6f9">&#9670;&#160;</a></span>kGrowNumerator</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::kGrowNumerator = 5</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00037">37</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00030">30</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 
 </div>
 </div>
@@ -482,7 +395,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t pmm::kMagic = 0x504D4D5F56303630ULL</td>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t pmm::kMagic = 0x504D4D5F56303833ULL</td>
         </tr>
       </table>
   </td>
@@ -492,109 +405,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p>"PMM_V060" (#75: homogeneous PAP) </p>
-
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00036">36</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
-
-</div>
-</div>
-<a id="a9fbf670a39662ceb83a425875f632e9e" name="a9fbf670a39662ceb83a425875f632e9e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9fbf670a39662ceb83a425875f632e9e">&#9670;&#160;</a></span>kMaxAlignment</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::kMaxAlignment = 16</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Issue #59: only 16-byte alignment supported. </p>
-
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00032">32</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
-
-</div>
-</div>
-<a id="a0570830721df8e1febc78b1ad48853d1" name="a0570830721df8e1febc78b1ad48853d1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0570830721df8e1febc78b1ad48853d1">&#9670;&#160;</a></span>kMinAlignment</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::kMinAlignment = 16</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00031">31</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
-
-</div>
-</div>
-<a id="aac0fe3da5d3b9cd59050b3de60f8deda" name="aac0fe3da5d3b9cd59050b3de60f8deda"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac0fe3da5d3b9cd59050b3de60f8deda">&#9670;&#160;</a></span>kMinBlockSize</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::kMinBlockSize</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div>
-<div class="line">    48</div>
-</div><!-- fragment -->
-<p>Minimum block size in bytes = BlockHeader (32) + 1 data granule (16) </p>
-
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00034">34</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
-
-</div>
-</div>
-<a id="a893fc3cf86345b3d3dc0f7727cdb7f13" name="a893fc3cf86345b3d3dc0f7727cdb7f13"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a893fc3cf86345b3d3dc0f7727cdb7f13">&#9670;&#160;</a></span>kMinMemorySize</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::kMinMemorySize = 4096</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
+<p>"PMM_V083" (Issue #83: granule_size in header) </p>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00033">33</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
 

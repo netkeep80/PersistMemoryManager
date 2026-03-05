@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PersistMemoryManager: pmm::config::PMMConfig&lt; GranuleSizeV, MaxMemoryGB, LockPolicy &gt; Struct Template Reference</title>
+<title>PersistMemoryManager: pmm::config::PMMConfig&lt; GranuleSizeV, MaxMemoryGB, LockPolicy, GrowNumeratorV, GrowDenominatorV &gt; Struct Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -78,73 +78,79 @@ $(function() {
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="structpmm_1_1config_1_1PMMConfig-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">pmm::config::PMMConfig&lt; GranuleSizeV, MaxMemoryGB, LockPolicy &gt; Struct Template Reference</div></div>
+  <div class="headertitle"><div class="title">pmm::config::PMMConfig&lt; GranuleSizeV, MaxMemoryGB, LockPolicy, GrowNumeratorV, GrowDenominatorV &gt; Struct Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Конфигурационный шаблон <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr...">PersistMemoryManager</a> (Issue #73 FR-05).  
+<p>Конфигурационный шаблон <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr...">PersistMemoryManager</a> (Issue #73 FR-05, #83).  
  <a href="structpmm_1_1config_1_1PMMConfig.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:ab5f7fd55b49cde1dd36a1e8a3c6c71cc" id="r_ab5f7fd55b49cde1dd36a1e8a3c6c71cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html#ab5f7fd55b49cde1dd36a1e8a3c6c71cc">lock_policy</a> = LockPolicy</td></tr>
-<tr class="separator:ab5f7fd55b49cde1dd36a1e8a3c6c71cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e11914fe69acff1bb15abc00d9abc4c" id="r_a1e11914fe69acff1bb15abc00d9abc4c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html#a1e11914fe69acff1bb15abc00d9abc4c">lock_policy</a> = LockPolicy</td></tr>
+<tr class="separator:a1e11914fe69acff1bb15abc00d9abc4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
-<tr class="memitem:ac37996a35e5b715b3620ae357dc5ec29" id="r_ac37996a35e5b715b3620ae357dc5ec29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">static</a> <a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html#ac37996a35e5b715b3620ae357dc5ec29">granule_size</a> = <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a></td></tr>
-<tr class="separator:ac37996a35e5b715b3620ae357dc5ec29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a262c0b4447c951a09adf77512d2c5e9c" id="r_a262c0b4447c951a09adf77512d2c5e9c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">static</a> <a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html#a262c0b4447c951a09adf77512d2c5e9c">max_memory_gb</a> = <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a></td></tr>
-<tr class="separator:a262c0b4447c951a09adf77512d2c5e9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f1d6a6860323b5b8844e6138fefe70c" id="r_a1f1d6a6860323b5b8844e6138fefe70c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">static</a> <a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html#a1f1d6a6860323b5b8844e6138fefe70c">granule_size</a> = <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a></td></tr>
+<tr class="separator:a1f1d6a6860323b5b8844e6138fefe70c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1573abb3512e1e5cf86755989b2ca8b7" id="r_a1573abb3512e1e5cf86755989b2ca8b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">static</a> <a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html#a1573abb3512e1e5cf86755989b2ca8b7">max_memory_gb</a> = <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a></td></tr>
+<tr class="separator:a1573abb3512e1e5cf86755989b2ca8b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ff367c8bb25d4a2f122fe600ae0c05d" id="r_a4ff367c8bb25d4a2f122fe600ae0c05d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">static</a> <a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html#a4ff367c8bb25d4a2f122fe600ae0c05d">grow_numerator</a> = <a class="el" href="classpmm_1_1pptr.html">GrowNumeratorV</a></td></tr>
+<tr class="separator:a4ff367c8bb25d4a2f122fe600ae0c05d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf17f02e0f6325b6c0665bc7e9297b4b" id="r_adf17f02e0f6325b6c0665bc7e9297b4b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">static</a> <a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1config_1_1PMMConfig.html#adf17f02e0f6325b6c0665bc7e9297b4b">grow_denominator</a> = <a class="el" href="classpmm_1_1pptr.html">GrowDenominatorV</a></td></tr>
+<tr class="separator:adf17f02e0f6325b6c0665bc7e9297b4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><div class="compoundTemplParams">template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy = SharedMutexLock&gt;<br />
-struct pmm::config::PMMConfig&lt; GranuleSizeV, MaxMemoryGB, LockPolicy &gt;</div><p>Конфигурационный шаблон <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr...">PersistMemoryManager</a> (Issue #73 FR-05). </p>
+<div class="textblock"><div class="compoundTemplParams">template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy = SharedMutexLock, std::size_t GrowNumeratorV = kDefaultGrowNumerator, std::size_t GrowDenominatorV = kDefaultGrowDenominator&gt;<br />
+struct pmm::config::PMMConfig&lt; GranuleSizeV, MaxMemoryGB, LockPolicy, GrowNumeratorV, GrowDenominatorV &gt;</div><p>Конфигурационный шаблон <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr...">PersistMemoryManager</a> (Issue #73 FR-05, #83). </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">GranuleSizeV</td><td>Размер гранулы в байтах (только 16 поддерживается, Issue #59). </td></tr>
     <tr><td class="paramname">MaxMemoryGB</td><td>Максимальный объём памяти в ГБ (до 64 ГБ, Issue #59). </td></tr>
     <tr><td class="paramname">LockPolicy</td><td>Политика блокировок (<a class="el" href="structpmm_1_1config_1_1SharedMutexLock.html" title="Политика блокировки с std::shared_mutex (многопоточная, по умолчанию).">SharedMutexLock</a> или <a class="el" href="structpmm_1_1config_1_1NoLock.html" title="Политика без блокировок (однопоточный режим, нет накладных расходов).">NoLock</a>). </td></tr>
+    <tr><td class="paramname">GrowNumeratorV</td><td>Issue #83: Числитель коэффициента роста (по умолчанию 5). </td></tr>
+    <tr><td class="paramname">GrowDenominatorV</td><td>Issue #83: Знаменатель коэффициента роста (по умолчанию 4). </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00070">70</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00079">79</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="ab5f7fd55b49cde1dd36a1e8a3c6c71cc" name="ab5f7fd55b49cde1dd36a1e8a3c6c71cc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab5f7fd55b49cde1dd36a1e8a3c6c71cc">&#9670;&#160;</a></span>lock_policy</h2>
+<a id="a1e11914fe69acff1bb15abc00d9abc4c" name="a1e11914fe69acff1bb15abc00d9abc4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e11914fe69acff1bb15abc00d9abc4c">&#9670;&#160;</a></span>lock_policy</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy  = SharedMutexLock&gt; </div>
+template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy  = SharedMutexLock, std::size_t GrowNumeratorV = kDefaultGrowNumerator, std::size_t GrowDenominatorV = kDefaultGrowDenominator&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a>&lt; <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a>, <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a>, LockPolicy &gt;::lock_policy =  LockPolicy</td>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a>&lt; <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a>, <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a>, LockPolicy, <a class="el" href="classpmm_1_1pptr.html">GrowNumeratorV</a>, <a class="el" href="classpmm_1_1pptr.html">GrowDenominatorV</a> &gt;::lock_policy =  LockPolicy</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00074">74</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00085">85</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="ac37996a35e5b715b3620ae357dc5ec29" name="ac37996a35e5b715b3620ae357dc5ec29"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac37996a35e5b715b3620ae357dc5ec29">&#9670;&#160;</a></span>granule_size</h2>
+<a id="a1f1d6a6860323b5b8844e6138fefe70c" name="a1f1d6a6860323b5b8844e6138fefe70c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f1d6a6860323b5b8844e6138fefe70c">&#9670;&#160;</a></span>granule_size</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy  = SharedMutexLock&gt; </div>
+template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy  = SharedMutexLock, std::size_t GrowNumeratorV = kDefaultGrowNumerator, std::size_t GrowDenominatorV = kDefaultGrowDenominator&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a>&lt; <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a>, <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a>, LockPolicy &gt;::granule_size = <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a></td>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a>&lt; <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a>, <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a>, LockPolicy, <a class="el" href="classpmm_1_1pptr.html">GrowNumeratorV</a>, <a class="el" href="classpmm_1_1pptr.html">GrowDenominatorV</a> &gt;::granule_size = <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a></td>
         </tr>
       </table>
   </td>
@@ -154,23 +160,23 @@ template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a clas
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00072">72</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00081">81</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
 
 </div>
 </div>
-<a id="a262c0b4447c951a09adf77512d2c5e9c" name="a262c0b4447c951a09adf77512d2c5e9c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a262c0b4447c951a09adf77512d2c5e9c">&#9670;&#160;</a></span>max_memory_gb</h2>
+<a id="adf17f02e0f6325b6c0665bc7e9297b4b" name="adf17f02e0f6325b6c0665bc7e9297b4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf17f02e0f6325b6c0665bc7e9297b4b">&#9670;&#160;</a></span>grow_denominator</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy  = SharedMutexLock&gt; </div>
+template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy  = SharedMutexLock, std::size_t GrowNumeratorV = kDefaultGrowNumerator, std::size_t GrowDenominatorV = kDefaultGrowDenominator&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a>&lt; <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a>, <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a>, LockPolicy &gt;::max_memory_gb = <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a></td>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a>&lt; <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a>, <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a>, LockPolicy, <a class="el" href="classpmm_1_1pptr.html">GrowNumeratorV</a>, <a class="el" href="classpmm_1_1pptr.html">GrowDenominatorV</a> &gt;::grow_denominator = <a class="el" href="classpmm_1_1pptr.html">GrowDenominatorV</a></td>
         </tr>
       </table>
   </td>
@@ -180,7 +186,59 @@ template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a clas
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00073">73</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00084">84</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+
+</div>
+</div>
+<a id="a4ff367c8bb25d4a2f122fe600ae0c05d" name="a4ff367c8bb25d4a2f122fe600ae0c05d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ff367c8bb25d4a2f122fe600ae0c05d">&#9670;&#160;</a></span>grow_numerator</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy  = SharedMutexLock, std::size_t GrowNumeratorV = kDefaultGrowNumerator, std::size_t GrowDenominatorV = kDefaultGrowDenominator&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a>&lt; <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a>, <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a>, LockPolicy, <a class="el" href="classpmm_1_1pptr.html">GrowNumeratorV</a>, <a class="el" href="classpmm_1_1pptr.html">GrowDenominatorV</a> &gt;::grow_numerator = <a class="el" href="classpmm_1_1pptr.html">GrowNumeratorV</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00083">83</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
+
+</div>
+</div>
+<a id="a1573abb3512e1e5cf86755989b2ca8b7" name="a1573abb3512e1e5cf86755989b2ca8b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1573abb3512e1e5cf86755989b2ca8b7">&#9670;&#160;</a></span>max_memory_gb</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t GranuleSizeV = 16, std::size_t MaxMemoryGB = 64, <a class="el" href="classpmm_1_1pptr.html">typename</a> LockPolicy  = SharedMutexLock, std::size_t GrowNumeratorV = kDefaultGrowNumerator, std::size_t GrowDenominatorV = kDefaultGrowDenominator&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a>&lt; <a class="el" href="classpmm_1_1pptr.html">GranuleSizeV</a>, <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a>, LockPolicy, <a class="el" href="classpmm_1_1pptr.html">GrowNumeratorV</a>, <a class="el" href="classpmm_1_1pptr.html">GrowDenominatorV</a> &gt;::max_memory_gb = <a class="el" href="classpmm_1_1pptr.html">MaxMemoryGB</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__config_8h_source.html#l00082">82</a> of file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
 
 </div>
 </div>
