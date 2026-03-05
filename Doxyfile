@@ -2,8 +2,8 @@
 # Generates API documentation from the include/ folder only.
 
 PROJECT_NAME           = "PersistMemoryManager"
-PROJECT_NUMBER         = 4.0.0
-PROJECT_BRIEF          = "Single-header C++17 persistent heap memory manager"
+PROJECT_NUMBER         = 6.1.0
+PROJECT_BRIEF          = "Multi-header C++17 persistent heap memory manager"
 
 OUTPUT_DIRECTORY       = doxygen-output
 

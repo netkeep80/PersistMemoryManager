@@ -1,6 +1,6 @@
 # PersistMemoryManager
 
-**Single-header C++17 библиотека управления персистентной кучей памяти.**
+**Multi-header C++17 библиотека управления персистентной кучей памяти.**
 
 📚 **[Документация API (Doxygen)](https://netkeep80.github.io/PersistMemoryManager/)**
 
@@ -8,7 +8,7 @@
 
 ## Возможности
 
-- **Single-header** — вся реализация в одном файле `include/persist_memory_manager.h`
+- **Multi-header** — реализация разделена на `persist_memory_manager.h`, `persist_memory_types.h`, `persist_avl_tree.h`, `pmm_config.h` (Issue #73)
 - **C++17** — без внешних зависимостей, только стандартная библиотека
 - **Персистентность** — все ссылки хранятся как смещения, а не абсолютные указатели
 - **pptr<T>** — персистный типизированный указатель, sizeof == 4 байта (32-битный гранульный индекс)
@@ -30,20 +30,20 @@ int main() {
     void* memory = std::malloc(1024 * 1024);
 
     // Создать менеджер (устанавливает синглтон)
-    bool ok = pmm::PersistMemoryManager::create(memory, 1024 * 1024);
+    bool ok = pmm::PersistMemoryManager<>::create(memory, 1024 * 1024);
 
     // Выделить блоки через типизированный API (при нехватке памяти автоматически расширяет буфер на 25%)
-    pmm::pptr<uint8_t> block1 = pmm::PersistMemoryManager::allocate_typed<uint8_t>(256);  // 256 байт
-    pmm::pptr<uint8_t> block2 = pmm::PersistMemoryManager::allocate_typed<uint8_t>(1024); // 1 КБ
+    pmm::pptr<uint8_t> block1 = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>(256);  // 256 байт
+    pmm::pptr<uint8_t> block2 = pmm::PersistMemoryManager<>::allocate_typed<uint8_t>(1024); // 1 КБ
 
     // Освободить
-    pmm::PersistMemoryManager::deallocate_typed(block1);
+    pmm::PersistMemoryManager<>::deallocate_typed(block1);
 
     // Получить статистику
     auto stats = pmm::get_stats();
 
     // Уничтожить менеджер
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free(memory); // Внешняя память освобождается вызывающим кодом
     return 0;
 }
@@ -66,14 +66,14 @@ ctest --test-dir build --output-on-failure
 
 int main() {
     void* memory = std::malloc(1024 * 1024);
-    pmm::PersistMemoryManager::create(memory, 1024 * 1024);
+    pmm::PersistMemoryManager<>::create(memory, 1024 * 1024);
 
     // Выделить один объект типа int
-    pmm::pptr<int> p = pmm::PersistMemoryManager::allocate_typed<int>();
+    pmm::pptr<int> p = pmm::PersistMemoryManager<>::allocate_typed<int>();
     *p = 42;           // operator* использует синглтон автоматически
 
     // Выделить массив из 10 double
-    pmm::pptr<double> arr = pmm::PersistMemoryManager::allocate_typed<double>(10);
+    pmm::pptr<double> arr = pmm::PersistMemoryManager<>::allocate_typed<double>(10);
     for (int i = 0; i < 10; i++) {
         arr[i] = i * 1.5; // operator[] с проверкой границ
     }
@@ -87,9 +87,9 @@ int main() {
     // Сохраняем смещение для восстановления после load
     uint32_t off = p.offset();
 
-    pmm::PersistMemoryManager::deallocate_typed(arr);
-    pmm::PersistMemoryManager::deallocate_typed(p);
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::deallocate_typed(arr);
+    pmm::PersistMemoryManager<>::deallocate_typed(p);
+    pmm::PersistMemoryManager<>::destroy();
     std::free(memory);
 
     // --- следующий запуск ---
@@ -100,7 +100,7 @@ int main() {
     pmm::pptr<int> p2(off);
     std::cout << *p2 << "\n"; // выведет 42 (operator* через синглтон)
 
-    pmm::PersistMemoryManager::destroy();
+    pmm::PersistMemoryManager<>::destroy();
     std::free(buf2);
     return 0;
 }
@@ -121,17 +121,17 @@ int main() {
 
 ```cpp
 // Программа A — создаём и сохраняем
-pmm::PersistMemoryManager::create(memory, size);
-pmm::pptr<char> ptr = pmm::PersistMemoryManager::allocate_typed<char>(256);
+pmm::PersistMemoryManager<>::create(memory, size);
+pmm::pptr<char> ptr = pmm::PersistMemoryManager<>::allocate_typed<char>(256);
 std::strcpy(ptr.get(), "Hello, World!");
-pmm::save("heap.dat");                           // сохранить образ в файл
-pmm::PersistMemoryManager::destroy();
+pmm::save("heap.dat");                            // сохранить образ в файл
+pmm::PersistMemoryManager<>::destroy();
 std::free(memory);
 
 // Программа B — восстанавливаем
 void* buf = std::malloc(size);
-pmm::load_from_file("heap.dat", buf, size);      // устанавливает синглтон
-pmm::PersistMemoryManager::validate();           // → true
+pmm::load_from_file("heap.dat", buf, size);       // устанавливает синглтон
+pmm::PersistMemoryManager<>::validate();          // → true
 ```
 
 Поскольку все метаданные хранятся как **смещения** (а не абсолютные указатели), образ корректно загружается по любому базовому адресу без пересчёта.
@@ -177,7 +177,7 @@ pmm::ManagerInfo pmm::get_manager_info();
 ### `PersistMemoryManager::manager_header_size()`
 
 ```cpp
-static std::size_t pmm::PersistMemoryManager::manager_header_size() noexcept;
+static std::size_t pmm::PersistMemoryManager<>::manager_header_size() noexcept;
 ```
 
 Возвращает размер служебного заголовка менеджера в байтах (первые N байт управляемой
@@ -253,7 +253,10 @@ cmake --build build
 ```
 PersistMemoryManager/
 ├── include/
-│   ├── persist_memory_manager.h    # Single-header реализация
+│   ├── persist_memory_manager.h    # Главный заголовок: PMM, CRTP-цепочка, pptr<T>
+│   ├── persist_memory_types.h      # Типы данных и вспомогательные функции (Issue #73)
+│   ├── persist_avl_tree.h          # AVL-дерево свободных блоков (Issue #73)
+│   ├── pmm_config.h                # Конфигурационный шаблон PMMConfig<> (Issue #73)
 │   └── persist_memory_io.h         # Утилиты save/load
 ├── examples/
 │   ├── basic_usage.cpp             # Базовое использование
@@ -262,19 +265,30 @@ PersistMemoryManager/
 │   ├── benchmark.cpp               # Бенчмарк производительности
 │   └── CMakeLists.txt
 ├── tests/
-│   ├── test_allocate.cpp           # Тесты выделения
-│   ├── test_deallocate.cpp         # Тесты освобождения
-│   ├── test_coalesce.cpp           # Тесты слияния блоков
-│   ├── test_persistence.cpp        # Тесты персистентности
-│   ├── test_pptr.cpp               # Тесты pptr<T>
-│   ├── test_performance.cpp        # Тесты производительности
-│   ├── test_stress_realistic.cpp   # Реалистичный стресс-тест
-│   ├── test_thread_safety.cpp      # Тесты потокобезопасности
-│   ├── test_shared_mutex.cpp       # Тесты разделённых блокировок
+│   ├── test_allocate.cpp               # Тесты выделения
+│   ├── test_deallocate.cpp             # Тесты освобождения
+│   ├── test_reallocate.cpp             # Тесты перераспределения
+│   ├── test_coalesce.cpp               # Тесты слияния блоков
+│   ├── test_persistence.cpp            # Тесты персистентности
+│   ├── test_pptr.cpp                   # Тесты pptr<T>
+│   ├── test_performance.cpp            # Тесты производительности
+│   ├── test_stress_realistic.cpp       # Реалистичный стресс-тест
+│   ├── test_stress_auto_grow.cpp       # Тесты автоматического расширения
+│   ├── test_thread_safety.cpp          # Тесты потокобезопасности
+│   ├── test_shared_mutex.cpp           # Тесты разделённых блокировок
+│   ├── test_avl_allocator.cpp          # Тесты AVL-аллокатора
+│   ├── test_avl_tree_view.cpp          # Тесты визуализации AVL-дерева
+│   ├── test_block_modernization.cpp    # Тесты рефакторинга BlockHeader (Issue #69)
+│   ├── test_manual_alloc_view.cpp      # Тесты ручной аллокации
+│   ├── test_scenarios_issue34.cpp      # Тесты сценариев (Issue #34)
+│   ├── test_issue73_refactoring.cpp    # Тесты рефакторинга (Issue #73)
+│   ├── test_issue83_constants.cpp      # Тесты констант (Issue #83)
 │   ├── test_demo_headless.cpp          # Фаза 8: headless smoke-тест 7 сценариев
 │   ├── test_mem_map_view.cpp           # Фаза 8: тесты MemMapView::update_snapshot
 │   ├── test_scenario_manager.cpp       # Фаза 8: тесты ScenarioManager lifecycle
 │   ├── test_scenario_coordinator.cpp   # Фаза 10: тесты ScenarioCoordinator
+│   ├── test_mem_map_view_tile.cpp      # Фаза 11: тесты тайловой агрегации MemMapView
+│   ├── test_background_validator.cpp   # Фаза 12: тесты фонового валидатора
 │   └── CMakeLists.txt
 ├── demo/                           # Визуальное демо (Dear ImGui + OpenGL)
 │   ├── CMakeLists.txt
@@ -303,8 +317,7 @@ PersistMemoryManager/
 
 Подробнее: [docs/architecture.md](docs/architecture.md) | [docs/api_reference.md](docs/api_reference.md) | [docs/performance.md](docs/performance.md) | [demo.md](demo.md) | [plan.md](plan.md) | [Doxygen API](https://netkeep80.github.io/PersistMemoryManager/)
 
-**Версия 6.0.0** — PAP-гомогенизация: `ManagerHeader` встроен в `BlockHeader_0` (Issue #75).
-PAP стал полностью однородным: весь образ — это лес блоков, первый из которых (`BlockHeader_0`) хранит метаданные менеджера.
+**Версия 6.1.0** — multi-header рефакторинг (Issue #73): CRTP-цепочка, шаблонный конфиг `PMMConfig<>`, AVL-дерево вынесено в `persist_avl_tree.h`, типы в `persist_memory_types.h`. Magic обновлён до `"PMM_V083"` (Issue #83).
 
 ## Лицензия
 

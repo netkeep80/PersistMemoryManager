@@ -2,7 +2,7 @@
  * @file persist_memory_manager.h
  * @brief Менеджер персистентной кучи памяти для C++17
  *
- * Single-header библиотека управления персистентной памятью.
+ * Multi-header библиотека управления персистентной памятью.
  * Предоставляет низкоуровневый менеджер памяти, хранящий все метаданные
  * в управляемой области памяти для возможности персистентности между запусками.
  *
@@ -26,7 +26,7 @@
  *   Backward compatible: pmm::PersistMemoryManager<> for default config.
  *
  * Block modernization (Issue #69): removed BlockHeader.magic; validity via is_valid_block()
- * Refactoring (Issue #75): PAP homogenization. kMagic updated to "PMM_V060".
+ * Refactoring (Issue #75): PAP homogenization. kMagic updated to "PMM_V083" (Issue #83).
  * Optimizations (Issue #57, #59): O(1) ops, 16-byte granule, 32-bit indices.
  * Refactoring (Issue #61): fully static PersistMemoryManager; pptr<T>-only public API.
  * Bug fix (Issue #67): reallocate_typed re-derives old pointer after possible expand().
@@ -143,7 +143,7 @@ template <typename Base> class StatsMixin : public Base
         std::uint32_t idx                 = hdr->first_block_offset;
         while ( idx != detail::kNoBlock )
         {
-            const detail::BlockHeader* blk = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
+            const detail::BlockHeader* blk = detail::block_at( base, idx );
             if ( blk->size == 0 )
             {
                 std::uint32_t gran     = ( blk->next_offset != detail::kNoBlock )
@@ -194,7 +194,7 @@ template <typename Base> class ValidationMixin : public Base
         {
             if ( !detail::is_valid_block( base, hdr, idx ) )
                 return false;
-            const detail::BlockHeader* blk = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
+            const detail::BlockHeader* blk = detail::block_at( base, idx );
             block_count++;
             if ( blk->size > 0 )
                 alloc_count++;
@@ -203,7 +203,7 @@ template <typename Base> class ValidationMixin : public Base
             if ( blk->next_offset != detail::kNoBlock )
             {
                 const detail::BlockHeader* nxt =
-                    detail::block_at( const_cast<std::uint8_t*>( base ), blk->next_offset );
+                    detail::block_at( base, blk->next_offset );
                 if ( nxt->prev_offset != idx )
                     return false;
             }
@@ -227,7 +227,7 @@ template <typename Base> class ValidationMixin : public Base
             return false;
         if ( !detail::is_valid_block( base, hdr, node_idx ) )
             return false;
-        const detail::BlockHeader* node = detail::block_at( const_cast<std::uint8_t*>( base ), node_idx );
+        const detail::BlockHeader* node = detail::block_at( base, node_idx );
         if ( node->size != 0 )
             return false;
         count++;
@@ -237,13 +237,13 @@ template <typename Base> class ValidationMixin : public Base
             return false;
         if ( node->left_offset != detail::kNoBlock )
         {
-            const detail::BlockHeader* lc = detail::block_at( const_cast<std::uint8_t*>( base ), node->left_offset );
+            const detail::BlockHeader* lc = detail::block_at( base, node->left_offset );
             if ( lc->parent_offset != node_idx )
                 return false;
         }
         if ( node->right_offset != detail::kNoBlock )
         {
-            const detail::BlockHeader* rc = detail::block_at( const_cast<std::uint8_t*>( base ), node->right_offset );
+            const detail::BlockHeader* rc = detail::block_at( base, node->right_offset );
             if ( rc->parent_offset != node_idx )
                 return false;
         }
@@ -296,7 +296,7 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
         hdr_blk->left_offset   = detail::kNoBlock;
         hdr_blk->right_offset  = detail::kNoBlock;
         hdr_blk->parent_offset = detail::kNoBlock;
-        hdr_blk->avl_height    = 0;
+        // hdr_blk->avl_height = 0; — already zero from memset
         hdr_blk->root_offset   = kHdrBlkIdx;
 
         detail::ManagerHeader* hdr = reinterpret_cast<detail::ManagerHeader*>( base + sizeof( detail::BlockHeader ) );
@@ -306,20 +306,20 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
         hdr->first_block_offset = kHdrBlkIdx;
         hdr->last_block_offset  = detail::kNoBlock;
         hdr->free_tree_root     = detail::kNoBlock;
-        hdr->owns_memory        = false;
-        hdr->prev_owns_memory   = false;
+        // hdr->owns_memory = false;      — already false from memset
+        // hdr->prev_owns_memory = false; — already false from memset
         hdr->granule_size       = static_cast<std::uint16_t>( kGranuleSize ); ///< Issue #83
 
         detail::BlockHeader* blk = detail::block_at( base, kFreeBlkIdx );
         std::memset( blk, 0, sizeof( detail::BlockHeader ) );
-        blk->size          = 0;
+        // blk->size = 0;        — already zero from memset
         blk->prev_offset   = kHdrBlkIdx;
         blk->next_offset   = detail::kNoBlock;
         blk->left_offset   = detail::kNoBlock;
         blk->right_offset  = detail::kNoBlock;
         blk->parent_offset = detail::kNoBlock;
         blk->avl_height    = 1;
-        blk->root_offset   = 0;
+        // blk->root_offset = 0; — already zero from memset
 
         hdr->last_block_offset = kFreeBlkIdx;
         hdr->free_tree_root    = kFreeBlkIdx;
@@ -654,12 +654,12 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
             }
             detail::BlockHeader* nb_blk = detail::block_at( nb, extra_idx );
             std::memset( nb_blk, 0, sizeof( detail::BlockHeader ) );
-            nb_blk->size          = 0;
+            // nb_blk->size = 0;        — already zero from memset
             nb_blk->left_offset   = detail::kNoBlock;
             nb_blk->right_offset  = detail::kNoBlock;
             nb_blk->parent_offset = detail::kNoBlock;
             nb_blk->avl_height    = 1;
-            nb_blk->root_offset   = 0;
+            // nb_blk->root_offset = 0; — already zero from memset
             if ( last_blk != nullptr )
             {
                 std::uint32_t loff    = detail::block_idx( nb, last_blk );
@@ -758,7 +758,7 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
 
     void* translate_ptr( void* ptr ) const noexcept
     {
-        std::uint8_t*                base     = const_cast<PersistMemoryManager*>( this )->base_ptr();
+        std::uint8_t*                base     = const_cast<std::uint8_t*>( this->const_base_ptr() );
         const detail::ManagerHeader* hdr      = this->header();
         std::uint8_t*                raw      = static_cast<std::uint8_t*>( ptr );
         void*                        prev_buf = hdr->prev_base_ptr;
@@ -844,14 +844,14 @@ class PersistMemoryManager : public ValidationMixin<StatsMixin<PmmCore<PersistMe
             std::uint32_t        new_idx = blk_idx + needed_gran;
             detail::BlockHeader* new_blk = detail::block_at( base, new_idx );
             std::memset( new_blk, 0, sizeof( detail::BlockHeader ) );
-            new_blk->size          = 0;
+            // new_blk->size = 0;        — already zero from memset
             new_blk->prev_offset   = blk_idx;
             new_blk->next_offset   = blk->next_offset;
             new_blk->left_offset   = detail::kNoBlock;
             new_blk->right_offset  = detail::kNoBlock;
             new_blk->parent_offset = detail::kNoBlock;
             new_blk->avl_height    = 1;
-            new_blk->root_offset   = 0;
+            // new_blk->root_offset = 0; — already zero from memset
             if ( blk->next_offset != detail::kNoBlock )
                 detail::block_at( base, blk->next_offset )->prev_offset = new_idx;
             else
@@ -936,7 +936,6 @@ inline ManagerInfo get_manager_info()
     info.first_free_offset           = ( hdr->free_tree_root != detail::kNoBlock )
                                            ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( hdr->free_tree_root ) )
                                            : -1;
-    info.last_free_offset            = -1;
     info.manager_header_size         = sizeof( detail::BlockHeader ) + sizeof( detail::ManagerHeader );
     return info;
 }
@@ -956,7 +955,7 @@ template <typename Callback> inline void for_each_block( Callback&& cb )
     {
         if ( detail::idx_to_byte_off( idx ) >= hdr->total_size )
             break;
-        const detail::BlockHeader* blk  = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
+        const detail::BlockHeader* blk  = detail::block_at( base, idx );
         std::uint32_t              gran = ( blk->next_offset != detail::kNoBlock )
                                               ? ( blk->next_offset - idx )
                                               : ( detail::byte_off_to_idx( hdr->total_size ) - idx );
@@ -989,7 +988,7 @@ template <typename Callback> inline void for_each_free_block_avl( Callback&& cb 
     {
         if ( detail::idx_to_byte_off( idx ) >= hdr->total_size )
             break;
-        const detail::BlockHeader* blk = detail::block_at( const_cast<std::uint8_t*>( base ), idx );
+        const detail::BlockHeader* blk = detail::block_at( base, idx );
         if ( blk->size == 0 )
         {
             std::uint32_t gran = ( blk->next_offset != detail::kNoBlock )

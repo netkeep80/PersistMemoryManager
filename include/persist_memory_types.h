@@ -54,7 +54,6 @@ struct ManagerInfo
     std::size_t    alloc_count;
     std::ptrdiff_t first_block_offset;
     std::ptrdiff_t first_free_offset; ///< Корень AVL-дерева свободных блоков
-    std::ptrdiff_t last_free_offset;  ///< Не используется (совместимость)
     std::size_t    manager_header_size;
 };
 
@@ -192,6 +191,13 @@ inline BlockHeader* block_at( std::uint8_t* base, std::uint32_t idx )
 {
     assert( idx != kNoBlock );
     return reinterpret_cast<BlockHeader*>( base + idx_to_byte_off( idx ) );
+}
+
+/// @brief Получить константный указатель на BlockHeader по гранульному индексу (read-only).
+inline const BlockHeader* block_at( const std::uint8_t* base, std::uint32_t idx )
+{
+    assert( idx != kNoBlock );
+    return reinterpret_cast<const BlockHeader*>( base + idx_to_byte_off( idx ) );
 }
 
 /// @brief Получить гранульный индекс BlockHeader.
