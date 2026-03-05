@@ -78,8 +78,7 @@ static bool test_cr_granule_size_is_hardcoded()
 /// [Issue #87 Code Review] После рефакторинга kNoBlock = max(index_type).
 static bool test_cr_no_block_is_max_uint32()
 {
-    static_assert( pmm::detail::kNoBlock == 0xFFFFFFFFU,
-                   "kNoBlock is max uint32_t — depends on 32-bit address bus" );
+    static_assert( pmm::detail::kNoBlock == 0xFFFFFFFFU, "kNoBlock is max uint32_t — depends on 32-bit address bus" );
     PMM_TEST( pmm::detail::kNoBlock == std::numeric_limits<std::uint32_t>::max() );
     return true;
 }
@@ -236,9 +235,8 @@ static bool test_cr_only_heap_backend_exists()
 /// Extensions как variadic template параметры.
 static bool test_cr_crtp_mixin_chain()
 {
-    static_assert(
-        !std::is_polymorphic<pmm::PersistMemoryManager<>>::value,
-        "PersistMemoryManager must not be polymorphic (no virtual functions, Issue #73 AR-02)" );
+    static_assert( !std::is_polymorphic<pmm::PersistMemoryManager<>>::value,
+                   "PersistMemoryManager must not be polymorphic (no virtual functions, Issue #73 AR-02)" );
 
     // StatsMixin::get_stats() доступен через PMM
     const std::size_t size = 64 * 1024;
@@ -462,8 +460,8 @@ static bool test_integration_full_lifecycle()
 /// используем второй буфер с копией данных (как при реальном save/load).
 static bool test_integration_persistence()
 {
-    const std::size_t size = 64 * 1024;
-    void*             mem  = std::malloc( size );
+    const std::size_t size  = 64 * 1024;
+    void*             mem   = std::malloc( size );
     void*             saved = std::malloc( size ); // буфер для "сохранённого образа"
     PMM_TEST( mem != nullptr && saved != nullptr );
 
@@ -472,7 +470,7 @@ static bool test_integration_persistence()
     auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint64_t>( 1 );
     PMM_TEST( !p.is_null() );
     std::uint32_t saved_offset = p.offset();
-    *p.get() = 0xDEADBEEFCAFEBABEULL;
+    *p.get()                   = 0xDEADBEEFCAFEBABEULL;
 
     // Копируем образ ПАМ до вызова destroy() (имитация file save)
     std::memcpy( saved, mem, size );
@@ -549,10 +547,10 @@ static bool test_integration_avl_tree_invariants()
     PMM_TEST( pmm::PersistMemoryManager<>::create( mem, size ) );
 
     // Создаём фрагментацию
-    static const int N = 20;
+    static const int        N = 20;
     pmm::pptr<std::uint8_t> ptrs[N]{};
     for ( int i = 0; i < N; ++i )
-        ptrs[i] = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( (i + 1) * 64 );
+        ptrs[i] = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( ( i + 1 ) * 64 );
 
     // Освобождаем чётные индексы (фрагментация)
     for ( int i = 0; i < N; i += 2 )
