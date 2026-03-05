@@ -71,10 +71,8 @@ static bool test_p2_list_node_default_types()
     static_assert( std::is_same<Node::index_type, std::uint32_t>::value, "index_type must be uint32_t" );
 
     // Типы полей
-    static_assert( std::is_same<decltype( Node::prev_offset ), std::uint32_t>::value,
-                   "prev_offset must be uint32_t" );
-    static_assert( std::is_same<decltype( Node::next_offset ), std::uint32_t>::value,
-                   "next_offset must be uint32_t" );
+    static_assert( std::is_same<decltype( Node::prev_offset ), std::uint32_t>::value, "prev_offset must be uint32_t" );
+    static_assert( std::is_same<decltype( Node::next_offset ), std::uint32_t>::value, "next_offset must be uint32_t" );
 
     // Размер: 2 * sizeof(uint32_t) = 8 байт
     static_assert( sizeof( Node ) == 8, "LinkedListNode<Default> must be 8 bytes" );
@@ -334,9 +332,9 @@ static bool test_p2_tree_node_runtime_init()
 /// @brief Проверяем TinyAddressTraits: LinkedListNode и TreeNode с 8-bit индексами.
 static bool test_p2_tiny_traits_nodes()
 {
-    using A    = pmm::TinyAddressTraits;
-    using LN   = pmm::LinkedListNode<A>;
-    using TN   = pmm::TreeNode<A>;
+    using A  = pmm::TinyAddressTraits;
+    using LN = pmm::LinkedListNode<A>;
+    using TN = pmm::TreeNode<A>;
 
     LN list_node;
     list_node.prev_offset = A::no_block; // 0xFF

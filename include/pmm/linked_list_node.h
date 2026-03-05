@@ -32,8 +32,7 @@ namespace pmm
  * Поля хранят гранульные индексы блоков-соседей в ПАП.
  * Sentinel «нет соседа» = `AddressTraitsT::no_block`.
  */
-template <typename AddressTraitsT>
-struct LinkedListNode
+template <typename AddressTraitsT> struct LinkedListNode
 {
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;

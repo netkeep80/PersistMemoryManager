@@ -45,8 +45,7 @@ namespace pmm
  *     offsetof(_pad)          == 14  (+26 в составе BlockHeader)
  *     sizeof(TreeNode<DefaultAddressTraits>) == 16 bytes
  */
-template <typename AddressTraitsT>
-struct TreeNode
+template <typename AddressTraitsT> struct TreeNode
 {
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
