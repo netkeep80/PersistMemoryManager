@@ -57,3 +57,6 @@ pmm_add_test(test_issue73_refactoring test_issue73_refactoring.cpp)
 
 # ─── Тесты оптимизации констант (Issue #83) ──────────────────────────────────
 pmm_add_test(test_issue83_constants test_issue83_constants.cpp)
+
+# ─── Тесты code review и маяки абстракций (Issue #87) ────────────────────────
+pmm_add_test(test_issue87_abstraction test_issue87_abstraction.cpp)
