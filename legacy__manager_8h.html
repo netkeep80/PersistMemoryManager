@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PersistMemoryManager: include/persist_memory_manager.h File Reference</title>
+<title>PersistMemoryManager: include/pmm/legacy_manager.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_caccae9e503017ccd94cbef9df68a383.html">pmm</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -78,19 +78,16 @@ $(function() {
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">persist_memory_manager.h File Reference</div></div>
+  <div class="headertitle"><div class="title">legacy_manager.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
-<p>Менеджер персистентной кучи памяти для C++17.  
-<a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="persist__avl__tree_8h_source.html">persist_avl_tree.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="free__block__tree_8h_source.html">pmm/free_block_tree.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="config_8h_source.html">pmm/config.h</a>&quot;</code><br />
 <code>#include &lt;cstdlib&gt;</code><br />
 <code>#include &lt;cstring&gt;</code><br />
 </div>
-<p><a href="persist__memory__manager_8h_source.html">Go to the source code of this file.</a></p>
+<p><a href="legacy__manager_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -121,30 +118,14 @@ Functions</h2></td></tr>
 <tr class="separator:a2481497e73d223b21f3edc9709817b04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0400f986d436b01776ae4acc83814441" id="r_a0400f986d436b01776ae4acc83814441"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1ManagerInfo.html">ManagerInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0400f986d436b01776ae4acc83814441">pmm::get_manager_info</a> ()</td></tr>
 <tr class="separator:a0400f986d436b01776ae4acc83814441"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45" id="r_a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Callback</a> &gt; </td></tr>
-<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a54aa17506c63e8230f30ae422ded8d45">pmm::for_each_block</a> (<a class="el" href="classpmm_1_1pptr.html">Callback</a> &amp;&amp;<a class="el" href="classpmm_1_1pptr.html">cb</a>)</td></tr>
+<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45" id="r_a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </td></tr>
+<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a54aa17506c63e8230f30ae422ded8d45">pmm::for_each_block</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">cb</a>)</td></tr>
 <tr class="separator:a54aa17506c63e8230f30ae422ded8d45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34f233e9b661e849e4857369c468cbc3" id="r_a34f233e9b661e849e4857369c468cbc3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Callback</a> &gt; </td></tr>
-<tr class="memitem:a34f233e9b661e849e4857369c468cbc3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a34f233e9b661e849e4857369c468cbc3">pmm::for_each_free_block_avl</a> (<a class="el" href="classpmm_1_1pptr.html">Callback</a> &amp;&amp;<a class="el" href="classpmm_1_1pptr.html">cb</a>)</td></tr>
+<tr class="memitem:a34f233e9b661e849e4857369c468cbc3" id="r_a34f233e9b661e849e4857369c468cbc3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </td></tr>
+<tr class="memitem:a34f233e9b661e849e4857369c468cbc3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a34f233e9b661e849e4857369c468cbc3">pmm::for_each_free_block_avl</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">cb</a>)</td></tr>
 <tr class="separator:a34f233e9b661e849e4857369c468cbc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Менеджер персистентной кучи памяти для C++17. </p>
-<p>Multi-header библиотека управления персистентной памятью. Предоставляет низкоуровневый менеджер памяти, хранящий все метаданные в управляемой области памяти для возможности персистентности между запусками.</p>
-<p>Алгоритм (Issue #55): Каждый блок содержит 6 ключевых полей:</p><ol type="1">
-<li>size — занятый размер данных в гранулах (0 = свободный блок, Issue #75)</li>
-<li>prev_offset — индекс предыдущего блока (kNoBlock = нет)</li>
-<li>next_offset — индекс следующего блока (kNoBlock = последний)</li>
-<li>left_offset — левый дочерний узел AVL-дерева свободных блоков</li>
-<li>right_offset — правый дочерний узел AVL-дерева свободных блоков</li>
-<li>parent_offset — родительский узел AVL-дерева</li>
-</ol>
-<p>Поиск свободного блока: best-fit через AVL-дерево (O(log n)). При освобождении: слияние с соседними свободными блоками.</p>
-<dl class="section version"><dt>Version</dt><dd>6.1.0 Refactoring (Issue #73): template&lt;Config&gt; PersistMemoryManager with CRTP mixins. PmmCore&lt;Derived&gt; base, StatsMixin&lt;Base&gt;, ValidationMixin&lt;Base&gt;. Config: pmm::config::PMMConfig&lt;GranuleSize, MaxMemoryGB, LockPolicy&gt;. AVL tree extracted to PersistentAvlTree (<a class="el" href="persist__avl__tree_8h.html" title="AVL-дерево свободных блоков для PersistMemoryManager (Issue #73)">persist_avl_tree.h</a>). Types extracted to <a class="el" href="persist__memory__types_8h.html" title="Базовые типы данных и константы для PersistMemoryManager (Issue #73)">persist_memory_types.h</a>. Backward compatible: pmm::PersistMemoryManager&lt;&gt; for default config.</dd></dl>
-<p>Block modernization (Issue #69): removed BlockHeader.magic; validity via is_valid_block() Refactoring (Issue #75): PAP homogenization. kMagic updated to "PMM_V083" (Issue #83). Optimizations (Issue #57, #59): O(1) ops, 16-byte granule, 32-bit indices. Refactoring (Issue #61): fully static PersistMemoryManager; pptr&lt;T&gt;-only public API. Bug fix (Issue #67): reallocate_typed re-derives old pointer after possible expand(). </p>
-
-<p class="definition">Definition in file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
-</div></div><!-- contents -->
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8

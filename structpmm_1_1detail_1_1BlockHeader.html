@@ -84,42 +84,42 @@ $(function() {
 <p><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx.  
  <a href="structpmm_1_1detail_1_1BlockHeader.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="types_8h_source.html">types.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a3aaacb0639cf012b2414cf9b39737c63" id="r_a3aaacb0639cf012b2414cf9b39737c63"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a3aaacb0639cf012b2414cf9b39737c63">size</a></td></tr>
-<tr class="memdesc:a3aaacb0639cf012b2414cf9b39737c63"><td class="mdescLeft">&#160;</td><td class="mdescRight">[1] Занятый размер в гранулах (0 = свободный блок, Issue #75)  <br /></td></tr>
+<tr class="memdesc:a3aaacb0639cf012b2414cf9b39737c63"><td class="mdescLeft">&#160;</td><td class="mdescRight">[1] Data size in granules (0 = free block, Issue #75)  <br /></td></tr>
 <tr class="separator:a3aaacb0639cf012b2414cf9b39737c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeabee7ef2a65e7808f039ec61d35b932" id="r_aeabee7ef2a65e7808f039ec61d35b932"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#aeabee7ef2a65e7808f039ec61d35b932">prev_offset</a></td></tr>
-<tr class="memdesc:aeabee7ef2a65e7808f039ec61d35b932"><td class="mdescLeft">&#160;</td><td class="mdescRight">[2] Предыдущий блок (гранульный индекс)  <br /></td></tr>
+<tr class="memdesc:aeabee7ef2a65e7808f039ec61d35b932"><td class="mdescLeft">&#160;</td><td class="mdescRight">[2] Previous block (granule index)  <br /></td></tr>
 <tr class="separator:aeabee7ef2a65e7808f039ec61d35b932"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe5b6bcb939e7f56d9b82306fda71f3a" id="r_afe5b6bcb939e7f56d9b82306fda71f3a"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#afe5b6bcb939e7f56d9b82306fda71f3a">next_offset</a></td></tr>
-<tr class="memdesc:afe5b6bcb939e7f56d9b82306fda71f3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">[3] Следующий блок (гранульный индекс)  <br /></td></tr>
+<tr class="memdesc:afe5b6bcb939e7f56d9b82306fda71f3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">[3] Next block (granule index)  <br /></td></tr>
 <tr class="separator:afe5b6bcb939e7f56d9b82306fda71f3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1e8098dd60bfc0a9fd9a3a878f38d14" id="r_ad1e8098dd60bfc0a9fd9a3a878f38d14"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#ad1e8098dd60bfc0a9fd9a3a878f38d14">left_offset</a></td></tr>
-<tr class="memdesc:ad1e8098dd60bfc0a9fd9a3a878f38d14"><td class="mdescLeft">&#160;</td><td class="mdescRight">[4] Левый дочерний узел AVL-дерева (гранульный индекс)  <br /></td></tr>
+<tr class="memdesc:ad1e8098dd60bfc0a9fd9a3a878f38d14"><td class="mdescLeft">&#160;</td><td class="mdescRight">[4] Left child of AVL tree (granule index)  <br /></td></tr>
 <tr class="separator:ad1e8098dd60bfc0a9fd9a3a878f38d14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bfa822721227c751120dfbf7e82a27e" id="r_a0bfa822721227c751120dfbf7e82a27e"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a0bfa822721227c751120dfbf7e82a27e">right_offset</a></td></tr>
-<tr class="memdesc:a0bfa822721227c751120dfbf7e82a27e"><td class="mdescLeft">&#160;</td><td class="mdescRight">[5] Правый дочерний узел AVL-дерева (гранульный индекс)  <br /></td></tr>
+<tr class="memdesc:a0bfa822721227c751120dfbf7e82a27e"><td class="mdescLeft">&#160;</td><td class="mdescRight">[5] Right child of AVL tree (granule index)  <br /></td></tr>
 <tr class="separator:a0bfa822721227c751120dfbf7e82a27e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a13a9adaa31b0c4bf7d083f026ec798" id="r_a2a13a9adaa31b0c4bf7d083f026ec798"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a2a13a9adaa31b0c4bf7d083f026ec798">parent_offset</a></td></tr>
-<tr class="memdesc:a2a13a9adaa31b0c4bf7d083f026ec798"><td class="mdescLeft">&#160;</td><td class="mdescRight">[6] Родительский узел AVL-дерева (гранульный индекс)  <br /></td></tr>
+<tr class="memdesc:a2a13a9adaa31b0c4bf7d083f026ec798"><td class="mdescLeft">&#160;</td><td class="mdescRight">[6] Parent node of AVL tree (granule index)  <br /></td></tr>
 <tr class="separator:a2a13a9adaa31b0c4bf7d083f026ec798"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21286e440d9cba760fd861d2b7c4b6a1" id="r_a21286e440d9cba760fd861d2b7c4b6a1"><td class="memItemLeft" align="right" valign="top">std::int16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a21286e440d9cba760fd861d2b7c4b6a1">avl_height</a></td></tr>
-<tr class="memdesc:a21286e440d9cba760fd861d2b7c4b6a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Высота AVL-поддерева (0 = не в дереве)  <br /></td></tr>
+<tr class="memdesc:a21286e440d9cba760fd861d2b7c4b6a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">AVL subtree height (0 = not in tree)  <br /></td></tr>
 <tr class="separator:a21286e440d9cba760fd861d2b7c4b6a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61ab4fd7a0dfa248c537926b3c003f41" id="r_a61ab4fd7a0dfa248c537926b3c003f41"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a61ab4fd7a0dfa248c537926b3c003f41">_pad</a></td></tr>
-<tr class="memdesc:a61ab4fd7a0dfa248c537926b3c003f41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Зарезервировано (Issue #69: previously held magic[3:2])  <br /></td></tr>
+<tr class="memdesc:a61ab4fd7a0dfa248c537926b3c003f41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved (Issue #69: previously held magic[3:2])  <br /></td></tr>
 <tr class="separator:a61ab4fd7a0dfa248c537926b3c003f41"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8424d513d549723a8e7539731da79d0f" id="r_a8424d513d549723a8e7539731da79d0f"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html#a8424d513d549723a8e7539731da79d0f">root_offset</a></td></tr>
-<tr class="memdesc:a8424d513d549723a8e7539731da79d0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">0=свободный блок (дерево свободных); own_idx=занятый (Issue #75)  <br /></td></tr>
+<tr class="memdesc:a8424d513d549723a8e7539731da79d0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">0=free block (free tree); own_idx=allocated (Issue #75)  <br /></td></tr>
 <tr class="separator:a8424d513d549723a8e7539731da79d0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00101">101</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00104">104</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="a61ab4fd7a0dfa248c537926b3c003f41" name="a61ab4fd7a0dfa248c537926b3c003f41"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a61ab4fd7a0dfa248c537926b3c003f41">&#9670;&#160;</a></span>_pad</h2>
@@ -133,9 +133,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Зарезервировано (Issue #69: previously held magic[3:2]) </p>
+<p>Reserved (Issue #69: previously held magic[3:2]) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00110">110</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00113">113</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -151,9 +151,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Высота AVL-поддерева (0 = не в дереве) </p>
+<p>AVL subtree height (0 = not in tree) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00109">109</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00112">112</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -169,9 +169,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>[4] Левый дочерний узел AVL-дерева (гранульный индекс) </p>
+<p>[4] Left child of AVL tree (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00106">106</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00109">109</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -187,9 +187,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>[3] Следующий блок (гранульный индекс) </p>
+<p>[3] Next block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00105">105</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00108">108</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -205,9 +205,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>[6] Родительский узел AVL-дерева (гранульный индекс) </p>
+<p>[6] Parent node of AVL tree (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00108">108</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00111">111</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -223,9 +223,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>[2] Предыдущий блок (гранульный индекс) </p>
+<p>[2] Previous block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00104">104</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00107">107</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -241,9 +241,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>[5] Правый дочерний узел AVL-дерева (гранульный индекс) </p>
+<p>[5] Right child of AVL tree (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00107">107</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00110">110</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -259,9 +259,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>0=свободный блок (дерево свободных); own_idx=занятый (Issue #75) </p>
+<p>0=free block (free tree); own_idx=allocated (Issue #75) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00111">111</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00114">114</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -277,14 +277,14 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>[1] Занятый размер в гранулах (0 = свободный блок, Issue #75) </p>
+<p>[1] Data size in granules (0 = free block, Issue #75) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00103">103</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00106">106</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/<a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a></li>
+<li>include/pmm/<a class="el" href="types_8h_source.html">types.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

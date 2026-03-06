@@ -4,7 +4,7 @@ var searchData=
   ['rebuild_5ffree_5ftree_1',['rebuild_free_tree',['../classpmm_1_1AllocatorPolicy.html#a761c4bedece020f9f4602b6e633ca69b',1,'pmm::AllocatorPolicy']]],
   ['recompute_5fcounters_2',['recompute_counters',['../classpmm_1_1AllocatorPolicy.html#aab70fb1ed23da1333bb311081225d516',1,'pmm::AllocatorPolicy']]],
   ['recover_5fblock_5fstate_3',['recover_block_state',['../namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3',1,'pmm']]],
-  ['remove_4',['remove',['../classpmm_1_1PersistentAvlTree.html#a97a056f887fe558797dcc1b55a55e70a',1,'pmm::PersistentAvlTree::remove()'],['../structpmm_1_1AvlFreeTree.html#a7c62e43141ebf180f192dc9e97d46ee2',1,'pmm::AvlFreeTree::remove()']]],
+  ['remove_4',['remove',['../structpmm_1_1AvlFreeTree.html#a7c62e43141ebf180f192dc9e97d46ee2',1,'pmm::AvlFreeTree']]],
   ['remove_5ffrom_5favl_5',['remove_from_avl',['../classpmm_1_1FreeBlock.html#a919c1de955fc07a4bc6f498aa3bda411',1,'pmm::FreeBlock']]],
   ['repair_5flinked_5flist_6',['repair_linked_list',['../classpmm_1_1AllocatorPolicy.html#a76a73b9c5caae0fe2ed469ce05b83826',1,'pmm::AllocatorPolicy']]],
   ['required_5fblock_5fgranules_7',['required_block_granules',['../namespacepmm_1_1detail.html#ab890535579b00c765044db90a2f4a642',1,'pmm::detail']]],

@@ -85,11 +85,11 @@ $(function() {
 <p>CRTP базовый класс, предоставляющий доступ к памяти (Issue #73 AR-01). Derived must be the final PersistMemoryManager&lt;Config&gt; class.  
  <a href="classpmm_1_1PmmCore.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:ad534a80f588c2173df49b224afd8c2ae" id="r_ad534a80f588c2173df49b224afd8c2ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html#ad534a80f588c2173df49b224afd8c2ae">derived_type</a> = <a class="el" href="classpmm_1_1pptr.html">Derived</a></td></tr>
+<tr class="memitem:ad534a80f588c2173df49b224afd8c2ae" id="r_ad534a80f588c2173df49b224afd8c2ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html#ad534a80f588c2173df49b224afd8c2ae">derived_type</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a></td></tr>
 <tr class="memdesc:ad534a80f588c2173df49b224afd8c2ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag typedef so CRTP mixins can access the final derived type.  <br /></td></tr>
 <tr class="separator:ad534a80f588c2173df49b224afd8c2ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -97,18 +97,18 @@ Public Types</h2></td></tr>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a52c4521141c1e0549e0b19f10b707762" id="r_a52c4521141c1e0549e0b19f10b707762"><td class="memItemLeft" align="right" valign="top">std::uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html#a52c4521141c1e0549e0b19f10b707762">base_ptr</a> ()</td></tr>
 <tr class="separator:a52c4521141c1e0549e0b19f10b707762"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f0b54ef130163741d7525c09c3dd154" id="r_a0f0b54ef130163741d7525c09c3dd154"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">const</a> std::uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html#a0f0b54ef130163741d7525c09c3dd154">const_base_ptr</a> () <a class="el" href="classpmm_1_1pptr.html">const</a></td></tr>
+<tr class="memitem:a0f0b54ef130163741d7525c09c3dd154" id="r_a0f0b54ef130163741d7525c09c3dd154"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html#a0f0b54ef130163741d7525c09c3dd154">const_base_ptr</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a></td></tr>
 <tr class="separator:a0f0b54ef130163741d7525c09c3dd154"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b39c735c03523e51f6568c4ec81f356" id="r_a5b39c735c03523e51f6568c4ec81f356"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html#a5b39c735c03523e51f6568c4ec81f356">header</a> ()</td></tr>
 <tr class="separator:a5b39c735c03523e51f6568c4ec81f356"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa621f752181bee15e1f910c77d6129e5" id="r_aa621f752181bee15e1f910c77d6129e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html#aa621f752181bee15e1f910c77d6129e5">header</a> () <a class="el" href="classpmm_1_1pptr.html">const</a></td></tr>
+<tr class="memitem:aa621f752181bee15e1f910c77d6129e5" id="r_aa621f752181bee15e1f910c77d6129e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html#aa621f752181bee15e1f910c77d6129e5">header</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a></td></tr>
 <tr class="separator:aa621f752181bee15e1f910c77d6129e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Derived</a>&gt;<br />
+<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a>&gt;<br />
 class pmm::PmmCore&lt; Derived &gt;</div><p>CRTP базовый класс, предоставляющий доступ к памяти (Issue #73 AR-01). Derived must be the final PersistMemoryManager&lt;Config&gt; class. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00102">102</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00102">102</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ad534a80f588c2173df49b224afd8c2ae" name="ad534a80f588c2173df49b224afd8c2ae"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad534a80f588c2173df49b224afd8c2ae">&#9670;&#160;</a></span>derived_type</h2>
@@ -116,17 +116,17 @@ class pmm::PmmCore&lt; Derived &gt;</div><p>CRTP базовый класс, пр
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt;::derived_type =  <a class="el" href="classpmm_1_1pptr.html">Derived</a></td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt;::derived_type =  <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Tag typedef so CRTP mixins can access the final derived type. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00106">106</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00106">106</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -137,13 +137,13 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::uint8_t * <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt;::base_ptr </td>
+          <td class="memname">std::uint8_t * <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt;::base_ptr </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -156,7 +156,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00109">109</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00109">109</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -166,13 +166,13 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">const</a> std::uint8_t * <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt;::const_base_ptr </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t * <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt;::const_base_ptr </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -185,7 +185,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00110">110</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00110">110</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -195,13 +195,13 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a> * <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt;::header </td>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a> * <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt;::header </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -214,7 +214,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00113">113</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00113">113</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -224,13 +224,13 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a> * <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="classpmm_1_1pptr.html">Derived</a> &gt;::header </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a> * <a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Derived</a> &gt;::header </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -243,12 +243,12 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00117">117</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00117">117</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/<a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a></li>
+<li>include/pmm/<a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -102,7 +102,7 @@ Namespaces</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>LinkedListNode&lt;AddressTraits&gt; — узел двухсвязного списка для ПАП (Issue #87 Phase 2). </p>
 <p>Параметрический узел двухсвязного списка, где тип индексных полей определяется через <code>AddressTraits::index_type</code>.</p>
-<p>Обратная совместимость: <code><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">pmm::detail::BlockHeader</a></code> содержит поля <code>prev_offset</code> и <code>next_offset</code>, бинарно совместимые с <code>LinkedListNode&lt;DefaultAddressTraits&gt;</code>. Совместимость подтверждена через <code>static_assert</code> в <code><a class="el" href="persist__memory__types_8h.html" title="Базовые типы данных и константы для PersistMemoryManager (Issue #73)">persist_memory_types.h</a></code>.</p>
+<p>Обратная совместимость: <code><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">pmm::detail::BlockHeader</a></code> содержит поля <code>prev_offset</code> и <code>next_offset</code>, бинарно совместимые с <code>LinkedListNode&lt;DefaultAddressTraits&gt;</code>. Совместимость подтверждена через <code>static_assert</code> в <code>persist_memory_types.h</code>.</p>
 <dl class="section see"><dt>See also</dt><dd>plan_issue87.md §5 «Фаза 2: LinkedListNode и TreeNode» </dd></dl>
 <dl class="section version"><dt>Version</dt><dd>0.1 (Issue #87 Phase 2) </dd></dl>
 

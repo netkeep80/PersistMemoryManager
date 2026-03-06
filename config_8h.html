@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PersistMemoryManager: include/pmm_config.h File Reference</title>
+<title>PersistMemoryManager: include/pmm/config.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_caccae9e503017ccd94cbef9df68a383.html">pmm</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -79,16 +79,13 @@ $(function() {
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#var-members">Variables</a>  </div>
-  <div class="headertitle"><div class="title">pmm_config.h File Reference</div></div>
+  <div class="headertitle"><div class="title">config.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
-<p>Политики конфигурации для PersistMemoryManager (Issue #73)  
-<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;mutex&gt;</code><br />
 <code>#include &lt;shared_mutex&gt;</code><br />
 </div>
-<p><a href="pmm__config_8h_source.html">Go to the source code of this file.</a></p>
+<p><a href="config_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -117,38 +114,20 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:acbc50ef04f2e309d5d87b0a512e4930d" id="r_acbc50ef04f2e309d5d87b0a512e4930d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#acbc50ef04f2e309d5d87b0a512e4930d">pmm::config::DefaultConfig</a> = <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">PMMConfig</a>&lt; 16, 64, <a class="el" href="structpmm_1_1config_1_1SharedMutexLock.html">SharedMutexLock</a> &gt;</td></tr>
+<tr class="memitem:acbc50ef04f2e309d5d87b0a512e4930d" id="r_acbc50ef04f2e309d5d87b0a512e4930d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#acbc50ef04f2e309d5d87b0a512e4930d">pmm::config::DefaultConfig</a> = <a class="el" href="structpmm_1_1config_1_1PMMConfig.html">PMMConfig</a>&lt; 16, 64, <a class="el" href="structpmm_1_1config_1_1SharedMutexLock.html">SharedMutexLock</a> &gt;</td></tr>
 <tr class="memdesc:acbc50ef04f2e309d5d87b0a512e4930d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация по умолчанию.  <br /></td></tr>
 <tr class="separator:acbc50ef04f2e309d5d87b0a512e4930d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a5eac9bf59cd079fa117844df64d89284" id="r_a5eac9bf59cd079fa117844df64d89284"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#a5eac9bf59cd079fa117844df64d89284">pmm::config::kDefaultGrowNumerator</a> = 5</td></tr>
+<tr class="memitem:a5eac9bf59cd079fa117844df64d89284" id="r_a5eac9bf59cd079fa117844df64d89284"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#a5eac9bf59cd079fa117844df64d89284">pmm::config::kDefaultGrowNumerator</a> = 5</td></tr>
 <tr class="memdesc:a5eac9bf59cd079fa117844df64d89284"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: Default grow ratio numerator (heap grows by 5/4 = 25%).  <br /></td></tr>
 <tr class="separator:a5eac9bf59cd079fa117844df64d89284"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a297ab6aca4139ac9f66a8e759ba9c70a" id="r_a297ab6aca4139ac9f66a8e759ba9c70a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#a297ab6aca4139ac9f66a8e759ba9c70a">pmm::config::kDefaultGrowDenominator</a> = 4</td></tr>
+<tr class="memitem:a297ab6aca4139ac9f66a8e759ba9c70a" id="r_a297ab6aca4139ac9f66a8e759ba9c70a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1config.html#a297ab6aca4139ac9f66a8e759ba9c70a">pmm::config::kDefaultGrowDenominator</a> = 4</td></tr>
 <tr class="memdesc:a297ab6aca4139ac9f66a8e759ba9c70a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: Default grow ratio denominator (heap grows by 5/4 = 25%).  <br /></td></tr>
 <tr class="separator:a297ab6aca4139ac9f66a8e759ba9c70a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Политики конфигурации для PersistMemoryManager (Issue #73) </p>
-<p>Содержит:</p><ul>
-<li><a class="el" href="structpmm_1_1config_1_1SharedMutexLock.html" title="Политика блокировки с std::shared_mutex (многопоточная, по умолчанию).">pmm::config::SharedMutexLock</a> — политика с std::shared_mutex (по умолчанию)</li>
-<li><a class="el" href="structpmm_1_1config_1_1NoLock.html" title="Политика без блокировок (однопоточный режим, нет накладных расходов).">pmm::config::NoLock</a> — заглушка без блокировок (однопоточный режим)</li>
-<li>pmm::config::PMMConfig&lt;&gt; — конфигурационный шаблон (Issue #73 FR-05)</li>
-</ul>
-<p>Использование: </p><div class="fragment"><div class="line"><span class="comment">// Default config (SharedMutexLock, 16-byte granule, 64 GB max)</span></div>
-<div class="line"><span class="keyword">using </span>PMM = <a class="code hl_class" href="classpmm_1_1pptr.html">pmm::PersistMemoryManager&lt;&gt;</a>;</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Custom single-threaded config</span></div>
-<div class="line"><span class="keyword">using </span>MyConfig = <a class="code hl_struct" href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig&lt;16, 64, pmm::config::NoLock&gt;</a>;</div>
-<div class="line"><span class="keyword">using </span>PMM = <a class="code hl_class" href="classpmm_1_1pptr.html">pmm::PersistMemoryManager&lt;MyConfig&gt;</a>;</div>
-<div class="ttc" id="aclasspmm_1_1pptr_html"><div class="ttname"><a href="classpmm_1_1pptr.html">pmm::pptr</a></div><div class="ttdoc">Persistent typed pointer (Issue #59: 4 bytes, granule index). Index 0 means null. get() resolves via ...</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00054">persist_memory_manager.h:55</a></div></div>
-<div class="ttc" id="astructpmm_1_1config_1_1PMMConfig_html"><div class="ttname"><a href="structpmm_1_1config_1_1PMMConfig.html">pmm::config::PMMConfig</a></div><div class="ttdoc">Конфигурационный шаблон PersistMemoryManager (Issue #73 FR-05, #83).</div><div class="ttdef"><b>Definition</b> <a href="pmm__config_8h_source.html#l00079">pmm_config.h:80</a></div></div>
-</div><!-- fragment --><dl class="section version"><dt>Version</dt><dd>1.0 (Issue #73 refactoring) </dd></dl>
-
-<p class="definition">Definition in file <a class="el" href="pmm__config_8h_source.html">pmm_config.h</a>.</p>
-</div></div><!-- contents -->
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8

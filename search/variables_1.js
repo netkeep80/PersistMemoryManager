@@ -4,5 +4,5 @@ var searchData=
   ['alloc_5fcount_1',['alloc_count',['../structpmm_1_1ManagerInfo.html#ae6f2770808f0e31199c561c0cc2d9b27',1,'pmm::ManagerInfo::alloc_count'],['../structpmm_1_1detail_1_1ManagerHeader.html#a4d072b6578f7851810f262aa52cb317f',1,'pmm::detail::ManagerHeader::alloc_count']]],
   ['allocated_5fblocks_2',['allocated_blocks',['../structpmm_1_1MemoryStats.html#a6e721bf5c77a38c1f5bd15468d3778c4',1,'pmm::MemoryStats']]],
   ['avl_5fdepth_3',['avl_depth',['../structpmm_1_1FreeBlockView.html#a562fc75f273f514d80eb8cf52d2d732d',1,'pmm::FreeBlockView']]],
-  ['avl_5fheight_4',['avl_height',['../structpmm_1_1FreeBlockView.html#a16a9cde93981ff6b070813ea7fde9174',1,'pmm::FreeBlockView::avl_height'],['../structpmm_1_1detail_1_1BlockHeader.html#a21286e440d9cba760fd861d2b7c4b6a1',1,'pmm::detail::BlockHeader::avl_height'],['../structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4',1,'pmm::TreeNode::avl_height']]]
+  ['avl_5fheight_4',['avl_height',['../structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4',1,'pmm::TreeNode::avl_height'],['../structpmm_1_1FreeBlockView.html#a16a9cde93981ff6b070813ea7fde9174',1,'pmm::FreeBlockView::avl_height'],['../structpmm_1_1detail_1_1BlockHeader.html#a21286e440d9cba760fd861d2b7c4b6a1',1,'pmm::detail::BlockHeader::avl_height']]]
 ];

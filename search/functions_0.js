@@ -6,5 +6,6 @@ var searchData=
   ['allocate_5ftyped_3',['allocate_typed',['../classpmm_1_1PersistMemoryManager.html#aab8d2e6b490d74b1f363ccb87c9627f0',1,'pmm::PersistMemoryManager::allocate_typed()'],['../classpmm_1_1PersistMemoryManager.html#ade364a33cbdf37acbead238a1e6d3a3e',1,'pmm::PersistMemoryManager::allocate_typed(std::size_t count)']]],
   ['allocatorpolicy_4',['allocatorpolicy',['../classpmm_1_1AllocatorPolicy.html#a7b9dae10356ce145bdd78921d50a8386',1,'pmm::AllocatorPolicy::AllocatorPolicy()=delete'],['../classpmm_1_1AllocatorPolicy.html#a66b39f43c432c0cdb17475c31946e4e4',1,'pmm::AllocatorPolicy::AllocatorPolicy(const AllocatorPolicy &amp;)=delete']]],
   ['attach_5',['attach',['../classpmm_1_1HeapStorage.html#a61d1dc39749ecf7a1298712f3ae39732',1,'pmm::HeapStorage']]],
-  ['avl_5fheight_6',['avl_height',['../classpmm_1_1BlockStateBase.html#a7a62a48f6d969274d898b7f4575d4aa6',1,'pmm::BlockStateBase']]]
+  ['avl_5fheight_6',['avl_height',['../classpmm_1_1BlockStateBase.html#a7a62a48f6d969274d898b7f4575d4aa6',1,'pmm::BlockStateBase']]],
+  ['avlfreetree_7',['avlfreetree',['../structpmm_1_1AvlFreeTree.html#ae47c7c6edaf82e954196c62aaa1bd638',1,'pmm::AvlFreeTree::AvlFreeTree()=delete'],['../structpmm_1_1AvlFreeTree.html#af7bc5f6093df1001d08143e0fe0e0e57',1,'pmm::AvlFreeTree::AvlFreeTree(const AvlFreeTree &amp;)=delete']]]
 ];

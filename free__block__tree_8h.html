@@ -77,16 +77,18 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">free_block_tree.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>FreeBlockTree — политика дерева свободных блоков (Issue #87 Phase 4).  
+<p>FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95).  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="persist__avl__tree_8h_source.html">persist_avl_tree.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
+<code>#include &lt;cassert&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
+<code>#include &lt;limits&gt;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
 </div>
 <p><a href="free__block__tree_8h_source.html">Go to the source code of this file.</a></p>
@@ -94,22 +96,22 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__insert.html">pmm::detail::has_insert&lt; Policy, typename &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE-проверка наличия Policy::insert(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__insert.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE check for Policy::insert(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__insert.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__insert_3_01Policy_00_01std_1_1void__t_3_01decltype_07Policy_1_1inserd47ab41f38788bf011b6644ba7afd2cd.html">pmm::detail::has_insert&lt; Policy, std::void_t&lt; decltype(Policy::insert(std::declval&lt; std::uint8_t * &gt;(), std::declval&lt; pmm::detail::ManagerHeader * &gt;(), std::declval&lt; std::uint32_t &gt;()))&gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__remove.html">pmm::detail::has_remove&lt; Policy, typename &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE-проверка наличия Policy::remove(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__remove.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE check for Policy::remove(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__remove.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__remove_3_01Policy_00_01std_1_1void__t_3_01decltype_07Policy_1_1remov3559727669e50b2c5f88928274cb9bdb.html">pmm::detail::has_remove&lt; Policy, std::void_t&lt; decltype(Policy::remove(std::declval&lt; std::uint8_t * &gt;(), std::declval&lt; pmm::detail::ManagerHeader * &gt;(), std::declval&lt; std::uint32_t &gt;()))&gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__find__best__fit.html">pmm::detail::has_find_best_fit&lt; Policy, typename &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE-проверка наличия Policy::find_best_fit(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__find__best__fit.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE check for Policy::find_best_fit(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__find__best__fit.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__find__best__fit_3_01Policy_00_01std_1_1void__t_3_01decltype_07Policy0784e462573bc8396c4523c35bfefe1c.html">pmm::detail::has_find_best_fit&lt; Policy, std::void_t&lt; decltype(Policy::find_best_fit(std::declval&lt; std::uint8_t * &gt;(), std::declval&lt; pmm::detail::ManagerHeader * &gt;(), std::declval&lt; std::uint32_t &gt;()))&gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html">pmm::AvlFreeTree&lt; AddressTraitsT &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Стандартная реализация политики дерева свободных блоков через AVL-дерево.  <a href="structpmm_1_1AvlFreeTree.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard AVL tree implementation for free block tree policy.  <a href="structpmm_1_1AvlFreeTree.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -119,25 +121,30 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm_1_1detail" id="r_namespacepmm_1_1detail"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html">pmm::detail</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a343de335e434d7d59ee388be5c798684" id="r_a343de335e434d7d59ee388be5c798684"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a343de335e434d7d59ee388be5c798684">pmm::PersistentAvlTree</a> = <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
+<tr class="memdesc:a343de335e434d7d59ee388be5c798684"><td class="mdescLeft">&#160;</td><td class="mdescRight">Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead.  <br /></td></tr>
+<tr class="separator:a343de335e434d7d59ee388be5c798684"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d" id="r_a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Policy</a> &gt; </td></tr>
-<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> <a class="el" href="classpmm_1_1pptr.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></td></tr>
-<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверка, является ли Policy корректной политикой дерева свободных блоков.  <br /></td></tr>
+<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d" id="r_a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Policy</a> &gt; </td></tr>
+<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></td></tr>
+<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if Policy is a valid free block tree policy.  <br /></td></tr>
 <tr class="separator:a13826d7e9e815fd280a91ffa868ce33d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>FreeBlockTree — политика дерева свободных блоков (Issue #87 Phase 4). </p>
-<p>Определяет концепт (C++17 SFINAE) политики дерева свободных блоков и предоставляет стандартную реализацию <code>AvlFreeTree&lt;AddressTraits&gt;</code>, обёртывающую <code>PersistentAvlTree</code>.</p>
-<p>Концепт <code>FreeBlockTreePolicy&lt;Policy&gt;</code> требует трёх статических методов:</p><ul>
-<li><code>insert(base, hdr, blk_idx)</code> — добавить блок в дерево</li>
-<li><code>remove(base, hdr, blk_idx)</code> — удалить блок из дерева</li>
-<li><code>find_best_fit(base, hdr, needed)</code> — найти наименьший подходящий блок</li>
+<div class="textblock"><p>FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95). </p>
+<p>Defines C++17 SFINAE concept for free block tree policy and provides the standard implementation <code>AvlFreeTree&lt;AddressTraits&gt;</code>.</p>
+<p>The <code>FreeBlockTreePolicy&lt;Policy&gt;</code> concept requires three static methods:</p><ul>
+<li><code>insert(base, hdr, blk_idx)</code> — add block to tree</li>
+<li><code>remove(base, hdr, blk_idx)</code> — remove block from tree</li>
+<li><code>find_best_fit(base, hdr, needed)</code> — find smallest suitable block</li>
 </ul>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__avl__tree_8h.html" title="AVL-дерево свободных блоков для PersistMemoryManager (Issue #73)">persist_avl_tree.h</a> — текущая реализация AVL-дерева </dd>
-<dd>
-plan_issue87.md §5 «Фаза 4: FreeBlockTree как шаблонная политика» </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.1 (Issue #87 Phase 4) </dd></dl>
+<p>Issue #95: AVL tree implementation moved here from persist_avl_tree.h to consolidate all PMM code under include/pmm/.</p>
+<dl class="section see"><dt>See also</dt><dd>plan_issue87.md "Phase 4: FreeBlockTree as template policy" </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>1.0 (Issue #95 refactoring) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 </div></div><!-- contents -->

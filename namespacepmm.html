@@ -104,7 +104,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Политика выделения и освобождения памяти для ПАП-менеджера.  <a href="classpmm_1_1AllocatorPolicy.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Стандартная реализация политики дерева свободных блоков через AVL-дерево.  <a href="structpmm_1_1AvlFreeTree.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard AVL tree implementation for free block tree policy.  <a href="structpmm_1_1AvlFreeTree.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html">Block</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Блок памяти ПАП — составной тип.  <a href="structpmm_1_1Block.html#details">More...</a><br /></td></tr>
@@ -142,9 +142,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1MMapStorage.html">MMapStorage</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Бэкенд хранилища через отображение файла в память.  <a href="classpmm_1_1MMapStorage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistentAvlTree.html">PersistentAvlTree</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Все-статический класс AVL-дерева свободных блоков (Issue #73 FR-02, AR-03). Не зависит от <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr...">PersistMemoryManager</a> — принимает base_ptr и header как контекст.  <a href="classpmm_1_1PersistentAvlTree.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr&lt;T&gt; and PersistMemoryManager&lt;Config&gt;::static_method().  <a href="classpmm_1_1PersistMemoryManager.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -172,71 +169,74 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a5de02bdf4c2b75d6865ace400b7d9629" id="r_a5de02bdf4c2b75d6865ace400b7d9629"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5de02bdf4c2b75d6865ace400b7d9629">DefaultAbstractPMM</a> = <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt;&gt;</td></tr>
-<tr class="memdesc:a5de02bdf4c2b75d6865ace400b7d9629"><td class="mdescLeft">&#160;</td><td class="mdescRight">Псевдоним с настройками по умолчанию (<a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> + <a class="el" href="structpmm_1_1AvlFreeTree.html" title="Стандартная реализация политики дерева свободных блоков через AVL-дерево.">AvlFreeTree</a> + SharedMutexLock).  <br /></td></tr>
+<tr class="memitem:a5de02bdf4c2b75d6865ace400b7d9629" id="r_a5de02bdf4c2b75d6865ace400b7d9629"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5de02bdf4c2b75d6865ace400b7d9629">DefaultAbstractPMM</a> = <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt;&gt;</td></tr>
+<tr class="memdesc:a5de02bdf4c2b75d6865ace400b7d9629"><td class="mdescLeft">&#160;</td><td class="mdescRight">Псевдоним с настройками по умолчанию (<a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> + <a class="el" href="structpmm_1_1AvlFreeTree.html" title="Standard AVL tree implementation for free block tree policy.">AvlFreeTree</a> + SharedMutexLock).  <br /></td></tr>
 <tr class="separator:a5de02bdf4c2b75d6865ace400b7d9629"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1767a35705cb64eb271d6bf3a52b513e" id="r_a1767a35705cb64eb271d6bf3a52b513e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a1767a35705cb64eb271d6bf3a52b513e">SingleThreadedAbstractPMM</a> = <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>, <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;, <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;, <a class="el" href="structpmm_1_1config_1_1NoLock.html">config::NoLock</a> &gt;</td></tr>
+<tr class="memitem:a1767a35705cb64eb271d6bf3a52b513e" id="r_a1767a35705cb64eb271d6bf3a52b513e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a1767a35705cb64eb271d6bf3a52b513e">SingleThreadedAbstractPMM</a> = <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>, <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;, <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;, <a class="el" href="structpmm_1_1config_1_1NoLock.html">config::NoLock</a> &gt;</td></tr>
 <tr class="memdesc:a1767a35705cb64eb271d6bf3a52b513e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Однопоточный вариант с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a>.  <br /></td></tr>
 <tr class="separator:a1767a35705cb64eb271d6bf3a52b513e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb45c05352727cde1c45f1d73c0dad3b" id="r_abb45c05352727cde1c45f1d73c0dad3b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">TinyAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint8_t, 8 &gt;</td></tr>
+<tr class="memitem:abb45c05352727cde1c45f1d73c0dad3b" id="r_abb45c05352727cde1c45f1d73c0dad3b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">TinyAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint8_t, 8 &gt;</td></tr>
 <tr class="memdesc:abb45c05352727cde1c45f1d73c0dad3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Минимальный 8-bit вариант (до 255 гранул по 8 байт = 2040 байт, embedded).  <br /></td></tr>
 <tr class="separator:abb45c05352727cde1c45f1d73c0dad3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b844fd7256d6a2706303a0281dfbea2" id="r_a0b844fd7256d6a2706303a0281dfbea2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">SmallAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint16_t, 16 &gt;</td></tr>
+<tr class="memitem:a0b844fd7256d6a2706303a0281dfbea2" id="r_a0b844fd7256d6a2706303a0281dfbea2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">SmallAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint16_t, 16 &gt;</td></tr>
 <tr class="memdesc:a0b844fd7256d6a2706303a0281dfbea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">16-bit вариант (до 65535 гранул по 16 байт = ~1 МБ, small embedded).  <br /></td></tr>
 <tr class="separator:a0b844fd7256d6a2706303a0281dfbea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ca69087900283384dda68352be048bb" id="r_a9ca69087900283384dda68352be048bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint32_t, 16 &gt;</td></tr>
+<tr class="memitem:a9ca69087900283384dda68352be048bb" id="r_a9ca69087900283384dda68352be048bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint32_t, 16 &gt;</td></tr>
 <tr class="memdesc:a9ca69087900283384dda68352be048bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">32-bit вариант, 16-байтная гранула — текущий дефолт (совместим с BlockHeader).  <br /></td></tr>
 <tr class="separator:a9ca69087900283384dda68352be048bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fdf4565dee15a7a4ee46b0680df33f8" id="r_a0fdf4565dee15a7a4ee46b0680df33f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8">LargeAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint64_t, 64 &gt;</td></tr>
+<tr class="memitem:a0fdf4565dee15a7a4ee46b0680df33f8" id="r_a0fdf4565dee15a7a4ee46b0680df33f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8">LargeAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint64_t, 64 &gt;</td></tr>
 <tr class="memdesc:a0fdf4565dee15a7a4ee46b0680df33f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">64-bit вариант, 64-байтная гранула (для крупных промышленных БД).  <br /></td></tr>
 <tr class="separator:a0fdf4565dee15a7a4ee46b0680df33f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7d4ff01179dde67748d6bb997ce50e7" id="r_ab7d4ff01179dde67748d6bb997ce50e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7">DefaultAllocatorPolicy</a> = <a class="el" href="classpmm_1_1AllocatorPolicy.html">AllocatorPolicy</a>&lt; <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;, <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
+<tr class="memitem:ab7d4ff01179dde67748d6bb997ce50e7" id="r_ab7d4ff01179dde67748d6bb997ce50e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7">DefaultAllocatorPolicy</a> = <a class="el" href="classpmm_1_1AllocatorPolicy.html">AllocatorPolicy</a>&lt; <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;, <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
 <tr class="memdesc:ab7d4ff01179dde67748d6bb997ce50e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Псевдоним <a class="el" href="classpmm_1_1AllocatorPolicy.html" title="Политика выделения и освобождения памяти для ПАП-менеджера.">AllocatorPolicy</a> с настройками по умолчанию.  <br /></td></tr>
 <tr class="separator:ab7d4ff01179dde67748d6bb997ce50e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a343de335e434d7d59ee388be5c798684" id="r_a343de335e434d7d59ee388be5c798684"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a343de335e434d7d59ee388be5c798684">PersistentAvlTree</a> = <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
+<tr class="memdesc:a343de335e434d7d59ee388be5c798684"><td class="mdescLeft">&#160;</td><td class="mdescRight">Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead.  <br /></td></tr>
+<tr class="separator:a343de335e434d7d59ee388be5c798684"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:abfd5a1c07eb8af86044942de369b9c21" id="r_abfd5a1c07eb8af86044942de369b9c21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#abfd5a1c07eb8af86044942de369b9c21">save</a> (<a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="classpmm_1_1pptr.html">char</a> *<a class="el" href="classpmm_1_1pptr.html">filename</a>)</td></tr>
+<tr class="memitem:a0b6c0f639691913c3e5d08e8961efa6b" id="r_a0b6c0f639691913c3e5d08e8961efa6b"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:a0b6c0f639691913c3e5d08e8961efa6b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">int</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0b6c0f639691913c3e5d08e8961efa6b">detect_block_state</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">raw_blk</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">own_idx</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
+<tr class="memdesc:a0b6c0f639691913c3e5d08e8961efa6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить состояние блока по сырым данным.  <br /></td></tr>
+<tr class="separator:a0b6c0f639691913c3e5d08e8961efa6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3" id="r_a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3">recover_block_state</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">raw_blk</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">own_idx</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
+<tr class="memdesc:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
+<tr class="separator:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfd5a1c07eb8af86044942de369b9c21" id="r_abfd5a1c07eb8af86044942de369b9c21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#abfd5a1c07eb8af86044942de369b9c21">save</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">filename</a>)</td></tr>
 <tr class="memdesc:abfd5a1c07eb8af86044942de369b9c21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сохранить образ управляемой памяти в файл.  <br /></td></tr>
 <tr class="separator:abfd5a1c07eb8af86044942de369b9c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c5e3f74cada6c0226ef7441097920a2" id="r_a2c5e3f74cada6c0226ef7441097920a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a2c5e3f74cada6c0226ef7441097920a2">load_from_file</a> (<a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="classpmm_1_1pptr.html">char</a> *<a class="el" href="classpmm_1_1pptr.html">filename</a>, <a class="el" href="classpmm_1_1pptr.html">void</a> *<a class="el" href="classpmm_1_1pptr.html">memory</a>, std::size_t size)</td></tr>
+<tr class="memitem:a2c5e3f74cada6c0226ef7441097920a2" id="r_a2c5e3f74cada6c0226ef7441097920a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a2c5e3f74cada6c0226ef7441097920a2">load_from_file</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">filename</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">memory</a>, std::size_t size)</td></tr>
 <tr class="memdesc:a2c5e3f74cada6c0226ef7441097920a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в существующий буфер.  <br /></td></tr>
 <tr class="separator:a2c5e3f74cada6c0226ef7441097920a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2481497e73d223b21f3edc9709817b04" id="r_a2481497e73d223b21f3edc9709817b04"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1MemoryStats.html">MemoryStats</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a2481497e73d223b21f3edc9709817b04">get_stats</a> ()</td></tr>
 <tr class="separator:a2481497e73d223b21f3edc9709817b04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0400f986d436b01776ae4acc83814441" id="r_a0400f986d436b01776ae4acc83814441"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1ManagerInfo.html">ManagerInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0400f986d436b01776ae4acc83814441">get_manager_info</a> ()</td></tr>
 <tr class="separator:a0400f986d436b01776ae4acc83814441"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45" id="r_a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Callback</a> &gt; </td></tr>
-<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a54aa17506c63e8230f30ae422ded8d45">for_each_block</a> (<a class="el" href="classpmm_1_1pptr.html">Callback</a> &amp;&amp;<a class="el" href="classpmm_1_1pptr.html">cb</a>)</td></tr>
+<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45" id="r_a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </td></tr>
+<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a54aa17506c63e8230f30ae422ded8d45">for_each_block</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">cb</a>)</td></tr>
 <tr class="separator:a54aa17506c63e8230f30ae422ded8d45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34f233e9b661e849e4857369c468cbc3" id="r_a34f233e9b661e849e4857369c468cbc3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Callback</a> &gt; </td></tr>
-<tr class="memitem:a34f233e9b661e849e4857369c468cbc3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a34f233e9b661e849e4857369c468cbc3">for_each_free_block_avl</a> (<a class="el" href="classpmm_1_1pptr.html">Callback</a> &amp;&amp;<a class="el" href="classpmm_1_1pptr.html">cb</a>)</td></tr>
+<tr class="memitem:a34f233e9b661e849e4857369c468cbc3" id="r_a34f233e9b661e849e4857369c468cbc3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </td></tr>
+<tr class="memitem:a34f233e9b661e849e4857369c468cbc3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a34f233e9b661e849e4857369c468cbc3">for_each_free_block_avl</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">cb</a>)</td></tr>
 <tr class="separator:a34f233e9b661e849e4857369c468cbc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b6c0f639691913c3e5d08e8961efa6b" id="r_a0b6c0f639691913c3e5d08e8961efa6b"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:a0b6c0f639691913c3e5d08e8961efa6b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">int</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0b6c0f639691913c3e5d08e8961efa6b">detect_block_state</a> (<a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="classpmm_1_1pptr.html">void</a> *<a class="el" href="classpmm_1_1pptr.html">raw_blk</a>, <a class="el" href="classpmm_1_1pptr.html">typename</a> AddressTraitsT::index_type <a class="el" href="classpmm_1_1pptr.html">own_idx</a>) <a class="el" href="classpmm_1_1pptr.html">noexcept</a></td></tr>
-<tr class="memdesc:a0b6c0f639691913c3e5d08e8961efa6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить состояние блока по сырым данным.  <br /></td></tr>
-<tr class="separator:a0b6c0f639691913c3e5d08e8961efa6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3" id="r_a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3">recover_block_state</a> (<a class="el" href="classpmm_1_1pptr.html">void</a> *<a class="el" href="classpmm_1_1pptr.html">raw_blk</a>, <a class="el" href="classpmm_1_1pptr.html">typename</a> AddressTraitsT::index_type <a class="el" href="classpmm_1_1pptr.html">own_idx</a>) <a class="el" href="classpmm_1_1pptr.html">noexcept</a></td></tr>
-<tr class="memdesc:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
-<tr class="separator:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:ad3e17dab8c53a80a62be5d276867a8ac" id="r_ad3e17dab8c53a80a62be5d276867a8ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a> = 16</td></tr>
-<tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a" title="Размер гранулы в байтах.">DefaultAddressTraits::granule_size</a>.  <br /></td></tr>
-<tr class="separator:ad3e17dab8c53a80a62be5d276867a8ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a716afdc66bf1abf5f0f7feec75d0c1e8" id="r_a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8">kMagic</a> = 0x504D4D5F56303833ULL</td></tr>
-<tr class="memdesc:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"PMM_V083" (Issue #83: granule_size in header)  <br /></td></tr>
-<tr class="separator:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d" id="r_a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Policy</a> &gt; </td></tr>
-<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> <a class="el" href="classpmm_1_1pptr.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">is_free_block_tree_policy_v</a></td></tr>
-<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверка, является ли Policy корректной политикой дерева свободных блоков.  <br /></td></tr>
+<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d" id="r_a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Policy</a> &gt; </td></tr>
+<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">is_free_block_tree_policy_v</a></td></tr>
+<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if Policy is a valid free block tree policy.  <br /></td></tr>
 <tr class="separator:a13826d7e9e815fd280a91ffa868ce33d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a921bde594db4955b918196479bbbff7b" id="r_a921bde594db4955b918196479bbbff7b"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Backend</a> &gt; </td></tr>
-<tr class="memitem:a921bde594db4955b918196479bbbff7b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> <a class="el" href="classpmm_1_1pptr.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">is_storage_backend_v</a></td></tr>
+<tr class="memitem:a921bde594db4955b918196479bbbff7b" id="r_a921bde594db4955b918196479bbbff7b"><td class="memTemplParams" colspan="2">template&lt;typename Backend &gt; </td></tr>
+<tr class="memitem:a921bde594db4955b918196479bbbff7b"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">is_storage_backend_v</a></td></tr>
 <tr class="memdesc:a921bde594db4955b918196479bbbff7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверка, соответствует ли Backend концепту StorageBackend.  <br /></td></tr>
 <tr class="separator:a921bde594db4955b918196479bbbff7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3e17dab8c53a80a62be5d276867a8ac" id="r_ad3e17dab8c53a80a62be5d276867a8ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a> = 16</td></tr>
+<tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a" title="Размер гранулы в байтах.">DefaultAddressTraits::granule_size</a>.  <br /></td></tr>
+<tr class="separator:ad3e17dab8c53a80a62be5d276867a8ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a716afdc66bf1abf5f0f7feec75d0c1e8" id="r_a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8">kMagic</a> = 0x504D4D5F56303833ULL</td></tr>
+<tr class="memdesc:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">"PMM_V083" (Issue #83: granule_size in header)  <br /></td></tr>
+<tr class="separator:a716afdc66bf1abf5f0f7feec75d0c1e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a5de02bdf4c2b75d6865ace400b7d9629" name="a5de02bdf4c2b75d6865ace400b7d9629"></a>
@@ -246,12 +246,12 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#a5de02bdf4c2b75d6865ace400b7d9629">pmm::DefaultAbstractPMM</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt;&gt;</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="namespacepmm.html#a5de02bdf4c2b75d6865ace400b7d9629">pmm::DefaultAbstractPMM</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typedef</a> <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt;&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Псевдоним с настройками по умолчанию (<a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> + <a class="el" href="structpmm_1_1AvlFreeTree.html" title="Стандартная реализация политики дерева свободных блоков через AVL-дерево.">AvlFreeTree</a> + SharedMutexLock). </p>
+<p>Псевдоним с настройками по умолчанию (<a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> + <a class="el" href="structpmm_1_1AvlFreeTree.html" title="Standard AVL tree implementation for free block tree policy.">AvlFreeTree</a> + SharedMutexLock). </p>
 
 <p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00396">396</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
@@ -264,7 +264,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint32_t, 16&gt;</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint32_t, 16&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -282,7 +282,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7">pmm::DefaultAllocatorPolicy</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="classpmm_1_1AllocatorPolicy.html">AllocatorPolicy</a>&lt;<a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;, <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7">pmm::DefaultAllocatorPolicy</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typedef</a> <a class="el" href="classpmm_1_1AllocatorPolicy.html">AllocatorPolicy</a>&lt;<a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;, <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -300,7 +300,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8">pmm::LargeAddressTraits</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint64_t, 64&gt;</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8">pmm::LargeAddressTraits</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint64_t, 64&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -311,6 +311,24 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a343de335e434d7d59ee388be5c798684" name="a343de335e434d7d59ee388be5c798684"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a343de335e434d7d59ee388be5c798684">&#9670;&#160;</a></span>PersistentAvlTree</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="namespacepmm.html#a343de335e434d7d59ee388be5c798684">pmm::PersistentAvlTree</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typedef</a> <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead. </p>
+
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00339">339</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+
+</div>
+</div>
 <a id="a1767a35705cb64eb271d6bf3a52b513e" name="a1767a35705cb64eb271d6bf3a52b513e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1767a35705cb64eb271d6bf3a52b513e">&#9670;&#160;</a></span>SingleThreadedAbstractPMM</h2>
 
@@ -318,7 +336,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#a1767a35705cb64eb271d6bf3a52b513e">pmm::SingleThreadedAbstractPMM</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>, <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;, <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;, <a class="el" href="structpmm_1_1config_1_1NoLock.html">config::NoLock</a>&gt;</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="namespacepmm.html#a1767a35705cb64eb271d6bf3a52b513e">pmm::SingleThreadedAbstractPMM</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typedef</a> <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>, <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;, <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;, <a class="el" href="structpmm_1_1config_1_1NoLock.html">config::NoLock</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -336,7 +354,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">pmm::SmallAddressTraits</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint16_t, 16&gt;</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">pmm::SmallAddressTraits</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint16_t, 16&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -354,7 +372,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">using</a> <a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">pmm::TinyAddressTraits</a> = <a class="el" href="classpmm_1_1pptr.html">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint8_t, 8&gt;</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">pmm::TinyAddressTraits</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typedef</a> <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint8_t, 8&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -372,21 +390,21 @@ Variables</h2></td></tr>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">AddressTraitsT</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">int</a> pmm::detect_block_state </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">int</a> pmm::detect_block_state </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="classpmm_1_1pptr.html">void</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *&#160;</td>
           <td class="paramname"><em>raw_blk</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">typename</a> AddressTraitsT::index_type&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> AddressTraitsT::index_type&#160;</td>
           <td class="paramname"><em>own_idx</em>&#160;</td>
         </tr>
         <tr>
@@ -428,15 +446,15 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Callback</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">void</a> pmm::for_each_block </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> pmm::for_each_block </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">Callback</a> &amp;&amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;&#160;</td>
           <td class="paramname"><em>cb</em></td><td>)</td>
           <td></td>
         </tr>
@@ -449,7 +467,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </div><div class="memdoc">
 <p>&lt; Issue #83: replaced kDefaultAlignment</p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00942">942</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00942">942</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -459,15 +477,15 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Callback</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">void</a> pmm::for_each_free_block_avl </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> pmm::for_each_free_block_avl </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">Callback</a> &amp;&amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;&#160;</td>
           <td class="paramname"><em>cb</em></td><td>)</td>
           <td></td>
         </tr>
@@ -479,7 +497,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00975">975</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00975">975</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -506,7 +524,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00919">919</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00919">919</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -533,7 +551,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00914">914</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00914">914</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -547,15 +565,15 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">bool</a> pmm::load_from_file </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a> pmm::load_from_file </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="classpmm_1_1pptr.html">char</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *&#160;</td>
           <td class="paramname"><em>filename</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">void</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *&#160;</td>
           <td class="paramname"><em>memory</em>, </td>
         </tr>
         <tr>
@@ -591,7 +609,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <dl class="section return"><dt>Returns</dt><dd>true при успешной загрузке, false при ошибке.</dd></dl>
 <p>Предусловие: filename != nullptr, memory != nullptr, size &gt;= kMinMemorySize. Постусловие: синглтон восстановлен из файла. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__io_8h_source.html#l00084">84</a> of file <a class="el" href="persist__memory__io_8h_source.html">persist_memory_io.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00084">84</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -601,21 +619,21 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">AddressTraitsT</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">void</a> pmm::recover_block_state </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> pmm::recover_block_state </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">void</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *&#160;</td>
           <td class="paramname"><em>raw_blk</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">typename</a> AddressTraitsT::index_type&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> AddressTraitsT::index_type&#160;</td>
           <td class="paramname"><em>own_idx</em>&#160;</td>
         </tr>
         <tr>
@@ -661,9 +679,9 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">bool</a> pmm::save </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a> pmm::save </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">const</a> <a class="el" href="classpmm_1_1pptr.html">char</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *&#160;</td>
           <td class="paramname"><em>filename</em></td><td>)</td>
           <td></td>
         </tr>
@@ -687,7 +705,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <dl class="section return"><dt>Returns</dt><dd>true при успешной записи, false при ошибке ввода/вывода или нет синглтона.</dd></dl>
 <p>Предусловие: filename != nullptr, менеджер инициализирован. Постусловие: файл содержит точную копию управляемой области памяти. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__io_8h_source.html#l00050">50</a> of file <a class="el" href="persist__memory__io_8h_source.html">persist_memory_io.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00050">50</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -698,13 +716,13 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Policy</a> &gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Policy</a> &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> <a class="el" href="classpmm_1_1pptr.html">bool</a> pmm::is_free_block_tree_policy_v</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a> pmm::is_free_block_tree_policy_v</td>
         </tr>
       </table>
   </td>
@@ -716,21 +734,21 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <b>Initial value:</b><div class="fragment"><div class="line">=</div>
 <div class="line">    detail::has_insert&lt;Policy&gt;::value &amp;&amp; detail::has_remove&lt;Policy&gt;::value &amp;&amp; detail::has_find_best_fit&lt;Policy&gt;::value</div>
 </div><!-- fragment -->
-<p>Проверка, является ли Policy корректной политикой дерева свободных блоков. </p>
-<p>Политика должна предоставлять три статических метода:</p><ul>
+<p>Check if Policy is a valid free block tree policy. </p>
+<p>Policy must provide three static methods:</p><ul>
 <li><code>insert(uint8_t* base, ManagerHeader* hdr, uint32_t blk_idx) -&gt; void</code></li>
 <li><code>remove(uint8_t* base, ManagerHeader* hdr, uint32_t blk_idx) -&gt; void</code></li>
 <li><code>find_best_fit(uint8_t* base, ManagerHeader* hdr, uint32_t n) -&gt; uint32_t</code></li>
 </ul>
-<p>Используется как тип-концепт (C++17 variable template).</p>
+<p>Used as type-concept (C++17 variable template).</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">Policy</td><td>Тип политики, проверяемой на соответствие. </td></tr>
+    <tr><td class="paramname">Policy</td><td>Type to check for compliance. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00083">83</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00085">85</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -740,13 +758,13 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el" href="classpmm_1_1pptr.html">Backend</a> &gt; </div>
+template&lt;typename Backend &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> <a class="el" href="classpmm_1_1pptr.html">bool</a> pmm::is_storage_backend_v</td>
+          <td class="memname">constexpr bool pmm::is_storage_backend_v</td>
         </tr>
       </table>
   </td>
@@ -787,7 +805,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::size_t pmm::kGranuleSize = 16</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> std::size_t pmm::kGranuleSize = 16</td>
         </tr>
       </table>
   </td>
@@ -799,7 +817,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 
 <p>Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a" title="Размер гранулы в байтах.">DefaultAddressTraits::granule_size</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00036">36</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00039">39</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -813,7 +831,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classpmm_1_1pptr.html">constexpr</a> std::uint64_t pmm::kMagic = 0x504D4D5F56303833ULL</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> std::uint64_t pmm::kMagic = 0x504D4D5F56303833ULL</td>
         </tr>
       </table>
   </td>
@@ -825,7 +843,7 @@ template&lt;<a class="el" href="classpmm_1_1pptr.html">typename</a> <a class="el
 
 <p>"PMM_V083" (Issue #83: granule_size in header) </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__types_8h_source.html#l00041">41</a> of file <a class="el" href="persist__memory__types_8h_source.html">persist_memory_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00044">44</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
