@@ -1,0 +1,12 @@
+var searchData=
+[
+  ['offset_0',['offset',['../classpmm_1_1pptr.html#a6f76c4e8ab39613a6d8ff49220869d40',1,'pmm::pptr']]],
+  ['open_1',['open',['../classpmm_1_1MMapStorage.html#aef07f10ac7145aad987b0f4c408915e7',1,'pmm::MMapStorage']]],
+  ['operator_20bool_2',['operator bool',['../classpmm_1_1pptr.html#a4e776a5e64e6e6eb33f5e91a931e96d8',1,'pmm::pptr']]],
+  ['operator_21_3d_3',['operator!=',['../classpmm_1_1pptr.html#a0d32271a6705486f1e690ec4ac24339a',1,'pmm::pptr']]],
+  ['operator_2b_2b_4',['operator++',['../classpmm_1_1pptr.html#a5fd6c3e65e6cca10abde3cbd1554df47',1,'pmm::pptr::operator++()=delete'],['../classpmm_1_1pptr.html#adbd89d63d06abe5b45de511f65cdaa5b',1,'pmm::pptr::operator++(int)=delete']]],
+  ['operator_2d_2d_5',['operator--',['../classpmm_1_1pptr.html#a40c2c8396bc46c590aea9e30530ee7af',1,'pmm::pptr::operator--()=delete'],['../classpmm_1_1pptr.html#a98b00beb33d0927ec4b850630719953b',1,'pmm::pptr::operator--(int)=delete']]],
+  ['operator_3d_6',['operator=',['../classpmm_1_1HeapStorage.html#a86fde3c370ac4715107d10ac728e803a',1,'pmm::HeapStorage::operator=()'],['../classpmm_1_1StaticStorage.html#a987cbfe0f9550906625e10c93b31fce6',1,'pmm::StaticStorage::operator=(StaticStorage &amp;&amp;)=delete'],['../classpmm_1_1StaticStorage.html#aaa3c21bbbea16b2f9bdb171d63316264',1,'pmm::StaticStorage::operator=(const StaticStorage &amp;)=delete'],['../classpmm_1_1pptr.html#a8d25d4f093b62019d90539bceeddcce3',1,'pmm::pptr::operator=()'],['../classpmm_1_1MMapStorage.html#a88b0394f95dde616f99af855c9a8360b',1,'pmm::MMapStorage::operator=()'],['../classpmm_1_1HeapStorage.html#a074ea45b01848951bc651c342e778ade',1,'pmm::HeapStorage::operator=()'],['../structpmm_1_1AvlFreeTree.html#a37225df96c4dfe91f55174d8c8ead1d7',1,'pmm::AvlFreeTree::operator=()'],['../classpmm_1_1AllocatorPolicy.html#a2d2abd744cc025677590051ea508172d',1,'pmm::AllocatorPolicy::operator=()']]],
+  ['operator_3d_3d_7',['operator==',['../classpmm_1_1pptr.html#a0ed0ce34d7c191c07f5eebb3cc54bae9',1,'pmm::pptr']]],
+  ['owns_5fmemory_8',['owns_memory',['../classpmm_1_1HeapStorage.html#a9bb257f0a7ecbb7798a3e42d3e917908',1,'pmm::HeapStorage::owns_memory()'],['../classpmm_1_1MMapStorage.html#af0e187de88081c6f0b576c781d0a0e3b',1,'pmm::MMapStorage::owns_memory()'],['../classpmm_1_1StaticStorage.html#a6e3622c92387e9e4adc4a9b6ecba2c2b',1,'pmm::StaticStorage::owns_memory()']]]
+];
