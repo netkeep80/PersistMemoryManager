@@ -29,4 +29,5 @@ jobs:
         with:
           folder: doxygen-output/html
           branch: gh-pages
+          target-folder: docs
           clean: true
