@@ -183,21 +183,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:acacc5d486b1c2ddd238cb163d294da1c inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager" id="r_acacc5d486b1c2ddd238cb163d294da1c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#acacc5d486b1c2ddd238cb163d294da1c">deallocate_typed</a> (<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a02004c6b8bc0d74331852b10134eef85">pptr</a>&lt; T &gt; p) noexcept</td></tr>
 <tr class="memdesc:acacc5d486b1c2ddd238cb163d294da1c inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="mdescLeft">&#160;</td><td class="mdescRight">Освободить блок по персистентному указателю.  <br /></td></tr>
 <tr class="separator:acacc5d486b1c2ddd238cb163d294da1c inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5ac0c2b15e908677adf216a9bef5ed9 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager" id="r_ad5ac0c2b15e908677adf216a9bef5ed9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#ad5ac0c2b15e908677adf216a9bef5ed9">deallocate_typed</a> (<a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; T, void &gt; p) noexcept</td></tr>
-<tr class="memdesc:ad5ac0c2b15e908677adf216a9bef5ed9 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="mdescLeft">&#160;</td><td class="mdescRight">Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API).  <br /></td></tr>
-<tr class="separator:ad5ac0c2b15e908677adf216a9bef5ed9 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4185e182b85f101c2268a105829687a9 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager" id="r_a4185e182b85f101c2268a105829687a9"><td class="memItemLeft" align="right" valign="top">T *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a4185e182b85f101c2268a105829687a9">resolve</a> (<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a02004c6b8bc0d74331852b10134eef85">pptr</a>&lt; T &gt; p) const noexcept</td></tr>
 <tr class="memdesc:a4185e182b85f101c2268a105829687a9 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать pptr&lt;T&gt; — получить сырой указатель T* через данный экземпляр.  <br /></td></tr>
 <tr class="separator:a4185e182b85f101c2268a105829687a9 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a268f089a9f23abaf8dc03c3410addc04 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager" id="r_a268f089a9f23abaf8dc03c3410addc04"><td class="memItemLeft" align="right" valign="top">T *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a268f089a9f23abaf8dc03c3410addc04">resolve</a> (<a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; T, void &gt; p) const noexcept</td></tr>
-<tr class="memdesc:a268f089a9f23abaf8dc03c3410addc04 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="mdescLeft">&#160;</td><td class="mdescRight">Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API).  <br /></td></tr>
-<tr class="separator:a268f089a9f23abaf8dc03c3410addc04 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ff944ee233ba8ceb1f7994ecb43227b inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager" id="r_a7ff944ee233ba8ceb1f7994ecb43227b"><td class="memItemLeft" align="right" valign="top">T *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a7ff944ee233ba8ceb1f7994ecb43227b">resolve_at</a> (<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a02004c6b8bc0d74331852b10134eef85">pptr</a>&lt; T &gt; p, std::size_t i) const noexcept</td></tr>
 <tr class="memdesc:a7ff944ee233ba8ceb1f7994ecb43227b inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать pptr&lt;T&gt; и получить указатель на i-й элемент массива.  <br /></td></tr>
 <tr class="separator:a7ff944ee233ba8ceb1f7994ecb43227b inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43ab94a03faaa35bbdeafbf231c85162 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager" id="r_a43ab94a03faaa35bbdeafbf231c85162"><td class="memItemLeft" align="right" valign="top">T *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a43ab94a03faaa35bbdeafbf231c85162">resolve_at</a> (<a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; T, void &gt; p, std::size_t i) const noexcept</td></tr>
-<tr class="memdesc:a43ab94a03faaa35bbdeafbf231c85162 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="mdescLeft">&#160;</td><td class="mdescRight">Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API).  <br /></td></tr>
-<tr class="separator:a43ab94a03faaa35bbdeafbf231c85162 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e28e2da0e38993148ff9a039aa0b401 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager" id="r_a1e28e2da0e38993148ff9a039aa0b401"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a1e28e2da0e38993148ff9a039aa0b401">total_size</a> () const noexcept</td></tr>
 <tr class="separator:a1e28e2da0e38993148ff9a039aa0b401 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a62886b5bfd6f4a7d28c07e399b631e54 inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager" id="r_a62886b5bfd6f4a7d28c07e399b631e54"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a62886b5bfd6f4a7d28c07e399b631e54">used_size</a> () const noexcept</td></tr>
@@ -217,12 +208,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a072399d46f4f7d94e6e8c5cdabe99ade inherit pub_methods_classpmm_1_1AbstractPersistMemoryManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a> = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a> = DefaultManagerTag&gt;<br />
+<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a> = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a> = DefaultManagerTag&gt;<br />
 class pmm::StaticPersistMemoryManager&lt; ConfigT, Tag &gt;</div><p>Статически-идентифицируемый менеджер персистентной памяти. </p>
 <p>Наследует <code><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html" title="Параметрический ПАП-менеджер.">AbstractPersistMemoryManager</a></code> с конфигурацией из <code>ConfigT</code>, но добавляет параметр <code>Tag</code>, делающий тип уникальным. Это позволяет создавать несколько менеджеров одной конфигурации с разными типами.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">ConfigT</td><td>Конфигурация менеджера (например <a class="el" href="namespacepmm_1_1config.html#acbc50ef04f2e309d5d87b0a512e4930d" title="Конфигурация по умолчанию.">pmm::config::DefaultConfig</a>). Должна предоставлять:<ul>
+    <tr><td class="paramname">ConfigT</td><td>Конфигурация менеджера (например <a class="el" href="structpmm_1_1CacheManagerConfig.html" title="Конфигурация кеш-менеджера.">pmm::CacheManagerConfig</a>). Должна предоставлять:<ul>
 <li><code>lock_policy</code> — политика блокировок </li>
 </ul>
 </td></tr>
@@ -239,7 +230,7 @@ class pmm::StaticPersistMemoryManager&lt; ConfigT, Tag &gt;</div><p>Статич
 </ul>
 <dl class="section note"><dt>Note</dt><dd><code><a class="el" href="classpmm_1_1StaticPersistMemoryManager.html" title="Статически-идентифицируемый менеджер персистентной памяти.">StaticPersistMemoryManager</a>&lt;Config, TagA&gt;::pptr&lt;T&gt;</code> и <code><a class="el" href="classpmm_1_1StaticPersistMemoryManager.html" title="Статически-идентифицируемый менеджер персистентной памяти.">StaticPersistMemoryManager</a>&lt;Config, TagB&gt;::pptr&lt;T&gt;</code> — разные типы при <code>TagA != TagB</code>, что обеспечивает типобезопасность. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00095">95</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00096">96</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a29f8ecb04dfdb238b6cc0e444c8acc4c" name="a29f8ecb04dfdb238b6cc0e444c8acc4c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a29f8ecb04dfdb238b6cc0e444c8acc4c">&#9670;&#160;</a></span>base_type</h2>
@@ -247,7 +238,7 @@ class pmm::StaticPersistMemoryManager&lt; ConfigT, Tag &gt;</div><p>Статич
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html">pmm::StaticPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a> &gt;::base_type =  <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>, <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;, <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> ConfigT::lock_policy&gt;</td>
@@ -255,7 +246,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00100">100</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00101">101</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -265,7 +256,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html">pmm::StaticPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a> &gt;::config =  <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a></td>
@@ -275,7 +266,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Конфигурация данного менеджера. </p>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00107">107</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00108">108</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -285,7 +276,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html">pmm::StaticPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a> &gt;::manager_type =  <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html">StaticPersistMemoryManager</a>&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>&gt;</td>
@@ -295,7 +286,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Тип самого менеджера (переопределяет manager_type из базового класса). </p>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00110">110</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00111">111</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -305,7 +296,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
 <div class="memtemplate">
 template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
       <table class="memname">
@@ -324,7 +315,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00120">120</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00121">121</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -334,7 +325,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html">pmm::StaticPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a> &gt;::tag =  <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a></td>
@@ -344,7 +335,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Тег, уникализирующий данный экземпляр менеджера. </p>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00104">104</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00105">105</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -355,7 +346,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
 <div class="memtemplate">
 template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
 <table class="mlabels">
@@ -385,7 +376,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; — персистентный указатель, привязанный к данному менеджеру. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00135">135</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00136">136</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -395,7 +386,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
 <div class="memtemplate">
 template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
 <table class="mlabels">
@@ -432,7 +423,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; — персистентный указатель, привязанный к данному менеджеру. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00148">148</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00149">149</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -442,7 +433,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
 <div class="memtemplate">
 template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
 <table class="mlabels">
@@ -478,7 +469,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00160">160</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00161">161</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -488,7 +479,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
 <div class="memtemplate">
 template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
 <table class="mlabels">
@@ -525,7 +516,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на данные или nullptr. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00172">172</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00173">173</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>
@@ -535,7 +526,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = config::DefaultConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ConfigT</a>  = CacheManagerConfig, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Tag</a>  = DefaultManagerTag&gt; </div>
 <div class="memtemplate">
 template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
 <table class="mlabels">
@@ -583,7 +574,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на i-й элемент или nullptr. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00185">185</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="static__manager__factory_8h_source.html#l00186">186</a> of file <a class="el" href="static__manager__factory_8h_source.html">static_manager_factory.h</a>.</p>
 
 </div>
 </div>

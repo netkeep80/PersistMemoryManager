@@ -160,12 +160,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1PersistentDataConfig.html">PersistentDataConfig</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация менеджера персистентных данных.  <a href="structpmm_1_1PersistentDataConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Менеджер персистентной памяти — полностью статический класс-шаблон (Issue #73). Public API: only pptr&lt;T&gt; and PersistMemoryManager&lt;Config&gt;::static_method().  <a href="classpmm_1_1PersistMemoryManager.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html">PmmCore</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">CRTP базовый класс, предоставляющий доступ к памяти (Issue #73 AR-01). Derived must be the final PersistMemoryManager&lt;Config&gt; class.  <a href="classpmm_1_1PmmCore.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html">pptr</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Персистентный типизированный указатель (4 байта, гранульный индекс).  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -178,14 +172,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1StaticStorage.html">StaticStorage</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Статический бэкенд хранилища — фиксированный буфер внутри объекта.  <a href="classpmm_1_1StaticStorage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1StatsMixin.html">StatsMixin</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">CRTP-миксин, добавляющий статический метод <a class="el" href="classpmm_1_1StatsMixin.html#a7cb5539e2902c07d90ead621360dc720">get_stats()</a> (Issue #73 AR-01).  <a href="classpmm_1_1StatsMixin.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел AVL-дерева для адресного пространства ПАП.  <a href="structpmm_1_1TreeNode.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1ValidationMixin.html">ValidationMixin</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">CRTP-миксин, добавляющий статический метод <a class="el" href="classpmm_1_1ValidationMixin.html#a06fedf9ffe25ff87031478b058faabd5">validate()</a> (Issue #73 AR-01).  <a href="classpmm_1_1ValidationMixin.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -233,22 +221,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a8447932494aae80b5c7c7ce1d38ff4ff"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a8447932494aae80b5c7c7ce1d38ff4ff">load_manager_from_file</a> (<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">AbstractPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">StorageBackendT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">FreeBlockTreeT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ThreadPolicyT</a> &gt; &amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">mgr</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">filename</a>)</td></tr>
 <tr class="memdesc:a8447932494aae80b5c7c7ce1d38ff4ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в экземпляр <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html" title="Параметрический ПАП-менеджер.">AbstractPersistMemoryManager</a>.  <br /></td></tr>
 <tr class="separator:a8447932494aae80b5c7c7ce1d38ff4ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abfd5a1c07eb8af86044942de369b9c21" id="r_abfd5a1c07eb8af86044942de369b9c21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#abfd5a1c07eb8af86044942de369b9c21">save</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">filename</a>)</td></tr>
-<tr class="memdesc:abfd5a1c07eb8af86044942de369b9c21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сохранить образ управляемой памяти в файл (устаревший API синглтона).  <br /></td></tr>
-<tr class="separator:abfd5a1c07eb8af86044942de369b9c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c5e3f74cada6c0226ef7441097920a2" id="r_a2c5e3f74cada6c0226ef7441097920a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a2c5e3f74cada6c0226ef7441097920a2">load_from_file</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">filename</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">memory</a>, std::size_t size)</td></tr>
-<tr class="memdesc:a2c5e3f74cada6c0226ef7441097920a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в существующий буфер (устаревший API синглтона).  <br /></td></tr>
-<tr class="separator:a2c5e3f74cada6c0226ef7441097920a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2481497e73d223b21f3edc9709817b04" id="r_a2481497e73d223b21f3edc9709817b04"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1MemoryStats.html">MemoryStats</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a2481497e73d223b21f3edc9709817b04">get_stats</a> ()</td></tr>
-<tr class="separator:a2481497e73d223b21f3edc9709817b04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0400f986d436b01776ae4acc83814441" id="r_a0400f986d436b01776ae4acc83814441"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1ManagerInfo.html">ManagerInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0400f986d436b01776ae4acc83814441">get_manager_info</a> ()</td></tr>
-<tr class="separator:a0400f986d436b01776ae4acc83814441"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45" id="r_a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </td></tr>
-<tr class="memitem:a54aa17506c63e8230f30ae422ded8d45"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a54aa17506c63e8230f30ae422ded8d45">for_each_block</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">cb</a>)</td></tr>
-<tr class="separator:a54aa17506c63e8230f30ae422ded8d45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34f233e9b661e849e4857369c468cbc3" id="r_a34f233e9b661e849e4857369c468cbc3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </td></tr>
-<tr class="memitem:a34f233e9b661e849e4857369c468cbc3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a34f233e9b661e849e4857369c468cbc3">for_each_free_block_avl</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">cb</a>)</td></tr>
-<tr class="separator:a34f233e9b661e849e4857369c468cbc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -285,8 +257,9 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Псевдоним с настройками по умолчанию (<a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> + <a class="el" href="structpmm_1_1AvlFreeTree.html" title="Standard AVL tree implementation for free block tree policy.">AvlFreeTree</a> + SharedMutexLock). </p>
+<dl class="section note"><dt>Note</dt><dd>Предпочитайте использовать готовые пресеты из <a class="el" href="pmm__presets_8h.html" title="pmm_presets — готовые инстанции AbstractPersistMemoryManager (Issue #87 Phase 8).">pmm_presets.h</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00554">554</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00526">526</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -375,8 +348,9 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Однопоточный вариант с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a>. </p>
+<dl class="section note"><dt>Note</dt><dd>Предпочитайте <a class="el" href="namespacepmm_1_1presets.html#a5da31a1eb45ed4fbe1ef818796ade5d0" title="Стандартный однопоточный динамический менеджер.">pmm::presets::SingleThreadedHeap</a> из <a class="el" href="pmm__presets_8h.html" title="pmm_presets — готовые инстанции AbstractPersistMemoryManager (Issue #87 Phase 8).">pmm_presets.h</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00557">557</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00530">530</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -473,177 +447,6 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 </div>
 </div>
-<a id="a54aa17506c63e8230f30ae422ded8d45" name="a54aa17506c63e8230f30ae422ded8d45"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54aa17506c63e8230f30ae422ded8d45">&#9670;&#160;</a></span>for_each_block()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> pmm::for_each_block </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>cb</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>&lt; Issue #83: replaced kDefaultAlignment</p>
-
-<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00907">907</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
-
-</div>
-</div>
-<a id="a34f233e9b661e849e4857369c468cbc3" name="a34f233e9b661e849e4857369c468cbc3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a34f233e9b661e849e4857369c468cbc3">&#9670;&#160;</a></span>for_each_free_block_avl()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> pmm::for_each_free_block_avl </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">Callback</a> &amp;&amp;&#160;</td>
-          <td class="paramname"><em>cb</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00940">940</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
-
-</div>
-</div>
-<a id="a0400f986d436b01776ae4acc83814441" name="a0400f986d436b01776ae4acc83814441"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0400f986d436b01776ae4acc83814441">&#9670;&#160;</a></span>get_manager_info()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structpmm_1_1ManagerInfo.html">ManagerInfo</a> pmm::get_manager_info </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00884">884</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
-
-</div>
-</div>
-<a id="a2481497e73d223b21f3edc9709817b04" name="a2481497e73d223b21f3edc9709817b04"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2481497e73d223b21f3edc9709817b04">&#9670;&#160;</a></span>get_stats()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structpmm_1_1MemoryStats.html">MemoryStats</a> pmm::get_stats </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00879">879</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
-
-</div>
-</div>
-<a id="a2c5e3f74cada6c0226ef7441097920a2" name="a2c5e3f74cada6c0226ef7441097920a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c5e3f74cada6c0226ef7441097920a2">&#9670;&#160;</a></span>load_from_file()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a> pmm::load_from_file </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *&#160;</td>
-          <td class="paramname"><em>filename</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *&#160;</td>
-          <td class="paramname"><em>memory</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::size_t&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Загрузить образ менеджера из файла в существующий буфер (устаревший API синглтона). </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>Используйте <a class="el" href="namespacepmm.html#a8447932494aae80b5c7c7ce1d38ff4ff" title="Загрузить образ менеджера из файла в экземпляр AbstractPersistMemoryManager.">load_manager_from_file()</a> с <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html" title="Параметрический ПАП-менеджер.">AbstractPersistMemoryManager</a> (Issue #97).</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>Путь к файлу с образом. </td></tr>
-    <tr><td class="paramname">memory</td><td>Указатель на буфер для загрузки (размер &gt;= размера файла). </td></tr>
-    <tr><td class="paramname">size</td><td>Размер буфера в байтах. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true при успешной загрузке, false при ошибке. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00203">203</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
-
-</div>
-</div>
 <a id="a8447932494aae80b5c7c7ce1d38ff4ff" name="a8447932494aae80b5c7c7ce1d38ff4ff"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8447932494aae80b5c7c7ce1d38ff4ff">&#9670;&#160;</a></span>load_manager_from_file()</h2>
 
@@ -703,7 +506,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <dl class="section return"><dt>Returns</dt><dd>true при успешной загрузке, false при ошибке.</dd></dl>
 <p>Предусловие: filename != nullptr, mgr.backend().base_ptr() != nullptr. Постусловие: менеджер восстановлен из файла. </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00119">119</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00102">102</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -760,45 +563,6 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 
 <p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00554">554</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
-
-</div>
-</div>
-<a id="abfd5a1c07eb8af86044942de369b9c21" name="abfd5a1c07eb8af86044942de369b9c21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abfd5a1c07eb8af86044942de369b9c21">&#9670;&#160;</a></span>save()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a> pmm::save </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">char</a> *&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Сохранить образ управляемой памяти в файл (устаревший API синглтона). </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Используйте <a class="el" href="namespacepmm.html#a9fa1263f2319fc8f81364729e8df013c" title="Сохранить образ AbstractPersistMemoryManager в файл.">save_manager()</a> с <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html" title="Параметрический ПАП-менеджер.">AbstractPersistMemoryManager</a> (Issue #97).</dd></dl>
-<p>Записывает весь буфер текущего синглтона в файл побайтово.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>Путь к выходному файлу. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true при успешной записи, false при ошибке ввода/вывода или нет синглтона. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00176">176</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -860,7 +624,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <dl class="section return"><dt>Returns</dt><dd>true при успешной записи, false при ошибке ввода/вывода или если не инициализирован.</dd></dl>
 <p>Предусловие: filename != nullptr, mgr.is_initialized() == true. Постусловие: файл содержит точную копию управляемой области памяти. </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00078">78</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00061">61</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>

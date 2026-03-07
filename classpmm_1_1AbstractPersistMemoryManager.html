@@ -141,26 +141,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:acacc5d486b1c2ddd238cb163d294da1c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#acacc5d486b1c2ddd238cb163d294da1c">deallocate_typed</a> (<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a02004c6b8bc0d74331852b10134eef85">pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">p</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
 <tr class="memdesc:acacc5d486b1c2ddd238cb163d294da1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Освободить блок по персистентному указателю.  <br /></td></tr>
 <tr class="separator:acacc5d486b1c2ddd238cb163d294da1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5ac0c2b15e908677adf216a9bef5ed9" id="r_ad5ac0c2b15e908677adf216a9bef5ed9"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </td></tr>
-<tr class="memitem:ad5ac0c2b15e908677adf216a9bef5ed9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#ad5ac0c2b15e908677adf216a9bef5ed9">deallocate_typed</a> (<a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> &gt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">p</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
-<tr class="memdesc:ad5ac0c2b15e908677adf216a9bef5ed9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API).  <br /></td></tr>
-<tr class="separator:ad5ac0c2b15e908677adf216a9bef5ed9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4185e182b85f101c2268a105829687a9" id="r_a4185e182b85f101c2268a105829687a9"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </td></tr>
 <tr class="memitem:a4185e182b85f101c2268a105829687a9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a4185e182b85f101c2268a105829687a9">resolve</a> (<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a02004c6b8bc0d74331852b10134eef85">pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">p</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
 <tr class="memdesc:a4185e182b85f101c2268a105829687a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать pptr&lt;T&gt; — получить сырой указатель T* через данный экземпляр.  <br /></td></tr>
 <tr class="separator:a4185e182b85f101c2268a105829687a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a268f089a9f23abaf8dc03c3410addc04" id="r_a268f089a9f23abaf8dc03c3410addc04"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </td></tr>
-<tr class="memitem:a268f089a9f23abaf8dc03c3410addc04"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a268f089a9f23abaf8dc03c3410addc04">resolve</a> (<a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> &gt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">p</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
-<tr class="memdesc:a268f089a9f23abaf8dc03c3410addc04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API).  <br /></td></tr>
-<tr class="separator:a268f089a9f23abaf8dc03c3410addc04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ff944ee233ba8ceb1f7994ecb43227b" id="r_a7ff944ee233ba8ceb1f7994ecb43227b"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </td></tr>
 <tr class="memitem:a7ff944ee233ba8ceb1f7994ecb43227b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a7ff944ee233ba8ceb1f7994ecb43227b">resolve_at</a> (<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a02004c6b8bc0d74331852b10134eef85">pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">p</a>, std::size_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">i</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
 <tr class="memdesc:a7ff944ee233ba8ceb1f7994ecb43227b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать pptr&lt;T&gt; и получить указатель на i-й элемент массива.  <br /></td></tr>
 <tr class="separator:a7ff944ee233ba8ceb1f7994ecb43227b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43ab94a03faaa35bbdeafbf231c85162" id="r_a43ab94a03faaa35bbdeafbf231c85162"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </td></tr>
-<tr class="memitem:a43ab94a03faaa35bbdeafbf231c85162"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a43ab94a03faaa35bbdeafbf231c85162">resolve_at</a> (<a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> &gt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">p</a>, std::size_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">i</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
-<tr class="memdesc:a43ab94a03faaa35bbdeafbf231c85162"><td class="mdescLeft">&#160;</td><td class="mdescRight">Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API).  <br /></td></tr>
-<tr class="separator:a43ab94a03faaa35bbdeafbf231c85162"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e28e2da0e38993148ff9a039aa0b401" id="r_a1e28e2da0e38993148ff9a039aa0b401"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a1e28e2da0e38993148ff9a039aa0b401">total_size</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
 <tr class="separator:a1e28e2da0e38993148ff9a039aa0b401"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a62886b5bfd6f4a7d28c07e399b631e54" id="r_a62886b5bfd6f4a7d28c07e399b631e54"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a62886b5bfd6f4a7d28c07e399b631e54">used_size</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
@@ -192,7 +180,7 @@ class pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, Fre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00065">65</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00073">73</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ad4b581809ebd2e2592737ecb01c74e3f" name="ad4b581809ebd2e2592737ecb01c74e3f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad4b581809ebd2e2592737ecb01c74e3f">&#9670;&#160;</a></span>address_traits</h2>
@@ -208,7 +196,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00073">73</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00081">81</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -226,7 +214,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00077">77</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00085">85</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -244,7 +232,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00075">75</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00083">83</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -264,7 +252,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Тип самого менеджера (для использования в pptr&lt;T, manager_type&gt;). </p>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00082">82</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00090">90</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -298,10 +286,10 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <div class="line">MyMgr::pptr&lt;int&gt; <a class="code hl_variable" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">p</a> = <a class="code hl_namespace" href="namespacepmm.html">pmm</a>.allocate_typed&lt;<span class="keywordtype">int</span>&gt;();</div>
 <div class="line">*<a class="code hl_variable" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">p</a>.resolve(<a class="code hl_namespace" href="namespacepmm.html">pmm</a>) = 42;</div>
 <div class="ttc" id="anamespacepmm_1_1presets_html_a5da31a1eb45ed4fbe1ef818796ade5d0"><div class="ttname"><a href="namespacepmm_1_1presets.html#a5da31a1eb45ed4fbe1ef818796ade5d0">pmm::presets::SingleThreadedHeap</a></div><div class="ttdeci">AbstractPersistMemoryManager&lt; DefaultAddressTraits, HeapStorage&lt; DefaultAddressTraits &gt;, AvlFreeTree&lt; DefaultAddressTraits &gt;, config::NoLock &gt; SingleThreadedHeap</div><div class="ttdoc">Стандартный однопоточный динамический менеджер.</div><div class="ttdef"><b>Definition</b> <a href="pmm__presets_8h_source.html#l00073">pmm_presets.h:74</a></div></div>
-<div class="ttc" id="anamespacepmm_html"><div class="ttname"><a href="namespacepmm.html">pmm</a></div><div class="ttdef"><b>Definition</b> <a href="abstract__pmm_8h_source.html#l00052">abstract_pmm.h:53</a></div></div>
+<div class="ttc" id="anamespacepmm_html"><div class="ttname"><a href="namespacepmm.html">pmm</a></div><div class="ttdef"><b>Definition</b> <a href="abstract__pmm_8h_source.html#l00060">abstract_pmm.h:61</a></div></div>
 <div class="ttc" id="anamespacepmm_html_a921bde594db4955b918196479bbbff7b"><div class="ttname"><a href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">pmm::is_storage_backend_v</a></div><div class="ttdeci">constexpr bool is_storage_backend_v</div><div class="ttdoc">Проверка, соответствует ли Backend концепту StorageBackend.</div><div class="ttdef"><b>Definition</b> <a href="storage__backend_8h_source.html#l00082">storage_backend.h:82</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00100">100</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00108">108</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -319,7 +307,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00074">74</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00082">82</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -337,7 +325,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00076">76</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00084">84</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -367,7 +355,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00406">406</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00377">377</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -400,7 +388,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <p>Выделить <code>user_size</code> байт в управляемой области. </p>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на пользовательские данные или nullptr. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00199">199</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00207">207</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -432,8 +420,8 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </div><div class="memdoc">
 
 <p>Выделить один объект типа T и вернуть персистентный указатель pptr&lt;T&gt;. </p>
-<p>Снаружи менеджера следует хранить только pptr&lt;T&gt;, а не сырые указатели. Для разыменования используйте <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">resolve&lt;T&gt;(p)</a> или <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">resolve_at&lt;T&gt;(p, i)</a>.</p>
-<p>Issue #97: pptr&lt;T&gt; — персистентный 4-байтный указатель (гранульный индекс), адресно-независимый, корректно загружается из файла по другому базовому адресу. Issue #100: возвращает Manager::pptr&lt;T&gt; = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, manager_type&gt;</a>. Неявно конвертируется в <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> для обратной совместимости.</p>
+<p>Снаружи менеджера следует хранить только Manager::pptr&lt;T&gt;, а не сырые указатели. Для разыменования используйте <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">resolve&lt;T&gt;(p)</a> или <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">resolve_at&lt;T&gt;(p, i)</a>, или p.resolve(mgr).</p>
+<p>pptr&lt;T&gt; хранит гранульный индекс (4 байта) и не зависит от базового адреса.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип выделяемого объекта. </td></tr>
@@ -442,7 +430,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; — персистентный указатель или <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pptr&lt;T&gt;()</a> при ошибке. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00265">265</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00271">271</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -489,7 +477,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; — персистентный указатель или <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pptr&lt;T&gt;()</a> при ошибке. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00282">282</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00288">288</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -518,7 +506,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00413">413</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00384">384</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -549,7 +537,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Доступ к бэкенду (для продвинутых сценариев). </p>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00412">412</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00383">383</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -578,7 +566,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00396">396</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00367">367</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -611,7 +599,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <p>Бэкенд должен уже содержать валидный буфер (base_ptr() != nullptr, <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a1e28e2da0e38993148ff9a039aa0b401">total_size()</a> &gt;= kMinMemorySize). Записывает структуры BlockHeader_0, ManagerHeader и первый свободный блок.</p>
 <dl class="section return"><dt>Returns</dt><dd>true при успехе. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00113">113</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00121">121</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -651,7 +639,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true при успехе. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00131">131</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00139">139</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -683,46 +671,12 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Освободить блок по указателю на пользовательские данные. </p>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00228">228</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
-
-</div>
-</div>
-<a id="ad5ac0c2b15e908677adf216a9bef5ed9" name="ad5ac0c2b15e908677adf216a9bef5ed9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad5ac0c2b15e908677adf216a9bef5ed9">&#9670;&#160;</a></span>deallocate_typed() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a>  = DefaultAddressTraits, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">StorageBackendT</a>  = HeapStorage&lt;AddressTraitsT&gt;, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">FreeBlockTreeT</a>  = AvlFreeTree&lt;AddressTraitsT&gt;, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ThreadPolicyT</a>  = config::SharedMutexLock&gt; </div>
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">pmm::AbstractPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">StorageBackendT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">FreeBlockTreeT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ThreadPolicyT</a> &gt;::deallocate_typed </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> &gt;&#160;</td>
-          <td class="paramname"><em>p</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API). </p>
-
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00315">315</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00236">236</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
 <a id="acacc5d486b1c2ddd238cb163d294da1c" name="acacc5d486b1c2ddd238cb163d294da1c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acacc5d486b1c2ddd238cb163d294da1c">&#9670;&#160;</a></span>deallocate_typed() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#acacc5d486b1c2ddd238cb163d294da1c">&#9670;&#160;</a></span>deallocate_typed()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -750,7 +704,6 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </div><div class="memdoc">
 
 <p>Освободить блок по персистентному указателю. </p>
-<p>Принимает Manager::pptr&lt;T&gt; = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, manager_type&gt;</a> (новый API, Issue #100) или <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (старый API, Issue #97).</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип данных (только для проверки типа pptr). </td></tr>
@@ -759,12 +712,12 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">p</td><td>Персистентный указатель на блок. </td></tr>
+    <tr><td class="paramname">p</td><td>Персистентный указатель на блок (Manager::pptr&lt;T&gt;). </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00305">305</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00308">308</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -795,7 +748,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Сбросить состояние менеджера (не освобождает бэкенд). </p>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00178">178</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00186">186</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -824,7 +777,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00401">401</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00372">372</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -853,7 +806,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00387">387</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00358">358</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -882,7 +835,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00190">190</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00198">198</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -915,46 +868,12 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 <p>Проверяет magic/granule_size, восстанавливает структуры данных.</p>
 <dl class="section return"><dt>Returns</dt><dd>true при успехе. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00156">156</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
-
-</div>
-</div>
-<a id="a268f089a9f23abaf8dc03c3410addc04" name="a268f089a9f23abaf8dc03c3410addc04"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a268f089a9f23abaf8dc03c3410addc04">&#9670;&#160;</a></span>resolve() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a>  = DefaultAddressTraits, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">StorageBackendT</a>  = HeapStorage&lt;AddressTraitsT&gt;, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">FreeBlockTreeT</a>  = AvlFreeTree&lt;AddressTraitsT&gt;, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ThreadPolicyT</a>  = config::SharedMutexLock&gt; </div>
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> * <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">pmm::AbstractPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">StorageBackendT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">FreeBlockTreeT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ThreadPolicyT</a> &gt;::resolve </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> &gt;&#160;</td>
-          <td class="paramname"><em>p</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API). </p>
-
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00343">343</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00164">164</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
 <a id="a4185e182b85f101c2268a105829687a9" name="a4185e182b85f101c2268a105829687a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4185e182b85f101c2268a105829687a9">&#9670;&#160;</a></span>resolve() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4185e182b85f101c2268a105829687a9">&#9670;&#160;</a></span>resolve()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -982,7 +901,6 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </div><div class="memdoc">
 
 <p>Разыменовать pptr&lt;T&gt; — получить сырой указатель T* через данный экземпляр. </p>
-<p>Принимает Manager::pptr&lt;T&gt; = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, manager_type&gt;</a> (новый API, Issue #100) или <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (старый API, Issue #97).</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип данных. </td></tr>
@@ -991,62 +909,18 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">p</td><td>Персистентный указатель. </td></tr>
+    <tr><td class="paramname">p</td><td>Персистентный указатель (Manager::pptr&lt;T&gt;). </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на данные или nullptr если p.is_null() или не инициализирован. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00334">334</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
-
-</div>
-</div>
-<a id="a43ab94a03faaa35bbdeafbf231c85162" name="a43ab94a03faaa35bbdeafbf231c85162"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43ab94a03faaa35bbdeafbf231c85162">&#9670;&#160;</a></span>resolve_at() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a>  = DefaultAddressTraits, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">StorageBackendT</a>  = HeapStorage&lt;AddressTraitsT&gt;, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">FreeBlockTreeT</a>  = AvlFreeTree&lt;AddressTraitsT&gt;, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ThreadPolicyT</a>  = config::SharedMutexLock&gt; </div>
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> * <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html">pmm::AbstractPersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">AddressTraitsT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">StorageBackendT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">FreeBlockTreeT</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ThreadPolicyT</a> &gt;::resolve_at </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> &gt;&#160;</td>
-          <td class="paramname"><em>p</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::size_t&#160;</td>
-          <td class="paramname"><em>i</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Перегрузка для <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (обратная совместимость с Issue #97 API). </p>
-
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00369">369</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00324">324</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
 <a id="a7ff944ee233ba8ceb1f7994ecb43227b" name="a7ff944ee233ba8ceb1f7994ecb43227b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ff944ee233ba8ceb1f7994ecb43227b">&#9670;&#160;</a></span>resolve_at() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ff944ee233ba8ceb1f7994ecb43227b">&#9670;&#160;</a></span>resolve_at()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1084,7 +958,6 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </div><div class="memdoc">
 
 <p>Разыменовать pptr&lt;T&gt; и получить указатель на i-й элемент массива. </p>
-<p>Принимает Manager::pptr&lt;T&gt; = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, manager_type&gt;</a> (новый API, Issue #100) или <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">pmm::pptr&lt;T, void&gt;</a> (старый API, Issue #97).</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип элемента. </td></tr>
@@ -1093,14 +966,14 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">p</td><td>Персистентный указатель на массив. </td></tr>
+    <tr><td class="paramname">p</td><td>Персистентный указатель на массив (Manager::pptr&lt;T&gt;). </td></tr>
     <tr><td class="paramname">i</td><td>Индекс элемента. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на i-й элемент или nullptr при ошибке. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00362">362</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00340">340</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -1129,7 +1002,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00377">377</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00348">348</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -1158,7 +1031,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00379">379</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00350">350</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>

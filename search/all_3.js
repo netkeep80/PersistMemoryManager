@@ -9,7 +9,5 @@ var searchData=
   ['coalescingblock_6',['CoalescingBlock',['../classpmm_1_1CoalescingBlock.html',1,'pmm']]],
   ['config_7',['config',['../classpmm_1_1StaticPersistMemoryManager.html#ab072c5b6e3439fa9f7c462c2be1d02ac',1,'pmm::StaticPersistMemoryManager']]],
   ['config_2eh_8',['config.h',['../config_8h.html',1,'']]],
-  ['config_5ftype_9',['config_type',['../classpmm_1_1PersistMemoryManager.html#a9051bd336fa05ac1fc32aecf6a28dffe',1,'pmm::PersistMemoryManager']]],
-  ['const_5fbase_5fptr_10',['const_base_ptr',['../classpmm_1_1PmmCore.html#a0f0b54ef130163741d7525c09c3dd154',1,'pmm::PmmCore']]],
-  ['create_11',['create',['../classpmm_1_1AbstractPersistMemoryManager.html#aa2f966efde8655ba97ba1c824d44cc21',1,'pmm::AbstractPersistMemoryManager::create() noexcept'],['../classpmm_1_1AbstractPersistMemoryManager.html#af7cc58a831da46b1ef8147499e8fbdf8',1,'pmm::AbstractPersistMemoryManager::create(std::size_t initial_size) noexcept'],['../classpmm_1_1PersistMemoryManager.html#a282815aed899acf9d75313e8d8ffcab9',1,'pmm::PersistMemoryManager::create()']]]
+  ['create_9',['create',['../classpmm_1_1AbstractPersistMemoryManager.html#aa2f966efde8655ba97ba1c824d44cc21',1,'pmm::AbstractPersistMemoryManager::create() noexcept'],['../classpmm_1_1AbstractPersistMemoryManager.html#af7cc58a831da46b1ef8147499e8fbdf8',1,'pmm::AbstractPersistMemoryManager::create(std::size_t initial_size) noexcept']]]
 ];
