@@ -76,7 +76,7 @@ $(function() {
 <li>alloc_block_count()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a1e7d4ef5f558d1bccf0bc1d174fb5f62">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
 <li>allocate()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#ab4cf2c23f04b4c30ebc50273a58910dd">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
 <li>allocate_from_block()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a9d21ff24cca425e57aaf5fea0b83cd10">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
-<li>allocate_typed()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a80306c2a0d4bdf15d94692c527f02410">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#aab8d2e6b490d74b1f363ccb87c9627f0">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>allocate_typed()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a80306c2a0d4bdf15d94692c527f02410">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#aab8d2e6b490d74b1f363ccb87c9627f0">pmm::PersistMemoryManager&lt; Config &gt;</a>, <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html#a5696cc10d57fc31814662d12124ac4b3">pmm::StaticPersistMemoryManager&lt; ConfigT, Tag &gt;</a></li>
 <li>AllocatorPolicy()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a7b9dae10356ce145bdd78921d50a8386">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
 <li>attach()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a61d1dc39749ecf7a1298712f3ae39732">pmm::HeapStorage&lt; AddressTraitsT &gt;</a></li>
 <li>avl_height()&#160;:&#160;<a class="el" href="classpmm_1_1BlockStateBase.html#a7a62a48f6d969274d898b7f4575d4aa6">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></li>
@@ -110,7 +110,7 @@ $(function() {
 
 <h3><a id="index_d" name="index_d"></a>- d -</h3><ul>
 <li>deallocate()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a20e9c1827f266a8eb7247cd0dddac0c0">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
-<li>deallocate_typed()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#acacc5d486b1c2ddd238cb163d294da1c">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a26a01cbb2ff949629dc21939409646e8">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
+<li>deallocate_typed()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#acacc5d486b1c2ddd238cb163d294da1c">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a26a01cbb2ff949629dc21939409646e8">pmm::PersistMemoryManager&lt; Config &gt;</a>, <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html#acb2e0401f9ae81af1d16a1c1930949e9">pmm::StaticPersistMemoryManager&lt; ConfigT, Tag &gt;</a></li>
 <li>destroy()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a0bc4f7fdc796ea2956d65defd8ad67c1">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#ac637af04aeaf51a4da77287301b24c5e">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 <li>dump_stats()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#a243f70061044a6563ad63391fda8efd3">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 </ul>
@@ -132,8 +132,8 @@ $(function() {
 
 
 <h3><a id="index_g" name="index_g"></a>- g -</h3><ul>
-<li>get()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#ac8a89ae2713de9973f37709b9bd51c2d">pmm::pptr&lt; T &gt;</a></li>
-<li>get_at()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a9ecacda2b09b9f43e1a175fcce2220b2">pmm::pptr&lt; T &gt;</a></li>
+<li>get()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a45044ef72ccaf60fb89354b2103060cb">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>get_at()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#ad365a4b5bc9902ff137e6ba77c9aed6b">pmm::pptr&lt; T, ManagerT &gt;</a></li>
 <li>get_stats()&#160;:&#160;<a class="el" href="classpmm_1_1StatsMixin.html#a7cb5539e2902c07d90ead621360dc720">pmm::StatsMixin&lt; Base &gt;</a></li>
 <li>granules_to_bytes()&#160;:&#160;<a class="el" href="structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7">pmm::AddressTraits&lt; IndexT, GranuleSz &gt;</a></li>
 </ul>
@@ -154,7 +154,7 @@ $(function() {
 <li>is_allocated()&#160;:&#160;<a class="el" href="classpmm_1_1BlockStateBase.html#a00e102215f632beb708fbed942fb6cac">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></li>
 <li>is_free()&#160;:&#160;<a class="el" href="classpmm_1_1BlockStateBase.html#aa899d35627f0980959e660137eda5675">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></li>
 <li>is_initialized()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#ad2c95f748043b61402ea40932f62ab99">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#aedc70bd3dafbe190c73fc9a52a416ae6">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
-<li>is_null()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#adac1a5126cdc1a0dc340c73083a43b1f">pmm::pptr&lt; T &gt;</a></li>
+<li>is_null()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a2cb78c12fac91ef44774308b0a7fc952">pmm::pptr&lt; T, ManagerT &gt;</a></li>
 <li>is_open()&#160;:&#160;<a class="el" href="classpmm_1_1MMapStorage.html#a7b6756bbf0a7929a36a227d59f098890">pmm::MMapStorage&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
@@ -182,25 +182,26 @@ $(function() {
 
 
 <h3><a id="index_o" name="index_o"></a>- o -</h3><ul>
-<li>offset()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a8108efe689abe56e556d07f9b2e5a01f">pmm::pptr&lt; T &gt;</a></li>
+<li>offset()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a6f76c4e8ab39613a6d8ff49220869d40">pmm::pptr&lt; T, ManagerT &gt;</a></li>
 <li>offset_to_ptr()&#160;:&#160;<a class="el" href="classpmm_1_1PersistMemoryManager.html#ada525b3a41a6ad7d3c59e441f3b8f49a">pmm::PersistMemoryManager&lt; Config &gt;</a></li>
 <li>open()&#160;:&#160;<a class="el" href="classpmm_1_1MMapStorage.html#aef07f10ac7145aad987b0f4c408915e7">pmm::MMapStorage&lt; AddressTraitsT &gt;</a></li>
-<li>operator bool()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#aff4bf521d68c3c8d083685bfa5d7e361">pmm::pptr&lt; T &gt;</a></li>
-<li>operator!=()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a3e6876f42b8c149fa6ace2b07fd6ff1d">pmm::pptr&lt; T &gt;</a></li>
-<li>operator*()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a5de07faf5c8d6559d074a0fdccbe69f9">pmm::pptr&lt; T &gt;</a></li>
-<li>operator++()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a517b6740cc74d195140c4655d5d6e5f9">pmm::pptr&lt; T &gt;</a></li>
-<li>operator--()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a49267180ccf579dd1e8ef884c882ba69">pmm::pptr&lt; T &gt;</a></li>
-<li>operator-&gt;()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a17a150c11b89c8430c0fc082a4e07d68">pmm::pptr&lt; T &gt;</a></li>
-<li>operator=()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a2d2abd744cc025677590051ea508172d">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1AvlFreeTree.html#a37225df96c4dfe91f55174d8c8ead1d7">pmm::AvlFreeTree&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1HeapStorage.html#a86fde3c370ac4715107d10ac728e803a">pmm::HeapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1MMapStorage.html#a88b0394f95dde616f99af855c9a8360b">pmm::MMapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1pptr.html#a5fbddd233ee3bed5cbb2db7161b934f5">pmm::pptr&lt; T &gt;</a>, <a class="el" href="classpmm_1_1StaticStorage.html#aaa3c21bbbea16b2f9bdb171d63316264">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
-<li>operator==()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#ae430f440bc26d551ac6cc8c4468806c8">pmm::pptr&lt; T &gt;</a></li>
-<li>operator[]()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a56e4aba2a2151ea38334b29642c33ec5">pmm::pptr&lt; T &gt;</a></li>
+<li>operator bool()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a4e776a5e64e6e6eb33f5e91a931e96d8">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>operator pptr&lt; T, void &gt;()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a36a84c98481958c692c4fb80148a9625">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>operator!=()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a0d32271a6705486f1e690ec4ac24339a">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>operator*()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a6cb94453f12e106b13c75d39f5771c0e">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>operator++()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a5fd6c3e65e6cca10abde3cbd1554df47">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>operator--()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a40c2c8396bc46c590aea9e30530ee7af">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>operator-&gt;()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#adaa0ac45b0f5634573e69298082e87d1">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>operator=()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a2d2abd744cc025677590051ea508172d">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1AvlFreeTree.html#a37225df96c4dfe91f55174d8c8ead1d7">pmm::AvlFreeTree&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1HeapStorage.html#a86fde3c370ac4715107d10ac728e803a">pmm::HeapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1MMapStorage.html#a88b0394f95dde616f99af855c9a8360b">pmm::MMapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1pptr.html#a8d25d4f093b62019d90539bceeddcce3">pmm::pptr&lt; T, ManagerT &gt;</a>, <a class="el" href="classpmm_1_1StaticStorage.html#aaa3c21bbbea16b2f9bdb171d63316264">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
+<li>operator==()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a0ed0ce34d7c191c07f5eebb3cc54bae9">pmm::pptr&lt; T, ManagerT &gt;</a></li>
+<li>operator[]()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a5288dd475587b4ec8488cf031d5fd176">pmm::pptr&lt; T, ManagerT &gt;</a></li>
 <li>owns_memory()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a9bb257f0a7ecbb7798a3e42d3e917908">pmm::HeapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1MMapStorage.html#af0e187de88081c6f0b576c781d0a0e3b">pmm::MMapStorage&lt; AddressTraitsT &gt;</a>, <a class="el" href="classpmm_1_1StaticStorage.html#a6e3622c92387e9e4adc4a9b6ecba2c2b">pmm::StaticStorage&lt; Size, AddressTraitsT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_p" name="index_p"></a>- p -</h3><ul>
 <li>parent_offset()&#160;:&#160;<a class="el" href="classpmm_1_1BlockStateBase.html#ab930864ddc2fe985fd652b05bb3d7167">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></li>
-<li>pptr()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a0afd00feb9f841613250bd44e147aace">pmm::pptr&lt; T &gt;</a></li>
+<li>pptr()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a1ab91add33a9ad65c34852f74c392907">pmm::pptr&lt; T, ManagerT &gt;</a></li>
 <li>prev_offset()&#160;:&#160;<a class="el" href="classpmm_1_1BlockStateBase.html#a3612911563039d14f840c0cb0f9973e9">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
@@ -213,8 +214,8 @@ $(function() {
 <li>remove_from_avl()&#160;:&#160;<a class="el" href="classpmm_1_1FreeBlock.html#a919c1de955fc07a4bc6f498aa3bda411">pmm::FreeBlock&lt; AddressTraitsT &gt;</a></li>
 <li>repair_linked_list()&#160;:&#160;<a class="el" href="classpmm_1_1AllocatorPolicy.html#a76a73b9c5caae0fe2ed469ce05b83826">pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</a></li>
 <li>reset_avl_fields()&#160;:&#160;<a class="el" href="classpmm_1_1BlockStateBase.html#ab043ddadf86501b14fca872e3edbba2d">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></li>
-<li>resolve()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a4185e182b85f101c2268a105829687a9">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
-<li>resolve_at()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a7ff944ee233ba8ceb1f7994ecb43227b">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a></li>
+<li>resolve()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a4185e182b85f101c2268a105829687a9">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1pptr.html#adc174bba3fe6de0d0f1abd29b9401729">pmm::pptr&lt; T, ManagerT &gt;</a>, <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html#aa2fdf771b86292a894e62d77eee560fc">pmm::StaticPersistMemoryManager&lt; ConfigT, Tag &gt;</a></li>
+<li>resolve_at()&#160;:&#160;<a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html#a7ff944ee233ba8ceb1f7994ecb43227b">pmm::AbstractPersistMemoryManager&lt; AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT &gt;</a>, <a class="el" href="classpmm_1_1StaticPersistMemoryManager.html#a5e36f9d08e9db56def47f835966ebaed">pmm::StaticPersistMemoryManager&lt; ConfigT, Tag &gt;</a></li>
 <li>right_offset()&#160;:&#160;<a class="el" href="classpmm_1_1BlockStateBase.html#a2ee2e7827cba287df5f39fc001c6527e">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></li>
 <li>root_offset()&#160;:&#160;<a class="el" href="classpmm_1_1BlockStateBase.html#a30d0b3a75c8d2cf85be682c75d12703a">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></li>
 </ul>
@@ -264,7 +265,7 @@ $(function() {
 <h3><a id="index__7E" name="index__7E"></a>- ~ -</h3><ul>
 <li>~HeapStorage()&#160;:&#160;<a class="el" href="classpmm_1_1HeapStorage.html#a902dc3ebfd8cedf98349e41c245ebe73">pmm::HeapStorage&lt; AddressTraitsT &gt;</a></li>
 <li>~MMapStorage()&#160;:&#160;<a class="el" href="classpmm_1_1MMapStorage.html#ae4a31c8ab07f0fa07cb507d16b069aa8">pmm::MMapStorage&lt; AddressTraitsT &gt;</a></li>
-<li>~pptr()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#ad1825b080332d4ad0b251b1a9a1918d0">pmm::pptr&lt; T &gt;</a></li>
+<li>~pptr()&#160;:&#160;<a class="el" href="classpmm_1_1pptr.html#a946d3791d40a99ffdc39ef2447a590c3">pmm::pptr&lt; T, ManagerT &gt;</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['thread_5fpolicy_0',['thread_policy',['../classpmm_1_1AbstractPersistMemoryManager.html#a7e4f9db3b0291b91be833eaa3b8dc535',1,'pmm::AbstractPersistMemoryManager']]],
-  ['tinyaddresstraits_1',['TinyAddressTraits',['../namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b',1,'pmm']]]
+  ['tag_0',['tag',['../classpmm_1_1StaticPersistMemoryManager.html#ae5e62c7f4dfa66dcd9efdc9adb2309b1',1,'pmm::StaticPersistMemoryManager']]],
+  ['thread_5fpolicy_1',['thread_policy',['../classpmm_1_1AbstractPersistMemoryManager.html#a7e4f9db3b0291b91be833eaa3b8dc535',1,'pmm::AbstractPersistMemoryManager']]],
+  ['tinyaddresstraits_2',['TinyAddressTraits',['../namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b',1,'pmm']]]
 ];

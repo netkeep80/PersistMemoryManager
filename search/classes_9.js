@@ -1,9 +1,8 @@
 var searchData=
 [
-  ['shared_5flock_5ftype_0',['shared_lock_type',['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html',1,'pmm::config::NoLock']]],
-  ['sharedmutexlock_1',['SharedMutexLock',['../structpmm_1_1config_1_1SharedMutexLock.html',1,'pmm::config']]],
-  ['splittingblock_2',['SplittingBlock',['../classpmm_1_1SplittingBlock.html',1,'pmm']]],
-  ['staticstorage_3',['StaticStorage',['../classpmm_1_1StaticStorage.html',1,'pmm']]],
-  ['statsmixin_4',['StatsMixin',['../classpmm_1_1StatsMixin.html',1,'pmm']]],
-  ['statsmixin_3c_20pmmcore_3c_20persistmemorymanager_3c_20config_20_3e_20_3e_20_3e_5',['StatsMixin&lt; PmmCore&lt; PersistMemoryManager&lt; Config &gt; &gt; &gt;',['../classpmm_1_1StatsMixin.html',1,'pmm']]]
+  ['managerheader_0',['ManagerHeader',['../structpmm_1_1detail_1_1ManagerHeader.html',1,'pmm::detail']]],
+  ['managerinfo_1',['ManagerInfo',['../structpmm_1_1ManagerInfo.html',1,'pmm']]],
+  ['memorystats_2',['MemoryStats',['../structpmm_1_1MemoryStats.html',1,'pmm']]],
+  ['mmapstorage_3',['MMapStorage',['../classpmm_1_1MMapStorage.html',1,'pmm']]],
+  ['mutex_5ftype_4',['mutex_type',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html',1,'pmm::config::NoLock']]]
 ];
