@@ -4,26 +4,24 @@
  *
  * Выделен из legacy_manager.h для использования с AbstractPersistMemoryManager.
  *
- * pptr<T, ManagerT> хранит гранульный индекс (4 байта, uint32_t) вместо адреса,
+ * pptr<T, ManagerT> хранит гранульный индекс вместо адреса,
  * что делает его адресно-независимым и пригодным для персистентных хранилищ:
- *   - 4 байта вместо 8 (для 64-bit)
+ *   - Хранит индекс типа ManagerT::address_traits::index_type (обычно uint32_t = 4 байта)
  *   - Нет смещения при повторной загрузке по другому адресу
  *   - Запрет адресной арифметики (pptr++ запрещён)
  *   - Index 0 означает null
  *
- * Единственный поддерживаемый режим (Issue #102):
- *   - `pptr<T, ManagerT>` — привязан к типу менеджера, разыменование через p.resolve(mgr)
+ * Поддерживаемые режимы разыменования (Issue #102, #108):
+ *   - Объектная модель: `p.resolve(mgr)` или `mgr.resolve<T>(p)` — через экземпляр менеджера
+ *   - Статическая модель: `p.resolve()`, `*p`, `p->field` — через статический метод менеджера
+ *     (только для менеджеров с статическим API, например StaticMemoryManager)
  *
- * Разыменование:
- *   - Для AbstractPersistMemoryManager (рекомендуется): mgr.resolve<T>(p) или p.resolve(mgr)
- *
- * Пример использования с AbstractPersistMemoryManager:
+ * Пример использования с AbstractPersistMemoryManager (объектная модель):
  * @code
  *   using MyMgr = pmm::presets::SingleThreadedHeap;
  *   MyMgr pmm;
  *   pmm.create(64 * 1024);
  *
- *   // pptr привязан к типу менеджера через nested alias Manager::pptr<T>
  *   MyMgr::pptr<int> p = pmm.allocate_typed<int>();
  *   if (p) {
  *       *p.resolve(pmm) = 42;  // разыменование через экземпляр менеджера
@@ -31,9 +29,24 @@
  *   pmm.deallocate_typed(p);
  * @endcode
  *
+ * Пример использования с StaticMemoryManager (статическая модель):
+ * @code
+ *   using MyMgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig>;
+ *   MyMgr::create(64 * 1024);
+ *
+ *   MyMgr::pptr<int> p = MyMgr::allocate_typed<int>();
+ *   if (p) {
+ *       *p = 42;        // operator* — разыменование без аргументов
+ *       p->some_field;  // operator-> — доступ к полям
+ *       int* raw = p.resolve();  // явный вызов resolve() без аргументов
+ *   }
+ *   MyMgr::deallocate_typed(p);
+ *   MyMgr::destroy();
+ * @endcode
+ *
  * @see abstract_pmm.h — AbstractPersistMemoryManager::allocate_typed()
- * @see abstract_pmm.h — AbstractPersistMemoryManager::resolve()
- * @version 0.3 (Issue #102 — ManagerT mandatory, legacy void support removed)
+ * @see static_memory_manager.h — StaticMemoryManager (статическая модель)
+ * @version 0.4 (Issue #108 — добавлен беззаргументный resolve(), operator*, operator->)
  */
 
 #pragma once
@@ -45,25 +58,48 @@
 namespace pmm
 {
 
+namespace detail
+{
+
+/// @cond INTERNAL
+
+/// @brief Вспомогательный trait: извлекает index_type из менеджера (через address_traits).
+/// Если ManagerT::index_type существует, использует его; иначе — uint32_t.
+template <typename ManagerT, typename = void> struct manager_index_type
+{
+    using type = std::uint32_t;
+};
+
+template <typename ManagerT> struct manager_index_type<ManagerT, std::void_t<typename ManagerT::index_type>>
+{
+    using type = typename ManagerT::index_type;
+};
+
+/// @endcond
+
+} // namespace detail
+
 /**
- * @brief Персистентный типизированный указатель (4 байта, гранульный индекс).
+ * @brief Персистентный типизированный указатель (гранульный индекс).
  *
  * Хранит гранульный индекс пользовательских данных, а не адрес.
  * Адресно-независим: корректно загружается из файла по другому базовому адресу.
  *
+ * Тип индекса определяется через `ManagerT::index_type` (если менеджер его предоставляет),
+ * иначе используется `uint32_t` (Issue #108).
+ *
  * @tparam T Тип данных, на который указывает pptr.
  * @tparam ManagerT Тип менеджера (обязателен, void не допускается).
  *
- * Для разыменования требуется базовый указатель менеджера:
- *   - `mgr.resolve<T>(p)` или `p.resolve(mgr)` — для AbstractPersistMemoryManager
+ * Поддерживаются два режима разыменования:
+ *   - Объектная модель: `p.resolve(mgr)` или `mgr.resolve<T>(p)`
+ *   - Статическая модель: `p.resolve()`, `*p`, `p->field` (если ManagerT имеет статический resolve)
  */
 template <class T, class ManagerT> class pptr
 {
     static_assert( !std::is_void<ManagerT>::value,
                    "pptr<T, void> is no longer supported. Use pptr<T, ManagerT> with a concrete manager type. "
                    "See pmm_presets.h for available presets." );
-
-    std::uint32_t _idx; ///< Гранульный индекс пользовательских данных (0 = null)
 
   public:
     /// @brief Тип данных, на который ссылается pptr.
@@ -72,8 +108,15 @@ template <class T, class ManagerT> class pptr
     /// @brief Тип менеджера, к которому привязан pptr.
     using manager_type = ManagerT;
 
+    /// @brief Тип гранульного индекса (берётся из ManagerT::index_type, иначе uint32_t).
+    using index_type = typename detail::manager_index_type<ManagerT>::type;
+
+  private:
+    index_type _idx; ///< Гранульный индекс пользовательских данных (0 = null)
+
+  public:
     constexpr pptr() noexcept : _idx( 0 ) {}
-    constexpr explicit pptr( std::uint32_t idx ) noexcept : _idx( idx ) {}
+    constexpr explicit pptr( index_type idx ) noexcept : _idx( idx ) {}
     constexpr pptr( const pptr& ) noexcept            = default;
     constexpr pptr& operator=( const pptr& ) noexcept = default;
     ~pptr() noexcept                                  = default;
@@ -91,16 +134,16 @@ template <class T, class ManagerT> class pptr
     constexpr explicit operator bool() const noexcept { return _idx != 0; }
 
     /// @brief Получить гранульный индекс (для сохранения/восстановления).
-    constexpr std::uint32_t offset() const noexcept { return _idx; }
+    constexpr index_type offset() const noexcept { return _idx; }
 
     /// @brief Сравнение персистентных указателей одного типа.
     constexpr bool operator==( const pptr& other ) const noexcept { return _idx == other._idx; }
     constexpr bool operator!=( const pptr& other ) const noexcept { return _idx != other._idx; }
 
-    // ─── Разыменование через экземпляр менеджера ───────────────────────────────
+    // ─── Разыменование через экземпляр менеджера (объектная модель) ──────────
 
     /**
-     * @brief Разыменовать через экземпляр менеджера.
+     * @brief Разыменовать через экземпляр менеджера (объектная модель).
      *
      * Эквивалентно mgr.resolve<T>(*this).
      *
@@ -108,6 +151,38 @@ template <class T, class ManagerT> class pptr
      * @return T* — указатель на данные или nullptr если is_null().
      */
     T* resolve( ManagerT& mgr ) const noexcept { return mgr.template resolve<T>( *this ); }
+
+    // ─── Разыменование через статический менеджер (статическая модель) ────────
+
+    /**
+     * @brief Разыменовать через статический метод менеджера (статическая модель).
+     *
+     * Вызывает `ManagerT::resolve<T>(*this)` без аргументов.
+     * Доступно только для менеджеров со статическим API (например, StaticMemoryManager).
+     *
+     * @return T* — указатель на данные или nullptr если is_null().
+     */
+    T* resolve() const noexcept { return ManagerT::template resolve<T>( *this ); }
+
+    /**
+     * @brief Разыменование указателя (статическая модель).
+     *
+     * Эквивалентно `*resolve()`.
+     * Доступно только для менеджеров со статическим API.
+     *
+     * @return T& — ссылка на данные.
+     */
+    T& operator*() const noexcept { return *resolve(); }
+
+    /**
+     * @brief Доступ к членам через персистентный указатель (статическая модель).
+     *
+     * Эквивалентно `resolve()`.
+     * Доступно только для менеджеров со статическим API.
+     *
+     * @return T* — указатель на данные.
+     */
+    T* operator->() const noexcept { return resolve(); }
 };
 
 // pptr<T, ManagerT> должен быть 4 байта (uint32_t гранульный индекс) — ManagerT не хранится
