@@ -3,16 +3,14 @@
  * @brief Implementation of MetricsView: live PMM metrics panel.
  *
  * Phase 12 addition: displays the result and age of the most recent background
- * integrity check (validate()) and a manual "Validate now" button.
+ * integrity check (is_initialized()) and a manual "Validate now" button.
  */
 
 #include "metrics_view.h"
 
 #include "imgui.h"
-#include "pmm/legacy_manager.h"
 
 #include <cstdio>
-#include <iostream>
 
 namespace demo
 {
@@ -125,7 +123,7 @@ void MetricsView::render()
     ImGui::Spacing();
 
     // ── Phase 12: Integrity check status ─────────────────────────────────────
-    ImGui::TextUnformatted( "Integrity check (validate):" );
+    ImGui::TextUnformatted( "Integrity check (is_initialized):" );
     ImGui::SameLine();
 
     switch ( last_validation_.state )
@@ -158,14 +156,6 @@ void MetricsView::render()
     ImGui::SameLine();
     if ( ImGui::Button( "Validate now" ) )
         validate_requested_ = true;
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    if ( ImGui::Button( "Dump to stdout" ) )
-    {
-        pmm::PersistMemoryManager<>::dump_stats( std::cout );
-    }
 
     ImGui::End();
 }

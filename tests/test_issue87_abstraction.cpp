@@ -70,7 +70,7 @@ static bool test_cr_granule_size_is_hardcoded()
 static bool test_cr_no_block_is_max_uint32()
 {
     static_assert( pmm::detail::kNoBlock == 0xFFFFFFFFU, "kNoBlock is max uint32_t" );
-    PMM_TEST( pmm::detail::kNoBlock == std::numeric_limits<std::uint32_t>::max() );
+    PMM_TEST( pmm::detail::kNoBlock == ( std::numeric_limits<std::uint32_t>::max )() );
     return true;
 }
 

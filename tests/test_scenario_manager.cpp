@@ -1,6 +1,6 @@
 /**
  * @file test_scenario_manager.cpp
- * @brief Phase 8 unit tests for ScenarioManager lifecycle.
+ * @brief Phase 8 unit tests for ScenarioManager lifecycle (migrated to new API, Issue #102).
  *
  * Tests:
  *  - Start 3 scenarios, call stop_all() + join_all(), verify all threads
@@ -9,19 +9,14 @@
  *  - count() returns the expected number of scenarios (8).
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
- *
- * NOTE: Uses std::malloc for the PMM buffer so that destroy() can safely
- * free it (consistent with all other PMM tests and the PMM contract where
- * owns_memory=true means the buffer was malloc'd).
  */
 
 #include "scenario_manager.h"
 
-#include "pmm/legacy_manager.h"
+#include "demo_globals.h"
 
 #include <chrono>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
 #include <thread>
 
@@ -55,23 +50,26 @@
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
 static constexpr std::size_t kDefaultPmmSize = 16 * 1024 * 1024;
-static void*                 g_buf           = nullptr;
+static demo::DemoMgr*        g_test_mgr      = nullptr;
 
 static void pmm_setup( std::size_t size = kDefaultPmmSize )
 {
-    g_buf = std::malloc( size );
-    if ( g_buf )
+    g_test_mgr = new demo::DemoMgr();
+    if ( !g_test_mgr->create( size ) )
     {
-        std::memset( g_buf, 0, size );
-        pmm::PersistMemoryManager<>::create( g_buf, size );
+        delete g_test_mgr;
+        g_test_mgr = nullptr;
+        std::cerr << "DemoMgr::create() failed\n";
+        std::exit( 1 );
     }
+    demo::g_pmm.store( g_test_mgr );
 }
 
 static void pmm_teardown()
 {
-    if ( pmm::PersistMemoryManager<>::instance() )
-        pmm::PersistMemoryManager<>::destroy(); // frees g_buf (owns_memory=true)
-    g_buf = nullptr;
+    demo::g_pmm.store( nullptr );
+    delete g_test_mgr;
+    g_test_mgr = nullptr;
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -139,9 +137,9 @@ static bool test_start_stop_single()
         mgr.join_all();
     }
 
-    auto* inst = pmm::PersistMemoryManager<>::instance();
+    auto* inst = demo::g_pmm.load();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    PMM_TEST( inst->is_initialized() );
 
     pmm_teardown();
     return true;
@@ -162,9 +160,9 @@ static bool test_destructor_cleans_up()
         // Let destructor call stop_all + join_all
     }
 
-    auto* inst = pmm::PersistMemoryManager<>::instance();
+    auto* inst = demo::g_pmm.load();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    PMM_TEST( inst->is_initialized() );
 
     pmm_teardown();
     return true;

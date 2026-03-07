@@ -1,6 +1,6 @@
 /**
  * @file test_manual_alloc_view.cpp
- * @brief Issue #65 headless tests for ManualAllocView.
+ * @brief Headless tests for ManualAllocView (migrated to new API, Issue #102).
  *
  * Tests:
  *  1. clear() on empty view must not crash.
@@ -13,13 +13,11 @@
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
  */
 
+#include "demo_globals.h"
 #include "manual_alloc_view.h"
-
-#include "pmm/legacy_manager.h"
 
 #include <cassert>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
 
 // ─── Test helpers ─────────────────────────────────────────────────────────────
@@ -49,6 +47,22 @@
         }                                                                                                              \
     } while ( false )
 
+// ─── PMM fixture helpers ───────────────────────────────────────────────────────
+
+static demo::DemoMgr* make_pmm( std::size_t sz )
+{
+    auto* mgr = new demo::DemoMgr();
+    mgr->create( sz );
+    demo::g_pmm.store( mgr );
+    return mgr;
+}
+
+static void destroy_pmm( demo::DemoMgr* mgr )
+{
+    demo::g_pmm.store( nullptr );
+    delete mgr;
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 /**
@@ -63,27 +77,27 @@ static bool test_clear_empty_view()
 }
 
 /**
- * @brief clear() when PMM is active must deallocate live blocks without leaking.
- *
- * We simulate the blocks by calling allocate_typed directly and then letting
- * clear() call deallocate_typed, then verifying validate() still passes.
+ * @brief clear() when PMM is active must not crash and must leave live_count == 0.
  */
 static bool test_clear_frees_blocks()
 {
-    constexpr std::size_t kPmmSize = 256 * 1024;
+    auto* mgr = make_pmm( 256 * 1024 );
+    PMM_TEST( mgr != nullptr );
 
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
+    const std::size_t used_before = mgr->used_size();
 
-    const std::size_t used_before = pmm::PersistMemoryManager<>::used_size();
+    // Allocate some blocks outside the view, verify PMM is valid after the scenario.
+    std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
+    for ( int i = 0; i < 5; ++i )
+    {
+        demo::DemoMgr::pptr<std::uint8_t> p = mgr->allocate_typed<std::uint8_t>( 64 );
+        PMM_TEST( !p.is_null() );
+        ptrs.push_back( p );
+    }
 
-    // Allocate some blocks directly and remember them via ManualAllocView's
-    // internal state by calling clear() after manually populating via the
-    // public interface.  Since ManualAllocView::render() is not callable
-    // headlessly, we exercise clear() on a view with no blocks and confirm
-    // the PMM validates correctly.
+    PMM_TEST( mgr->used_size() > used_before );
+
+    // Exercise clear() on an empty view (no blocks tracked by the view).
     {
         demo::ManualAllocView view;
         PMM_TEST( view.live_count() == 0 );
@@ -91,23 +105,11 @@ static bool test_clear_frees_blocks()
         PMM_TEST( view.live_count() == 0 );
     }
 
-    // Allocate blocks outside the view, then verify PMM is valid after scenario.
-    std::vector<pmm::pptr<std::uint8_t>> ptrs;
-    for ( int i = 0; i < 5; ++i )
-    {
-        auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 64 );
-        PMM_TEST( !p.is_null() );
-        ptrs.push_back( p );
-    }
-
-    PMM_TEST( pmm::PersistMemoryManager<>::used_size() > used_before );
-
     for ( auto& p : ptrs )
-        pmm::PersistMemoryManager<>::deallocate_typed( p );
+        mgr->deallocate_typed( p );
 
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
+    PMM_TEST( mgr->is_initialized() );
+    destroy_pmm( mgr );
     return true;
 }
 
@@ -116,12 +118,8 @@ static bool test_clear_frees_blocks()
  */
 static bool test_repeated_clear()
 {
-    constexpr std::size_t kPmmSize = 128 * 1024;
-
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
+    auto* mgr = make_pmm( 128 * 1024 );
+    PMM_TEST( mgr != nullptr );
 
     {
         demo::ManualAllocView view;
@@ -131,9 +129,8 @@ static bool test_repeated_clear()
         PMM_TEST( view.live_count() == 0 );
     }
 
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
+    PMM_TEST( mgr->is_initialized() );
+    destroy_pmm( mgr );
     return true;
 }
 

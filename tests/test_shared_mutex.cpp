@@ -177,7 +177,7 @@ static void test_concurrent_manual_grow_correctness()
     for ( int t = 0; t < kThreads; ++t )
     {
         threads.emplace_back(
-            [t, &ptrs, &pmm, &corrupted, kIter]()
+            [t, &ptrs, &pmm, &corrupted, kIter, kInitSize, kPattern]()
             {
                 std::size_t cur_size = kInitSize;
                 for ( int i = 0; i < kIter; ++i )

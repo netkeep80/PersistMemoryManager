@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "pmm/legacy_manager.h"
+#include "demo_globals.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -28,10 +28,10 @@ namespace demo
  */
 struct ManualBlock
 {
-    pmm::pptr<std::uint8_t> ptr;    ///< Persistent pointer returned by allocate_typed
-    std::size_t             size;   ///< Requested size in bytes
-    std::ptrdiff_t          offset; ///< Byte offset in managed region (for display)
-    std::string             label;  ///< Short human-readable label "Alloc #N"
+    DemoMgr::pptr<std::uint8_t> ptr;    ///< Persistent pointer returned by allocate_typed
+    std::size_t                 size;   ///< Requested size in bytes
+    std::ptrdiff_t              offset; ///< Granule offset of the pptr (for display)
+    std::string                 label;  ///< Short human-readable label "Alloc #N"
 };
 
 /**

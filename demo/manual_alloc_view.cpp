@@ -4,12 +4,14 @@
  *
  * Issue #65: provides "Alloc" and "Free" buttons so the user can manually test the
  * memory manager one operation at a time while watching the AVL tree and memory map.
+ *
+ * Uses the new AbstractPersistMemoryManager API via demo::g_pmm.
  */
 
 #include "manual_alloc_view.h"
 
 #include "imgui.h"
-#include "pmm/legacy_manager.h"
+#include "pmm/config.h"
 
 #include <cstdio>
 
@@ -20,13 +22,13 @@ namespace demo
 
 void ManualAllocView::clear()
 {
-    auto* mgr = pmm::PersistMemoryManager<>::instance();
+    auto* mgr = g_pmm.load();
     if ( mgr )
     {
         for ( auto& blk : blocks_ )
         {
             if ( !blk.ptr.is_null() )
-                pmm::PersistMemoryManager<>::deallocate_typed( blk.ptr );
+                mgr->deallocate_typed( blk.ptr );
         }
     }
     blocks_.clear();
@@ -39,7 +41,7 @@ void ManualAllocView::render()
 {
     ImGui::Begin( "Manual Alloc" );
 
-    auto* mgr = pmm::PersistMemoryManager<>::instance();
+    auto* mgr = g_pmm.load();
 
     // ── Allocation controls ───────────────────────────────────────────────────
     ImGui::TextUnformatted( "Allocation size (bytes):" );
@@ -57,7 +59,8 @@ void ManualAllocView::render()
 
     if ( ImGui::Button( "Alloc" ) && can_alloc )
     {
-        auto ptr = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( static_cast<std::size_t>( alloc_size_ ) );
+        DemoMgr::pptr<std::uint8_t> ptr =
+            mgr->allocate_typed<std::uint8_t>( static_cast<std::size_t>( alloc_size_ ) );
         if ( !ptr.is_null() )
         {
             ManualBlock blk;
@@ -72,8 +75,7 @@ void ManualAllocView::render()
         }
         else
         {
-            // Show OOM as a tooltip on next hover — for now just ignore silently.
-            // The memory-map panel will reflect the OOM state.
+            // OOM — the memory-map panel will reflect the state.
         }
     }
 
@@ -91,7 +93,7 @@ void ManualAllocView::render()
     {
         auto& blk = blocks_[static_cast<std::size_t>( selected_idx_ )];
         if ( !blk.ptr.is_null() )
-            pmm::PersistMemoryManager<>::deallocate_typed( blk.ptr );
+            mgr->deallocate_typed( blk.ptr );
         blocks_.erase( blocks_.begin() + selected_idx_ );
         selected_idx_ = -1;
     }

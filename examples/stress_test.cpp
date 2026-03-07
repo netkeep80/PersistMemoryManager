@@ -196,7 +196,7 @@ static bool test_1m_alternating()
         {
             const std::uint8_t* p       = pool[i].resolve( pmm );
             const std::uint8_t  pattern = static_cast<std::uint8_t>( i & 0xFF );
-            for ( std::size_t j = 0; j < std::min( pool_sizes[i], std::size_t( 8 ) ); j++ )
+            for ( std::size_t j = 0; j < ( std::min )( pool_sizes[i], std::size_t( 8 ) ); j++ )
             {
                 if ( p[j] != pattern )
                 {

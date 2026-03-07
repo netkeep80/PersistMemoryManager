@@ -39,6 +39,7 @@ set(IMGUI_SOURCES
 # ─── Demo library (all demo sources except main.cpp) ─────────────────────────
 # Shared by pmm_demo executable and the Phase-8 headless test executables.
 add_library(pmm_demo_lib STATIC
+    demo_globals.cpp        # Issue #102: global DemoMgr pointer
     demo_app.cpp
     mem_map_view.cpp
     metrics_view.cpp

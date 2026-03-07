@@ -1,10 +1,9 @@
 /**
  * @file test_scenario_coordinator.cpp
- * @brief Phase 10 unit tests for ScenarioCoordinator.
+ * @brief Phase 10 unit tests for ScenarioCoordinator (migrated to new API, Issue #102).
  *
- * Verifies the pause/resume protocol that allows PersistenceCycle to safely
- * call PersistMemoryManager::destroy() while other scenario threads are
- * running (fixes plan.md Risk #5).
+ * Verifies the pause/resume protocol that allows scenarios to safely
+ * synchronise while other scenario threads are running.
  *
  * Tests:
  *  - test_pause_blocks_thread(): yield_if_paused() blocks until resume_others().
@@ -15,8 +14,8 @@
  *  - test_stop_flag_breaks_pause(): yield_if_paused() returns promptly when
  *    stop_flag is set even while pause is active.
  *  - test_persistence_cycle_safety(): ScenarioManager runs PersistenceCycle
- *    alongside two other scenarios; after a destroy/reload cycle the PMM
- *    instance is valid and validate() returns true.
+ *    alongside two other scenarios; after the cycle the PMM instance is valid
+ *    and is_initialized() returns true.
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources).
  */
@@ -24,14 +23,14 @@
 #include "scenario_manager.h"
 #include "scenarios.h"
 
-#include "pmm/legacy_manager.h"
+#include "demo_globals.h"
 
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
 #include <thread>
+#include <vector>
 
 // ─── Test helpers ─────────────────────────────────────────────────────────────
 
@@ -63,23 +62,26 @@
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
 static constexpr std::size_t kDefaultPmmSize = 16 * 1024 * 1024;
-static void*                 g_buf           = nullptr;
+static demo::DemoMgr*        g_test_mgr      = nullptr;
 
 static void pmm_setup( std::size_t size = kDefaultPmmSize )
 {
-    g_buf = std::malloc( size );
-    if ( g_buf )
+    g_test_mgr = new demo::DemoMgr();
+    if ( !g_test_mgr->create( size ) )
     {
-        std::memset( g_buf, 0, size );
-        pmm::PersistMemoryManager<>::create( g_buf, size );
+        delete g_test_mgr;
+        g_test_mgr = nullptr;
+        std::cerr << "DemoMgr::create() failed\n";
+        std::exit( 1 );
     }
+    demo::g_pmm.store( g_test_mgr );
 }
 
 static void pmm_teardown()
 {
-    if ( pmm::PersistMemoryManager<>::instance() )
-        pmm::PersistMemoryManager<>::destroy();
-    g_buf = nullptr;
+    demo::g_pmm.store( nullptr );
+    delete g_test_mgr;
+    g_test_mgr = nullptr;
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -221,7 +223,7 @@ static bool test_stop_flag_breaks_pause()
 
 /**
  * @brief PersistenceCycle scenario runs safely alongside LinearFill and
- *        RandomStress; after the destroy/reload cycle PMM validate() == true.
+ *        RandomStress; after the save cycle PMM is_initialized() returns true.
  */
 static bool test_persistence_cycle_safety()
 {
@@ -240,9 +242,9 @@ static bool test_persistence_cycle_safety()
         sm.join_all();
     }
 
-    auto* inst = pmm::PersistMemoryManager<>::instance();
+    auto* inst = demo::g_pmm.load();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    PMM_TEST( inst->is_initialized() );
 
     pmm_teardown();
     return true;

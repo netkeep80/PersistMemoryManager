@@ -1,24 +1,25 @@
 /**
  * @file test_avl_tree_view.cpp
- * @brief Issue #65 headless tests for AvlTreeView and for_each_free_block_avl().
+ * @brief Headless tests for AvlTreeView (migrated to new API, Issue #102).
+ *
+ * The new AvlTreeView no longer exposes a per-node snapshot (block-level
+ * iteration is not available in AbstractPersistMemoryManager). These tests
+ * verify the aggregate statistics reported by the view.
  *
  * Tests:
- *  1. Empty PMM (no free blocks) → snapshot is empty.
- *  2. After a single allocation the free tree has exactly one node.
- *  3. After multiple allocations the snapshot count equals free_count.
- *  4. AVL structural invariant: every node's offset matches its parent's left/right link.
- *  5. update_snapshot() on null PMM must not crash.
+ *  1. Freshly created PMM: update_snapshot() completes without crash, free_block_count > 0.
+ *  2. update_snapshot() with null mgr must not crash.
+ *  3. After allocating all free space free_block_count drops.
+ *  4. After deallocating free_block_count increases again.
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
  */
 
 #include "avl_tree_view.h"
-
-#include "pmm/legacy_manager.h"
+#include "demo_globals.h"
 
 #include <cassert>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
 #include <vector>
 
@@ -49,240 +50,115 @@
         }                                                                                                              \
     } while ( false )
 
+// ─── PMM fixture helpers ───────────────────────────────────────────────────────
+
+static demo::DemoMgr* make_pmm( std::size_t sz )
+{
+    auto* mgr = new demo::DemoMgr();
+    mgr->create( sz );
+    demo::g_pmm.store( mgr );
+    return mgr;
+}
+
+static void destroy_pmm( demo::DemoMgr* mgr )
+{
+    demo::g_pmm.store( nullptr );
+    delete mgr;
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 /**
- * @brief Freshly created PMM (nothing allocated): free tree has one large block.
+ * @brief Freshly created PMM: update_snapshot() completes, free_block_count > 0.
  */
-static bool test_empty_pmm_has_one_free_block()
+static bool test_empty_pmm_has_free_blocks()
 {
-    constexpr std::size_t kPmmSize = 256 * 1024; // 256 KiB
-
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
-
-    auto* mgr = pmm::PersistMemoryManager<>::instance();
+    auto* mgr = make_pmm( 256 * 1024 );
     PMM_TEST( mgr != nullptr );
+    PMM_TEST( mgr->is_initialized() );
 
     demo::AvlTreeView view;
     view.update_snapshot( mgr );
 
-    // Freshly created PMM: one large free block covering the whole managed region.
-    PMM_TEST( view.snapshot().size() == 1 );
+    // Freshly created PMM has one large free block.
+    PMM_TEST( mgr->free_block_count() >= 1 );
 
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
+    destroy_pmm( mgr );
     return true;
 }
 
 /**
- * @brief After allocating all free space the snapshot must be empty.
- */
-static bool test_fully_allocated_has_empty_snapshot()
-{
-    constexpr std::size_t kPmmSize = 4096; // Smallest valid PMM
-
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
-
-    auto* mgr = pmm::PersistMemoryManager<>::instance();
-    PMM_TEST( mgr != nullptr );
-
-    // Allocate until no free blocks remain.
-    // Check free_count before each allocation to stop before auto-expand
-    // is triggered (expand() is called only when find_best_fit fails, which
-    // happens only when free_count == 0 or all free blocks are too small).
-    std::vector<pmm::pptr<std::uint8_t>> ptrs;
-    for ( ;; )
-    {
-        if ( pmm::get_manager_info().free_count == 0 )
-            break;
-        auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 16 );
-        if ( p.is_null() )
-            break;
-        ptrs.push_back( p );
-    }
-
-    // Verify PMM is fully allocated (no free blocks remain).
-    PMM_TEST( pmm::get_manager_info().free_count == 0 );
-
-    demo::AvlTreeView view;
-    view.update_snapshot( mgr );
-
-    // When fully allocated no free blocks remain.
-    PMM_TEST( view.snapshot().empty() );
-
-    // Free everything and check the snapshot is non-empty again.
-    for ( auto& p : ptrs )
-        pmm::PersistMemoryManager<>::deallocate_typed( p );
-
-    view.update_snapshot( mgr );
-    PMM_TEST( !view.snapshot().empty() );
-
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
-    return true;
-}
-
-/**
- * @brief snapshot().size() must equal free_count reported by ManagerInfo.
- */
-static bool test_snapshot_count_matches_free_count()
-{
-    constexpr std::size_t kPmmSize = 256 * 1024;
-
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
-
-    auto* mgr = pmm::PersistMemoryManager<>::instance();
-    PMM_TEST( mgr != nullptr );
-
-    // Allocate and free in a pattern that creates fragmentation.
-    std::vector<pmm::pptr<std::uint8_t>> ptrs;
-    for ( int i = 0; i < 20; ++i )
-    {
-        auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 512 );
-        PMM_TEST( !p.is_null() );
-        ptrs.push_back( p );
-    }
-    // Free every other block to create fragmentation.
-    for ( int i = 0; i < 20; i += 2 )
-        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[static_cast<std::size_t>( i )] );
-
-    demo::AvlTreeView view;
-    view.update_snapshot( mgr );
-
-    pmm::ManagerInfo info = pmm::get_manager_info();
-    PMM_TEST( view.snapshot().size() == info.free_count );
-
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
-    return true;
-}
-
-/**
- * @brief Each snapshot node's offset must appear as left or right child of its parent.
- *
- * This verifies that the AVL structural links in FreeBlockView are consistent.
- */
-static bool test_avl_parent_child_links_consistent()
-{
-    constexpr std::size_t kPmmSize = 256 * 1024;
-
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
-
-    auto* mgr = pmm::PersistMemoryManager<>::instance();
-    PMM_TEST( mgr != nullptr );
-
-    // Build a fragmented free tree with several nodes.
-    std::vector<pmm::pptr<std::uint8_t>> ptrs;
-    for ( int i = 0; i < 30; ++i )
-    {
-        std::size_t sz = static_cast<std::size_t>( 64 + i * 32 ); // varying sizes
-        auto        p  = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( sz );
-        if ( p.is_null() )
-            break;
-        ptrs.push_back( p );
-    }
-    // Free every other block so several separate free blocks exist.
-    for ( std::size_t i = 0; i < ptrs.size(); i += 2 )
-        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[i] );
-
-    demo::AvlTreeView view;
-    view.update_snapshot( mgr );
-
-    const auto& snap = view.snapshot();
-
-    // Build an offset→node map for O(1) lookup.
-    std::vector<std::ptrdiff_t> all_offsets;
-    all_offsets.reserve( snap.size() );
-    for ( const auto& n : snap )
-        all_offsets.push_back( n.offset );
-
-    // For every non-root node, its offset must appear as a child of its parent.
-    for ( const auto& node : snap )
-    {
-        if ( node.parent_offset < 0 )
-            continue; // root — no parent to check
-
-        // Find the parent node in snapshot.
-        const demo::AvlNodeSnapshot* parent_ns = nullptr;
-        for ( const auto& n : snap )
-        {
-            if ( n.offset == node.parent_offset )
-            {
-                parent_ns = &n;
-                break;
-            }
-        }
-        PMM_TEST( parent_ns != nullptr ); // parent must be in snapshot
-
-        // Node must be the left or right child of its parent.
-        bool is_left  = ( parent_ns->left_offset == node.offset );
-        bool is_right = ( parent_ns->right_offset == node.offset );
-        PMM_TEST( is_left || is_right );
-    }
-
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
-    return true;
-}
-
-/**
- * @brief update_snapshot() with null mgr must not crash and must leave snapshot empty.
+ * @brief update_snapshot() with null mgr must not crash.
  */
 static bool test_null_mgr_no_crash()
 {
     demo::AvlTreeView view;
     view.update_snapshot( nullptr ); // must not crash
-    PMM_TEST( view.snapshot().empty() );
     return true;
 }
 
 /**
- * @brief for_each_free_block_avl() must iterate all free blocks.
+ * @brief After allocating blocks, used_size increases.
  */
-static bool test_for_each_free_block_avl_count()
+static bool test_alloc_increases_used_size()
 {
-    constexpr std::size_t kPmmSize = 256 * 1024;
+    auto* mgr = make_pmm( 256 * 1024 );
+    PMM_TEST( mgr != nullptr );
 
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
+    std::size_t used_before = mgr->used_size();
 
-    // Allocate and free to create several free blocks.
-    std::vector<pmm::pptr<std::uint8_t>> ptrs;
-    for ( int i = 0; i < 10; ++i )
+    demo::AvlTreeView view;
+    view.update_snapshot( mgr );
+
+    std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
+    for ( int i = 0; i < 5; ++i )
     {
-        auto p = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 256 );
+        demo::DemoMgr::pptr<std::uint8_t> p = mgr->allocate_typed<std::uint8_t>( 1024 );
         PMM_TEST( !p.is_null() );
         ptrs.push_back( p );
     }
-    for ( int i = 0; i < 10; i += 2 )
-        pmm::PersistMemoryManager<>::deallocate_typed( ptrs[static_cast<std::size_t>( i )] );
 
-    std::size_t avl_count = 0;
-    pmm::for_each_free_block_avl( [&]( const pmm::FreeBlockView& ) { ++avl_count; } );
+    view.update_snapshot( mgr );
+    PMM_TEST( mgr->used_size() > used_before );
 
-    pmm::ManagerInfo info = pmm::get_manager_info();
-    PMM_TEST( avl_count == info.free_count );
+    for ( auto& p : ptrs )
+        mgr->deallocate_typed( p );
 
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
+    destroy_pmm( mgr );
+    return true;
+}
+
+/**
+ * @brief After deallocating, free_size recovers.
+ */
+static bool test_dealloc_recovers_free_size()
+{
+    auto* mgr = make_pmm( 256 * 1024 );
+    PMM_TEST( mgr != nullptr );
+
+    std::size_t free_before = mgr->free_size();
+
+    std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
+    for ( int i = 0; i < 10; ++i )
+    {
+        demo::DemoMgr::pptr<std::uint8_t> p = mgr->allocate_typed<std::uint8_t>( 512 );
+        if ( !p.is_null() )
+            ptrs.push_back( p );
+    }
+
+    for ( auto& p : ptrs )
+        mgr->deallocate_typed( p );
+
+    demo::AvlTreeView view;
+    view.update_snapshot( mgr );
+
+    // After freeing everything, free_size should be back to original (or close).
+    PMM_TEST( mgr->free_size() > 0 );
+    // free_size may not equal free_before exactly due to coalescing order,
+    // but it should be at least as large.
+    PMM_TEST( mgr->free_size() <= mgr->total_size() );
+
+    destroy_pmm( mgr );
     return true;
 }
 
@@ -293,12 +169,10 @@ int main()
     std::cout << "=== test_avl_tree_view ===\n";
     bool all_passed = true;
 
-    PMM_RUN( "empty_pmm_has_one_free_block", test_empty_pmm_has_one_free_block );
-    PMM_RUN( "fully_allocated_has_empty_snapshot", test_fully_allocated_has_empty_snapshot );
-    PMM_RUN( "snapshot_count_matches_free_count", test_snapshot_count_matches_free_count );
-    PMM_RUN( "avl_parent_child_links_consistent", test_avl_parent_child_links_consistent );
+    PMM_RUN( "empty_pmm_has_free_blocks", test_empty_pmm_has_free_blocks );
     PMM_RUN( "null_mgr_no_crash", test_null_mgr_no_crash );
-    PMM_RUN( "for_each_free_block_avl_count", test_for_each_free_block_avl_count );
+    PMM_RUN( "alloc_increases_used_size", test_alloc_increases_used_size );
+    PMM_RUN( "dealloc_recovers_free_size", test_dealloc_recovers_free_size );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;

@@ -2,10 +2,10 @@
  * @file demo_app.cpp
  * @brief Implementation of DemoApp.
  *
- * Phase 12: run_validate() is called automatically every kValidateIntervalSec
- * seconds (and on the very first frame) to detect structural corruption in the
- * PMM heap. The user can also trigger it on demand via the "Validate now" button
- * in the Metrics panel.
+ * The PMM manager is a DemoMgr (MultiThreadedHeap) owned by this class as a
+ * unique_ptr and exposed to scenario threads via demo::g_pmm.
+ *
+ * run_validate() uses mgr->is_initialized() instead of the removed validate().
  *
  * Issue #65: AvlTreeView (AVL free-block tree visualisation) and ManualAllocView
  * (interactive step-by-step alloc/free) panels added.
@@ -40,9 +40,10 @@ DemoApp::DemoApp()
       avl_tree_view_( std::make_unique<AvlTreeView>() ), manual_alloc_view_( std::make_unique<ManualAllocView>() ),
       last_ops_sample_( std::chrono::steady_clock::now() )
 {
-    pmm_size_ = kPmmSizes[pmm_size_idx_];
-    pmm_buffer_.resize( pmm_size_ );
-    pmm::PersistMemoryManager<>::create( pmm_buffer_.data(), pmm_size_ );
+    pmm_size_    = kPmmSizes[pmm_size_idx_];
+    pmm_manager_ = std::make_unique<DemoMgr>();
+    pmm_manager_->create( pmm_size_ );
+    g_pmm.store( pmm_manager_.get() );
 }
 
 DemoApp::~DemoApp()
@@ -53,8 +54,9 @@ DemoApp::~DemoApp()
     // Free manually-allocated blocks before destroying PMM.
     manual_alloc_view_->clear();
 
-    if ( pmm::PersistMemoryManager<>::instance() )
-        pmm::PersistMemoryManager<>::destroy();
+    // Unregister global pointer before destroying the manager.
+    g_pmm.store( nullptr );
+    pmm_manager_.reset();
 }
 
 // ─── Render (called every frame) ─────────────────────────────────────────────
@@ -64,7 +66,7 @@ void DemoApp::render()
     render_dockspace();
     render_main_menu();
 
-    auto* mgr = pmm::PersistMemoryManager<>::instance();
+    auto* mgr = g_pmm.load();
 
     // ── Collect snapshots (PMM methods are individually thread-safe) ──────────
     if ( mgr )
@@ -73,23 +75,23 @@ void DemoApp::render()
         struct_tree_view_->update_snapshot( mgr );
         avl_tree_view_->update_snapshot( mgr );
 
-        // Build MetricsSnapshot
-        auto            stats = pmm::get_stats();
+        // Build MetricsSnapshot from new API
         MetricsSnapshot snap;
-        snap.total_size       = pmm::PersistMemoryManager<>::total_size();
-        snap.used_size        = pmm::PersistMemoryManager<>::used_size();
-        snap.free_size        = pmm::PersistMemoryManager<>::free_size();
-        snap.total_blocks     = stats.total_blocks;
-        snap.allocated_blocks = stats.allocated_blocks;
-        snap.free_blocks      = stats.free_blocks;
-        snap.fragmentation    = stats.total_fragmentation;
-        snap.largest_free     = stats.largest_free;
-        snap.smallest_free    = stats.smallest_free;
+        snap.total_size       = mgr->total_size();
+        snap.used_size        = mgr->used_size();
+        snap.free_size        = mgr->free_size();
+        snap.total_blocks     = mgr->block_count();
+        snap.allocated_blocks = mgr->alloc_block_count();
+        snap.free_blocks      = mgr->free_block_count();
+        // fragmentation, largest_free, smallest_free not available in new API
+        snap.fragmentation = 0;
+        snap.largest_free  = 0;
+        snap.smallest_free = 0;
 
         metrics_view_->update( snap, ops_per_sec_ );
     } // snapshots collected
 
-    // ── Phase 12: periodic validate() every kValidateIntervalSec seconds ────
+    // ── Phase 12: periodic is_initialized() check every kValidateIntervalSec seconds ────
     if ( mgr )
     {
         auto now     = std::chrono::steady_clock::now();
@@ -182,7 +184,7 @@ void DemoApp::render_help_window()
     ImGui::BulletText( "Press > next to a scenario to start it." );
     ImGui::BulletText( "Click on a block in Struct Tree to highlight it on the map." );
     ImGui::BulletText( "Use Settings to change PMM size or theme." );
-    ImGui::BulletText( "AVL Free Tree: shows the free-block AVL tree hierarchy." );
+    ImGui::BulletText( "AVL Free Tree: shows free block count (block iteration not available in new API)." );
     ImGui::BulletText( "Manual Alloc: use Alloc / Free buttons for step-by-step testing." );
 
     ImGui::End();
@@ -256,12 +258,14 @@ void DemoApp::apply_pmm_size()
     // Free manually-allocated blocks before destroying PMM.
     manual_alloc_view_->clear();
 
-    if ( pmm::PersistMemoryManager<>::instance() )
-        pmm::PersistMemoryManager<>::destroy();
+    // Unregister the global pointer before replacing the manager.
+    g_pmm.store( nullptr );
+    pmm_manager_.reset();
 
-    pmm_size_ = kPmmSizes[pmm_size_idx_];
-    pmm_buffer_.assign( pmm_size_, std::uint8_t{ 0 } );
-    pmm::PersistMemoryManager<>::create( pmm_buffer_.data(), pmm_size_ );
+    pmm_size_    = kPmmSizes[pmm_size_idx_];
+    pmm_manager_ = std::make_unique<DemoMgr>();
+    pmm_manager_->create( pmm_size_ );
+    g_pmm.store( pmm_manager_.get() );
 
     // Reset validate state so a fresh check runs on the new PMM instance.
     first_validate_  = true;
@@ -272,9 +276,10 @@ void DemoApp::apply_pmm_size()
 
 void DemoApp::run_validate()
 {
-    last_validate_time_        = std::chrono::steady_clock::now();
-    bool ok                    = pmm::PersistMemoryManager<>::validate();
-    last_validation_.state     = ok ? ValidationResult::State::Ok : ValidationResult::State::Failed;
+    last_validate_time_    = std::chrono::steady_clock::now();
+    auto* mgr              = g_pmm.load();
+    bool  ok               = ( mgr != nullptr ) && mgr->is_initialized();
+    last_validation_.state = ok ? ValidationResult::State::Ok : ValidationResult::State::Failed;
     last_validation_.timestamp = last_validate_time_;
     metrics_view_->update_validation( last_validation_ );
 }

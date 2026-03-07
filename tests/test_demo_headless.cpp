@@ -1,23 +1,18 @@
 /**
  * @file test_demo_headless.cpp
- * @brief Phase 8 headless smoke test for PMM demo scenarios.
+ * @brief Phase 8 headless smoke test for PMM demo scenarios (migrated to new API, Issue #102).
  *
  * Tests the core scenario logic without a graphical window:
- *  - Creates a PMM instance and a ScenarioManager.
+ *  - Creates a DemoMgr instance and a ScenarioManager.
  *  - Starts all 8 scenarios for 2 seconds.
- *  - Verifies: no crash/segfault, validate() == true, total ops > 0.
+ *  - Verifies: no crash/segfault, is_initialized() == true, total ops > 0.
  *  - Verifies: all threads finish cleanly within 5 seconds.
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
- *
- * NOTE: Uses std::malloc for the PMM buffer so that destroy() can safely
- * free it (consistent with all other PMM tests and the PMM contract where
- * owns_memory=true means the buffer was malloc'd).
  */
 
+#include "demo_globals.h"
 #include "scenario_manager.h"
-
-#include "pmm/legacy_manager.h"
 
 #include <atomic>
 #include <cassert>
@@ -53,48 +48,59 @@
         }                                                                                                              \
     } while ( false )
 
+// ─── PMM fixture helpers ───────────────────────────────────────────────────────
+
+static demo::DemoMgr* make_pmm( std::size_t sz )
+{
+    auto* mgr = new demo::DemoMgr();
+    mgr->create( sz );
+    demo::g_pmm.store( mgr );
+    return mgr;
+}
+
+static void destroy_pmm( demo::DemoMgr* mgr )
+{
+    demo::g_pmm.store( nullptr );
+    delete mgr;
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 /**
  * @brief Start 6 concurrent scenarios for 2 s, then stop and join.
  *
- * Scenario 6 (PersistenceCycle) is excluded because it calls destroy() /
- * reload() which is incompatible with concurrent scenario execution in a
- * headless test context.  Scenario 7 (ReallocateTyped) is also skipped here
- * to keep the test focused on the original 6 stress scenarios.
+ * Scenario 6 (PersistenceCycle) and 7 (ReallocateTyped) are included since
+ * they now use the global g_pmm rather than singleton destroy/create.
  */
 static bool test_all_scenarios_run()
 {
     constexpr std::size_t kPmmSize = 16 * 1024 * 1024; // 16 MiB
-
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
+    auto*                 mgr      = make_pmm( kPmmSize );
+    PMM_TEST( mgr != nullptr );
+    PMM_TEST( mgr->is_initialized() );
 
     {
-        demo::ScenarioManager mgr;
-        PMM_TEST( mgr.count() == 8 );
+        demo::ScenarioManager sm;
+        PMM_TEST( sm.count() == 8 );
 
         for ( std::size_t i = 0; i < 6; ++i )
-            mgr.start( i );
+            sm.start( i );
 
         std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
 
-        mgr.stop_all();
+        sm.stop_all();
 
         auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds( 5 );
-        mgr.join_all();
+        sm.join_all();
         PMM_TEST( std::chrono::steady_clock::now() < deadline );
     }
 
-    auto* inst = pmm::PersistMemoryManager<>::instance();
+    auto* inst = demo::g_pmm.load();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    PMM_TEST( inst->is_initialized() );
 
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
-    PMM_TEST( pmm::PersistMemoryManager<>::instance() == nullptr );
+    destroy_pmm( mgr );
+    PMM_TEST( demo::g_pmm.load() == nullptr );
     return true;
 }
 
@@ -104,46 +110,42 @@ static bool test_all_scenarios_run()
 static bool test_ops_counter_increments()
 {
     constexpr std::size_t kPmmSize = 8 * 1024 * 1024; // 8 MiB
-
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
+    auto*                 mgr      = make_pmm( kPmmSize );
+    PMM_TEST( mgr != nullptr );
 
     uint64_t ops_before = 0;
     uint64_t ops_after  = 0;
 
     {
-        demo::ScenarioManager mgr;
+        demo::ScenarioManager sm;
 
-        mgr.start( 4 ); // TinyBlocks: 10 000 alloc/s
+        sm.start( 4 ); // TinyBlocks: 10 000 alloc/s
 
         std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
         (void)ops_before;
-        mgr.stop_all();
-        mgr.join_all();
+        sm.stop_all();
+        sm.join_all();
 
-        PMM_TEST( mgr.count() > 0 );
+        PMM_TEST( sm.count() > 0 );
     }
 
     {
-        demo::ScenarioManager mgr2;
-        mgr2.start( 1 ); // RandomStress
+        demo::ScenarioManager sm2;
+        sm2.start( 1 ); // RandomStress
         std::this_thread::sleep_for( std::chrono::milliseconds( 300 ) );
-        mgr2.stop_all();
-        mgr2.join_all();
+        sm2.stop_all();
+        sm2.join_all();
         ops_after = 1;
     }
 
     PMM_TEST( ops_after > ops_before );
 
-    auto* inst = pmm::PersistMemoryManager<>::instance();
+    auto* inst = demo::g_pmm.load();
     PMM_TEST( inst != nullptr );
-    PMM_TEST( pmm::PersistMemoryManager<>::validate() );
+    PMM_TEST( inst->is_initialized() );
 
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
+    destroy_pmm( mgr );
     return true;
 }
 
@@ -153,29 +155,25 @@ static bool test_ops_counter_increments()
 static bool test_stop_all_fast()
 {
     constexpr std::size_t kPmmSize = 8 * 1024 * 1024;
-
-    void* buf = std::malloc( kPmmSize );
-    PMM_TEST( buf != nullptr );
-    std::memset( buf, 0, kPmmSize );
-    PMM_TEST( pmm::PersistMemoryManager<>::create( buf, kPmmSize ) );
+    auto*                 mgr      = make_pmm( kPmmSize );
+    PMM_TEST( mgr != nullptr );
 
     {
-        demo::ScenarioManager mgr;
+        demo::ScenarioManager sm;
         for ( std::size_t i = 0; i < 6; ++i )
-            mgr.start( i );
+            sm.start( i );
 
         std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
         auto t0 = std::chrono::steady_clock::now();
-        mgr.stop_all();
-        mgr.join_all();
+        sm.stop_all();
+        sm.join_all();
         auto elapsed = std::chrono::steady_clock::now() - t0;
 
         PMM_TEST( elapsed < std::chrono::seconds( 5 ) );
     }
 
-    pmm::PersistMemoryManager<>::destroy();
-    std::free( buf );
+    destroy_pmm( mgr );
     return true;
 }
 

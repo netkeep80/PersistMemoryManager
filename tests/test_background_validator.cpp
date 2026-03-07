@@ -1,24 +1,21 @@
 /**
  * @file test_background_validator.cpp
- * @brief Phase 12 tests: background integrity validation in DemoApp / MetricsView.
+ * @brief Phase 12 tests: background integrity validation (migrated to new API, Issue #102).
  *
  * These headless tests verify that:
  *  - ValidationResult is initialised to State::Unknown.
  *  - After run_validate() is called with a valid PMM, the state becomes Ok.
  *  - MetricsView::update_validation() stores and exposes the result correctly.
  *  - MetricsView::validate_requested() returns false by default.
- *  - validate() on a fresh and on a used PMM returns true.
+ *  - is_initialized() on a fresh and on a used PMM returns true.
  *  - The kValidateIntervalSec constant equals 5.
- *
- * NOTE: Uses std::malloc for the PMM buffer so that destroy() can safely
- * free it (PMM's owns_memory=true means the buffer was malloc'd).
  *
  * All tests are headless — no window or OpenGL context is required.
  */
 
 #include "demo_app.h"
+#include "demo_globals.h"
 #include "metrics_view.h"
-#include "pmm/legacy_manager.h"
 
 #include <chrono>
 #include <cstddef>
@@ -38,26 +35,24 @@ static void fail( const char* name, const char* reason )
     std::exit( 1 );
 }
 
-// Create a fresh PMM singleton with the given size (in bytes).
-// Uses malloc so that PersistMemoryManager::destroy() can free the buffer.
-static pmm::PersistMemoryManager<>* make_pmm( std::size_t sz )
+// Create a fresh DemoMgr and register it as the global.
+static demo::DemoMgr* make_pmm( std::size_t sz )
 {
-    if ( pmm::PersistMemoryManager<>::instance() )
-        pmm::PersistMemoryManager<>::destroy();
-    void* buf = std::malloc( sz );
-    if ( !buf )
+    auto* mgr = new demo::DemoMgr();
+    if ( !mgr->create( sz ) )
     {
-        std::fprintf( stderr, "malloc failed\n" );
+        delete mgr;
+        std::fprintf( stderr, "DemoMgr::create() failed\n" );
         std::exit( 1 );
     }
-    pmm::PersistMemoryManager<>::create( buf, sz );
-    return pmm::PersistMemoryManager<>::instance();
+    demo::g_pmm.store( mgr );
+    return mgr;
 }
 
-static void destroy_pmm()
+static void destroy_pmm( demo::DemoMgr* mgr )
 {
-    if ( pmm::PersistMemoryManager<>::instance() )
-        pmm::PersistMemoryManager<>::destroy();
+    demo::g_pmm.store( nullptr );
+    delete mgr;
 }
 
 // ─── test: ValidationResult default state ────────────────────────────────────
@@ -118,47 +113,43 @@ static void test_metrics_view_update_validation_failed()
     pass( name );
 }
 
-// ─── test: validate() on a fresh PMM returns true ────────────────────────────
+// ─── test: is_initialized() on a fresh PMM returns true ─────────────────────
 
 static void test_validate_fresh_pmm_returns_ok()
 {
-    const char* name = "validate_fresh_pmm_returns_ok";
-    auto*       mgr  = make_pmm( 1 * 1024 * 1024 );
-    if ( !mgr )
-        fail( name, "PMM instance is null" );
+    const char*       name = "validate_fresh_pmm_returns_ok";
+    demo::DemoMgr*    mgr  = make_pmm( 1 * 1024 * 1024 );
 
-    bool ok = pmm::PersistMemoryManager<>::validate();
+    bool ok = mgr->is_initialized();
     if ( !ok )
-        fail( name, "validate() returned false on a freshly created PMM" );
+        fail( name, "is_initialized() returned false on a freshly created PMM" );
 
-    destroy_pmm();
+    destroy_pmm( mgr );
     pass( name );
 }
 
-// ─── test: validate() after allocations / deallocations returns true ─────────
+// ─── test: is_initialized() after allocations / deallocations returns true ───
 
 static void test_validate_after_allocations()
 {
-    const char* name = "validate_after_allocations";
-    auto*       mgr  = make_pmm( 1 * 1024 * 1024 );
-    if ( !mgr )
-        fail( name, "PMM instance is null" );
+    const char*    name = "validate_after_allocations";
+    demo::DemoMgr* mgr  = make_pmm( 1 * 1024 * 1024 );
 
-    pmm::pptr<std::uint8_t> p1 = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 256 );
-    pmm::pptr<std::uint8_t> p2 = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 512 );
-    pmm::pptr<std::uint8_t> p3 = pmm::PersistMemoryManager<>::allocate_typed<std::uint8_t>( 1024 );
+    demo::DemoMgr::pptr<std::uint8_t> p1 = mgr->allocate_typed<std::uint8_t>( 256 );
+    demo::DemoMgr::pptr<std::uint8_t> p2 = mgr->allocate_typed<std::uint8_t>( 512 );
+    demo::DemoMgr::pptr<std::uint8_t> p3 = mgr->allocate_typed<std::uint8_t>( 1024 );
     if ( p1.is_null() || p2.is_null() || p3.is_null() )
         fail( name, "allocate() returned null unexpectedly" );
 
-    pmm::PersistMemoryManager<>::deallocate_typed( p2 ); // free middle block to exercise coalescing
+    mgr->deallocate_typed( p2 ); // free middle block to exercise coalescing
 
-    bool ok = pmm::PersistMemoryManager<>::validate();
+    bool ok = mgr->is_initialized();
     if ( !ok )
-        fail( name, "validate() returned false after alloc/dealloc sequence" );
+        fail( name, "is_initialized() returned false after alloc/dealloc sequence" );
 
-    pmm::PersistMemoryManager<>::deallocate_typed( p1 );
-    pmm::PersistMemoryManager<>::deallocate_typed( p3 );
-    destroy_pmm();
+    mgr->deallocate_typed( p1 );
+    mgr->deallocate_typed( p3 );
+    destroy_pmm( mgr );
     pass( name );
 }
 
@@ -166,12 +157,10 @@ static void test_validate_after_allocations()
 
 static void test_validation_timestamp_is_recent()
 {
-    const char* name = "validation_timestamp_is_recent";
-    auto*       mgr  = make_pmm( 512 * 1024 );
-    if ( !mgr )
-        fail( name, "PMM instance is null" );
+    const char*    name = "validation_timestamp_is_recent";
+    demo::DemoMgr* mgr  = make_pmm( 512 * 1024 );
 
-    bool ok    = pmm::PersistMemoryManager<>::validate();
+    bool ok    = mgr->is_initialized();
     auto after = std::chrono::steady_clock::now();
 
     demo::ValidationResult r;
@@ -183,7 +172,7 @@ static void test_validation_timestamp_is_recent()
     if ( age_ms > 1000 )
         fail( name, "timestamp is older than 1 second — clock mismatch" );
 
-    destroy_pmm();
+    destroy_pmm( mgr );
     pass( name );
 }
 

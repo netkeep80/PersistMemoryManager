@@ -2,16 +2,12 @@
  * @file demo_app.h
  * @brief DemoApp: top-level application class for the PMM visual demo.
  *
- * DemoApp owns all UI panels and the PMM memory buffer. Each frame:
- *  1. Acquire shared_lock once.
- *  2. Update all snapshots from live PMM state.
- *  3. Release lock.
- *  4. Render all ImGui panels.
+ * DemoApp owns all UI panels and the PMM memory manager. Each frame:
+ *  1. Acquire snapshots from live PMM state.
+ *  2. Render all ImGui panels.
  *
- * Phase 12 addition: DemoApp periodically calls validate() every
- * kValidateIntervalSec seconds and forwards the result to MetricsView.
- * The user can also trigger an immediate validate() via the "Validate now"
- * button in the Metrics panel.
+ * The manager is a DemoMgr (MultiThreadedHeap) whose raw pointer is exposed
+ * globally via demo::g_pmm for access by scenario threads.
  *
  * Issue #65 addition: AvlTreeView and ManualAllocView panels.
  */
@@ -19,20 +15,18 @@
 #pragma once
 
 #include "avl_tree_view.h"
+#include "demo_globals.h"
 #include "manual_alloc_view.h"
 #include "mem_map_view.h"
 #include "metrics_view.h"
 #include "scenario_manager.h"
 #include "struct_tree_view.h"
 
-#include "pmm/legacy_manager.h"
-
 #include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 namespace demo
 {
@@ -68,9 +62,9 @@ class DemoApp
     bool        show_settings_     = false;
     std::size_t highlighted_block_ = static_cast<std::size_t>( -1 );
 
-    // ── PMM buffer ────────────────────────────────────────────────────────────
-    std::vector<std::uint8_t> pmm_buffer_;
-    std::size_t               pmm_size_ = 8 * 1024 * 1024; // 8 MiB default
+    // ── PMM manager ───────────────────────────────────────────────────────────
+    std::unique_ptr<DemoMgr> pmm_manager_;
+    std::size_t              pmm_size_ = 8 * 1024 * 1024; // 8 MiB default
 
     // ── ops/s measurement ─────────────────────────────────────────────────────
     std::atomic<uint64_t>                 ops_counter_{ 0 };
@@ -86,15 +80,15 @@ class DemoApp
 
   public:
     // ── Phase 12: Background integrity validation ─────────────────────────────
-    /// How many seconds between automatic validate() calls (public for testing).
+    /// How many seconds between automatic is_initialized() checks (public for testing).
     static constexpr long long kValidateIntervalSec = 5;
 
   private:
     ValidationResult                      last_validation_{};
     std::chrono::steady_clock::time_point last_validate_time_{};
-    bool                                  first_validate_ = true; ///< run validate() on first frame
+    bool                                  first_validate_ = true; ///< run check on first frame
 
-    /// Run validate() and update last_validation_.
+    /// Run is_initialized() check and update last_validation_.
     void run_validate();
 };
 
