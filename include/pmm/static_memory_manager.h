@@ -282,7 +282,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( count == 0 )
             return pptr<T>();
-        if ( sizeof( T ) > 0 && count > std::numeric_limits<std::size_t>::max() / sizeof( T ) )
+        // Use (max)() to prevent MSVC macro expansion of max
+        if ( sizeof( T ) > 0 && count > ( std::numeric_limits<std::size_t>::max )() / sizeof( T ) )
             return pptr<T>();
         void* raw = allocate( sizeof( T ) * count );
         if ( raw == nullptr )
