@@ -845,22 +845,24 @@ template <typename Config> PersistMemoryManager<Config>* PersistMemoryManager<Co
 template <typename Config>
 typename PersistMemoryManager<Config>::LockPolicy::mutex_type PersistMemoryManager<Config>::s_mutex;
 
-// ─── Реализация методов pptr<T> ───────────────────────────────────────────────
+// ─── Реализация методов pptr<T, ManagerT> ──────────────────────────────────────
+// Эти методы реализуют устаревший синглтон-API для PersistMemoryManager<>.
+// Для нового API используйте mgr.resolve<T>(p) с AbstractPersistMemoryManager.
 
-template <class T> inline T* pptr<T>::get() const noexcept
+template <class T, class ManagerT> inline T* pptr<T, ManagerT>::get() const noexcept
 {
     if ( _idx == 0 )
         return nullptr;
     return static_cast<T*>( PersistMemoryManager<>::offset_to_ptr( _idx ) );
 }
 
-template <class T> inline T* pptr<T>::get_at( std::size_t index ) const noexcept
+template <class T, class ManagerT> inline T* pptr<T, ManagerT>::get_at( std::size_t index ) const noexcept
 {
     T* base_elem = get();
     return ( base_elem == nullptr ) ? nullptr : base_elem + index;
 }
 
-template <class T> inline T* pptr<T>::operator[]( std::size_t i ) const noexcept
+template <class T, class ManagerT> inline T* pptr<T, ManagerT>::operator[]( std::size_t i ) const noexcept
 {
     if ( _idx == 0 )
         return nullptr;

@@ -92,3 +92,8 @@ pmm_add_test(test_block_state test_block_state.cpp)
 add_executable(test_issue97_presets test_issue97_presets.cpp)
 target_link_libraries(test_issue97_presets PRIVATE pmm Threads::Threads)
 add_test(NAME test_issue97_presets COMMAND test_issue97_presets)
+
+# ─── Тесты Phase 1: Infrastructure Preparation (Issue #100) ──────────────────
+add_executable(test_issue100 test_issue100.cpp)
+target_link_libraries(test_issue100 PRIVATE pmm Threads::Threads)
+add_test(NAME test_issue100 COMMAND test_issue100)

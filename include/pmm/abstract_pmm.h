@@ -76,6 +76,29 @@ class AbstractPersistMemoryManager
     using thread_policy   = ThreadPolicyT;
     using allocator       = AllocatorPolicy<FreeBlockTreeT, AddressTraitsT>;
 
+    // ─── Типы Issue #100: manager_type + nested pptr<T> ────────────────────────
+
+    /// @brief Тип самого менеджера (для использования в pptr<T, manager_type>).
+    using manager_type = AbstractPersistMemoryManager<AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT>;
+
+    /**
+     * @brief Вложенный псевдоним персистентного указателя, привязанного к данному типу менеджера.
+     *
+     * Позволяет использовать `ManagerType::pptr<T>` вместо `pmm::pptr<T, ManagerType>`.
+     *
+     * @tparam T Тип данных, на который указывает pptr.
+     *
+     * Пример:
+     * @code
+     *   using MyMgr = pmm::presets::SingleThreadedHeap;
+     *   MyMgr pmm;
+     *   pmm.create(64 * 1024);
+     *   MyMgr::pptr<int> p = pmm.allocate_typed<int>();
+     *   *p.resolve(pmm) = 42;
+     * @endcode
+     */
+    template <typename T> using pptr = pmm::pptr<T, manager_type>;
+
     // ─── Управление жизненным циклом ─────────────────────────────────────────
 
     /**
@@ -233,6 +256,8 @@ class AbstractPersistMemoryManager
      *
      * Issue #97: pptr<T> — персистентный 4-байтный указатель (гранульный индекс),
      *   адресно-независимый, корректно загружается из файла по другому базовому адресу.
+     * Issue #100: возвращает Manager::pptr<T> = pmm::pptr<T, manager_type>.
+     *   Неявно конвертируется в pmm::pptr<T, void> для обратной совместимости.
      *
      * @tparam T Тип выделяемого объекта.
      * @return pptr<T> — персистентный указатель или pptr<T>() при ошибке.
@@ -269,12 +294,25 @@ class AbstractPersistMemoryManager
     }
 
     /**
-     * @brief Освободить блок по персистентному указателю pptr<T>.
+     * @brief Освободить блок по персистентному указателю.
+     *
+     * Принимает Manager::pptr<T> = pmm::pptr<T, manager_type> (новый API, Issue #100)
+     * или pmm::pptr<T, void> (старый API, Issue #97).
      *
      * @tparam T Тип данных (только для проверки типа pptr).
-     * @param p Персистентный указатель на блок (pptr<T>).
+     * @param p Персистентный указатель на блок.
      */
     template <typename T> void deallocate_typed( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base = _backend.base_ptr();
+        void*         raw  = base + detail::idx_to_byte_off( p.offset() );
+        deallocate( raw );
+    }
+
+    /// @brief Перегрузка для pmm::pptr<T, void> (обратная совместимость с Issue #97 API).
+    template <typename T> void deallocate_typed( pmm::pptr<T, void> p ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
@@ -286,7 +324,8 @@ class AbstractPersistMemoryManager
     /**
      * @brief Разыменовать pptr<T> — получить сырой указатель T* через данный экземпляр.
      *
-     * Используйте вместо p.get() (синглтон) для работы с AbstractPersistMemoryManager.
+     * Принимает Manager::pptr<T> = pmm::pptr<T, manager_type> (новый API, Issue #100)
+     * или pmm::pptr<T, void> (старый API, Issue #97).
      *
      * @tparam T Тип данных.
      * @param p Персистентный указатель.
@@ -300,8 +339,20 @@ class AbstractPersistMemoryManager
         return reinterpret_cast<T*>( const_cast<std::uint8_t*>( base ) + detail::idx_to_byte_off( p.offset() ) );
     }
 
+    /// @brief Перегрузка для pmm::pptr<T, void> (обратная совместимость с Issue #97 API).
+    template <typename T> T* resolve( pmm::pptr<T, void> p ) const noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return nullptr;
+        const std::uint8_t* base = _backend.base_ptr();
+        return reinterpret_cast<T*>( const_cast<std::uint8_t*>( base ) + detail::idx_to_byte_off( p.offset() ) );
+    }
+
     /**
      * @brief Разыменовать pptr<T> и получить указатель на i-й элемент массива.
+     *
+     * Принимает Manager::pptr<T> = pmm::pptr<T, manager_type> (новый API, Issue #100)
+     * или pmm::pptr<T, void> (старый API, Issue #97).
      *
      * @tparam T Тип элемента.
      * @param p Персистентный указатель на массив.
@@ -309,6 +360,13 @@ class AbstractPersistMemoryManager
      * @return T* — указатель на i-й элемент или nullptr при ошибке.
      */
     template <typename T> T* resolve_at( pptr<T> p, std::size_t i ) const noexcept
+    {
+        T* base_elem = resolve( p );
+        return ( base_elem == nullptr ) ? nullptr : base_elem + i;
+    }
+
+    /// @brief Перегрузка для pmm::pptr<T, void> (обратная совместимость с Issue #97 API).
+    template <typename T> T* resolve_at( pmm::pptr<T, void> p, std::size_t i ) const noexcept
     {
         T* base_elem = resolve( p );
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
