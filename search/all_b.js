@@ -8,10 +8,12 @@ var searchData=
   ['link_5fnew_5fblock_5',['link_new_block',['../classpmm_1_1SplittingBlock.html#a640bcb82c72762def18f292bfa4201a6',1,'pmm::SplittingBlock']]],
   ['linked_5flist_5fnode_2eh_6',['linked_list_node.h',['../linked__list__node_8h.html',1,'']]],
   ['linkedlistnode_7',['LinkedListNode',['../structpmm_1_1LinkedListNode.html',1,'pmm']]],
-  ['load_8',['load',['../classpmm_1_1AbstractPersistMemoryManager.html#a16baa0061aad6ea622043e342e36b384',1,'pmm::AbstractPersistMemoryManager::load()'],['../classpmm_1_1PersistMemoryManager.html#a78c119bbe5f206972fa472c2df46455e',1,'pmm::PersistMemoryManager::load()']]],
-  ['load_5ffrom_5ffile_9',['load_from_file',['../namespacepmm.html#a2c5e3f74cada6c0226ef7441097920a2',1,'pmm']]],
-  ['lock_10',['lock',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a666bbb9033e98e055b1a00dc1289df2d',1,'pmm::config::NoLock::mutex_type']]],
-  ['lock_5fpolicy_11',['lock_policy',['../structpmm_1_1config_1_1PMMConfig.html#a1e11914fe69acff1bb15abc00d9abc4c',1,'pmm::config::PMMConfig']]],
-  ['lock_5fshared_12',['lock_shared',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a41cc66939ceb574327080920f7524dcc',1,'pmm::config::NoLock::mutex_type']]],
-  ['lockpolicy_13',['LockPolicy',['../classpmm_1_1PersistMemoryManager.html#ad60bdd149d933c4c5b5b46fa6f86b813',1,'pmm::PersistMemoryManager']]]
+  ['list_8',['Deprecated List',['../deprecated.html',1,'']]],
+  ['load_9',['load',['../classpmm_1_1PersistMemoryManager.html#a78c119bbe5f206972fa472c2df46455e',1,'pmm::PersistMemoryManager::load()'],['../classpmm_1_1AbstractPersistMemoryManager.html#a16baa0061aad6ea622043e342e36b384',1,'pmm::AbstractPersistMemoryManager::load()']]],
+  ['load_5ffrom_5ffile_10',['load_from_file',['../namespacepmm.html#a2c5e3f74cada6c0226ef7441097920a2',1,'pmm']]],
+  ['load_5fmanager_5ffrom_5ffile_11',['load_manager_from_file',['../namespacepmm.html#a8447932494aae80b5c7c7ce1d38ff4ff',1,'pmm']]],
+  ['lock_12',['lock',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a666bbb9033e98e055b1a00dc1289df2d',1,'pmm::config::NoLock::mutex_type']]],
+  ['lock_5fpolicy_13',['lock_policy',['../structpmm_1_1config_1_1PMMConfig.html#a1e11914fe69acff1bb15abc00d9abc4c',1,'pmm::config::PMMConfig']]],
+  ['lock_5fshared_14',['lock_shared',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a41cc66939ceb574327080920f7524dcc',1,'pmm::config::NoLock::mutex_type']]],
+  ['lockpolicy_15',['LockPolicy',['../classpmm_1_1PersistMemoryManager.html#ad60bdd149d933c4c5b5b46fa6f86b813',1,'pmm::PersistMemoryManager']]]
 ];
