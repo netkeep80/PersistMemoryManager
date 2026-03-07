@@ -59,35 +59,28 @@ namespace mgr_concept
 
 /// @cond INTERNAL
 
-template <typename T, typename = void>
-struct has_manager_type : std::false_type
+template <typename T, typename = void> struct has_manager_type : std::false_type
 {
 };
-template <typename T>
-struct has_manager_type<T, std::void_t<typename T::manager_type>> : std::true_type
-{
-};
-
-template <typename T, typename = void>
-struct has_address_traits : std::false_type
-{
-};
-template <typename T>
-struct has_address_traits<T, std::void_t<typename T::address_traits>> : std::true_type
+template <typename T> struct has_manager_type<T, std::void_t<typename T::manager_type>> : std::true_type
 {
 };
 
-template <typename T, typename = void>
-struct has_storage_backend_type : std::false_type
+template <typename T, typename = void> struct has_address_traits : std::false_type
 {
 };
-template <typename T>
-struct has_storage_backend_type<T, std::void_t<typename T::storage_backend>> : std::true_type
+template <typename T> struct has_address_traits<T, std::void_t<typename T::address_traits>> : std::true_type
 {
 };
 
-template <typename T, typename = void>
-struct has_is_initialized : std::false_type
+template <typename T, typename = void> struct has_storage_backend_type : std::false_type
+{
+};
+template <typename T> struct has_storage_backend_type<T, std::void_t<typename T::storage_backend>> : std::true_type
+{
+};
+
+template <typename T, typename = void> struct has_is_initialized : std::false_type
 {
 };
 template <typename T>
@@ -95,8 +88,7 @@ struct has_is_initialized<T, std::void_t<decltype( std::declval<const T&>().is_i
 {
 };
 
-template <typename T, typename = void>
-struct has_allocate_method : std::false_type
+template <typename T, typename = void> struct has_allocate_method : std::false_type
 {
 };
 template <typename T>
@@ -104,8 +96,7 @@ struct has_allocate_method<T, std::void_t<decltype( std::declval<T&>().allocate(
 {
 };
 
-template <typename T, typename = void>
-struct has_deallocate_method : std::false_type
+template <typename T, typename = void> struct has_deallocate_method : std::false_type
 {
 };
 template <typename T>
@@ -114,8 +105,7 @@ struct has_deallocate_method<T, std::void_t<decltype( std::declval<T&>().dealloc
 {
 };
 
-template <typename T, typename = void>
-struct has_total_size_method : std::false_type
+template <typename T, typename = void> struct has_total_size_method : std::false_type
 {
 };
 template <typename T>
@@ -123,8 +113,7 @@ struct has_total_size_method<T, std::void_t<decltype( std::declval<const T&>().t
 {
 };
 
-template <typename T, typename = void>
-struct has_destroy_method : std::false_type
+template <typename T, typename = void> struct has_destroy_method : std::false_type
 {
 };
 template <typename T>
@@ -157,11 +146,9 @@ struct is_persist_memory_manager
     : std::bool_constant<
           detail::mgr_concept::has_manager_type<T>::value && detail::mgr_concept::has_address_traits<T>::value &&
           detail::mgr_concept::has_storage_backend_type<T>::value &&
-          detail::mgr_concept::has_is_initialized<T>::value &&
-          detail::mgr_concept::has_allocate_method<T>::value &&
+          detail::mgr_concept::has_is_initialized<T>::value && detail::mgr_concept::has_allocate_method<T>::value &&
           detail::mgr_concept::has_deallocate_method<T>::value &&
-          detail::mgr_concept::has_total_size_method<T>::value &&
-          detail::mgr_concept::has_destroy_method<T>::value>
+          detail::mgr_concept::has_total_size_method<T>::value && detail::mgr_concept::has_destroy_method<T>::value>
 {
 };
 
@@ -174,7 +161,6 @@ struct is_persist_memory_manager
  *   if constexpr (pmm::is_persist_memory_manager_v<MyType>) { ... }
  * @endcode
  */
-template <typename T>
-inline constexpr bool is_persist_memory_manager_v = is_persist_memory_manager<T>::value;
+template <typename T> inline constexpr bool is_persist_memory_manager_v = is_persist_memory_manager<T>::value;
 
 } // namespace pmm

@@ -87,9 +87,9 @@ template <class T, class ManagerT = void> class pptr
 
     constexpr pptr() noexcept : _idx( 0 ) {}
     constexpr explicit pptr( std::uint32_t idx ) noexcept : _idx( idx ) {}
-    constexpr pptr( const pptr& ) noexcept           = default;
+    constexpr pptr( const pptr& ) noexcept            = default;
     constexpr pptr& operator=( const pptr& ) noexcept = default;
-    ~pptr() noexcept                                   = default;
+    ~pptr() noexcept                                  = default;
 
     /**
      * @brief Неявное преобразование из pptr<T, void> (обратная совместимость, Issue #100).

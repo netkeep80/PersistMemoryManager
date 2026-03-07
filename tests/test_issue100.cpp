@@ -192,8 +192,8 @@ static bool test_p100_pptr_null_conversion()
     using MgrType = pmm::presets::SingleThreadedHeap;
 
     // Null в обоих формах
-    pmm::pptr<int>         void_null;
-    MgrType::pptr<int>     bound_null;
+    pmm::pptr<int>     void_null;
+    MgrType::pptr<int> bound_null;
 
     PMM_TEST( void_null.is_null() );
     PMM_TEST( !static_cast<bool>( void_null ) );
@@ -383,11 +383,9 @@ static bool test_p100_concept_presets()
 /// @brief Обычные типы не удовлетворяют концепции.
 static bool test_p100_concept_rejects_non_managers()
 {
-    static_assert( !pmm::is_persist_memory_manager_v<int>,
-                   "int must not satisfy is_persist_memory_manager" );
+    static_assert( !pmm::is_persist_memory_manager_v<int>, "int must not satisfy is_persist_memory_manager" );
 
-    static_assert( !pmm::is_persist_memory_manager_v<double>,
-                   "double must not satisfy is_persist_memory_manager" );
+    static_assert( !pmm::is_persist_memory_manager_v<double>, "double must not satisfy is_persist_memory_manager" );
 
     struct NotAManager
     {
@@ -665,8 +663,7 @@ int main()
     PMM_RUN( "P100-B1: Manager::manager_type == Manager", test_p100_manager_type_typedef );
     PMM_RUN( "P100-B2: Manager::pptr<T> == pmm::pptr<T, manager_type>", test_p100_nested_pptr_alias );
     PMM_RUN( "P100-B3: allocate_typed возвращает Manager::pptr<T>", test_p100_allocate_typed_returns_manager_pptr );
-    PMM_RUN( "P100-B4: resolve/deallocate_typed принимают оба варианта pptr",
-             test_p100_resolve_accepts_both_pptr );
+    PMM_RUN( "P100-B4: resolve/deallocate_typed принимают оба варианта pptr", test_p100_resolve_accepts_both_pptr );
     PMM_RUN( "P100-B5: полный цикл с Manager::pptr<T>", test_p100_full_lifecycle_with_manager_pptr );
 
     std::cout << "\n--- P100-C: manager_concept.h — is_persist_memory_manager<T> ---\n";
