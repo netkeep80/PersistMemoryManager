@@ -208,7 +208,7 @@ static bool test_p97_single_threaded_heap_auto_expand()
 /// @brief SingleThreadedHeap: save_manager / load_manager_from_file (Issue #97).
 static bool test_p97_single_threaded_heap_io()
 {
-    const char* test_file = "/tmp/test_issue97_heap.pmm";
+    const char* test_file = "test_issue97_heap.pmm";
 
     // Создаём и заполняем менеджер
     pmm::presets::SingleThreadedHeap pmm1;
@@ -252,7 +252,7 @@ static bool test_p97_single_threaded_heap_io()
 /// @brief PersistentFileMapped: открытие файла, запись, загрузка.
 static bool test_p97_persistent_file_mapped_basic()
 {
-    const char*       test_file = "/tmp/test_issue97_mmap.pmm";
+    const char*       test_file = "test_issue97_mmap.pmm";
     const std::size_t kSize     = 32 * 1024;
 
     // Удаляем тестовый файл если остался с прошлого запуска
@@ -429,7 +429,7 @@ static bool test_p97_raii_lifecycle()
 /// @brief save_manager / load_manager_from_file с StaticStorage.
 static bool test_p97_io_static_storage()
 {
-    const char* test_file = "/tmp/test_issue97_static.pmm";
+    const char* test_file = "test_issue97_static.pmm";
 
     using StaticPMM =
         pmm::AbstractPersistMemoryManager<pmm::DefaultAddressTraits,
@@ -475,7 +475,7 @@ static bool test_p97_io_save_null_filename()
 static bool test_p97_io_save_uninitialized()
 {
     pmm::presets::SingleThreadedHeap pmm;
-    PMM_TEST( !pmm::save_manager( pmm, "/tmp/test_uninitialized.pmm" ) );
+    PMM_TEST( !pmm::save_manager( pmm, "test_uninitialized.pmm" ) );
     return true;
 }
 
