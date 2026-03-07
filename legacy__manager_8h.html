@@ -84,6 +84,7 @@ $(function() {
 <div class="textblock"><code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="free__block__tree_8h_source.html">pmm/free_block_tree.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="config_8h_source.html">pmm/config.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="pptr_8h_source.html">pmm/pptr.h</a>&quot;</code><br />
 <code>#include &lt;cstdlib&gt;</code><br />
 <code>#include &lt;cstring&gt;</code><br />
 </div>
@@ -91,9 +92,6 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html">pmm::pptr&lt; T &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Persistent typed pointer (Issue #59: 4 bytes, granule index). Index 0 means null. <a class="el" href="classpmm_1_1pptr.html#ac8a89ae2713de9973f37709b9bd51c2d" title="Разыменовать через синглтон PersistMemoryManager&lt;&gt; (Issue #61).">get()</a> resolves via singleton. pptr++/&ndash; are forbidden.  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PmmCore.html">pmm::PmmCore&lt; Derived &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">CRTP базовый класс, предоставляющий доступ к памяти (Issue #73 AR-01). Derived must be the final PersistMemoryManager&lt;Config&gt; class.  <a href="classpmm_1_1PmmCore.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>

@@ -149,7 +149,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">CRTP базовый класс, предоставляющий доступ к памяти (Issue #73 AR-01). Derived must be the final PersistMemoryManager&lt;Config&gt; class.  <a href="classpmm_1_1PmmCore.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html">pptr</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Persistent typed pointer (Issue #59: 4 bytes, granule index). Index 0 means null. <a class="el" href="classpmm_1_1pptr.html#ac8a89ae2713de9973f37709b9bd51c2d" title="Разыменовать через синглтон PersistMemoryManager&lt;&gt; (Issue #61).">get()</a> resolves via singleton. pptr++/&ndash; are forbidden.  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Персистентный типизированный указатель (4 байта, гранульный индекс).  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1SplittingBlock.html">SplittingBlock</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два.">SplittingBlock</a> — блок в процессе разбиения на два.  <a href="classpmm_1_1SplittingBlock.html#details">More...</a><br /></td></tr>
@@ -261,7 +261,7 @@ Variables</h2></td></tr>
 
 <p>Псевдоним с настройками по умолчанию (<a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> + <a class="el" href="structpmm_1_1AvlFreeTree.html" title="Standard AVL tree implementation for free block tree policy.">AvlFreeTree</a> + SharedMutexLock). </p>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00396">396</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00496">496</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -351,7 +351,7 @@ Variables</h2></td></tr>
 
 <p>Однопоточный вариант с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00399">399</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="abstract__pmm_8h_source.html#l00499">499</a> of file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 
 </div>
 </div>
@@ -475,7 +475,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </div><div class="memdoc">
 <p>&lt; Issue #83: replaced kDefaultAlignment</p>
 
-<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00948">948</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00905">905</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -505,7 +505,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00981">981</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00938">938</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -532,7 +532,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00925">925</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00882">882</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>
@@ -559,7 +559,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00920">920</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="legacy__manager_8h_source.html#l00877">877</a> of file <a class="el" href="legacy__manager_8h_source.html">legacy_manager.h</a>.</p>
 
 </div>
 </div>

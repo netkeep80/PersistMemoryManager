@@ -91,6 +91,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="heap__storage_8h_source.html">pmm/heap_storage.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="storage__backend_8h_source.html">pmm/storage_backend.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="config_8h_source.html">pmm/config.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="pptr_8h_source.html">pmm/pptr.h</a>&quot;</code><br />
 <code>#include &lt;cassert&gt;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
@@ -132,12 +133,17 @@ Typedefs</h2></td></tr>
 <li><code>create(backend)</code> — инициализировать уже готовый бэкенд</li>
 <li><code>load(backend)</code> — загрузить существующее состояние из бэкенда</li>
 <li><code>destroy()</code> — сбросить состояние</li>
-<li><code>allocate(size)</code> — выделить блок</li>
-<li><code>deallocate(ptr)</code> — освободить блок</li>
+<li><code>allocate(size)</code> — выделить блок (raw void*)</li>
+<li><code>deallocate(ptr)</code> — освободить блок (raw void*)</li>
+<li><code>allocate_typed&lt;T&gt;()</code> — выделить блок и вернуть pptr&lt;T&gt; (Issue #97)</li>
+<li><code>allocate_typed&lt;T&gt;(count)</code> — выделить массив и вернуть pptr&lt;T&gt; (Issue #97)</li>
+<li><code>deallocate_typed(pptr&lt;T&gt;)</code> — освободить блок по pptr&lt;T&gt; (Issue #97)</li>
+<li><code>resolve&lt;T&gt;(pptr&lt;T&gt;)</code> — разыменовать pptr&lt;T&gt; через экземпляр (Issue #97)</li>
 </ul>
 <p>Обратная совместимость: <code>PersistMemoryManager&lt;DefaultConfig&gt;</code> продолжает работать без изменений. <code>AbstractPersistMemoryManager</code> — новая параметрическая альтернатива.</p>
+<p>Issue #97: добавлен типизированный API на основе pptr&lt;T&gt; для безопасного использования персистентных указателей снаружи менеджера. pptr&lt;T&gt; хранит гранульный индекс (4 байта) и не зависит от базового адреса.</p>
 <dl class="section see"><dt>See also</dt><dd>plan_issue87.md §5 «Фаза 7: AbstractPersistMemoryManager» </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.1 (Issue #87 Phase 7) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.2 (Issue #97 — pptr&lt;T&gt; typed API) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="abstract__pmm_8h_source.html">abstract_pmm.h</a>.</p>
 </div></div><!-- contents -->

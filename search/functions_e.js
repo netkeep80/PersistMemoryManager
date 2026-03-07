@@ -9,6 +9,8 @@ var searchData=
   ['repair_5flinked_5flist_6',['repair_linked_list',['../classpmm_1_1AllocatorPolicy.html#a76a73b9c5caae0fe2ed469ce05b83826',1,'pmm::AllocatorPolicy']]],
   ['required_5fblock_5fgranules_7',['required_block_granules',['../namespacepmm_1_1detail.html#ab890535579b00c765044db90a2f4a642',1,'pmm::detail']]],
   ['reset_5favl_5ffields_8',['reset_avl_fields',['../classpmm_1_1BlockStateBase.html#ab043ddadf86501b14fca872e3edbba2d',1,'pmm::BlockStateBase']]],
-  ['right_5foffset_9',['right_offset',['../classpmm_1_1BlockStateBase.html#a2ee2e7827cba287df5f39fc001c6527e',1,'pmm::BlockStateBase']]],
-  ['root_5foffset_10',['root_offset',['../classpmm_1_1BlockStateBase.html#a30d0b3a75c8d2cf85be682c75d12703a',1,'pmm::BlockStateBase']]]
+  ['resolve_9',['resolve',['../classpmm_1_1AbstractPersistMemoryManager.html#a4185e182b85f101c2268a105829687a9',1,'pmm::AbstractPersistMemoryManager']]],
+  ['resolve_5fat_10',['resolve_at',['../classpmm_1_1AbstractPersistMemoryManager.html#a7ff944ee233ba8ceb1f7994ecb43227b',1,'pmm::AbstractPersistMemoryManager']]],
+  ['right_5foffset_11',['right_offset',['../classpmm_1_1BlockStateBase.html#a2ee2e7827cba287df5f39fc001c6527e',1,'pmm::BlockStateBase']]],
+  ['root_5foffset_12',['root_offset',['../classpmm_1_1BlockStateBase.html#a30d0b3a75c8d2cf85be682c75d12703a',1,'pmm::BlockStateBase']]]
 ];

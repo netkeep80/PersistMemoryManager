@@ -1,7 +1,7 @@
 var searchData=
 [
   ['deallocate_0',['deallocate',['../classpmm_1_1AbstractPersistMemoryManager.html#a20e9c1827f266a8eb7247cd0dddac0c0',1,'pmm::AbstractPersistMemoryManager']]],
-  ['deallocate_5ftyped_1',['deallocate_typed',['../classpmm_1_1PersistMemoryManager.html#a26a01cbb2ff949629dc21939409646e8',1,'pmm::PersistMemoryManager']]],
+  ['deallocate_5ftyped_1',['deallocate_typed',['../classpmm_1_1AbstractPersistMemoryManager.html#acacc5d486b1c2ddd238cb163d294da1c',1,'pmm::AbstractPersistMemoryManager::deallocate_typed()'],['../classpmm_1_1PersistMemoryManager.html#a26a01cbb2ff949629dc21939409646e8',1,'pmm::PersistMemoryManager::deallocate_typed()']]],
   ['defaultabstractpmm_2',['DefaultAbstractPMM',['../namespacepmm.html#a5de02bdf4c2b75d6865ace400b7d9629',1,'pmm']]],
   ['defaultaddresstraits_3',['DefaultAddressTraits',['../namespacepmm.html#a9ca69087900283384dda68352be048bb',1,'pmm']]],
   ['defaultallocatorpolicy_4',['DefaultAllocatorPolicy',['../namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7',1,'pmm']]],
