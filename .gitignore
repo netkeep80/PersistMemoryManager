@@ -12,6 +12,9 @@ build_clean/
 build_test2/
 build_asan/
 build_demo/
+build_local/
+build_log.txt
+test_results.txt
 experiments/
 Testing
 build

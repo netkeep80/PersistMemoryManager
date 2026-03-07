@@ -43,6 +43,7 @@
 #include "pmm/types.h"
 #include "pmm/free_block_tree.h"
 #include "pmm/config.h"
+#include "pmm/pptr.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -52,50 +53,6 @@ namespace pmm
 
 // Forward declaration for the primary template
 template <typename Config = config::DefaultConfig> class PersistMemoryManager;
-
-// ─── Персистный типизированный указатель ──────────────────────────────────────
-
-/// @brief Persistent typed pointer (Issue #59: 4 bytes, granule index).
-/// Index 0 means null. get() resolves via singleton. pptr++/-- are forbidden.
-template <class T> class pptr
-{
-    std::uint32_t _idx; ///< Гранульный индекс пользовательских данных
-
-  public:
-    constexpr pptr() noexcept : _idx( 0 ) {}
-    constexpr explicit pptr( std::uint32_t idx ) noexcept : _idx( idx ) {}
-    constexpr pptr( const pptr<T>& ) noexcept               = default;
-    constexpr pptr<T>& operator=( const pptr<T>& ) noexcept = default;
-    ~pptr() noexcept                                        = default;
-
-    // Pointer arithmetic is forbidden — pptr is not a random-access iterator
-    pptr<T>& operator++()      = delete;
-    pptr<T>  operator++( int ) = delete;
-    pptr<T>& operator--()      = delete;
-    pptr<T>  operator--( int ) = delete;
-
-    constexpr bool          is_null() const noexcept { return _idx == 0; }
-    constexpr explicit      operator bool() const noexcept { return _idx != 0; }
-    constexpr std::uint32_t offset() const noexcept { return _idx; }
-
-    /// @brief Разыменовать через синглтон PersistMemoryManager<> (Issue #61).
-    inline T* get() const noexcept;
-    inline T& operator*() const noexcept { return *get(); }
-    inline T* operator->() const noexcept { return get(); }
-
-    /// @brief Доступ к i-му элементу типа T с проверкой размера блока (Issue #59).
-    inline T* operator[]( std::size_t i ) const noexcept;
-
-    /// @brief Доступ к i-му элементу без проверки границ (внутреннее использование).
-    inline T* get_at( std::size_t index ) const noexcept;
-
-    constexpr bool operator==( const pptr<T>& other ) const noexcept { return _idx == other._idx; }
-    constexpr bool operator!=( const pptr<T>& other ) const noexcept { return _idx != other._idx; }
-};
-
-// Issue #59: pptr<T> is 4 bytes (uint32_t granule index)
-static_assert( sizeof( pptr<int> ) == 4, "sizeof(pptr<T>) must be 4 bytes (Issue #59)" );
-static_assert( sizeof( pptr<double> ) == 4, "sizeof(pptr<T>) must be 4 bytes (Issue #59)" );
 
 // Forward declarations for free functions
 inline MemoryStats get_stats();
