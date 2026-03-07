@@ -30,6 +30,12 @@
  * Optimizations (Issue #57, #59): O(1) ops, 16-byte granule, 32-bit indices.
  * Refactoring (Issue #61): fully static PersistMemoryManager; pptr<T>-only public API.
  * Bug fix (Issue #67): reallocate_typed re-derives old pointer after possible expand().
+ *
+ * @deprecated (Issue #97): This singleton-based manager is deprecated.
+ *   Migrate to AbstractPersistMemoryManager and pmm_presets.h for RAII-style usage.
+ *   Example migration:
+ *     Old: auto ptr = PersistMemoryManager<>::allocate_typed<int>();
+ *     New: pmm::presets::SingleThreadedHeap pmm; pmm.create(1024); auto ptr = pmm.allocate(sizeof(int));
  */
 
 #pragma once

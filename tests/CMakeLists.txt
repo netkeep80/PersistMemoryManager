@@ -87,3 +87,8 @@ pmm_add_test(test_issue87_phase8 test_issue87_phase8.cpp)
 
 # ─── Тесты Phase 9: BlockState machine (Issue #93) ───────────────────────────
 pmm_add_test(test_block_state test_block_state.cpp)
+
+# ─── Интеграционные тесты пресетов (Issue #97) ───────────────────────────────
+add_executable(test_issue97_presets test_issue97_presets.cpp)
+target_link_libraries(test_issue97_presets PRIVATE pmm Threads::Threads)
+add_test(NAME test_issue97_presets COMMAND test_issue97_presets)

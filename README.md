@@ -20,7 +20,99 @@
 - **Автоматическое расширение** — при нехватке памяти буфер автоматически растёт на 25%
 - **Потокобезопасность** — разделённые блокировки через `std::shared_mutex` (параллельное чтение, эксклюзивная запись)
 
-## Быстрый старт
+## Быстрый старт (новый API, Issue #97)
+
+Начиная с Issue #97, рекомендуется использовать **параметрический RAII-стиль** через готовые пресеты (`pmm_presets.h`):
+
+```cpp
+#include "pmm/pmm_presets.h"
+
+int main() {
+    // Однопоточный менеджер с динамической памятью (HeapStorage)
+    pmm::presets::SingleThreadedHeap pmm;
+    pmm.create(1024 * 1024); // 1 МБ начальный размер
+
+    // Выделить блоки (16-байтное выравнивание)
+    void* block1 = pmm.allocate(256);   // 256 байт
+    void* block2 = pmm.allocate(1024);  // 1 КБ
+
+    // Освободить
+    pmm.deallocate(block1);
+
+    // Статистика
+    std::cout << "Total: " << pmm.total_size() << " bytes\n";
+    std::cout << "Free:  " << pmm.free_size()  << " bytes\n";
+
+    // Менеджер уничтожается при выходе из области видимости (RAII)
+    return 0;
+}
+```
+
+### Пресеты (pmm_presets.h)
+
+| Пресет | Хранилище | Многопоточность | Использование |
+|--------|-----------|-----------------|---------------|
+| `EmbeddedStatic4K` | `StaticStorage<4096>` | Нет | Embedded, без malloc |
+| `SingleThreadedHeap` | `HeapStorage` | Нет | Однопоточные приложения |
+| `MultiThreadedHeap` | `HeapStorage` | `SharedMutexLock` | Многопоточные приложения |
+| `PersistentFileMapped` | `MMapStorage` | `SharedMutexLock` | Персистентность через файл |
+| `IndustrialDB` | `MMapStorage` | `SharedMutexLock` | Промышленные БД |
+
+### Миграция с устаревшего API
+
+```cpp
+// Было (устаревший синглтон):
+void* mem = std::malloc(1024 * 1024);
+pmm::PersistMemoryManager<>::create(mem, 1024 * 1024);
+auto ptr = pmm::PersistMemoryManager<>::allocate_typed<int>();
+pmm::PersistMemoryManager<>::destroy();
+std::free(mem);
+
+// Стало (новый RAII-стиль, Issue #97):
+pmm::presets::SingleThreadedHeap pmm;
+pmm.create(1024 * 1024);
+auto ptr = pmm.allocate(sizeof(int));
+// pmm.destroy() вызывается автоматически
+```
+
+### Персистентность через mmap
+
+```cpp
+#include "pmm/pmm_presets.h"
+
+// Первый запуск — создаём
+pmm::presets::PersistentFileMapped pmm;
+pmm.backend().open("/var/data/heap.pmm", 64 * 1024 * 1024);
+if (!pmm.load()) {
+    pmm.create(); // первый запуск
+}
+void* ptr = pmm.allocate(100);
+
+// При следующем запуске состояние восстанавливается из файла
+```
+
+### Сохранение/загрузка (io.h, Issue #97)
+
+```cpp
+#include "pmm/io.h"
+#include "pmm/pmm_presets.h"
+
+pmm::presets::SingleThreadedHeap pmm;
+pmm.create(64 * 1024);
+void* ptr = pmm.allocate(100);
+
+// Сохранить образ в файл
+pmm::save_manager(pmm, "heap.dat");
+
+// Загрузить в другой менеджер
+pmm::presets::SingleThreadedHeap pmm2;
+pmm2.create(64 * 1024);           // выделяем буфер нужного размера
+pmm::load_manager_from_file(pmm2, "heap.dat");
+```
+
+## Быстрый старт (устаревший API)
+
+> **Внимание:** API на основе синглтона устарел начиная с Issue #97. Используйте `pmm_presets.h` для новых проектов.
 
 ```cpp
 #include "persist_memory_manager.h"

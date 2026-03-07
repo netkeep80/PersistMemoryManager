@@ -16,15 +16,32 @@
  * Переработка кода из `PersistMemoryManager` (Issue #73) в отдельный
  * параметризованный компонент.
  *
+ * Issue #97: Методы `allocate_from_block()` и `coalesce()` документированы
+ * в терминах автомата состояний из `block_state.h`. Полная интеграция с
+ * Block<A> (замена BlockHeader) запланирована как отдельный этап миграции.
+ *
+ * Граф состояний блока во время allocate_from_block():
+ *   FreeBlock → remove_from_avl → FreeBlockRemovedAVL
+ *     → [если split] begin_splitting → SplittingBlock → finalize_split → AllocatedBlock
+ *     → [без split]  mark_as_allocated → AllocatedBlock
+ *
+ * Граф состояний блока во время coalesce():
+ *   FreeBlockNotInAVL → begin_coalescing → CoalescingBlock
+ *     → [правый сосед свободен] coalesce_with_next
+ *     → [левый сосед свободен]  coalesce_with_prev → CoalescingBlock(prv)
+ *     → finalize_coalesce → FreeBlock (вставка в AVL)
+ *
  * @see plan_issue87.md §5 «Фаза 6: AllocatorPolicy»
+ * @see block_state.h — автомат состояний блока (Issue #93)
  * @see free_block_tree.h — концепт FreeBlockTree
- * @version 0.1 (Issue #87 Phase 6)
+ * @version 0.2 (Issue #97 — state machine documentation)
  */
 
 #pragma once
 
-#include "pmm/types.h"
+#include "pmm/block_state.h"
 #include "pmm/free_block_tree.h"
+#include "pmm/types.h"
 
 #include <cassert>
 #include <cstddef>
@@ -64,6 +81,13 @@ class AllocatorPolicy
      * Убирает блок из дерева свободных блоков, при необходимости разбивает его
      * на два: один — под запрошенные данные, второй — остаток (снова свободный).
      *
+     * Граф состояний (Issue #97, см. block_state.h):
+     *   FreeBlock → FreeBlockRemovedAVL [remove_from_avl]
+     *     → [split] SplittingBlock [begin_splitting]
+     *               → initialize_new_block + link_new_block + AVL insert
+     *               → AllocatedBlock [finalize_split]
+     *     → [no split] AllocatedBlock [mark_as_allocated]
+     *
      * @param base      Базовый указатель управляемой области.
      * @param hdr       Заголовок менеджера.
      * @param blk       Свободный блок, из которого выделяется память.
@@ -74,6 +98,7 @@ class AllocatorPolicy
                                       std::size_t user_size )
     {
         std::uint32_t blk_idx = detail::block_idx( base, blk );
+        // State: FreeBlock → FreeBlockRemovedAVL
         FreeBlockTreeT::remove( base, hdr, blk_idx );
 
         std::uint32_t blk_total_gran = detail::block_total_granules( base, hdr, blk );
@@ -84,8 +109,10 @@ class AllocatorPolicy
 
         if ( can_split )
         {
+            // State: FreeBlockRemovedAVL → SplittingBlock [begin_splitting]
             std::uint32_t        new_idx = blk_idx + needed_gran;
             detail::BlockHeader* new_blk = detail::block_at( base, new_idx );
+            // SplittingBlock::initialize_new_block
             std::memset( new_blk, 0, sizeof( detail::BlockHeader ) );
             new_blk->prev_offset   = blk_idx;
             new_blk->next_offset   = blk->next_offset;
@@ -93,6 +120,7 @@ class AllocatorPolicy
             new_blk->right_offset  = detail::kNoBlock;
             new_blk->parent_offset = detail::kNoBlock;
             new_blk->avl_height    = 1;
+            // SplittingBlock::link_new_block
             if ( blk->next_offset != detail::kNoBlock )
                 detail::block_at( base, blk->next_offset )->prev_offset = new_idx;
             else
@@ -104,6 +132,8 @@ class AllocatorPolicy
             FreeBlockTreeT::insert( base, hdr, new_idx );
         }
 
+        // State: FreeBlockRemovedAVL/SplittingBlock → AllocatedBlock
+        // [mark_as_allocated / finalize_split: set size=data_gran, root_offset=blk_idx]
         blk->size          = data_gran;
         blk->root_offset   = blk_idx;
         blk->left_offset   = detail::kNoBlock;
@@ -124,15 +154,23 @@ class AllocatorPolicy
      * Если следующий или предыдущий блок свободен, объединяет их.
      * Добавляет результирующий свободный блок в дерево.
      *
+     * Граф состояний (Issue #97, см. block_state.h):
+     *   FreeBlockNotInAVL → CoalescingBlock [begin_coalescing]
+     *     → [правый сосед free] coalesce_with_next
+     *     → [левый сосед free]  coalesce_with_prev → CoalescingBlock(prv) → finalize_coalesce → FreeBlock
+     *     → [нет соседей]       finalize_coalesce → FreeBlock [insert в AVL]
+     *
      * @param base  Базовый указатель управляемой области.
      * @param hdr   Заголовок менеджера.
      * @param blk   Только что освобождённый блок (size == 0).
      */
     static void coalesce( std::uint8_t* base, detail::ManagerHeader* hdr, detail::BlockHeader* blk )
     {
+        // State: FreeBlockNotInAVL → CoalescingBlock [begin_coalescing]
         std::uint32_t b_idx = detail::block_idx( base, blk );
 
         // Слияние с правым соседом
+        // State: CoalescingBlock::coalesce_with_next
         if ( blk->next_offset != detail::kNoBlock )
         {
             detail::BlockHeader* nxt = detail::block_at( base, blk->next_offset );
@@ -154,6 +192,7 @@ class AllocatorPolicy
         }
 
         // Слияние с левым соседом
+        // State: CoalescingBlock::coalesce_with_prev → результат CoalescingBlock(prv)
         if ( blk->prev_offset != detail::kNoBlock )
         {
             detail::BlockHeader* prv = detail::block_at( base, blk->prev_offset );
@@ -171,11 +210,13 @@ class AllocatorPolicy
                 hdr->free_count--;
                 if ( hdr->used_size >= detail::kBlockHeaderGranules )
                     hdr->used_size -= detail::kBlockHeaderGranules;
+                // State: CoalescingBlock::finalize_coalesce → FreeBlock; вставка в AVL
                 FreeBlockTreeT::insert( base, hdr, prv_idx );
                 return;
             }
         }
 
+        // State: CoalescingBlock::finalize_coalesce → FreeBlock; вставка в AVL
         FreeBlockTreeT::insert( base, hdr, b_idx );
     }
 
