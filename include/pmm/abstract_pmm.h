@@ -9,18 +9,26 @@
  *   - ThreadPolicyT    — политика многопоточности (SharedMutexLock / NoLock)
  *
  * Интерфейс:
- *   - `create(backend)`  — инициализировать уже готовый бэкенд
- *   - `load(backend)`    — загрузить существующее состояние из бэкенда
- *   - `destroy()`        — сбросить состояние
- *   - `allocate(size)`   — выделить блок
- *   - `deallocate(ptr)`  — освободить блок
+ *   - `create(backend)`              — инициализировать уже готовый бэкенд
+ *   - `load(backend)`                — загрузить существующее состояние из бэкенда
+ *   - `destroy()`                    — сбросить состояние
+ *   - `allocate(size)`               — выделить блок (raw void*)
+ *   - `deallocate(ptr)`              — освободить блок (raw void*)
+ *   - `allocate_typed<T>()`          — выделить блок и вернуть pptr<T> (Issue #97)
+ *   - `allocate_typed<T>(count)`     — выделить массив и вернуть pptr<T> (Issue #97)
+ *   - `deallocate_typed(pptr<T>)`    — освободить блок по pptr<T> (Issue #97)
+ *   - `resolve<T>(pptr<T>)`          — разыменовать pptr<T> через экземпляр (Issue #97)
  *
  * Обратная совместимость:
  *   `PersistMemoryManager<DefaultConfig>` продолжает работать без изменений.
  *   `AbstractPersistMemoryManager` — новая параметрическая альтернатива.
  *
+ * Issue #97: добавлен типизированный API на основе pptr<T> для безопасного
+ *   использования персистентных указателей снаружи менеджера.
+ *   pptr<T> хранит гранульный индекс (4 байта) и не зависит от базового адреса.
+ *
  * @see plan_issue87.md §5 «Фаза 7: AbstractPersistMemoryManager»
- * @version 0.1 (Issue #87 Phase 7)
+ * @version 0.2 (Issue #97 — pptr<T> typed API)
  */
 
 #pragma once
@@ -32,6 +40,7 @@
 #include "pmm/heap_storage.h"
 #include "pmm/storage_backend.h"
 #include "pmm/config.h"
+#include "pmm/pptr.h"
 
 #include <cassert>
 #include <cstddef>
@@ -212,6 +221,97 @@ class AbstractPersistMemoryManager
         if ( hdr->used_size >= freed )
             hdr->used_size -= freed;
         allocator::coalesce( base, hdr, blk );
+    }
+
+    // ─── Типизированный API с pptr<T> (Issue #97) ─────────────────────────────
+
+    /**
+     * @brief Выделить один объект типа T и вернуть персистентный указатель pptr<T>.
+     *
+     * Снаружи менеджера следует хранить только pptr<T>, а не сырые указатели.
+     * Для разыменования используйте resolve<T>(p) или resolve_at<T>(p, i).
+     *
+     * Issue #97: pptr<T> — персистентный 4-байтный указатель (гранульный индекс),
+     *   адресно-независимый, корректно загружается из файла по другому базовому адресу.
+     *
+     * @tparam T Тип выделяемого объекта.
+     * @return pptr<T> — персистентный указатель или pptr<T>() при ошибке.
+     */
+    template <typename T> pptr<T> allocate_typed() noexcept
+    {
+        void* raw = allocate( sizeof( T ) );
+        if ( raw == nullptr )
+            return pptr<T>();
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
+        return pptr<T>( static_cast<std::uint32_t>( byte_off / kGranuleSize ) );
+    }
+
+    /**
+     * @brief Выделить массив из count объектов типа T и вернуть pptr<T>.
+     *
+     * @tparam T Тип элемента массива.
+     * @param count Количество элементов (должно быть > 0).
+     * @return pptr<T> — персистентный указатель или pptr<T>() при ошибке.
+     */
+    template <typename T> pptr<T> allocate_typed( std::size_t count ) noexcept
+    {
+        if ( count == 0 )
+            return pptr<T>();
+        if ( sizeof( T ) > 0 && count > std::numeric_limits<std::size_t>::max() / sizeof( T ) )
+            return pptr<T>();
+        void* raw = allocate( sizeof( T ) * count );
+        if ( raw == nullptr )
+            return pptr<T>();
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
+        return pptr<T>( static_cast<std::uint32_t>( byte_off / kGranuleSize ) );
+    }
+
+    /**
+     * @brief Освободить блок по персистентному указателю pptr<T>.
+     *
+     * @tparam T Тип данных (только для проверки типа pptr).
+     * @param p Персистентный указатель на блок (pptr<T>).
+     */
+    template <typename T> void deallocate_typed( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base = _backend.base_ptr();
+        void*         raw  = base + detail::idx_to_byte_off( p.offset() );
+        deallocate( raw );
+    }
+
+    /**
+     * @brief Разыменовать pptr<T> — получить сырой указатель T* через данный экземпляр.
+     *
+     * Используйте вместо p.get() (синглтон) для работы с AbstractPersistMemoryManager.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель.
+     * @return T* — указатель на данные или nullptr если p.is_null() или не инициализирован.
+     */
+    template <typename T> T* resolve( pptr<T> p ) const noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return nullptr;
+        const std::uint8_t* base = _backend.base_ptr();
+        return reinterpret_cast<T*>( const_cast<std::uint8_t*>( base ) + detail::idx_to_byte_off( p.offset() ) );
+    }
+
+    /**
+     * @brief Разыменовать pptr<T> и получить указатель на i-й элемент массива.
+     *
+     * @tparam T Тип элемента.
+     * @param p Персистентный указатель на массив.
+     * @param i Индекс элемента.
+     * @return T* — указатель на i-й элемент или nullptr при ошибке.
+     */
+    template <typename T> T* resolve_at( pptr<T> p, std::size_t i ) const noexcept
+    {
+        T* base_elem = resolve( p );
+        return ( base_elem == nullptr ) ? nullptr : base_elem + i;
     }
 
     // ─── Статистика ────────────────────────────────────────────────────────────
