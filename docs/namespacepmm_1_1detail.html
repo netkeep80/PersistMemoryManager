@@ -91,7 +91,7 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx.  <a href="structpmm_1_1detail_1_1BlockHeader.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules. root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75). Issue #69: magic removed; validity via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69/#106: Structural block validity using Block layout. Invariants: weight&lt;total_gran,...">is_valid_block()</a>. total_size = next_offset - idx.  <a href="structpmm_1_1detail_1_1BlockHeader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__base__ptr.html">has_base_ptr</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,26 +146,41 @@ Functions</h2></td></tr>
 <tr class="memdesc:a570c97994ec416915edafdbb1ed080b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true only for kGranuleSize (16-byte) alignment.  <br /></td></tr>
 <tr class="separator:a570c97994ec416915edafdbb1ed080b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa3eed572fc991f5a8dc88b77d789cda" id="r_aaa3eed572fc991f5a8dc88b77d789cda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#aaa3eed572fc991f5a8dc88b77d789cda">block_at</a> (std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, std::uint32_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">idx</a>)</td></tr>
-<tr class="memdesc:aaa3eed572fc991f5a8dc88b77d789cda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get pointer to <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> by granule index.  <br /></td></tr>
+<tr class="memdesc:aaa3eed572fc991f5a8dc88b77d789cda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get pointer to <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> by granule index (legacy format).  <br /></td></tr>
 <tr class="separator:aaa3eed572fc991f5a8dc88b77d789cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3bb1488df9320c1e54262f5abf46659" id="r_ab3bb1488df9320c1e54262f5abf46659"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ab3bb1488df9320c1e54262f5abf46659">block_at</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, std::uint32_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">idx</a>)</td></tr>
-<tr class="memdesc:ab3bb1488df9320c1e54262f5abf46659"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get const pointer to <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> by granule index (read-only).  <br /></td></tr>
+<tr class="memdesc:ab3bb1488df9320c1e54262f5abf46659"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get const pointer to <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> by granule index (read-only, legacy format).  <br /></td></tr>
 <tr class="separator:ab3bb1488df9320c1e54262f5abf46659"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6707ce1c1f66213562082d2944eacc53" id="r_a6707ce1c1f66213562082d2944eacc53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a6707ce1c1f66213562082d2944eacc53">block_at_block</a> (std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, std::uint32_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">idx</a>)</td></tr>
+<tr class="memdesc:a6707ce1c1f66213562082d2944eacc53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get pointer to Block&lt;DefaultAddressTraits&gt; by granule index (Issue #106: BlockState layout).  <br /></td></tr>
+<tr class="separator:a6707ce1c1f66213562082d2944eacc53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7dfbd46cd801b59be30f03a900feee10" id="r_a7dfbd46cd801b59be30f03a900feee10"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a7dfbd46cd801b59be30f03a900feee10">block_at_block</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, std::uint32_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">idx</a>)</td></tr>
+<tr class="memdesc:a7dfbd46cd801b59be30f03a900feee10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get const pointer to Block&lt;DefaultAddressTraits&gt; by granule index (read-only).  <br /></td></tr>
+<tr class="separator:a7dfbd46cd801b59be30f03a900feee10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a181b2f5855181619597f9d2ef8901427" id="r_a181b2f5855181619597f9d2ef8901427"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a181b2f5855181619597f9d2ef8901427">block_idx</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">block</a>)</td></tr>
 <tr class="memdesc:a181b2f5855181619597f9d2ef8901427"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get granule index of <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a>.  <br /></td></tr>
 <tr class="separator:a181b2f5855181619597f9d2ef8901427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae45055a95f135f074bd8ebe01f2feea2" id="r_ae45055a95f135f074bd8ebe01f2feea2"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ae45055a95f135f074bd8ebe01f2feea2">block_idx</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">block</a>)</td></tr>
+<tr class="memdesc:ae45055a95f135f074bd8ebe01f2feea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get granule index of <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> (Issue #106).  <br /></td></tr>
+<tr class="separator:ae45055a95f135f074bd8ebe01f2feea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47ae1eb6be6ec88b15b603baa1ea20e0" id="r_a47ae1eb6be6ec88b15b603baa1ea20e0"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a47ae1eb6be6ec88b15b603baa1ea20e0">block_total_granules</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">hdr</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">blk</a>)</td></tr>
+<tr class="memdesc:a47ae1eb6be6ec88b15b603baa1ea20e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute total_size of block in granules (<a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout, Issue #106). Issue #59: total_size is no longer stored — computed via next_offset.  <br /></td></tr>
+<tr class="separator:a47ae1eb6be6ec88b15b603baa1ea20e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7566b1b5755c189b14a7c73c36bee876" id="r_a7566b1b5755c189b14a7c73c36bee876"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a7566b1b5755c189b14a7c73c36bee876">block_total_granules</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">hdr</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">blk</a>)</td></tr>
-<tr class="memdesc:a7566b1b5755c189b14a7c73c36bee876"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute total_size of block in granules. Issue #59: total_size is no longer stored — computed via next_offset.  <br /></td></tr>
+<tr class="memdesc:a7566b1b5755c189b14a7c73c36bee876"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute total_size of block in granules (legacy <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> layout). Issue #59: total_size is no longer stored — computed via next_offset.  <br /></td></tr>
 <tr class="separator:a7566b1b5755c189b14a7c73c36bee876"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acfed0397d713df8a3a2d501827722294" id="r_acfed0397d713df8a3a2d501827722294"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294">is_valid_block</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">hdr</a>, std::uint32_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">idx</a>)</td></tr>
-<tr class="memdesc:acfed0397d713df8a3a2d501827722294"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs.  <br /></td></tr>
+<tr class="memdesc:acfed0397d713df8a3a2d501827722294"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #69/#106: Structural block validity using <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. Invariants: weight&lt;total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs.  <br /></td></tr>
 <tr class="separator:acfed0397d713df8a3a2d501827722294"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a9d6b9b418a1e5b38f85b9dc6c060d5" id="r_a2a9d6b9b418a1e5b38f85b9dc6c060d5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a2a9d6b9b418a1e5b38f85b9dc6c060d5">user_ptr</a> (<a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">block</a>)</td></tr>
+<tr class="memdesc:a2a9d6b9b418a1e5b38f85b9dc6c060d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute user data address for block (block + <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">sizeof(Block&lt;A&gt;)</a>, Issue #106).  <br /></td></tr>
+<tr class="separator:a2a9d6b9b418a1e5b38f85b9dc6c060d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02de50186cd3b81c0dc3f7ff873a138f" id="r_a02de50186cd3b81c0dc3f7ff873a138f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a02de50186cd3b81c0dc3f7ff873a138f">user_ptr</a> (<a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">block</a>)</td></tr>
-<tr class="memdesc:a02de50186cd3b81c0dc3f7ff873a138f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute user data address for block (block + <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">sizeof(BlockHeader)</a>).  <br /></td></tr>
+<tr class="memdesc:a02de50186cd3b81c0dc3f7ff873a138f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute user data address for block (<a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> legacy).  <br /></td></tr>
 <tr class="separator:a02de50186cd3b81c0dc3f7ff873a138f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d7f63452120beffc06eb2a6da58a26d" id="r_a7d7f63452120beffc06eb2a6da58a26d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a7d7f63452120beffc06eb2a6da58a26d">header_from_ptr</a> (std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ptr</a>, std::size_t total_size)</td></tr>
-<tr class="memdesc:a7d7f63452120beffc06eb2a6da58a26d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">O(1)</a> get <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> from user_ptr (ptr - <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">sizeof(BlockHeader)</a>); validated via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>.  <br /></td></tr>
-<tr class="separator:a7d7f63452120beffc06eb2a6da58a26d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9501825712f2b1926faec652eb89f289" id="r_a9501825712f2b1926faec652eb89f289"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a9501825712f2b1926faec652eb89f289">header_from_ptr</a> (std::uint8_t *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">base</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> *<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ptr</a>, std::size_t total_size)</td></tr>
+<tr class="memdesc:a9501825712f2b1926faec652eb89f289"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">O(1)</a> get <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> from user_ptr (ptr - <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">sizeof(Block&lt;A&gt;)</a>); validated via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69/#106: Structural block validity using Block layout. Invariants: weight&lt;total_gran,...">is_valid_block()</a>. Issue #106: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout replaces <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> for allocator internals.  <br /></td></tr>
+<tr class="separator:a9501825712f2b1926faec652eb89f289"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab890535579b00c765044db90a2f4a642" id="r_ab890535579b00c765044db90a2f4a642"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ab890535579b00c765044db90a2f4a642">required_block_granules</a> (std::size_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">user_bytes</a>)</td></tr>
 <tr class="memdesc:ab890535579b00c765044db90a2f4a642"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum block granules for user_bytes (header + data, minimum 1 data granule).  <br /></td></tr>
 <tr class="separator:ab890535579b00c765044db90a2f4a642"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -223,9 +238,9 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Get const pointer to <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> by granule index (read-only). </p>
+<p>Get const pointer to <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> by granule index (read-only, legacy format). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00240">240</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00244">244</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -263,14 +278,94 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Get pointer to <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> by granule index. </p>
+<p>Get pointer to <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> by granule index (legacy format). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00233">233</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00237">237</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a7dfbd46cd801b59be30f03a900feee10" name="a7dfbd46cd801b59be30f03a900feee10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7dfbd46cd801b59be30f03a900feee10">&#9670;&#160;</a></span>block_at_block() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; * pmm::detail::block_at_block </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::uint32_t&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get const pointer to Block&lt;DefaultAddressTraits&gt; by granule index (read-only). </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00258">258</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a6707ce1c1f66213562082d2944eacc53" name="a6707ce1c1f66213562082d2944eacc53"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6707ce1c1f66213562082d2944eacc53">&#9670;&#160;</a></span>block_at_block() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; * pmm::detail::block_at_block </td>
+          <td>(</td>
+          <td class="paramtype">std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::uint32_t&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get pointer to Block&lt;DefaultAddressTraits&gt; by granule index (Issue #106: BlockState layout). </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00251">251</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
 <a id="a181b2f5855181619597f9d2ef8901427" name="a181b2f5855181619597f9d2ef8901427"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a181b2f5855181619597f9d2ef8901427">&#9670;&#160;</a></span>block_idx()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a181b2f5855181619597f9d2ef8901427">&#9670;&#160;</a></span>block_idx() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -305,12 +400,52 @@ Variables</h2></td></tr>
 
 <p>Get granule index of <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00247">247</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00265">265</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="ae45055a95f135f074bd8ebe01f2feea2" name="ae45055a95f135f074bd8ebe01f2feea2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae45055a95f135f074bd8ebe01f2feea2">&#9670;&#160;</a></span>block_idx() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint32_t pmm::detail::block_idx </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *&#160;</td>
+          <td class="paramname"><em>block</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get granule index of <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> (Issue #106). </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00273">273</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
 <a id="a7566b1b5755c189b14a7c73c36bee876" name="a7566b1b5755c189b14a7c73c36bee876"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7566b1b5755c189b14a7c73c36bee876">&#9670;&#160;</a></span>block_total_granules()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7566b1b5755c189b14a7c73c36bee876">&#9670;&#160;</a></span>block_total_granules() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -349,9 +484,55 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Compute total_size of block in granules. Issue #59: total_size is no longer stored — computed via next_offset. </p>
+<p>Compute total_size of block in granules (legacy <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> layout). Issue #59: total_size is no longer stored — computed via next_offset. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00256">256</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00293">293</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a47ae1eb6be6ec88b15b603baa1ea20e0" name="a47ae1eb6be6ec88b15b603baa1ea20e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47ae1eb6be6ec88b15b603baa1ea20e0">&#9670;&#160;</a></span>block_total_granules() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint32_t pmm::detail::block_total_granules </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a> *&#160;</td>
+          <td class="paramname"><em>hdr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *&#160;</td>
+          <td class="paramname"><em>blk</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute total_size of block in granules (<a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout, Issue #106). Issue #59: total_size is no longer stored — computed via next_offset. </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00282">282</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -381,7 +562,7 @@ Variables</h2></td></tr>
 
 <p>Get granule index from byte offset (must be multiple of kGranuleSize). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00219">219</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00223">223</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -411,7 +592,7 @@ Variables</h2></td></tr>
 
 <p>Convert bytes to granules (ceiling). Returns 0 on overflow. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00196">196</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00200">200</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -441,12 +622,12 @@ Variables</h2></td></tr>
 
 <p>Convert granules to bytes. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00207">207</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00211">211</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a7d7f63452120beffc06eb2a6da58a26d" name="a7d7f63452120beffc06eb2a6da58a26d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d7f63452120beffc06eb2a6da58a26d">&#9670;&#160;</a></span>header_from_ptr()</h2>
+<a id="a9501825712f2b1926faec652eb89f289" name="a9501825712f2b1926faec652eb89f289"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9501825712f2b1926faec652eb89f289">&#9670;&#160;</a></span>header_from_ptr()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -455,7 +636,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1BlockHeader.html">BlockHeader</a> * pmm::detail::header_from_ptr </td>
+          <td class="memname"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; * pmm::detail::header_from_ptr </td>
           <td>(</td>
           <td class="paramtype">std::uint8_t *&#160;</td>
           <td class="paramname"><em>base</em>, </td>
@@ -485,9 +666,9 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">O(1)</a> get <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> from user_ptr (ptr - <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">sizeof(BlockHeader)</a>); validated via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran,...">is_valid_block()</a>. </p>
+<p><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">O(1)</a> get <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> from user_ptr (ptr - <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">sizeof(Block&lt;A&gt;)</a>); validated via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69/#106: Structural block validity using Block layout. Invariants: weight&lt;total_gran,...">is_valid_block()</a>. Issue #106: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout replaces <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> for allocator internals. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00302">302</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00346">346</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -517,7 +698,7 @@ Variables</h2></td></tr>
 
 <p>Get byte offset from granule index. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00213">213</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00217">217</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -547,7 +728,7 @@ Variables</h2></td></tr>
 
 <p>Returns true only for kGranuleSize (16-byte) alignment. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00227">227</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00231">231</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -591,9 +772,9 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Issue #69: Structural block validity (replaces magic check). Invariants: size&lt;total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs. </p>
+<p>Issue #69/#106: Structural block validity using <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. Invariants: weight&lt;total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00266">266</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00303">303</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -623,12 +804,12 @@ Variables</h2></td></tr>
 
 <p>Minimum block granules for user_bytes (header + data, minimum 1 data granule). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00328">328</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00372">372</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
 <a id="a02de50186cd3b81c0dc3f7ff873a138f" name="a02de50186cd3b81c0dc3f7ff873a138f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02de50186cd3b81c0dc3f7ff873a138f">&#9670;&#160;</a></span>user_ptr()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a02de50186cd3b81c0dc3f7ff873a138f">&#9670;&#160;</a></span>user_ptr() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -651,9 +832,39 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Compute user data address for block (block + <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">sizeof(BlockHeader)</a>). </p>
+<p>Compute user data address for block (<a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> legacy). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00296">296</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00339">339</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a2a9d6b9b418a1e5b38f85b9dc6c060d5" name="a2a9d6b9b418a1e5b38f85b9dc6c060d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a9d6b9b418a1e5b38f85b9dc6c060d5">&#9670;&#160;</a></span>user_ptr() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">void</a> * pmm::detail::user_ptr </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *&#160;</td>
+          <td class="paramname"><em>block</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute user data address for block (block + <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b" title="Проверка, соответствует ли Backend концепту StorageBackend.">sizeof(Block&lt;A&gt;)</a>, Issue #106). </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00333">333</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -680,7 +891,7 @@ Variables</h2></td></tr>
 
 <p>Number of granules in <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> (2 granules = 32 bytes) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00151">151</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00155">155</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -706,7 +917,7 @@ Variables</h2></td></tr>
 
 <p>Number of granules in <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00184">184</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00188">188</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -732,7 +943,7 @@ Variables</h2></td></tr>
 
 <p>Issue #83: Minimum block size = <a class="el" href="structpmm_1_1detail_1_1BlockHeader.html" title="Block header (32 bytes = 2 granules, Issue #59). size=0: free; size&gt;0: data granules....">BlockHeader</a> + 1 data granule (computed, not hardcoded). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00187">187</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00191">191</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -760,7 +971,7 @@ Variables</h2></td></tr>
 </div><!-- fragment -->
 <p>Issue #83: Minimum memory size = BlockHeader_0 + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a> + BlockHeader_1 + kMinBlockSize (computed). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00190">190</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00194">194</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -787,7 +998,7 @@ Variables</h2></td></tr>
 <p>Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc" title="Sentinel «нет блока» — максимальное значение index_type.">DefaultAddressTraits::no_block</a>. </p>
 <p>Sentinel: no block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00155">155</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00159">159</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
