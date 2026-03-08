@@ -144,11 +144,11 @@ Variables</h2></td></tr>
 <li><code>find_best_fit(base, hdr, needed)</code> — find smallest suitable block</li>
 </ul>
 <p>Issue #95: AVL tree implementation moved here from persist_avl_tree.h to consolidate all PMM code under include/pmm/.</p>
-<p>Issue #106: AvlFreeTree migrated to use Block&lt;AddressTraitsT&gt; layout (BlockState machine). All field accesses now go through Block (prev/next/left/right/parent/avl_height/weight/root_offset) instead of the legacy BlockHeader (size/prev/next/left/right/parent/avl_height/_pad/root_offset).</p>
+<p>Issue #106: AvlFreeTree uses Block&lt;AddressTraitsT&gt; layout (BlockState machine). All field accesses go through Block (prev/next/left/right/parent/avl_height/weight/root_offset). Issue #112: BlockHeader struct removed — Block is the sole block type.</p>
 <dl class="section see"><dt>See also</dt><dd>plan_issue87.md "Phase 4: FreeBlockTree as template policy" </dd>
 <dd>
 <a class="el" href="block__state_8h.html" title="BlockState machine — автомат состояний блока для атомарных операций (Issue #93).">block_state.h</a> — BlockState machine (Issue #93, #106) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>1.1 (Issue #106 — BlockState machine layout migration) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>1.2 (Issue #112 — BlockHeader removed) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 </div></div><!-- contents -->

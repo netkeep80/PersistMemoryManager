@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['parent_5foffset_0',['parent_offset',['../classpmm_1_1BlockStateBase.html#ab930864ddc2fe985fd652b05bb3d7167',1,'pmm::BlockStateBase::parent_offset()'],['../structpmm_1_1detail_1_1BlockHeader.html#a2a13a9adaa31b0c4bf7d083f026ec798',1,'pmm::detail::BlockHeader::parent_offset'],['../structpmm_1_1FreeBlockView.html#aea1f57f5c5b0eaf525417546e0860c31',1,'pmm::FreeBlockView::parent_offset'],['../structpmm_1_1TreeNode.html#a34883ae019ea695d351db1f01a7919f9',1,'pmm::TreeNode::parent_offset']]],
+  ['parent_5foffset_0',['parent_offset',['../classpmm_1_1BlockStateBase.html#ab930864ddc2fe985fd652b05bb3d7167',1,'pmm::BlockStateBase::parent_offset()'],['../structpmm_1_1FreeBlockView.html#aea1f57f5c5b0eaf525417546e0860c31',1,'pmm::FreeBlockView::parent_offset'],['../structpmm_1_1TreeNode.html#a34883ae019ea695d351db1f01a7919f9',1,'pmm::TreeNode::parent_offset']]],
   ['persist_5fmemory_5fmanager_2eh_1',['persist_memory_manager.h',['../persist__memory__manager_8h.html',1,'']]],
   ['persistentavltree_2',['PersistentAvlTree',['../namespacepmm.html#a343de335e434d7d59ee388be5c798684',1,'pmm']]],
   ['persistentdataconfig_3',['PersistentDataConfig',['../structpmm_1_1PersistentDataConfig.html',1,'pmm']]],
@@ -14,7 +14,7 @@ var searchData=
   ['pptr_11',['pptr',['../classpmm_1_1pptr.html',1,'pmm::pptr&lt; T, ManagerT &gt;'],['../classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3',1,'pmm::PersistMemoryManager::pptr'],['../classpmm_1_1pptr.html#a1ab91add33a9ad65c34852f74c392907',1,'pmm::pptr::pptr() noexcept'],['../classpmm_1_1pptr.html#a35e3db741baf51802d94c81ae1775572',1,'pmm::pptr::pptr(index_type idx) noexcept'],['../classpmm_1_1pptr.html#a8519630774e174fac16a6b29c980de96',1,'pmm::pptr::pptr(const pptr &amp;) noexcept=default']]],
   ['pptr_2eh_12',['pptr.h',['../pptr_8h.html',1,'']]],
   ['prev_5fbase_5fptr_13',['prev_base_ptr',['../structpmm_1_1detail_1_1ManagerHeader.html#a1bb56fffdeca92384e21d17e6ed8133b',1,'pmm::detail::ManagerHeader']]],
-  ['prev_5foffset_14',['prev_offset',['../structpmm_1_1LinkedListNode.html#ace30ea7d53a69852cb39ad0b7221f932',1,'pmm::LinkedListNode::prev_offset'],['../structpmm_1_1detail_1_1BlockHeader.html#aeabee7ef2a65e7808f039ec61d35b932',1,'pmm::detail::BlockHeader::prev_offset'],['../classpmm_1_1BlockStateBase.html#a3612911563039d14f840c0cb0f9973e9',1,'pmm::BlockStateBase::prev_offset()']]],
+  ['prev_5foffset_14',['prev_offset',['../structpmm_1_1LinkedListNode.html#ace30ea7d53a69852cb39ad0b7221f932',1,'pmm::LinkedListNode::prev_offset'],['../classpmm_1_1BlockStateBase.html#a3612911563039d14f840c0cb0f9973e9',1,'pmm::BlockStateBase::prev_offset()']]],
   ['prev_5fowns_5fmemory_15',['prev_owns_memory',['../structpmm_1_1detail_1_1ManagerHeader.html#ac4d518b1787bb7897f1537e53c140037',1,'pmm::detail::ManagerHeader']]],
   ['prev_5ftotal_5fsize_16',['prev_total_size',['../structpmm_1_1detail_1_1ManagerHeader.html#aa2c18d6c49db61acbbd79984c7c457c5',1,'pmm::detail::ManagerHeader']]]
 ];
