@@ -1,39 +1,62 @@
 /**
  * @file mem_map_view.h
- * @brief MemMapView: visualises the PMM managed memory as a colour-coded bar.
+ * @brief MemMapView: visualises the PMM managed memory as a colour-coded pixel map.
  *
- * DemoMgr is a fully static class — update_snapshot() reads statistics via
- * static DemoMgr:: methods directly (no instance pointer needed).
+ * DemoMgr is a fully static class — update_snapshot() reads block layout via
+ * DemoMgr::for_each_block() and statistics via static DemoMgr:: methods.
  *
- * A block can be highlighted by setting highlighted_block before calling render()
- * (retained for API compatibility; block-level colouring is not available).
+ * Each pixel in the map represents `bytes_per_pixel` bytes of managed memory.
+ * A logarithmic slider (power-of-2 steps) controls the scale.
+ *
+ * Colour legend:
+ *   - Purple      — ManagerHeader metadata region
+ *   - Dark blue   — BlockHeader (used block)
+ *   - Bright blue — User data (used block)
+ *   - Dark grey   — BlockHeader (free block)
+ *   - White       — User data (free block)
+ *   - Black       — Beyond last block (unused granules)
  */
 
 #pragma once
 
 #include "demo_globals.h"
 
+#include "pmm/types.h"
+
 #include <cstddef>
+#include <vector>
 
 namespace demo
 {
 
+/// @brief Colour tag for one pixel in the memory map.
+enum class PixelKind : std::uint8_t
+{
+    Unused        = 0, ///< Beyond managed blocks
+    ManagerHeader = 1, ///< ManagerHeader metadata
+    UsedHeader    = 2, ///< Block<A> header of an allocated block
+    UsedData      = 3, ///< User data of an allocated block
+    FreeHeader    = 4, ///< Block<A> header of a free block
+    FreeData      = 5, ///< Data region of a free block (available space)
+};
+
 /**
- * @brief ImGui panel that renders a simple memory usage bar for the PMM region.
+ * @brief ImGui panel that renders the PMM region as a colour-coded pixel map.
  *
- * Shows used/free/total sizes from the new static API. Block-level pixel
- * colouring (for_each_block) is not available in the PersistMemoryManager API.
+ * Uses DemoMgr::for_each_block() to iterate over all blocks and build a
+ * per-pixel colour array. A bytes-per-pixel slider (logarithmic, power-of-2)
+ * controls the zoom level.
  */
 class MemMapView
 {
   public:
-    /// Index of the block to highlight (retained for API compatibility; unused in simplified view).
+    /// Index of the block to highlight (granule index).
     std::size_t highlighted_block = static_cast<std::size_t>( -1 );
 
     /**
-     * @brief Rebuild the snapshot from live PMM state.
+     * @brief Rebuild the block-level snapshot from live PMM state.
      *
-     * Reads statistics via DemoMgr:: static methods.
+     * Calls DemoMgr::for_each_block() to collect per-block layout.
      * Call only when g_pmm is true (manager active).
      */
     void update_snapshot();
@@ -49,8 +72,18 @@ class MemMapView
     std::size_t used_bytes_  = 0;
     std::size_t free_bytes_  = 0;
 
+    /// Per-byte kind array (one entry per byte in the managed region).
+    /// Rebuilt by update_snapshot(); downsampled to pixels during render().
+    std::vector<PixelKind> byte_kinds_;
+
     // ── Controls ─────────────────────────────────────────────────────────────
-    float bar_height_ = 24.0f;
+    float       bar_height_      = 24.0f; ///< Height of the simple usage bar
+    int         bpp_log2_        = 0;     ///< log2(bytes_per_pixel), slider value
+    std::size_t bytes_per_pixel_ = 1;     ///< Current bytes per pixel (2^bpp_log2_)
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    void rebuild_pixel_map();
+    void render_pixel_map( float map_width );
 };
 
 } // namespace demo
