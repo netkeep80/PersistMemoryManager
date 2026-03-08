@@ -7,9 +7,7 @@
  * Legacy: magic removed (Issue #69), block_data_size_bytes removed.
  */
 
-#include "pmm/pmm_presets.h"
-#include "pmm/io.h"
-#include "pmm/types.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstdlib>

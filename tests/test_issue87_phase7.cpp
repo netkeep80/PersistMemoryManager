@@ -18,10 +18,7 @@
  * @version 0.2 (Issue #112 — migrated from AbstractPersistMemoryManager to PersistMemoryManager)
  */
 
-#include "pmm/manager_configs.h"
-#include "pmm/persist_memory_manager.h"
-#include "pmm/pptr.h"
-#include "pmm/static_storage.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstddef>

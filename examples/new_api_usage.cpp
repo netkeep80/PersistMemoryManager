@@ -20,8 +20,7 @@
  *   - No p++/p-- (no accidental pointer arithmetic)
  */
 
-#include "pmm/io.h"
-#include "pmm/pmm_presets.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cstdio>
 #include <cstring>

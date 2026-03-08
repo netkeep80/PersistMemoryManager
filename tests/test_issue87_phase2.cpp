@@ -21,11 +21,7 @@
  * @version 0.4 (Issue #120 — поля защищены, тесты обновлены для state machine API)
  */
 
-#include "pmm/block.h"
-#include "pmm/block_state.h"
-#include "pmm/linked_list_node.h"
-#include "pmm/tree_node.h"
-#include "pmm/types.h" // kNoBlock и другие константы
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstddef>

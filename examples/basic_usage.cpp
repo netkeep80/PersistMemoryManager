@@ -17,8 +17,7 @@
  * - pmm::load_manager_from_file<Mgr>(filename) — template-based load
  */
 
-#include "pmm/io.h"
-#include "pmm/pmm_presets.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cstdlib>
 #include <cstring>

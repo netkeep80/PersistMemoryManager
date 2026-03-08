@@ -14,8 +14,7 @@
  * @version 0.2 (Issue #93 — based on Block<A>)
  */
 
-#include "pmm/block_state.h"
-#include "pmm/types.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstddef>

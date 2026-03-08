@@ -13,12 +13,7 @@
  * - Independence via InstanceId: distinct InstanceIds have separate static state
  */
 
-#include "pmm/address_traits.h"
-#include "pmm/block.h"
-#include "pmm/config.h"
-#include "pmm/free_block_tree.h"
-#include "pmm/pmm_presets.h"
-#include "pmm/types.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstdlib>

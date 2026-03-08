@@ -12,8 +12,6 @@
 
 #include "demo_globals.h"
 
-#include "pmm/types.h"
-
 #include <cstddef>
 #include <cstdint>
 #include <unordered_map>

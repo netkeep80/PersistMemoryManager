@@ -8,7 +8,7 @@
  * block_count/free_block_count/alloc_block_count used instead of get_stats().
  */
 
-#include "pmm/pmm_presets.h"
+#include "pmm_multi_threaded_heap.h"
 
 #include <atomic>
 #include <chrono>

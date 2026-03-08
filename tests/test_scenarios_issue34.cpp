@@ -15,8 +15,7 @@
  *   Scenario 5: "Marathon" — long-term stability.
  */
 
-#include "pmm/pmm_presets.h"
-#include "pmm/io.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <algorithm>
 #include <chrono>

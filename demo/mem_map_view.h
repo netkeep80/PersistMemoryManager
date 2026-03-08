@@ -21,8 +21,6 @@
 
 #include "demo_globals.h"
 
-#include "pmm/types.h"
-
 #include <cstddef>
 #include <vector>
 

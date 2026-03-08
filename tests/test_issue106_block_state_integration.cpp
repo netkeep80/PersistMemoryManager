@@ -19,9 +19,7 @@
  * @version 1.0 (Issue #106 — BlockState machine integration)
  */
 
-#include "pmm/block_state.h"
-#include "pmm/pmm_presets.h"
-#include "pmm/types.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstddef>

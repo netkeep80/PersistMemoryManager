@@ -23,8 +23,6 @@
 #include "avl_tree_view.h"
 #include "demo_globals.h"
 
-#include "pmm/types.h"
-
 #include <cassert>
 #include <cstdlib>
 #include <iostream>

@@ -19,9 +19,7 @@
  * @version 0.4 (Issue #120 — fields protected, use BlockStateBase API)
  */
 
-#include "pmm/block.h"
-#include "pmm/block_state.h"
-#include "pmm/types.h" // kNoBlock и другие константы
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstddef>

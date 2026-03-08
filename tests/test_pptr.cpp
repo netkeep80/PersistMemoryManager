@@ -9,8 +9,7 @@
  *   - Нет reallocate_typed() в новом API.
  */
 
-#include "pmm/pmm_presets.h"
-#include "pmm/io.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstdlib>

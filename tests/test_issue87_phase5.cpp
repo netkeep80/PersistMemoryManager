@@ -17,10 +17,7 @@
  * @version 0.1 (Issue #87 Phase 5)
  */
 
-#include "pmm/heap_storage.h"
-#include "pmm/mmap_storage.h"
-#include "pmm/static_storage.h"
-#include "pmm/storage_backend.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstddef>

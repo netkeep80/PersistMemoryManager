@@ -25,8 +25,6 @@
 #include "demo_globals.h"
 #include "mem_map_view.h"
 
-#include "pmm/types.h"
-
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>

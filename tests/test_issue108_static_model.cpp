@@ -39,10 +39,7 @@
  * @version 0.2 (Issue #112 — StaticMemoryManager replaced by PersistMemoryManager)
  */
 
-#include "pmm/manager_configs.h"
-#include "pmm/persist_memory_manager.h"
-#include "pmm/pmm_presets.h"
-#include "pmm/pptr.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstddef>

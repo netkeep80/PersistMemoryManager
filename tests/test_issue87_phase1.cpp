@@ -14,8 +14,7 @@
  * @version 0.1 (Issue #87 Phase 1)
  */
 
-#include "pmm/address_traits.h"
-#include "pmm/types.h" // для обратной совместимости: kGranuleSize, kNoBlock
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstdlib>

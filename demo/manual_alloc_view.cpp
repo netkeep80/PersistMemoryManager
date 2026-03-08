@@ -12,7 +12,6 @@
 #include "manual_alloc_view.h"
 
 #include "imgui.h"
-#include "pmm/config.h"
 
 #include <cstdio>
 

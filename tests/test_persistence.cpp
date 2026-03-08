@@ -8,9 +8,7 @@
  *   - Разные InstanceId используются для разных «экземпляров» в рамках одного теста.
  */
 
-#include "pmm/io.h"
-#include "pmm/manager_configs.h"
-#include "pmm/persist_memory_manager.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstdio>

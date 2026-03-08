@@ -12,11 +12,7 @@
  * - #83-R4: ManagerHeader stores granule_size; load() rejects wrong granule_size.
  */
 
-#include "pmm/block.h"
-#include "pmm/config.h"
-#include "pmm/io.h"
-#include "pmm/pmm_presets.h"
-#include "pmm/types.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstdlib>

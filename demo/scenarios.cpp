@@ -32,7 +32,6 @@
 #include "scenarios.h"
 
 #include "demo_globals.h"
-#include "pmm/io.h"
 
 #include <algorithm>
 #include <chrono>

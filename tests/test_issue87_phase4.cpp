@@ -10,8 +10,7 @@
  * @see include/pmm/free_block_tree.h
  */
 
-#include "pmm/free_block_tree.h"
-#include "pmm/pmm_presets.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstddef>

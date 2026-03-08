@@ -11,13 +11,7 @@
  * @version 0.2 (Issue #102)
  */
 
-#include "pmm/pmm_presets.h"
-#include "pmm/types.h"
-#include "pmm/block_state.h"
-#include "pmm/free_block_tree.h"
-#include "pmm/config.h"
-#include "pmm/address_traits.h"
-#include "pmm/io.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -187,7 +181,6 @@ static bool test_cr_thread_policy_injection()
 // =============================================================================
 
 // [Phase 1] AddressTraits
-#include "pmm/address_traits.h"
 
 static bool test_phase1_address_traits()
 {
@@ -211,8 +204,6 @@ static bool test_phase1_address_traits()
 
 // [Phase 2] LinkedListNode + TreeNode
 // Note: Fields are protected (Issue #120). Type verified via BlockStateBase::index_type.
-#include "pmm/linked_list_node.h"
-#include "pmm/tree_node.h"
 
 static bool test_phase2_list_and_tree_nodes()
 {
@@ -238,7 +229,6 @@ static bool test_phase2_list_and_tree_nodes()
 }
 
 // [Phase 3] Block
-#include "pmm/block.h"
 
 static bool test_phase3_block_layout()
 {

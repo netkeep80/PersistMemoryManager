@@ -6,10 +6,7 @@
  * Проверяет корректность best-fit выбора и слияния через публичный API.
  */
 
-#include "pmm/pmm_presets.h"
-#include "pmm/free_block_tree.h"
-#include "pmm/types.h"
-#include "pmm/io.h"
+#include "pmm_single_threaded_heap.h"
 
 #include <algorithm>
 #include <cassert>
