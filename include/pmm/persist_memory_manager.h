@@ -600,6 +600,34 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         BlockStateBase<address_traits>::set_avl_height_of( blk_raw, h );
     }
 
+    /**
+     * @brief Получить ссылку на узел AVL-дерева для блока, на который указывает данный pptr.
+     *
+     * Позволяет работать с узлом дерева напрямую через методы TreeNode:
+     * get_left(), set_left(), get_right(), set_right(), get_parent(), set_parent(),
+     * get_weight(), set_weight(), get_height(), set_height(), etc.
+     *
+     * Использование:
+     * @code
+     *   auto& tn = MyMgr::tree_node(p);
+     *   auto left_idx = tn.get_left();  // no_block если нет левого потомка
+     *   tn.set_left(other_p.offset());
+     * @endcode
+     *
+     * @warning Возвращаемая ссылка действительна только пока менеджер инициализирован
+     *          и блок не освобождён. Не сохраняйте ссылку дольше операции.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель на блок (должен быть ненулевым).
+     * @return TreeNode<address_traits>& — ссылка на узел AVL-дерева в заголовке блока.
+     */
+    template <typename T> static TreeNode<address_traits>& tree_node( pptr<T> p ) noexcept
+    {
+        std::uint8_t* base    = _backend.base_ptr();
+        void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        return *reinterpret_cast<TreeNode<address_traits>*>( blk_raw );
+    }
+
     // ─── Статистика ────────────────────────────────────────────────────────────
 
     static std::size_t total_size() noexcept { return _initialized ? _backend.total_size() : 0; }

@@ -28,7 +28,8 @@
  * @endcode
  *
  * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
- * @version 0.6 (Issue #129 — переход на C++20: requires вместо static_assert для void-guard)
+ * @see tree_node.h — TreeNode<A> с публичными методами (Issue #138)
+ * @version 0.7 (Issue #138 — добавлен tree_node() для прямого доступа к TreeNode)
  */
 
 #pragma once
@@ -153,6 +154,28 @@ class pptr
      * @return T* — указатель на данные.
      */
     T* operator->() const noexcept { return resolve(); }
+
+    // ─── Доступ к узлу AVL-дерева (Issue #138) ────────────────────────────────
+
+    /**
+     * @brief Получить ссылку на узел AVL-дерева в заголовке блока (Issue #138).
+     *
+     * Позволяет работать с узлом дерева напрямую через методы TreeNode:
+     * get_left(), set_left(), get_right(), set_right(), get_parent(), set_parent(),
+     * get_weight(), set_weight(), get_height(), set_height(), get_node_type(), set_node_type().
+     *
+     * Использование:
+     * @code
+     *   auto& tn = p.tree_node();
+     *   auto left_idx = tn.get_left();  // no_block если нет левого потомка
+     *   tn.set_left(other_p.offset());
+     * @endcode
+     *
+     * @warning Ссылка действительна только пока менеджер инициализирован и блок не освобождён.
+     *
+     * @return TreeNode& — ссылка на узел AVL-дерева в заголовке выделенного блока.
+     */
+    auto& tree_node() const noexcept { return ManagerT::tree_node( *this ); }
 
     // ─── Методы работы с узлом AVL-дерева (Issue #125) ────────────────────────
 

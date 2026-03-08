@@ -570,6 +570,72 @@ static bool test_pptr_user_avl_tree()
     return true;
 }
 
+/**
+ * @brief Тест pptr::tree_node() — прямой доступ к TreeNode через ссылку (Issue #138).
+ *
+ * Проверяет, что pptr::tree_node() возвращает ссылку на TreeNode в заголовке блока,
+ * и что TreeNode-методы (get_left, set_left, get_right, set_right, get_parent,
+ * set_parent, get_height, set_height) работают корректно.
+ */
+static bool test_pptr_tree_node_ref()
+{
+    const std::size_t size = 64 * 1024;
+
+    Mgr pmm;
+    PMM_TEST( pmm.create( size ) );
+
+    Mgr::pptr<int> n1 = pmm.allocate_typed<int>();
+    Mgr::pptr<int> n2 = pmm.allocate_typed<int>();
+    Mgr::pptr<int> n3 = pmm.allocate_typed<int>();
+
+    PMM_TEST( !n1.is_null() );
+    PMM_TEST( !n2.is_null() );
+    PMM_TEST( !n3.is_null() );
+
+    // Доступ к TreeNode через pptr::tree_node()
+    auto& tn1 = n1.tree_node();
+    auto& tn2 = n2.tree_node();
+    auto& tn3 = n3.tree_node();
+
+    // Начальное состояние: связи через tree_node() — no_block
+    const auto no_block = pmm::DefaultAddressTraits::no_block;
+    PMM_TEST( tn1.get_left() == no_block );
+    PMM_TEST( tn1.get_right() == no_block );
+    PMM_TEST( tn1.get_parent() == no_block );
+    PMM_TEST( tn2.get_left() == no_block );
+    PMM_TEST( tn2.get_right() == no_block );
+
+    // Построить дерево через tree_node(): n1 — корень, n2 — левый, n3 — правый
+    tn1.set_left( n2.offset() );
+    tn1.set_right( n3.offset() );
+    tn2.set_parent( n1.offset() );
+    tn3.set_parent( n1.offset() );
+    tn1.set_height( 2 );
+    tn2.set_height( 1 );
+    tn3.set_height( 1 );
+
+    // Проверить через tree_node()
+    PMM_TEST( tn1.get_left() == n2.offset() );
+    PMM_TEST( tn1.get_right() == n3.offset() );
+    PMM_TEST( tn2.get_parent() == n1.offset() );
+    PMM_TEST( tn3.get_parent() == n1.offset() );
+    PMM_TEST( tn1.get_height() == 2 );
+    PMM_TEST( tn2.get_height() == 1 );
+    PMM_TEST( tn3.get_height() == 1 );
+
+    // Результаты tree_node() согласуются с существующим pptr API
+    PMM_TEST( n1.get_tree_left() == n2 );
+    PMM_TEST( n1.get_tree_right() == n3 );
+    PMM_TEST( n2.get_tree_parent() == n1 );
+    PMM_TEST( n3.get_tree_parent() == n1 );
+
+    pmm.deallocate_typed( n1 );
+    pmm.deallocate_typed( n2 );
+    pmm.deallocate_typed( n3 );
+    pmm.destroy();
+    return true;
+}
+
 int main()
 {
     std::cout << "=== test_pptr ===\n";
@@ -594,6 +660,7 @@ int main()
     PMM_RUN( "pptr_tree_node_null_safety", test_pptr_tree_node_null_safety );
     PMM_RUN( "pptr_tree_node_weight", test_pptr_tree_node_weight );
     PMM_RUN( "pptr_user_avl_tree", test_pptr_user_avl_tree );
+    PMM_RUN( "pptr_tree_node_ref", test_pptr_tree_node_ref );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;
