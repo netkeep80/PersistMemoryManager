@@ -1,0 +1,143 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - ".gitkeep"
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      description:
+        description: "Release description (optional)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  # ─── Auto Release (on push to main) ──────────────────────────────────────
+  auto-release:
+    name: Auto Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for changelog fragments
+        id: check
+        run: |
+          fragments=$(find changelog.d -maxdepth 1 -name "*.md" ! -name "README.md" 2>/dev/null | wc -l)
+          echo "fragment_count=$fragments" >> "$GITHUB_OUTPUT"
+          if [ "$fragments" -gt 0 ]; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "Found $fragments changelog fragment(s)"
+          else
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "No changelog fragments found — skipping release"
+          fi
+
+      - name: Configure git
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Collect changelog and bump version
+        if: steps.check.outputs.should_release == 'true'
+        id: release
+        run: |
+          bash scripts/collect-changelog.sh
+          new_version=$(grep -oP 'project\(PersistMemoryManager VERSION \K[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt)
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+          echo "New version: $new_version"
+
+      - name: Commit version bump and changelog
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          git add CMakeLists.txt CHANGELOG.md changelog.d/
+          git commit -m "chore: release v${{ steps.release.outputs.new_version }}"
+          git push
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${{ steps.release.outputs.new_version }}"
+          # Extract release notes for this version from CHANGELOG.md
+          notes=$(awk "/^## \[$version\]/,/^## \[/" CHANGELOG.md | head -n -1 | tail -n +2)
+          gh release create "v$version" \
+            --title "v$version" \
+            --notes "$notes"
+
+  # ─── Manual Release (workflow_dispatch) ──────────────────────────────────
+  manual-release:
+    name: Manual Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create changelog fragment
+        run: |
+          timestamp=$(date +%Y%m%d_%H%M%S)
+          bump_type="${{ github.event.inputs.bump_type }}"
+          description="${{ github.event.inputs.description || 'Manual release' }}"
+          fragment_file="changelog.d/${timestamp}_manual_release.md"
+          cat > "$fragment_file" << EOF
+          ---
+          bump: $bump_type
+          ---
+
+          ### Changed
+          - $description
+          EOF
+          echo "Created fragment: $fragment_file"
+
+      - name: Collect changelog and bump version
+        id: release
+        run: |
+          bash scripts/collect-changelog.sh
+          new_version=$(grep -oP 'project\(PersistMemoryManager VERSION \K[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt)
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+          echo "New version: $new_version"
+
+      - name: Commit version bump and changelog
+        run: |
+          git add CMakeLists.txt CHANGELOG.md changelog.d/
+          git commit -m "chore: release v${{ steps.release.outputs.new_version }}"
+          git push
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${{ steps.release.outputs.new_version }}"
+          # Extract release notes for this version from CHANGELOG.md
+          notes=$(awk "/^## \[$version\]/,/^## \[/" CHANGELOG.md | head -n -1 | tail -n +2)
+          gh release create "v$version" \
+            --title "v$version" \
+            --notes "$notes"

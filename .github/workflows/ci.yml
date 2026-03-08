@@ -157,6 +157,21 @@ jobs:
           files: coverage.info
           fail_ci_if_error: false
 
+  # ─── Changelog fragment check ────────────────────────────────────────────────
+  changelog:
+    name: Changelog fragment check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changelog fragment
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: bash scripts/check-changelog-fragment.sh
+
   # ─── Demo build ──────────────────────────────────────────────────────────────
   build-demo:
     name: Build Demo (${{ matrix.os }})

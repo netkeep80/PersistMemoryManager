@@ -1,0 +1,59 @@
+# Pre-commit hooks for PersistMemoryManager
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # ─── General file quality ────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # ─── Secrets detection ───────────────────────────────────────────────────────
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  # ─── C++ formatting (clang-format) ──────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: clang-format
+        entry: clang-format --dry-run --Werror
+        language: system
+        types: [c++]
+        files: '\.(cpp|h)$'
+        exclude: ^third_party/
+
+  # ─── File size limit (1500 lines max) ────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: file-size-limit
+        name: File size limit (max 1500 lines)
+        entry: bash scripts/check-file-size.sh
+        language: system
+        types: [c++]
+        files: '\.(cpp|h)$'
+        exclude: ^third_party/
+
+  # ─── Static analysis (cppcheck) ──────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: cppcheck
+        name: cppcheck
+        entry: >-
+          cppcheck --enable=warning,performance --std=c++17 --error-exitcode=1
+          --suppress=missingIncludeSystem --suppress=unmatchedSuppression
+          --suppress=throwInNoexceptFunction --suppress=uninitMemberVarPrivate
+          -I include -I .
+        language: system
+        types: [c++]
+        files: '\.cpp$'
+        exclude: ^third_party/
