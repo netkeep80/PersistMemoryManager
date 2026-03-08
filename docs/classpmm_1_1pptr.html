@@ -175,6 +175,7 @@ Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">class</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">class</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ManagerT</a>&gt;<br />
+requires ( !std::is_void_v&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ManagerT</a>&gt; )<br />
 class pmm::pptr&lt; T, ManagerT &gt;</div><p>Персистентный типизированный указатель (гранульный индекс). </p>
 <p>Хранит гранульный индекс пользовательских данных, а не адрес. Адресно-независим: корректно загружается из файла по другому базовому адресу.</p>
 <p>Тип индекса определяется через <code>ManagerT::address_traits::index_type</code> (Issue #110).</p>
@@ -189,7 +190,7 @@ class pmm::pptr&lt; T, ManagerT &gt;</div><p>Персистентный типи
 <li><code>p.resolve()</code>, <code>*p</code>, <code>p-&gt;field</code> — через статический метод менеджера </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00080">80</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00083">83</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a2011f31a800c4ca766683e66aaed2b7d" name="a2011f31a800c4ca766683e66aaed2b7d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2011f31a800c4ca766683e66aaed2b7d">&#9670;&#160;</a></span>element_type</h2>

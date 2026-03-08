@@ -77,18 +77,20 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#concepts">Concepts</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">free_block_tree.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95).  
+<p>FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95, #129).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="block_8h_source.html">pmm/block.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="block__state_8h_source.html">pmm/block_state.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
 <code>#include &lt;cassert&gt;</code><br />
+<code>#include &lt;concepts&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
 <code>#include &lt;limits&gt;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
@@ -97,21 +99,6 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__insert.html">pmm::detail::has_insert&lt; Policy, typename &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE check for Policy::insert(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__insert.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__insert_3_01Policy_00_01std_1_1void__t_3_01decltype_07Policy_1_1inserd47ab41f38788bf011b6644ba7afd2cd.html">pmm::detail::has_insert&lt; Policy, std::void_t&lt; decltype(Policy::insert(std::declval&lt; std::uint8_t * &gt;(), std::declval&lt; pmm::detail::ManagerHeader * &gt;(), std::declval&lt; std::uint32_t &gt;()))&gt; &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__remove.html">pmm::detail::has_remove&lt; Policy, typename &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE check for Policy::remove(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__remove.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__remove_3_01Policy_00_01std_1_1void__t_3_01decltype_07Policy_1_1remov3559727669e50b2c5f88928274cb9bdb.html">pmm::detail::has_remove&lt; Policy, std::void_t&lt; decltype(Policy::remove(std::declval&lt; std::uint8_t * &gt;(), std::declval&lt; pmm::detail::ManagerHeader * &gt;(), std::declval&lt; std::uint32_t &gt;()))&gt; &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__find__best__fit.html">pmm::detail::has_find_best_fit&lt; Policy, typename &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">SFINAE check for Policy::find_best_fit(uint8_t*, ManagerHeader*, uint32_t).  <a href="structpmm_1_1detail_1_1has__find__best__fit.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1has__find__best__fit_3_01Policy_00_01std_1_1void__t_3_01decltype_07Policy0784e462573bc8396c4523c35bfefe1c.html">pmm::detail::has_find_best_fit&lt; Policy, std::void_t&lt; decltype(Policy::find_best_fit(std::declval&lt; std::uint8_t * &gt;(), std::declval&lt; pmm::detail::ManagerHeader * &gt;(), std::declval&lt; std::uint32_t &gt;()))&gt; &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html">pmm::AvlFreeTree&lt; AddressTraitsT &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard AVL tree implementation for free block tree policy.  <a href="structpmm_1_1AvlFreeTree.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -120,7 +107,11 @@ Classes</h2></td></tr>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm" id="r_namespacepmm"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html">pmm</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespacepmm_1_1detail" id="r_namespacepmm_1_1detail"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html">pmm::detail</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="concepts" name="concepts"></a>
+Concepts</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1FreeBlockTreePolicyConcept.html">pmm::FreeBlockTreePolicyConcept</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -132,14 +123,14 @@ Typedefs</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d" id="r_a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplParams" colspan="2">template&lt;typename Policy &gt; </td></tr>
-<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></td></tr>
-<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if Policy is a valid free block tree policy.  <br /></td></tr>
+<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a> = FreeBlockTreePolicyConcept&lt;Policy&gt;</td></tr>
+<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.  <br /></td></tr>
 <tr class="separator:a13826d7e9e815fd280a91ffa868ce33d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95). </p>
-<p>Defines C++17 SFINAE concept for free block tree policy and provides the standard implementation <code>AvlFreeTree&lt;AddressTraits&gt;</code>.</p>
-<p>The <code>FreeBlockTreePolicy&lt;Policy&gt;</code> concept requires three static methods:</p><ul>
+<div class="textblock"><p>FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95, #129). </p>
+<p>Defines C++20 concept <code>FreeBlockTreePolicyConcept&lt;Policy&gt;</code> for free block tree policy and provides the standard implementation <code>AvlFreeTree&lt;AddressTraits&gt;</code>.</p>
+<p>The <code>FreeBlockTreePolicyConcept&lt;Policy&gt;</code> concept requires three static methods:</p><ul>
 <li><code>insert(base, hdr, blk_idx)</code> — add block to tree</li>
 <li><code>remove(base, hdr, blk_idx)</code> — remove block from tree</li>
 <li><code>find_best_fit(base, hdr, needed)</code> — find smallest suitable block</li>
@@ -149,7 +140,7 @@ Variables</h2></td></tr>
 <dl class="section see"><dt>See also</dt><dd>plan_issue87.md "Phase 4: FreeBlockTree as template policy" </dd>
 <dd>
 <a class="el" href="block__state_8h.html" title="BlockState machine — автомат состояний блока для атомарных операций (Issue #93).">block_state.h</a> — BlockState machine (Issue #93, #106) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>1.2 (Issue #112 — BlockHeader removed) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>1.3 (Issue #129 — переход на C++20 концепты) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 </div></div><!-- contents -->

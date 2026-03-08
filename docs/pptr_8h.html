@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102).  
+<p>pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
@@ -103,7 +103,7 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102). </p>
+<div class="textblock"><p>pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129). </p>
 <p>pptr&lt;T, ManagerT&gt; хранит гранульный индекс вместо адреса, что делает его адресно-независимым и пригодным для персистентных хранилищ:</p><ul>
 <li>Хранит индекс типа ManagerT::address_traits::index_type</li>
 <li>Нет смещения при повторной загрузке по другому адресу</li>
@@ -126,7 +126,7 @@ Namespaces</h2></td></tr>
 <div class="line">MyMgr::destroy();</div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00090">persist_memory_manager.h:91</a></div></div>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — унифицированный статический менеджер ПАП (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (статическая модель, Issue #110) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.5 (Issue #110 — index_type из ManagerT::address_traits::index_type) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.6 (Issue #129 — переход на C++20: requires вместо static_assert для void-guard) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 </div></div><!-- contents -->

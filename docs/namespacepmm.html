@@ -73,6 +73,7 @@ $(function() {
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#concepts">Concepts</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
@@ -170,6 +171,18 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="concepts" name="concepts"></a>
+Concepts</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1FreeBlockTreePolicyConcept.html">FreeBlockTreePolicyConcept</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1PersistMemoryManagerConcept.html">PersistMemoryManagerConcept</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 концепт: проверяет, является ли T корректным менеджером персистентной памяти. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1StorageBackendConcept.html">StorageBackendConcept</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 концепт: проверяет, соответствует ли Backend концепту StorageBackend. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:abb45c05352727cde1c45f1d73c0dad3b" id="r_abb45c05352727cde1c45f1d73c0dad3b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">TinyAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint8_t, 8 &gt;</td></tr>
@@ -237,16 +250,16 @@ Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d" id="r_a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplParams" colspan="2">template&lt;typename Policy &gt; </td></tr>
-<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">is_free_block_tree_policy_v</a></td></tr>
-<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if Policy is a valid free block tree policy.  <br /></td></tr>
+<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">is_free_block_tree_policy_v</a> = FreeBlockTreePolicyConcept&lt;Policy&gt;</td></tr>
+<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.  <br /></td></tr>
 <tr class="separator:a13826d7e9e815fd280a91ffa868ce33d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a70401630d11010442cb6026f2a5654" id="r_a7a70401630d11010442cb6026f2a5654"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; </td></tr>
-<tr class="memitem:a7a70401630d11010442cb6026f2a5654"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a7a70401630d11010442cb6026f2a5654">is_persist_memory_manager_v</a> = <a class="el" href="structpmm_1_1is__persist__memory__manager.html">is_persist_memory_manager</a>&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a>&gt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">::value</a></td></tr>
+<tr class="memitem:a7a70401630d11010442cb6026f2a5654"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a7a70401630d11010442cb6026f2a5654">is_persist_memory_manager_v</a> = PersistMemoryManagerConcept&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a>&gt;</td></tr>
 <tr class="memdesc:a7a70401630d11010442cb6026f2a5654"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная для <a class="el" href="structpmm_1_1is__persist__memory__manager.html" title="Проверить, является ли T корректным типом менеджера персистентной памяти.">is_persist_memory_manager</a>.  <br /></td></tr>
 <tr class="separator:a7a70401630d11010442cb6026f2a5654"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a921bde594db4955b918196479bbbff7b" id="r_a921bde594db4955b918196479bbbff7b"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Backend</a> &gt; </td></tr>
-<tr class="memitem:a921bde594db4955b918196479bbbff7b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">is_storage_backend_v</a></td></tr>
-<tr class="memdesc:a921bde594db4955b918196479bbbff7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверка, соответствует ли Backend концепту StorageBackend.  <br /></td></tr>
+<tr class="memitem:a921bde594db4955b918196479bbbff7b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">is_storage_backend_v</a> = StorageBackendConcept&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Backend</a>&gt;</td></tr>
+<tr class="memdesc:a921bde594db4955b918196479bbbff7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная: true если Backend удовлетворяет StorageBackendConcept.  <br /></td></tr>
 <tr class="separator:a921bde594db4955b918196479bbbff7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3e17dab8c53a80a62be5d276867a8ac" id="r_ad3e17dab8c53a80a62be5d276867a8ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a> = 16</td></tr>
 <tr class="memdesc:ad3e17dab8c53a80a62be5d276867a8ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a" title="Размер гранулы в байтах.">DefaultAddressTraits::granule_size</a>.  <br /></td></tr>
@@ -324,7 +337,7 @@ Variables</h2></td></tr>
 
 <p>Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead. </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00376">376</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00345">345</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -812,7 +825,7 @@ template&lt;typename Policy &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr bool pmm::is_free_block_tree_policy_v</td>
+          <td class="memname">constexpr bool pmm::is_free_block_tree_policy_v = FreeBlockTreePolicyConcept&lt;Policy&gt;</td>
         </tr>
       </table>
   </td>
@@ -821,24 +834,16 @@ template&lt;typename Policy &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div>
-<div class="line">    detail::has_insert&lt;Policy&gt;::value &amp;&amp; detail::has_remove&lt;Policy&gt;::value &amp;&amp; detail::has_find_best_fit&lt;Policy&gt;::value</div>
-</div><!-- fragment -->
-<p>Check if Policy is a valid free block tree policy. </p>
-<p>Policy must provide three static methods:</p><ul>
-<li><code>insert(uint8_t* base, ManagerHeader* hdr, uint32_t blk_idx) -&gt; void</code></li>
-<li><code>remove(uint8_t* base, ManagerHeader* hdr, uint32_t blk_idx) -&gt; void</code></li>
-<li><code>find_best_fit(uint8_t* base, ManagerHeader* hdr, uint32_t n) -&gt; uint32_t</code></li>
-</ul>
-<p>Used as type-concept (C++17 variable template).</p>
+
+<p>Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">Policy</td><td>Type to check for compliance. </td></tr>
+    <tr><td class="paramname">Policy</td><td>Тип, проверяемый на соответствие концепту. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00092">92</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00062">62</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -854,7 +859,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> pmm::is_persist_memory_manager_v = <a class="el" href="structpmm_1_1is__persist__memory__manager.html">is_persist_memory_manager</a>&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a>&gt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">::value</a></td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> pmm::is_persist_memory_manager_v = PersistMemoryManagerConcept&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a>&gt;</td>
         </tr>
       </table>
   </td>
@@ -872,9 +877,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 <div class="fragment"><div class="line"><span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_persist_memory_manager_v&lt;MyType&gt;</a>) { ... }</div>
-<div class="ttc" id="anamespacepmm_html_a13826d7e9e815fd280a91ffa868ce33d"><div class="ttname"><a href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></div><div class="ttdeci">constexpr bool is_free_block_tree_policy_v</div><div class="ttdoc">Check if Policy is a valid free block tree policy.</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00092">free_block_tree.h:92</a></div></div>
+<div class="ttc" id="anamespacepmm_html_a13826d7e9e815fd280a91ffa868ce33d"><div class="ttname"><a href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></div><div class="ttdeci">constexpr bool is_free_block_tree_policy_v</div><div class="ttdoc">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00062">free_block_tree.h:62</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="manager__concept_8h_source.html#l00160">160</a> of file <a class="el" href="manager__concept_8h_source.html">manager_concept.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__concept_8h_source.html#l00095">95</a> of file <a class="el" href="manager__concept_8h_source.html">manager_concept.h</a>.</p>
 
 </div>
 </div>
@@ -890,7 +895,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> pmm::is_storage_backend_v</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> pmm::is_storage_backend_v = StorageBackendConcept&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Backend</a>&gt;</td>
         </tr>
       </table>
   </td>
@@ -899,17 +904,8 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div>
-<div class="line">    detail::has_base_ptr&lt;Backend&gt;::value &amp;&amp; detail::has_total_size&lt;Backend&gt;::value &amp;&amp;</div>
-<div class="line">    detail::has_expand&lt;Backend&gt;::value &amp;&amp; detail::has_owns_memory&lt;Backend&gt;::value</div>
-</div><!-- fragment -->
-<p>Проверка, соответствует ли Backend концепту StorageBackend. </p>
-<p>Требует наличия:</p><ul>
-<li><code>base_ptr() -&gt; uint8_t*</code></li>
-<li><code>total_size() -&gt; size_t</code> (const)</li>
-<li><code>expand(size_t) -&gt; bool</code></li>
-<li><code>owns_memory() -&gt; bool</code> (const)</li>
-</ul>
+
+<p>Вспомогательная переменная: true если Backend удовлетворяет StorageBackendConcept. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">Backend</td><td>Тип, проверяемый на соответствие концепту. </td></tr>
@@ -917,7 +913,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="storage__backend_8h_source.html#l00082">82</a> of file <a class="el" href="storage__backend_8h_source.html">storage_backend.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="storage__backend_8h_source.html#l00055">55</a> of file <a class="el" href="storage__backend_8h_source.html">storage_backend.h</a>.</p>
 
 </div>
 </div>
