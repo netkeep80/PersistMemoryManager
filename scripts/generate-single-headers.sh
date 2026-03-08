@@ -10,10 +10,10 @@
 # Prerequisites: quom >= 4.0.0 (pip install quom)
 #
 # Output files:
-#   include/pmm_single_threaded_heap.h  — NoLock + HeapStorage (CacheManagerConfig)
-#   include/pmm_multi_threaded_heap.h   — SharedMutexLock + HeapStorage (PersistentDataConfig)
-#   include/pmm_embedded_heap.h         — NoLock + HeapStorage, grow 50% (EmbeddedManagerConfig)
-#   include/pmm_industrial_db_heap.h    — SharedMutexLock + HeapStorage, grow 100% (IndustrialDBConfig)
+#   single_include/pmm/pmm_single_threaded_heap.h  — NoLock + HeapStorage (CacheManagerConfig)
+#   single_include/pmm/pmm_multi_threaded_heap.h   — SharedMutexLock + HeapStorage (PersistentDataConfig)
+#   single_include/pmm/pmm_embedded_heap.h         — NoLock + HeapStorage, grow 50% (EmbeddedManagerConfig)
+#   single_include/pmm/pmm_industrial_db_heap.h    — SharedMutexLock + HeapStorage, grow 100% (IndustrialDBConfig)
 
 set -euo pipefail
 
@@ -21,7 +21,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 INCLUDE_DIR="$REPO_ROOT/include"
 
-OUTPUT_DIR="$INCLUDE_DIR"
+OUTPUT_DIR="$REPO_ROOT/single_include/pmm"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --output-dir)
