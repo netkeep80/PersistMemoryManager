@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.6.1] - 2026-03-08
+
+### Changed (Issue #138)
+- **Merged `LinkedListNode` into `Block`**: `prev_offset` and `next_offset` fields moved directly into `Block<AddressTraitsT>` as protected member variables. `Block` now inherits only `TreeNode<AddressTraitsT>` (no longer `LinkedListNode`). The file `include/pmm/linked_list_node.h` has been deleted.
+- **Updated memory layout**: With `Block : TreeNode`, `TreeNode` fields (`weight`, `left_offset`, `right_offset`, `parent_offset`, `root_offset`, `avl_height`, `node_type`) now occupy bytes 0–23, and `prev_offset`/`next_offset` occupy bytes 24–31. Total block size remains 32 bytes for `DefaultAddressTraits`.
+- **Updated `BlockStateBase` offset constants**: `kOffsetWeight=0`, `kOffsetLeftOffset=4`, ..., `kOffsetAvlHeight=20`, `kOffsetNodeType=22`, `kOffsetPrevOffset=24`, `kOffsetNextOffset=28` (Issue #138).
+- **Moved single-header preset files** from `include/` root to `single_include/pmm/` directory (Issue #138).
+- **Updated `kMagic`** from `"PMM_V083"` to `"PMM_V098"` to reflect the binary layout change (Issue #138, #83). Old persisted files in the previous block format are no longer compatible and will fail to load.
+- **Updated `scripts/generate-single-headers.sh`** to output to `single_include/pmm/` by default.
+- **Updated `CMakeLists.txt`** to add `single_include` and `single_include/pmm` to `pmm` interface include directories for backward compatibility.
+- **Updated `tests/CMakeLists.txt`** for single-header self-containedness tests to use `single_include` include path.
+- **Updated all four single-header preset files** in `single_include/pmm/` to reflect the new layout.
+- **Updated test files** (`test_issue87_phase2.cpp`, `test_issue87_phase3.cpp`, `test_issue87_abstraction.cpp`) to remove `LinkedListNode` base class checks and update layout offset assertions.
+- **Updated `types.h`**: removed `#include "pmm/linked_list_node.h"`, replaced `LinkedListNode`-based `static_assert` with `Block`-based size check.
+
+
 ## [0.6.0] - 2026-03-08
 
 ### Added

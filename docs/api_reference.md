@@ -22,7 +22,8 @@ instances of the same configuration can coexist through the `InstanceId` templat
 #include "pmm/io.h"                      // file save / load utilities
 ```
 
-**Single-header presets** (include one file, get a ready-to-use manager type):
+**Single-header presets** (include one file, get a ready-to-use manager type).
+Located in `single_include/pmm/` (Issue #138):
 ```cpp
 #include "pmm_single_threaded_heap.h"    // SingleThreadedHeap preset
 #include "pmm_multi_threaded_heap.h"     // MultiThreadedHeap preset

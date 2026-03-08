@@ -397,10 +397,13 @@ PersistMemoryManager/
 │   │   ├── types.h                   # ManagerInfo, MemoryStats
 │   │   ├── io.h                      # save/load utilities
 │   │   └── manager_concept.h         # C++20 concepts
-│   ├── pmm_single_threaded_heap.h    # Single-header preset
-│   ├── pmm_multi_threaded_heap.h     # Single-header preset
-│   ├── pmm_embedded_heap.h           # Single-header preset
-│   └── pmm_industrial_db_heap.h      # Single-header preset
+│   └── manager_concept.h             # C++20 concepts (continued)
+├── single_include/                   # Self-contained single-header presets (Issue #138)
+│   └── pmm/
+│       ├── pmm_single_threaded_heap.h    # Single-header preset
+│       ├── pmm_multi_threaded_heap.h     # Single-header preset
+│       ├── pmm_embedded_heap.h           # Single-header preset
+│       └── pmm_industrial_db_heap.h      # Single-header preset
 ├── examples/                         # Usage examples
 ├── tests/                            # 40+ test files
 ├── demo/                             # Visual ImGui/OpenGL demo
