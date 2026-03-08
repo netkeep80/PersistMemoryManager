@@ -6,7 +6,7 @@ var searchData=
   ['baseblock_3',['BaseBlock',['../classpmm_1_1BlockStateBase.html#a3d02ea578a4b16906ab229108464a909',1,'pmm::BlockStateBase']]],
   ['begin_5fcoalescing_4',['begin_coalescing',['../classpmm_1_1FreeBlockNotInAVL.html#aac90525b9d0dc3d48762395b346dc5df',1,'pmm::FreeBlockNotInAVL']]],
   ['begin_5fsplitting_5',['begin_splitting',['../classpmm_1_1FreeBlockRemovedAVL.html#a116443628475846df2b7c8327c405853',1,'pmm::FreeBlockRemovedAVL']]],
-  ['blk_5fat_6',['blk_at',['../structpmm_1_1AvlFreeTree.html#ad8605d63f5500799670c81ad984ea766',1,'pmm::AvlFreeTree::blk_at(std::uint8_t *base, std::uint32_t idx)'],['../structpmm_1_1AvlFreeTree.html#a0006d6c6ec60aa9e2bb915e0816381cc',1,'pmm::AvlFreeTree::blk_at(const std::uint8_t *base, std::uint32_t idx)']]],
+  ['blk_5fat_6',['blk_at',['../structpmm_1_1AvlFreeTree.html#a2dc666692bcc44f8d694f4ba5b24d75e',1,'pmm::AvlFreeTree::blk_at(std::uint8_t *base, std::uint32_t idx)'],['../structpmm_1_1AvlFreeTree.html#ac4ab8dd516edcb784475bf224b087ad2',1,'pmm::AvlFreeTree::blk_at(const std::uint8_t *base, std::uint32_t idx)']]],
   ['block_7',['Block',['../structpmm_1_1Block.html',1,'pmm']]],
   ['block_2eh_8',['block.h',['../block_8h.html',1,'']]],
   ['block_5fat_9',['block_at',['../namespacepmm_1_1detail.html#a84f50ef4923aed051fd0f7ce3ab5a4b8',1,'pmm::detail::block_at(const std::uint8_t *base, std::uint32_t idx)'],['../namespacepmm_1_1detail.html#a3a8126afe1e5b9ca29028bd9dd8dcf4a',1,'pmm::detail::block_at(std::uint8_t *base, std::uint32_t idx)']]],
@@ -14,9 +14,10 @@ var searchData=
   ['block_5fidx_11',['block_idx',['../namespacepmm_1_1detail.html#ae45055a95f135f074bd8ebe01f2feea2',1,'pmm::detail']]],
   ['block_5fstate_2eh_12',['block_state.h',['../block__state_8h.html',1,'']]],
   ['block_5ftotal_5fgranules_13',['block_total_granules',['../namespacepmm_1_1detail.html#a47ae1eb6be6ec88b15b603baa1ea20e0',1,'pmm::detail']]],
-  ['blockstatebase_14',['blockstatebase',['../classpmm_1_1BlockStateBase.html',1,'pmm::BlockStateBase&lt; AddressTraitsT &gt;'],['../classpmm_1_1BlockStateBase.html#a92afb6333d9b48753f8660347fa728fc',1,'pmm::BlockStateBase::BlockStateBase()']]],
-  ['blockt_15',['blockt',['../structpmm_1_1AvlFreeTree.html#a6d65e3deb934ba6864b288c614d3760b',1,'pmm::AvlFreeTree::BlockT'],['../classpmm_1_1AllocatorPolicy.html#a1a42eafe9996fd1670f7df34215c8d91',1,'pmm::AllocatorPolicy::BlockT']]],
-  ['blockview_16',['BlockView',['../structpmm_1_1BlockView.html',1,'pmm']]],
-  ['byte_5foff_5fto_5fidx_17',['byte_off_to_idx',['../structpmm_1_1AddressTraits.html#a02528e5dcadafce324a3e6061eb6182e',1,'pmm::AddressTraits::byte_off_to_idx()'],['../namespacepmm_1_1detail.html#a96fd1e856308cf358d6a9ad0f232ddfc',1,'pmm::detail::byte_off_to_idx()']]],
-  ['bytes_5fto_5fgranules_18',['bytes_to_granules',['../structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75',1,'pmm::AddressTraits::bytes_to_granules()'],['../namespacepmm_1_1detail.html#ac6f59a24706e7ffd4ed36e1db6795d51',1,'pmm::detail::bytes_to_granules()']]]
+  ['blockstate_14',['BlockState',['../structpmm_1_1AvlFreeTree.html#a2ca14170ea65d032b4cd4a9f10f4bebd',1,'pmm::AvlFreeTree']]],
+  ['blockstatebase_15',['blockstatebase',['../classpmm_1_1BlockStateBase.html',1,'pmm::BlockStateBase&lt; AddressTraitsT &gt;'],['../classpmm_1_1BlockStateBase.html#a92afb6333d9b48753f8660347fa728fc',1,'pmm::BlockStateBase::BlockStateBase()']]],
+  ['blockt_16',['blockt',['../structpmm_1_1AvlFreeTree.html#a6d65e3deb934ba6864b288c614d3760b',1,'pmm::AvlFreeTree::BlockT'],['../classpmm_1_1AllocatorPolicy.html#a1a42eafe9996fd1670f7df34215c8d91',1,'pmm::AllocatorPolicy::BlockT']]],
+  ['blockview_17',['BlockView',['../structpmm_1_1BlockView.html',1,'pmm']]],
+  ['byte_5foff_5fto_5fidx_18',['byte_off_to_idx',['../structpmm_1_1AddressTraits.html#a02528e5dcadafce324a3e6061eb6182e',1,'pmm::AddressTraits::byte_off_to_idx()'],['../namespacepmm_1_1detail.html#a96fd1e856308cf358d6a9ad0f232ddfc',1,'pmm::detail::byte_off_to_idx()']]],
+  ['bytes_5fto_5fgranules_19',['bytes_to_granules',['../structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75',1,'pmm::AddressTraits::bytes_to_granules()'],['../namespacepmm_1_1detail.html#ac6f59a24706e7ffd4ed36e1db6795d51',1,'pmm::detail::bytes_to_granules()']]]
 ];
