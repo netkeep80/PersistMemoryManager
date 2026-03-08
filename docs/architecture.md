@@ -1,218 +1,338 @@
-# Архитектура PersistMemoryManager
+# PersistMemoryManager Architecture
 
-## Обзор
+## Overview
 
-`PersistMemoryManager` — multi-header C++17 библиотека для управления персистентной кучей памяти. Все метаданные хранятся внутри управляемой области, что позволяет сохранять и восстанавливать образ памяти из файла или shared memory. Взаимодействие с данными осуществляется через персистные типизированные указатели `pptr<T>`.
+`PersistMemoryManager` is a header-only C++20 library for persistent heap memory management.
+All metadata is stored inside the managed memory region, which allows saving and restoring
+a memory image from a file or shared memory. Interaction with data is done through
+persistent typed pointers `pptr<T, ManagerT>`.
 
-**Issue #61:** Полностью статический класс — нет экземпляров, весь API через `PersistMemoryManager::static_method()`. Только `pptr<T>` в пользовательском коде — никаких `void*` и `PersistMemoryManager*`.
-
-**Issue #59:** 16-байтная гранулярность — все смещения хранятся как `uint32_t` гранульные индексы (1 гранула = 16 байт), что обеспечивает адресацию до 64 ГБ при `sizeof(pptr<T>) == 4`.
-
-**Issue #75:** Рефакторинг `BlockHeader`: `used_size` → `size`, `_reserved` → `root_offset`. ПАП теперь унифицированно представляет собой лес AVL-деревьев. `root_offset=0` — блок принадлежит дереву свободных блоков; `root_offset=own_index` — занятый блок является корнем своего AVL-дерева. **Гомогенизация ПАП:** `ManagerHeader` теперь хранится внутри `BlockHeader_0` (гранула 0) — первого аллоцированного блока. Всё ПАП является однородным лесом блоков.
-
----
-
-## Слои архитектуры
-
-```
-┌─────────────────────────────────────────────────────┐
-│   PersistMemoryManager (статический публичный API)  │
-│   allocate_typed / deallocate_typed (pptr<T>)       │
-│   validate / dump_stats / get_stats                 │
-├─────────────────────────────────────────────────────┤
-│   Слой поиска и разбиения блоков                    │
-│   (best-fit через AVL-дерево, splitting, coalescing)│
-├─────────────────────────────────────────────────────┤
-│   Слой работы с raw-памятью                         │
-│   (granule indices uint32_t, BlockHeader)           │
-└─────────────────────────────────────────────────────┘
-```
+The library is fully static: there are no instances, and all API is accessed through static
+methods on the manager type. Multiple independent managers with the same configuration can
+coexist through the `InstanceId` template parameter (multiton pattern).
 
 ---
 
-## Структура управляемой области памяти
+## Architecture layers
 
 ```
-[BlockHeader_0][[ManagerHeader]]              ← гранулы 0-5 (2+4 гранул)
-[BlockHeader_1][user_data_1...............][padding]
+┌───────────────────────────────────────────────────────────┐
+│  PersistMemoryManager<ConfigT, InstanceId>                │
+│  (static public API: create / load / destroy)             │
+│  allocate_typed / deallocate_typed (pptr<T>)              │
+│  for_each_block / for_each_free_block                     │
+├───────────────────────────────────────────────────────────┤
+│  AllocatorPolicy<FreeBlockTreeT, AddressTraitsT>          │
+│  (best-fit via AVL tree, splitting, coalescing,           │
+│   repair_linked_list, rebuild_free_tree,                  │
+│   recompute_counters)                                     │
+├───────────────────────────────────────────────────────────┤
+│  BlockState machine (block_state.h)                       │
+│  (type-safe state transitions: Free → Allocated → Free)   │
+├───────────────────────────────────────────────────────────┤
+│  Block<AddressTraitsT> raw memory layout                  │
+│  (LinkedListNode<A> + TreeNode<A>, granule indices)       │
+├───────────────────────────────────────────────────────────┤
+│  StorageBackend: HeapStorage / MMapStorage / StaticStorage│
+│  LockPolicy: NoLock / SharedMutexLock                     │
+└───────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Managed memory region structure
+
+```
+[Block<A>_0][[ManagerHeader]]              ← granules 0–5 (2 + 4 granules)
+[Block<A>_1][user_data_1...][padding]
 ...
-[BlockHeader_N][свободное пространство....]
+[Block<A>_N][free space....]
 ```
 
-**Issue #75 (гомогенизация ПАП):** `ManagerHeader` теперь хранится как пользовательские данные `BlockHeader_0` (гранула 0). Структура ПАП полностью однородна — каждый регион является блоком. `BlockHeader_0` имеет `root_offset=0` (собственный индекс равен 0) и `size=kManagerHeaderGranules`.
+`ManagerHeader` is stored as the user data of `Block<A>_0` (granule 0, byte offset 32).
+The memory layout is homogeneous: every region is a block. `Block<A>_0` has
+`root_offset=0` (its own index) and `weight=kManagerHeaderGranules`.
 
-### ManagerHeader
-
-Расположен внутри `BlockHeader_0` (смещение `sizeof(BlockHeader)` = 32 байта от начала буфера). Содержит:
-
-| Поле | Тип | Описание |
-|------|-----|----------|
-| `magic` | `uint64_t` | Магическое число `"PMM_V083"` для валидации (Issue #83) |
-| `total_size` | `uint64_t` | Полный размер управляемой области |
-| `used_size` | `uint32_t` | Занятый объём в гранулах (Issue #59) |
-| `block_count` | `uint32_t` | Общее количество блоков |
-| `free_count` | `uint32_t` | Количество свободных блоков |
-| `alloc_count` | `uint32_t` | Количество занятых блоков |
-| `first_block_offset` | `uint32_t` | Гранульный индекс первого блока |
-| `last_block_offset` | `uint32_t` | Гранульный индекс последнего блока (Issue #57) |
-| `free_tree_root` | `uint32_t` | Корень AVL-дерева свободных блоков (гранульный индекс) |
-| `owns_memory` | `bool` | true — буфер принадлежит нам, `destroy()` освободит его |
-| `prev_owns_memory` | `bool` | true — предыдущий буфер принадлежит нам |
-| `granule_size` | `uint16_t` | kGranuleSize при создании; проверяется при load() (Issue #83) |
-| `prev_total_size` | `uint64_t` | Размер предыдущего буфера (0 если expand() не вызывался) |
-| `prev_base_ptr` | `void*` | Предыдущий буфер после расширения (для трансляции указателей) |
-
-### Block<A> (заголовок блока)
-
-Расположен перед каждым блоком данных (32 байта = 2 гранулы, Issue #59):
-`Block<A>` = `LinkedListNode<A>` + `TreeNode<A>`.
-
-**Issue #126:** Поля `TreeNode<A>` переупорядочены: `weight` стало первым полем, `avl_height` и `node_type` перемещены в конец.
-
-| Поле | Байты | Тип | Описание |
-|------|-------|-----|----------|
-| `prev_offset` | 0-3 | `uint32_t` | Гранульный индекс предыдущего блока (kNoBlock = нет) |
-| `next_offset` | 4-7 | `uint32_t` | Гранульный индекс следующего блока (kNoBlock = последний) |
-| `weight` | 8-11 | `uint32_t` | Занятый размер в гранулах (0 = свободный блок, Issue #75, #126) |
-| `left_offset` | 12-15 | `uint32_t` | Левый дочерний узел AVL-дерева (kNoBlock = нет) |
-| `right_offset` | 16-19 | `uint32_t` | Правый дочерний узел AVL-дерева (kNoBlock = нет) |
-| `parent_offset` | 20-23 | `uint32_t` | Родительский узел AVL-дерева (kNoBlock = нет) |
-| `root_offset` | 24-27 | `uint32_t` | 0 = дерево свободных блоков; own_index = занятый блок (Issue #75) |
-| `avl_height` | 28-29 | `int16_t` | Высота AVL-поддерева (0 = не в дереве) |
-| `node_type` | 30-31 | `uint16_t` | Тип узла: 0=kNodeReadWrite, 1=kNodeReadOnly (Issue #126, бывший `_pad`) |
-
-**Примечание:** поле `magic` удалено из `Block<A>` (Issue #69). Валидность блока определяется структурными инвариантами `is_valid_block()`.
+User blocks start at granule 6 (byte offset 96 from the buffer start).
 
 ---
 
-## Алгоритмы
+## ManagerHeader
 
-### Выделение памяти (allocate_typed)
+Located inside `Block<A>_0` at byte offset `sizeof(Block<AddressTraitsT>)` = 32 bytes
+from the buffer start. Contains:
 
-```
-1. Вычислить required_block_granules = kBlockHeaderGranules + ceil(user_size / kGranuleSize)
-2. Поиск в AVL-дереве свободных блоков (best-fit, O(log n)):
-   - Найти наименьший свободный блок с total_size >= required_block_size
-3. Если блок найден:
-   a. Удалить из списка свободных
-   b. Если блок значительно больше (можно разделить):
-      - Создать новый свободный блок из остатка
-      - Вставить в оба списка (общий и свободных)
-   c. Пометить блок как used = true
-   d. Обновить счётчики в ManagerHeader
-   e. Вернуть выровненный указатель на данные (как смещение в pptr<T>)
-4. Если не найден: автоматически расширить память на 25% и повторить
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `magic` | `uint64_t` | Magic number `"PMM_V083"` for validation |
+| `total_size` | `uint64_t` | Total managed region size in bytes |
+| `used_size` | `uint32_t` | Used size in granules |
+| `block_count` | `uint32_t` | Total block count |
+| `free_count` | `uint32_t` | Free block count |
+| `alloc_count` | `uint32_t` | Allocated block count |
+| `first_block_offset` | `uint32_t` | Granule index of the first block |
+| `last_block_offset` | `uint32_t` | Granule index of the last block |
+| `free_tree_root` | `uint32_t` | Root of the AVL free block tree (granule index) |
+| `owns_memory` | `bool` | Runtime-only: true if manager owns the buffer |
+| `prev_owns_memory` | `bool` | Runtime-only: true if previous buffer was owned |
+| `granule_size` | `uint16_t` | Granule size at creation time; checked on `load()` |
+| `prev_total_size` | `uint64_t` | Runtime-only: previous buffer size after `expand()` |
+| `prev_base_ptr` | `void*` | Runtime-only: previous buffer pointer after `expand()` |
 
-### Освобождение памяти (deallocate_typed)
+---
 
-```
-1. Если pptr нулевой: нет операции
-2. Найти BlockHeader через header_from_ptr (O(1) для типичного случая)
-3. Если блок найден и used == true:
-   - Установить used = false
-   - Обнулить user_size
-   - Обновить счётчики в ManagerHeader
-   - Добавить в список свободных
-   - Выполнить слияние с соседними свободными блоками (coalescing)
-```
+## Block layout: `Block<AddressTraitsT>`
 
-### Слияние свободных блоков (coalescing)
+Every block (header + data) is aligned to `kGranuleSize` (16 bytes). The header
+`Block<A>` is 32 bytes = 2 granules and is placed immediately before the user data.
 
-При освобождении блока проверяются оба соседних блока (prev и next). Если они свободны,
-они сливаются в один:
+`Block<A>` = `LinkedListNode<A>` + `TreeNode<A>`:
 
-```
-[BlockHeader (free)][space][BlockHeader (free)] → [BlockHeader (free)][larger space]
-```
+| Field | Bytes | Type | Description |
+|-------|-------|------|-------------|
+| `prev_offset` | 0–3 | `uint32_t` | Previous block granule index (`kNoBlock` = none) |
+| `next_offset` | 4–7 | `uint32_t` | Next block granule index (`kNoBlock` = last) |
+| `weight` | 8–11 | `uint32_t` | User data size in granules (0 = free block) |
+| `left_offset` | 12–15 | `uint32_t` | Left child AVL node (granule index) |
+| `right_offset` | 16–19 | `uint32_t` | Right child AVL node (granule index) |
+| `parent_offset` | 20–23 | `uint32_t` | Parent AVL node (granule index) |
+| `root_offset` | 24–27 | `uint32_t` | 0 = free block; own index = allocated block |
+| `avl_height` | 28–29 | `int16_t` | AVL subtree height (0 = not in tree) |
+| `node_type` | 30–31 | `uint16_t` | 0=`kNodeReadWrite`, 1=`kNodeReadOnly` (permanently locked) |
 
-### Разбиение блоков (splitting)
+**Key invariants:**
+- `weight == 0` → free block; `root_offset == 0`.
+- `weight > 0` → allocated block; `root_offset == own_granule_index`.
+- `node_type == kNodeReadOnly` → permanently locked; cannot be freed via `deallocate()`.
 
-При выделении, если найденный свободный блок значительно больше запрошенного,
-он разделяется на два:
+---
 
-```
-[BlockHeader (used)][user_data][BlockHeader (free)][остаток...]
-```
+## Algorithms
 
-Минимальный размер нового свободного блока: `sizeof(BlockHeader) + kMinBlockSize (32 байта)`.
-
-### Автоматическое расширение памяти (expand)
-
-При нехватке памяти:
+### Memory allocation (`allocate` / `allocate_typed`)
 
 ```
-1. Выделить новый буфер размером old_size * 5/4 (не менее old_size + needed)
-2. Скопировать содержимое старого буфера в новый
-3. Расширить или добавить свободный блок в конце нового буфера
-4. Обновить синглтон (s_instance → новый буфер)
-5. Сохранить старый буфер в prev_base для трансляции указателей
-6. Освободить старый буфер при destroy()
+1. Compute required_block_granules = kBlockHeaderGranules + ceil(user_size / kGranuleSize)
+2. Search AVL free block tree for best-fit (smallest block >= required_block_granules) — O(log n)
+3. If found:
+   a. Remove from AVL tree
+   b. If the block is significantly larger (splitting possible):
+      - Initialize new free block from the remainder
+      - Insert into linked list and AVL tree
+   c. Mark block as allocated (set weight and root_offset)
+   d. Update ManagerHeader counters
+   e. Return pointer to user data
+4. If not found: expand storage backend by growth ratio and retry
+```
+
+### Memory deallocation (`deallocate` / `deallocate_typed`)
+
+```
+1. If pointer is null or block is permanently locked: no-op
+2. Locate Block<A> from user pointer — O(1)
+3. If block is allocated:
+   - Set weight = 0, root_offset = 0 (mark as free)
+   - Update ManagerHeader counters
+   - Attempt coalescing with adjacent free blocks
+   - Insert resulting block into AVL tree
+```
+
+### Free block coalescing
+
+When a block is freed, adjacent blocks are checked. If they are free, they are merged
+into one larger block:
+
+```
+[Block (free)][free space][Block (free)] → [Block (free)][larger free space]
+```
+
+Coalescing always checks both the previous and next block.
+
+### Block splitting
+
+When allocating, if the found free block is significantly larger than needed, it is split:
+
+```
+[Block (allocated)][user data][Block (free)][remaining free space...]
+```
+
+Minimum size for the new free block: `sizeof(Block<A>) + kMinBlockSize` (32 + 16 = 48 bytes).
+
+### Storage backend expansion
+
+When memory is exhausted:
+
+```
+1. Allocate a new buffer of size max(old_size * grow_numerator / grow_denominator,
+                                    old_size + required_bytes)
+2. Copy the contents of the old buffer to the new buffer
+3. Extend or add a free block at the end of the new buffer
+4. Update the singleton to point to the new buffer
+5. Keep the old buffer in prev_base_ptr for cleanup on destroy()
 ```
 
 ---
 
-## Персистентность
+## Persistence
 
-Все ссылки между блоками хранятся как **смещения** (`ptrdiff_t`) от начала управляемой области, а не как абсолютные указатели. Это позволяет:
+All inter-block references are stored as **granule indices** (`uint32_t`) — offsets
+from the buffer start, not absolute pointers. This enables:
 
-1. Сохранить образ памяти в файл (`fwrite` всей области).
-2. Загрузить его по другому базовому адресу (`mmap` или `malloc`).
-3. Использовать в shared memory сегментах.
+1. Saving the memory image to a file (`fwrite` the entire region).
+2. Loading it at a different base address (`mmap` or `malloc`).
+3. Using in shared memory segments.
 
-При загрузке (`load()`) библиотека проверяет магическое число, размер области и версию `granule_size`, затем перестраивает дерево свободных блоков (`rebuild_free_tree`).
+On `load()`, the library validates the magic number, total size, and granule size, then
+calls `repair_linked_list()`, `recompute_counters()`, and `rebuild_free_tree()` to
+restore a consistent state.
 
-`pptr<T>` хранит 32-битный гранульный индекс (`uint32_t`), что делает его персистным: после загрузки образа по другому адресу тот же индекс указывает на те же данные. `sizeof(pptr<T>) == 4`.
-
----
-
-## Выравнивание
-
-Все блоки выровнены на `kGranuleSize` (16 байт). Пользовательские данные начинаются
-сразу после `BlockHeader` — отдельного паддинга нет (Issue #59, #83).
-
-```
-[BlockHeader][user_data выровнен на kGranuleSize = 16 байт]
-```
-
-`user_ptr()` возвращает первый байт после `BlockHeader`.
+`pptr<T>` stores a 32-bit granule index, making it persistent: after loading the image
+at a different address, the same index points to the same data.
 
 ---
 
-## Потокобезопасность
+## Alignment
 
-Все публичные методы защищены `std::shared_mutex`:
-- методы чтения — `shared_lock` (параллельное выполнение)
-- методы записи — `unique_lock` (эксклюзивный доступ)
+All blocks are aligned to `kGranuleSize` (16 bytes). User data starts immediately after
+the `Block<A>` header with no additional padding:
+
+```
+[Block<A> header (32 bytes)][user_data (aligned to 16 bytes)]
+```
 
 ---
 
-## Диаграмма структур данных
+## Thread safety
+
+Thread safety is controlled by the `lock_policy` configuration field:
+
+- **`SharedMutexLock`**: uses `std::shared_mutex`.
+  - Read operations: `shared_lock` (concurrent execution allowed).
+  - Write operations: `unique_lock` (exclusive access).
+- **`NoLock`**: no-op locks (zero overhead, single-threaded use only).
+
+---
+
+## Storage backends
+
+| Backend | Description | Use case |
+|---------|-------------|----------|
+| `HeapStorage<A>` | Dynamically allocated via `std::malloc` / `std::realloc` | General purpose |
+| `StaticStorage<A, Size>` | Fixed compile-time buffer (no dynamic allocation) | Embedded systems |
+| `MMapStorage<A>` | Memory-mapped file (`mmap` / `MapViewOfFile`) | File-backed persistence |
+
+---
+
+## Lock policies
+
+| Policy | Description |
+|--------|-------------|
+| `config::NoLock` | No-op locks; zero overhead; single-threaded only |
+| `config::SharedMutexLock` | `std::shared_mutex`; `shared_lock` for reads, `unique_lock` for writes |
+
+---
+
+## Data structures diagram
 
 ```
-base_ptr (= BlockHeader_0)
+buffer_start (= Block<A>_0)
 │
-├── BlockHeader_0 (granule 0, root_offset=0, allocated — holds ManagerHeader)
-│     size = kManagerHeaderGranules
+├── Block<A>_0 (granule 0, allocated — holds ManagerHeader)
+│     weight = kManagerHeaderGranules
+│     root_offset = 0 (own index)
 │     prev_offset = kNoBlock
-│     next_offset ──────────────┐
-│     root_offset = 0 (own idx) │
-│   [ManagerHeader inside:]     │
-│     magic = "PMM_V083"        │
-│     first_block_offset = 0 ───┘ (points to self = BlockHeader_0)
-│     free_tree_root ──────────┐
-│                              │
-├── BlockHeader_free ◄─────────┘ (granule 6, free block)
-│     size = 0
-│     prev_offset = 0 (BlockHeader_0)
-│     next_offset ──────────────┐
-│     root_offset = 0           │
-│     [free space...]           │
-│                               │
-├── BlockHeader_N ◄─────────────┘ (allocated user block)
-│     size > 0
-│     root_offset = own_idx
+│     next_offset ──────────────────────────┐
+│   [ManagerHeader inside (32 bytes offset)]│
+│     magic = "PMM_V083"                    │
+│     first_block_offset = 0 (self)         │
+│     free_tree_root ──────────────────┐    │
+│                                      │    │
+├── Block<A>_free ◄────────────────────┘◄───┘ (granule 6, free block)
+│     weight = 0
+│     root_offset = 0
+│     prev_offset = 0 (Block<A>_0)
+│     next_offset ────────────────────────┐
+│     [free space...]                     │
+│                                         │
+├── Block<A>_user ◄───────────────────────┘ (allocated user block)
+│     weight > 0
+│     root_offset = own_granule_idx
 │     [user data...]
 │
-└── (end of managed area)
+└── (end of managed region)
 ```
+
+---
+
+## Block state machine
+
+Blocks transition between two correct states and several transient states. See
+[`docs/atomic_writes.md`](atomic_writes.md) for the full state diagram and crash
+recovery analysis.
+
+### Correct states
+
+| State | `weight` | `root_offset` | In AVL tree |
+|-------|----------|---------------|-------------|
+| `FreeBlock` | 0 | 0 | Yes |
+| `AllocatedBlock` | >0 | own index | No |
+
+### Forbidden states
+
+| State | `weight` | `root_offset` | Valid? |
+|-------|----------|---------------|--------|
+| Free block not in AVL | 0 | 0 | Transient only |
+| weight=0, root_offset≠0 | 0 | ≠0 | Never |
+| weight>0, root_offset=0 | >0 | 0 | Never |
+| weight>0 and in AVL | >0 | own idx | Never |
+
+---
+
+## Configuration composition
+
+The full type of a manager is determined by composing four independent policies:
+
+```cpp
+// Example: custom multi-threaded manager backed by MMapStorage
+struct MyConfig {
+    using address_traits  = pmm::DefaultAddressTraits;
+    using storage_backend = pmm::MMapStorage<pmm::DefaultAddressTraits>;
+    using free_block_tree = pmm::AvlFreeTree<pmm::DefaultAddressTraits>;
+    using lock_policy     = pmm::config::SharedMutexLock;
+    static constexpr std::size_t granule_size     = 16;
+    static constexpr std::size_t max_memory_gb    = 64;
+    static constexpr std::size_t grow_numerator   = 5;
+    static constexpr std::size_t grow_denominator = 4;
+};
+
+using MyManager = pmm::PersistMemoryManager<MyConfig, 0>;
+```
+
+---
+
+## Multiton pattern
+
+Each unique `(ConfigT, InstanceId)` pair is a distinct static manager with completely
+independent storage. This allows multiple persistent heaps in a single process:
+
+```cpp
+using Cache  = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 0>;
+using Buffer = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 1>;
+
+Cache::create(64 * 1024);
+Buffer::create(32 * 1024);
+
+Cache::pptr<int>  cp = Cache::allocate_typed<int>();
+Buffer::pptr<int> bp = Buffer::allocate_typed<int>();
+
+*cp = 42;
+*bp = 100;
+
+Cache::deallocate_typed(cp);
+Buffer::deallocate_typed(bp);
+Cache::destroy();
+Buffer::destroy();
+```
+
+`Cache::pptr<int>` and `Buffer::pptr<int>` are **different types** — the compiler
+prevents accidental cross-manager pointer use.
