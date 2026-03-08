@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['next_5foffset_0',['next_offset',['../classpmm_1_1BlockStateBase.html#a27d74d0ec3747f14acd41d3ab62777be',1,'pmm::BlockStateBase']]]
+  ['next_5foffset_0',['next_offset',['../classpmm_1_1BlockStateBase.html#a27d74d0ec3747f14acd41d3ab62777be',1,'pmm::BlockStateBase']]],
+  ['node_5ftype_1',['node_type',['../classpmm_1_1BlockStateBase.html#a23c7a18ee5108d339d701bc5e08d9fa3',1,'pmm::BlockStateBase']]]
 ];

@@ -1,9 +1,6 @@
 var searchData=
 [
-  ['deallocate_0',['deallocate',['../classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208',1,'pmm::PersistMemoryManager']]],
-  ['deallocate_5ftyped_1',['deallocate_typed',['../classpmm_1_1PersistMemoryManager.html#a805257c17969be444a33000602fee73c',1,'pmm::PersistMemoryManager']]],
-  ['defaultaddresstraits_2',['DefaultAddressTraits',['../namespacepmm.html#a9ca69087900283384dda68352be048bb',1,'pmm']]],
-  ['defaultallocatorpolicy_3',['DefaultAllocatorPolicy',['../namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7',1,'pmm']]],
-  ['destroy_4',['destroy',['../classpmm_1_1PersistMemoryManager.html#a001123ac8daaf9da6e882fa6559a3131',1,'pmm::PersistMemoryManager']]],
-  ['detect_5fblock_5fstate_5',['detect_block_state',['../namespacepmm.html#a0b6c0f639691913c3e5d08e8961efa6b',1,'pmm']]]
+  ['element_5ftype_0',['element_type',['../classpmm_1_1pptr.html#a2011f31a800c4ca766683e66aaed2b7d',1,'pmm::pptr']]],
+  ['embeddedmanagerconfig_1',['EmbeddedManagerConfig',['../structpmm_1_1EmbeddedManagerConfig.html',1,'pmm']]],
+  ['expand_2',['expand',['../classpmm_1_1HeapStorage.html#a0b679f8fc17871cbd26dc24bd92e942d',1,'pmm::HeapStorage::expand()'],['../classpmm_1_1MMapStorage.html#a31f4cdc687c88e1e798af18ee279c1d9',1,'pmm::MMapStorage::expand()'],['../classpmm_1_1StaticStorage.html#a298e7f86b667f5d6b17f01c058da0e5d',1,'pmm::StaticStorage::expand()']]]
 ];

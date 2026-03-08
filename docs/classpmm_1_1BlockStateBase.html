@@ -134,12 +134,17 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a7a62a48f6d969274d898b7f4575d4aa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30d0b3a75c8d2cf85be682c75d12703a" id="r_a30d0b3a75c8d2cf85be682c75d12703a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a30d0b3a75c8d2cf85be682c75d12703a">root_offset</a> () <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="separator:a30d0b3a75c8d2cf85be682c75d12703a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23c7a18ee5108d339d701bc5e08d9fa3" id="r_a23c7a18ee5108d339d701bc5e08d9fa3"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a23c7a18ee5108d339d701bc5e08d9fa3">node_type</a> () <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="separator:a23c7a18ee5108d339d701bc5e08d9fa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa899d35627f0980959e660137eda5675" id="r_aa899d35627f0980959e660137eda5675"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#aa899d35627f0980959e660137eda5675">is_free</a> () <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:aa899d35627f0980959e660137eda5675"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, является ли блок свободным (по структурным признакам).  <br /></td></tr>
 <tr class="separator:aa899d35627f0980959e660137eda5675"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00e102215f632beb708fbed942fb6cac" id="r_a00e102215f632beb708fbed942fb6cac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a00e102215f632beb708fbed942fb6cac">is_allocated</a> (<a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">own_idx</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:a00e102215f632beb708fbed942fb6cac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, является ли блок занятым (по структурным признакам).  <br /></td></tr>
 <tr class="separator:a00e102215f632beb708fbed942fb6cac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c0fe12d69ca589951ec931c873b2bda" id="r_a8c0fe12d69ca589951ec931c873b2bda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda">is_permanently_locked</a> () <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="memdesc:a8c0fe12d69ca589951ec931c873b2bda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, заблокирован ли блок навечно (Issue #126).  <br /></td></tr>
+<tr class="separator:a8c0fe12d69ca589951ec931c873b2bda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -203,6 +208,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a128eb0a00b4a7de8724eeb3695bf3230" id="r_a128eb0a00b4a7de8724eeb3695bf3230"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a128eb0a00b4a7de8724eeb3695bf3230">set_root_offset_of</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">v</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:a128eb0a00b4a7de8724eeb3695bf3230"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить root_offset блока.  <br /></td></tr>
 <tr class="separator:a128eb0a00b4a7de8724eeb3695bf3230"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a954bd69709881c25d7122b60e91e8474" id="r_a954bd69709881c25d7122b60e91e8474"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a954bd69709881c25d7122b60e91e8474">get_node_type</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="memdesc:a954bd69709881c25d7122b60e91e8474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать node_type блока (Issue #126).  <br /></td></tr>
+<tr class="separator:a954bd69709881c25d7122b60e91e8474"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc76b4fd19a7ae2cf0233d16173eea18" id="r_abc76b4fd19a7ae2cf0233d16173eea18"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#abc76b4fd19a7ae2cf0233d16173eea18">set_node_type_of</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>, std::uint16_t <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">v</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="memdesc:abc76b4fd19a7ae2cf0233d16173eea18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить node_type блока (Issue #126).  <br /></td></tr>
+<tr class="separator:abc76b4fd19a7ae2cf0233d16173eea18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -212,24 +223,27 @@ Static Public Attributes</h2></td></tr>
 <tr class="memitem:a00e9b10610fac2190098bffadb06acb8" id="r_a00e9b10610fac2190098bffadb06acb8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a00e9b10610fac2190098bffadb06acb8">kOffsetNextOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
 <tr class="memdesc:a00e9b10610fac2190098bffadb06acb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of next_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second field of <a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a>).  <br /></td></tr>
 <tr class="separator:a00e9b10610fac2190098bffadb06acb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9136f988103a51137c2b8426973a7f68" id="r_a9136f988103a51137c2b8426973a7f68"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a9136f988103a51137c2b8426973a7f68">kOffsetLeftOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> )</td></tr>
-<tr class="memdesc:a9136f988103a51137c2b8426973a7f68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of left_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html" title="Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.">TreeNode</a>, follows <a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a>).  <br /></td></tr>
+<tr class="memitem:a62f751f73050ee88505271cb7fbe67aa" id="r_a62f751f73050ee88505271cb7fbe67aa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a62f751f73050ee88505271cb7fbe67aa">kOffsetWeight</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> )</td></tr>
+<tr class="memdesc:a62f751f73050ee88505271cb7fbe67aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, Issue #126).  <br /></td></tr>
+<tr class="separator:a62f751f73050ee88505271cb7fbe67aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9136f988103a51137c2b8426973a7f68" id="r_a9136f988103a51137c2b8426973a7f68"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a9136f988103a51137c2b8426973a7f68">kOffsetLeftOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
+<tr class="memdesc:a9136f988103a51137c2b8426973a7f68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of left_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, follows weight).  <br /></td></tr>
 <tr class="separator:a9136f988103a51137c2b8426973a7f68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc2e9f1fef6dabd8606f7fc0d9d35fd1" id="r_adc2e9f1fef6dabd8606f7fc0d9d35fd1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#adc2e9f1fef6dabd8606f7fc0d9d35fd1">kOffsetRightOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
+<tr class="memitem:adc2e9f1fef6dabd8606f7fc0d9d35fd1" id="r_adc2e9f1fef6dabd8606f7fc0d9d35fd1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#adc2e9f1fef6dabd8606f7fc0d9d35fd1">kOffsetRightOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 2 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
 <tr class="memdesc:adc2e9f1fef6dabd8606f7fc0d9d35fd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of right_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout.  <br /></td></tr>
 <tr class="separator:adc2e9f1fef6dabd8606f7fc0d9d35fd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af907b101dce0282573ecd77d7edb2318" id="r_af907b101dce0282573ecd77d7edb2318"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#af907b101dce0282573ecd77d7edb2318">kOffsetParentOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 2 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
+<tr class="memitem:af907b101dce0282573ecd77d7edb2318" id="r_af907b101dce0282573ecd77d7edb2318"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#af907b101dce0282573ecd77d7edb2318">kOffsetParentOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 3 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
 <tr class="memdesc:af907b101dce0282573ecd77d7edb2318"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of parent_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout.  <br /></td></tr>
 <tr class="separator:af907b101dce0282573ecd77d7edb2318"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4e69f6da12c1e0dc674a5d3e8683911" id="r_af4e69f6da12c1e0dc674a5d3e8683911"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#af4e69f6da12c1e0dc674a5d3e8683911">kOffsetAvlHeight</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 3 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
-<tr class="memdesc:af4e69f6da12c1e0dc674a5d3e8683911"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of avl_height within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout.  <br /></td></tr>
-<tr class="separator:af4e69f6da12c1e0dc674a5d3e8683911"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62f751f73050ee88505271cb7fbe67aa" id="r_a62f751f73050ee88505271cb7fbe67aa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a62f751f73050ee88505271cb7fbe67aa">kOffsetWeight</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 3 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> ) + 4</td></tr>
-<tr class="memdesc:a62f751f73050ee88505271cb7fbe67aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> + <a class="el" href="structpmm_1_1TreeNode.html#a0daf1cb9ffb5cb7e95892490371b008a" title="Зарезервировано (выравнивающий паддинг).">_pad(2)</a> = 4 bytes).  <br /></td></tr>
-<tr class="separator:a62f751f73050ee88505271cb7fbe67aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac34402bb25d700c343c1c38fa367f4a3" id="r_ac34402bb25d700c343c1c38fa367f4a3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#ac34402bb25d700c343c1c38fa367f4a3">kOffsetRootOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 4 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> ) + 4</td></tr>
+<tr class="memitem:ac34402bb25d700c343c1c38fa367f4a3" id="r_ac34402bb25d700c343c1c38fa367f4a3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#ac34402bb25d700c343c1c38fa367f4a3">kOffsetRootOffset</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 4 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
 <tr class="memdesc:ac34402bb25d700c343c1c38fa367f4a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of root_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout.  <br /></td></tr>
 <tr class="separator:ac34402bb25d700c343c1c38fa367f4a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4e69f6da12c1e0dc674a5d3e8683911" id="r_af4e69f6da12c1e0dc674a5d3e8683911"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#af4e69f6da12c1e0dc674a5d3e8683911">kOffsetAvlHeight</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 5 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
+<tr class="memdesc:af4e69f6da12c1e0dc674a5d3e8683911"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of avl_height within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after weight+left+right+parent+root = 5 index_type fields).  <br /></td></tr>
+<tr class="separator:af4e69f6da12c1e0dc674a5d3e8683911"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07dbf77c3aac828bb413349fc84bb275" id="r_a07dbf77c3aac828bb413349fc84bb275"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a07dbf77c3aac828bb413349fc84bb275">kOffsetNodeType</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 5 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> ) + 2</td></tr>
+<tr class="memdesc:a07dbf77c3aac828bb413349fc84bb275"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of node_type within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> = 2 bytes, Issue #126).  <br /></td></tr>
+<tr class="separator:a07dbf77c3aac828bb413349fc84bb275"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -249,14 +263,16 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a7f13c1493ae895a229ff41cf8e46ca32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa561ecb22a01953afdee49698c8d0c2d" id="r_aa561ecb22a01953afdee49698c8d0c2d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#aa561ecb22a01953afdee49698c8d0c2d">set_root_offset</a> (<a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">v</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="separator:aa561ecb22a01953afdee49698c8d0c2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8160442f7c6a71d1175a55b87f9fc6b1" id="r_a8160442f7c6a71d1175a55b87f9fc6b1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a8160442f7c6a71d1175a55b87f9fc6b1">set_node_type</a> (std::uint16_t <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">v</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="separator:a8160442f7c6a71d1175a55b87f9fc6b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab043ddadf86501b14fca872e3edbba2d" id="r_ab043ddadf86501b14fca872e3edbba2d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#ab043ddadf86501b14fca872e3edbba2d">reset_avl_fields</a> () <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="separator:ab043ddadf86501b14fca872e3edbba2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a>&gt;<br />
 class pmm::BlockStateBase&lt; AddressTraitsT &gt;</div><p>Базовый класс блока для state machine. </p>
-<p>Наследует <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> (<a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a> + <a class="el" href="structpmm_1_1TreeNode.html" title="Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.">TreeNode</a>). Все поля приватные для потомков. Доступ только через методы состояний.</p>
-<p>Layout <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> (32 bytes при DefaultAddressTraits): [0..7] <a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a>: prev_offset (4), next_offset (4) [8..31] <a class="el" href="structpmm_1_1TreeNode.html" title="Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.">TreeNode</a>: left_offset (4), right_offset (4), parent_offset (4), avl_height (2), _pad (2), weight (4), root_offset (4)</p>
+<p>Наследует <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> (<a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a> + <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>). Все поля приватные для потомков. Доступ только через методы состояний.</p>
+<p>Layout <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> (32 bytes при DefaultAddressTraits): [0..7] <a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a>: prev_offset (4), next_offset (4) [8..31] <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>: weight (4), left_offset (4), right_offset (4), parent_offset (4), root_offset (4), avl_height (2), node_type (2)</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства. </td></tr>
@@ -264,7 +280,7 @@ class pmm::BlockStateBase&lt; AddressTraitsT &gt;</div><p>Базовый кла�
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00072">72</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00073">73</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="aaa7d3f10ec2dc40b747b929bf46d3feb" name="aaa7d3f10ec2dc40b747b929bf46d3feb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaa7d3f10ec2dc40b747b929bf46d3feb">&#9670;&#160;</a></span>address_traits</h2>
@@ -280,7 +296,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00079">79</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00080">80</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -298,7 +314,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00081">81</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00082">82</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -316,7 +332,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00080">80</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00081">81</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -374,7 +390,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00119">119</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00122">122</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -406,7 +422,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Прочитать avl_height блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00285">285</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00297">297</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -438,7 +454,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Прочитать left_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00264">264</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00276">276</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -477,7 +493,39 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Гранульный индекс следующего блока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00205">205</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00217">217</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+
+</div>
+</div>
+<a id="a954bd69709881c25d7122b60e91e8474" name="a954bd69709881c25d7122b60e91e8474"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a954bd69709881c25d7122b60e91e8474">&#9670;&#160;</a></span>get_node_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> std::uint16_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::get_node_type </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td>
+          <td class="paramname"><em>raw_blk</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Прочитать node_type блока (Issue #126). </p>
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00360">360</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -509,7 +557,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Прочитать parent_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00278">278</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00290">290</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -548,7 +596,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Гранульный индекс предыдущего блока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00193">193</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00205">205</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -580,7 +628,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Прочитать right_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00271">271</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00283">283</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -612,7 +660,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Прочитать root_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00320">320</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00332">332</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -651,7 +699,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Значение поля weight (0 = свободный, &gt;0 = занятый). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00217">217</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00229">229</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -728,7 +776,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00233">233</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00245">245</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -767,7 +815,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если weight &gt; 0 и root_offset == own_idx. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00135">135</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00141">141</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -799,7 +847,39 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Определить, является ли блок свободным (по структурным признакам). </p>
 <dl class="section return"><dt>Returns</dt><dd>true если weight == 0 и root_offset == 0. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00128">128</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00134">134</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+
+</div>
+</div>
+<a id="a8c0fe12d69ca589951ec931c873b2bda" name="a8c0fe12d69ca589951ec931c873b2bda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c0fe12d69ca589951ec931c873b2bda">&#9670;&#160;</a></span>is_permanently_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::is_permanently_locked </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Определить, заблокирован ли блок навечно (Issue #126). </p>
+<dl class="section return"><dt>Returns</dt><dd>true если node_type == kNodeReadOnly. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00147">147</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -828,7 +908,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00116">116</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00119">119</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -857,7 +937,36 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00113">113</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00116">116</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+
+</div>
+</div>
+<a id="a23c7a18ee5108d339d701bc5e08d9fa3" name="a23c7a18ee5108d339d701bc5e08d9fa3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23c7a18ee5108d339d701bc5e08d9fa3">&#9670;&#160;</a></span>node_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint16_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::node_type </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00128">128</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -886,7 +995,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00118">118</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00121">121</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -915,7 +1024,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00112">112</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00115">115</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -965,7 +1074,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00148">148</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00160">160</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1014,7 +1123,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00181">181</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00193">193</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1043,7 +1152,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00358">358</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00385">385</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1082,7 +1191,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00166">166</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00178">178</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1111,7 +1220,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00117">117</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00120">120</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1140,7 +1249,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00122">122</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00125">125</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1170,7 +1279,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00354">354</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00380">380</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1212,7 +1321,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Установить avl_height блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00313">313</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00325">325</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1242,7 +1351,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00351">351</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00377">377</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1284,7 +1393,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Установить left_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00292">292</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00304">304</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1314,7 +1423,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00350">350</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00376">376</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1363,7 +1472,79 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00253">253</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00265">265</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+
+</div>
+</div>
+<a id="a8160442f7c6a71d1175a55b87f9fc6b1" name="a8160442f7c6a71d1175a55b87f9fc6b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8160442f7c6a71d1175a55b87f9fc6b1">&#9670;&#160;</a></span>set_node_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::set_node_type </td>
+          <td>(</td>
+          <td class="paramtype">std::uint16_t&#160;</td>
+          <td class="paramname"><em>v</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00382">382</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+
+</div>
+</div>
+<a id="abc76b4fd19a7ae2cf0233d16173eea18" name="abc76b4fd19a7ae2cf0233d16173eea18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc76b4fd19a7ae2cf0233d16173eea18">&#9670;&#160;</a></span>set_node_type_of()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::set_node_type_of </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td>
+          <td class="paramname"><em>raw_blk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::uint16_t&#160;</td>
+          <td class="paramname"><em>v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Установить node_type блока (Issue #126). </p>
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00367">367</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1393,7 +1574,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00353">353</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00379">379</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1435,7 +1616,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Установить parent_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00306">306</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00318">318</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1465,7 +1646,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00349">349</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00375">375</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1507,7 +1688,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Установить prev_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00327">327</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00339">339</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1537,7 +1718,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00352">352</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00378">378</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1579,7 +1760,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Установить right_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00299">299</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00311">311</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1609,7 +1790,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00355">355</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00381">381</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1651,7 +1832,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Установить root_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00341">341</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00353">353</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1681,7 +1862,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00348">348</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00374">374</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1723,7 +1904,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Установить weight блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00334">334</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00346">346</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1752,7 +1933,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00109">109</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00112">112</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1769,7 +1950,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetAvlHeight = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 3 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetAvlHeight = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 5 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td>
         </tr>
       </table>
   </td>
@@ -1779,9 +1960,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p>Byte offset of avl_height within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. </p>
+<p>Byte offset of avl_height within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after weight+left+right+parent+root = 5 index_type fields). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00099">99</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00104">104</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1797,7 +1978,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetLeftOffset = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> )</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetLeftOffset = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td>
         </tr>
       </table>
   </td>
@@ -1807,9 +1988,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p>Byte offset of left_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html" title="Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.">TreeNode</a>, follows <a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a>). </p>
+<p>Byte offset of left_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, follows weight). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00093">93</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00096">96</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1837,7 +2018,35 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Byte offset of next_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second field of <a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00091">91</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00092">92</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+
+</div>
+</div>
+<a id="a07dbf77c3aac828bb413349fc84bb275" name="a07dbf77c3aac828bb413349fc84bb275"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07dbf77c3aac828bb413349fc84bb275">&#9670;&#160;</a></span>kOffsetNodeType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetNodeType = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 5 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> ) + 2</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Byte offset of node_type within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> = 2 bytes, Issue #126). </p>
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00106">106</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1853,7 +2062,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetParentOffset = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 2 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetParentOffset = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 3 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td>
         </tr>
       </table>
   </td>
@@ -1865,7 +2074,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Byte offset of parent_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00097">97</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00100">100</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1893,7 +2102,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Byte offset of prev_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.">LinkedListNode</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00089">89</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00090">90</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1909,7 +2118,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetRightOffset = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetRightOffset = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 2 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td>
         </tr>
       </table>
   </td>
@@ -1921,7 +2130,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Byte offset of right_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00095">95</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00098">98</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1937,7 +2146,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetRootOffset = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 4 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> ) + 4</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetRootOffset = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 4 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td>
         </tr>
       </table>
   </td>
@@ -1949,7 +2158,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Byte offset of root_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00103">103</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00102">102</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1965,7 +2174,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetWeight = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> ) + 3 * <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> ) + 4</td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::kOffsetWeight = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1LinkedListNode.html">LLNode</a> )</td>
         </tr>
       </table>
   </td>
@@ -1975,9 +2184,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p>Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> + <a class="el" href="structpmm_1_1TreeNode.html#a0daf1cb9ffb5cb7e95892490371b008a" title="Зарезервировано (выравнивающий паддинг).">_pad(2)</a> = 4 bytes). </p>
+<p>Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, Issue #126). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00101">101</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00094">94</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

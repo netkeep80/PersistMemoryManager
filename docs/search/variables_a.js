@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['next_5foffset_0',['next_offset',['../structpmm_1_1LinkedListNode.html#a1e710264daf7ead2f5a7910a6c24d34a',1,'pmm::LinkedListNode']]],
-  ['no_5fblock_1',['no_block',['../structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc',1,'pmm::AddressTraits']]]
+  ['offset_0',['offset',['../structpmm_1_1BlockView.html#a045b6fa11a579b38a1a1f9851cd2ea84',1,'pmm::BlockView::offset'],['../structpmm_1_1FreeBlockView.html#a1646b317908a05f54ec49965238d4d76',1,'pmm::FreeBlockView::offset']]],
+  ['owns_5fmemory_1',['owns_memory',['../structpmm_1_1detail_1_1ManagerHeader.html#a56a57d4f7cef869939e4ede031857666',1,'pmm::detail::ManagerHeader']]]
 ];

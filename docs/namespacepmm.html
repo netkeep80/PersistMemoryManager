@@ -74,6 +74,7 @@ $(function() {
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">pmm Namespace Reference</div></div>
@@ -167,7 +168,6 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Статический бэкенд хранилища — фиксированный буфер внутри объекта.  <a href="classpmm_1_1StaticStorage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.  <a href="structpmm_1_1TreeNode.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -190,6 +190,14 @@ Typedefs</h2></td></tr>
 <tr class="memitem:a343de335e434d7d59ee388be5c798684" id="r_a343de335e434d7d59ee388be5c798684"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a343de335e434d7d59ee388be5c798684">PersistentAvlTree</a> = <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
 <tr class="memdesc:a343de335e434d7d59ee388be5c798684"><td class="mdescLeft">&#160;</td><td class="mdescRight">Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead.  <br /></td></tr>
 <tr class="separator:a343de335e434d7d59ee388be5c798684"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a030e138f0333b3e992a6141a013961b2" id="r_a030e138f0333b3e992a6141a013961b2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: std::uint16_t { <a class="el" href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2a7c460dc24ac944e43569e234270eff0a">kNodeReadWrite</a> = 0
+, <a class="el" href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2ac11052e6ba72efb94e8f459ba6fb39b6">kNodeReadOnly</a> = 1
+ }</td></tr>
+<tr class="memdesc:a030e138f0333b3e992a6141a013961b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.  <a href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2">More...</a><br /></td></tr>
+<tr class="separator:a030e138f0333b3e992a6141a013961b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -316,7 +324,7 @@ Variables</h2></td></tr>
 
 <p>Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead. </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00375">375</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00376">376</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -353,6 +361,40 @@ Variables</h2></td></tr>
 <p>Минимальный 8-bit вариант (до 255 гранул по 8 байт = 2040 байт, embedded). </p>
 
 <p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00105">105</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a030e138f0333b3e992a6141a013961b2" name="a030e138f0333b3e992a6141a013961b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a030e138f0333b3e992a6141a013961b2">&#9670;&#160;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">anonymous</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">enum</a> : std::uint16_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Узел AVL-дерева для адресного пространства ПАП, использование только через наследование. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства (из <a class="el" href="address__traits_8h.html" title="AddressTraits — адресное пространство ПАП (Issue #87 Phase 1).">address_traits.h</a>). Определяет тип индексных полей.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Поля хранят гранульные индексы узлов-потомков / родителя в ПАП. Sentinel «нет узла» = <code>AddressTraitsT::no_block</code>.</p>
+<p><code>weight</code> — ключ балансировки дерева (для дерева свободных блоков: количество свободных гранул за узлом; семантика произвольна для других деревьев). Первое поле для ускорения доступа (Issue #126). <code>root_offset</code>— идентификатор дерева: 0 = свободный блок (дерево свободных блоков), own_idx = занятый блок (дерево с корнем own_idx). <code>avl_height</code> — высота AVL-поддерева (0 = узел не в дереве). <code>node_type</code> — тип узла (Issue #126): kNodeReadWrite (0) = доступен на чтение/запись, kNodeReadOnly (1) = заблокирован навечно (только чтение, нельзя освободить).</p>
+<p>Размеры <code><a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>&lt;DefaultAddressTraits&gt;</code> (uint32_t, 16): weight (4) + left_offset (4) + right_offset (4) + parent_offset (4) + root_offset (4) + avl_height (2) + node_type (2) = 24 bytes</p>
+<p>Тип узла (Issue #126): значения для поля <code><a class="el" href="structpmm_1_1TreeNode.html#a036af7961dcc42d6e9adb84e37d85d02" title="Тип узла (Issue #126): kNodeReadWrite (0) = чтение/запись, kNodeReadOnly (1) = только чтение.">TreeNode::node_type</a></code>.</p>
+<p>kNodeReadWrite (0) — блок доступен на чтение и запись, может быть освобождён. kNodeReadOnly (1) — блок заблокирован навечно: доступен только на чтение, не может быть освобождён через deallocate(). </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a030e138f0333b3e992a6141a013961b2a7c460dc24ac944e43569e234270eff0a" name="a030e138f0333b3e992a6141a013961b2a7c460dc24ac944e43569e234270eff0a"></a>kNodeReadWrite&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a030e138f0333b3e992a6141a013961b2ac11052e6ba72efb94e8f459ba6fb39b6" name="a030e138f0333b3e992a6141a013961b2ac11052e6ba72efb94e8f459ba6fb39b6"></a>kNodeReadOnly&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00075">75</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>
@@ -409,7 +451,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 = <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a>, 1 = <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>, -1 = неопределённое/переходное. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00770">770</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00797">797</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -503,7 +545,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Гранульный индекс следующего блока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00837">837</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00864">864</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -549,7 +591,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Значение поля weight (0 = свободный, &gt;0 = занятый). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00852">852</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00879">879</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -605,7 +647,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00791">791</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00818">818</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -661,7 +703,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00821">821</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00848">848</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -706,7 +748,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00805">805</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00832">832</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

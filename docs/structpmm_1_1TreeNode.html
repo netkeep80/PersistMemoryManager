@@ -82,9 +82,6 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.  
- <a href="structpmm_1_1TreeNode.html#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="tree__node_8h_source.html">tree_node.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for pmm::TreeNode&lt; AddressTraitsT &gt;:</div>
@@ -112,6 +109,8 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
+<tr class="memitem:a054b227ed3133233acb113deef6070c0" id="r_a054b227ed3133233acb113deef6070c0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a054b227ed3133233acb113deef6070c0">weight</a></td></tr>
+<tr class="separator:a054b227ed3133233acb113deef6070c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ef6c85c74806fb9e9558b72d267a92c" id="r_a7ef6c85c74806fb9e9558b72d267a92c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a7ef6c85c74806fb9e9558b72d267a92c">left_offset</a></td></tr>
 <tr class="memdesc:a7ef6c85c74806fb9e9558b72d267a92c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Гранульный индекс левого дочернего узла AVL-дерева (или no_block).  <br /></td></tr>
 <tr class="separator:a7ef6c85c74806fb9e9558b72d267a92c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -121,31 +120,19 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:a34883ae019ea695d351db1f01a7919f9" id="r_a34883ae019ea695d351db1f01a7919f9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a34883ae019ea695d351db1f01a7919f9">parent_offset</a></td></tr>
 <tr class="memdesc:a34883ae019ea695d351db1f01a7919f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Гранульный индекс родительского узла AVL-дерева (или no_block).  <br /></td></tr>
 <tr class="separator:a34883ae019ea695d351db1f01a7919f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92e947e3d6cbb9a54d2765b4a525c26c" id="r_a92e947e3d6cbb9a54d2765b4a525c26c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a92e947e3d6cbb9a54d2765b4a525c26c">root_offset</a></td></tr>
+<tr class="separator:a92e947e3d6cbb9a54d2765b4a525c26c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa55953de2301f09d07416860ab05cbf4" id="r_aa55953de2301f09d07416860ab05cbf4"><td class="memItemLeft" align="right" valign="top">std::int16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4">avl_height</a></td></tr>
 <tr class="memdesc:aa55953de2301f09d07416860ab05cbf4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Высота AVL-поддерева (0 = узел не в дереве).  <br /></td></tr>
 <tr class="separator:aa55953de2301f09d07416860ab05cbf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0daf1cb9ffb5cb7e95892490371b008a" id="r_a0daf1cb9ffb5cb7e95892490371b008a"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a0daf1cb9ffb5cb7e95892490371b008a">_pad</a></td></tr>
-<tr class="memdesc:a0daf1cb9ffb5cb7e95892490371b008a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Зарезервировано (выравнивающий паддинг).  <br /></td></tr>
-<tr class="separator:a0daf1cb9ffb5cb7e95892490371b008a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a054b227ed3133233acb113deef6070c0" id="r_a054b227ed3133233acb113deef6070c0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a054b227ed3133233acb113deef6070c0">weight</a></td></tr>
-<tr class="separator:a054b227ed3133233acb113deef6070c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92e947e3d6cbb9a54d2765b4a525c26c" id="r_a92e947e3d6cbb9a54d2765b4a525c26c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a92e947e3d6cbb9a54d2765b4a525c26c">root_offset</a></td></tr>
-<tr class="separator:a92e947e3d6cbb9a54d2765b4a525c26c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a036af7961dcc42d6e9adb84e37d85d02" id="r_a036af7961dcc42d6e9adb84e37d85d02"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a036af7961dcc42d6e9adb84e37d85d02">node_type</a></td></tr>
+<tr class="memdesc:a036af7961dcc42d6e9adb84e37d85d02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Тип узла (Issue #126): kNodeReadWrite (0) = чтение/запись, kNodeReadOnly (1) = только чтение.  <br /></td></tr>
+<tr class="separator:a036af7961dcc42d6e9adb84e37d85d02"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a>&gt;<br />
-struct pmm::TreeNode&lt; AddressTraitsT &gt;</div><p>Узел AVL-дерева для адресного пространства ПАП, использование только через наследование. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства (из <a class="el" href="address__traits_8h.html" title="AddressTraits — адресное пространство ПАП (Issue #87 Phase 1).">address_traits.h</a>). Определяет тип индексных полей.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Поля хранят гранульные индексы узлов-потомков / родителя в ПАП. Sentinel «нет узла» = <code>AddressTraitsT::no_block</code>.</p>
-<p><code>avl_height</code> — высота AVL-поддерева (0 = узел не в дереве). <code>_pad</code> — выравнивающий паддинг; зарезервировано. <code>weight</code> — ключ балансировки дерева (для дерева свободных блоков: количество свободных гранул за узлом; семантика произвольна для других деревьев). <code>root_offset</code>— идентификатор дерева: 0 = свободный блок (дерево свободных блоков), own_idx = занятый блок (дерево с корнем own_idx).</p>
-<p>Размеры <code><a class="el" href="structpmm_1_1TreeNode.html" title="Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.">TreeNode</a>&lt;DefaultAddressTraits&gt;</code> (uint32_t, 16): left_offset (4) + right_offset (4) + parent_offset (4) + avl_height (2) + _pad (2) + weight (4) + root_offset (4) = 24 bytes </p>
-
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00062">62</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+struct pmm::TreeNode&lt; AddressTraitsT &gt;</div>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00081">81</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a1ed02b385bf2cedb5c7b4e352b7f5158" name="a1ed02b385bf2cedb5c7b4e352b7f5158"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1ed02b385bf2cedb5c7b4e352b7f5158">&#9670;&#160;</a></span>address_traits</h2>
@@ -161,7 +148,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00064">64</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00083">83</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>
@@ -179,39 +166,11 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00065">65</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00084">84</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a0daf1cb9ffb5cb7e95892490371b008a" name="a0daf1cb9ffb5cb7e95892490371b008a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0daf1cb9ffb5cb7e95892490371b008a">&#9670;&#160;</a></span>_pad</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::uint16_t <a class="el" href="structpmm_1_1TreeNode.html">pmm::TreeNode</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::_pad</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Зарезервировано (выравнивающий паддинг). </p>
-
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00077">77</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
-
-</div>
-</div>
 <a id="aa55953de2301f09d07416860ab05cbf4" name="aa55953de2301f09d07416860ab05cbf4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa55953de2301f09d07416860ab05cbf4">&#9670;&#160;</a></span>avl_height</h2>
 
@@ -236,7 +195,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Высота AVL-поддерева (0 = узел не в дереве). </p>
 
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00075">75</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00102">102</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>
@@ -264,7 +223,35 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Гранульный индекс левого дочернего узла AVL-дерева (или no_block). </p>
 
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00069">69</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00092">92</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+
+</div>
+</div>
+<a id="a036af7961dcc42d6e9adb84e37d85d02" name="a036af7961dcc42d6e9adb84e37d85d02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a036af7961dcc42d6e9adb84e37d85d02">&#9670;&#160;</a></span>node_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint16_t <a class="el" href="structpmm_1_1TreeNode.html">pmm::TreeNode</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::node_type</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Тип узла (Issue #126): kNodeReadWrite (0) = чтение/запись, kNodeReadOnly (1) = только чтение. </p>
+
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00104">104</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>
@@ -292,7 +279,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Гранульный индекс родительского узла AVL-дерева (или no_block). </p>
 
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00073">73</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00096">96</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>
@@ -320,7 +307,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Гранульный индекс правого дочернего узла AVL-дерева (или no_block). </p>
 
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00071">71</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00094">94</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>
@@ -347,7 +334,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </div><div class="memdoc">
 <p>Идентификатор дерева-владельца. 0 = узел принадлежит дереву свободных блоков (ПАП-менеджер). own_idx = узел занят; значение равно гранульному индексу самого блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00085">85</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00100">100</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>
@@ -372,9 +359,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Ключ балансировки дерева. Для дерева свободных блоков (root_offset == 0): количество свободных гранул за блоком. Для других деревьев: произвольный вес, определяемый деревом-владельцем. </p>
+<p>Ключ балансировки дерева. Первое поле для ускорения доступа (Issue #126). Для дерева свободных блоков (root_offset == 0): количество свободных гранул за блоком. Для других деревьев: произвольный вес, определяемый деревом-владельцем. </p>
 
-<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00081">81</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00090">90</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 
 </div>
 </div>

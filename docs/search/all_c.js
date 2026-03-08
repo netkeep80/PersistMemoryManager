@@ -1,18 +1,7 @@
 var searchData=
 [
-  ['magic_0',['magic',['../structpmm_1_1detail_1_1ManagerHeader.html#a917ab780875d490249654a77dbeac617',1,'pmm::detail::ManagerHeader::magic'],['../structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9',1,'pmm::ManagerInfo::magic']]],
-  ['manager_5fconcept_2eh_1',['manager_concept.h',['../manager__concept_8h.html',1,'']]],
-  ['manager_5fconfigs_2eh_2',['manager_configs.h',['../manager__configs_8h.html',1,'']]],
-  ['manager_5fheader_5fsize_3',['manager_header_size',['../structpmm_1_1ManagerInfo.html#a1a91c550f4030d535209fed061b903e4',1,'pmm::ManagerInfo']]],
-  ['manager_5ftype_4',['manager_type',['../classpmm_1_1pptr.html#a4491c6edb582bd512b49e3747d0e9421',1,'pmm::pptr::manager_type'],['../classpmm_1_1PersistMemoryManager.html#ab7dc5f5527fcfc1ebe29528020635d87',1,'pmm::PersistMemoryManager::manager_type']]],
-  ['managerheader_5',['ManagerHeader',['../structpmm_1_1detail_1_1ManagerHeader.html',1,'pmm::detail']]],
-  ['managerinfo_6',['ManagerInfo',['../structpmm_1_1ManagerInfo.html',1,'pmm']]],
-  ['mark_5fas_5fallocated_7',['mark_as_allocated',['../classpmm_1_1FreeBlockRemovedAVL.html#a4eeee6090df0f5333ee5f2aee8496204',1,'pmm::FreeBlockRemovedAVL']]],
-  ['mark_5fas_5ffree_8',['mark_as_free',['../classpmm_1_1AllocatedBlock.html#a115d7215d185da8532b047fa0e269dd9',1,'pmm::AllocatedBlock']]],
-  ['max_5fmemory_5fgb_9',['max_memory_gb',['../structpmm_1_1CacheManagerConfig.html#aa76457828b34467f10ce96fe2a157474',1,'pmm::CacheManagerConfig::max_memory_gb'],['../structpmm_1_1PersistentDataConfig.html#a3a77ca4bec972a737a7131e1fdd707a7',1,'pmm::PersistentDataConfig::max_memory_gb'],['../structpmm_1_1EmbeddedManagerConfig.html#aa80a21730b5fb96bdbc4957cdecbf3d8',1,'pmm::EmbeddedManagerConfig::max_memory_gb'],['../structpmm_1_1IndustrialDBConfig.html#a1c15ae07b2531cab274c6294b3cdd11a',1,'pmm::IndustrialDBConfig::max_memory_gb']]],
-  ['memorystats_10',['MemoryStats',['../structpmm_1_1MemoryStats.html',1,'pmm']]],
-  ['mmap_5fstorage_2eh_11',['mmap_storage.h',['../mmap__storage_8h.html',1,'']]],
-  ['mmapstorage_12',['mmapstorage',['../classpmm_1_1MMapStorage.html',1,'pmm::MMapStorage&lt; AddressTraitsT &gt;'],['../classpmm_1_1MMapStorage.html#a0b5769057cad68693b2f94130d4ecffd',1,'pmm::MMapStorage::MMapStorage() noexcept=default'],['../classpmm_1_1MMapStorage.html#a687440980f3343a3f0dace67bd4be0b3',1,'pmm::MMapStorage::MMapStorage(const MMapStorage &amp;)=delete'],['../classpmm_1_1MMapStorage.html#ac631220dd65e21c3ff21e0a9a468c66a',1,'pmm::MMapStorage::MMapStorage(MMapStorage &amp;&amp;other) noexcept']]],
-  ['multithreadedheap_13',['MultiThreadedHeap',['../namespacepmm_1_1presets.html#a11b19ac031d0a909931c0daed9b24a69',1,'pmm::presets']]],
-  ['mutex_5ftype_14',['mutex_type',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html',1,'pmm::config::NoLock::mutex_type'],['../structpmm_1_1config_1_1SharedMutexLock.html#ade9f918c8245c291bed83a84623bfa9c',1,'pmm::config::SharedMutexLock::mutex_type']]]
+  ['next_5foffset_0',['next_offset',['../structpmm_1_1LinkedListNode.html#a1e710264daf7ead2f5a7910a6c24d34a',1,'pmm::LinkedListNode::next_offset'],['../classpmm_1_1BlockStateBase.html#a27d74d0ec3747f14acd41d3ab62777be',1,'pmm::BlockStateBase::next_offset()']]],
+  ['no_5fblock_1',['no_block',['../structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc',1,'pmm::AddressTraits']]],
+  ['node_5ftype_2',['node_type',['../structpmm_1_1TreeNode.html#a036af7961dcc42d6e9adb84e37d85d02',1,'pmm::TreeNode::node_type'],['../classpmm_1_1BlockStateBase.html#a23c7a18ee5108d339d701bc5e08d9fa3',1,'pmm::BlockStateBase::node_type()']]],
+  ['nolock_3',['NoLock',['../structpmm_1_1config_1_1NoLock.html',1,'pmm::config']]]
 ];

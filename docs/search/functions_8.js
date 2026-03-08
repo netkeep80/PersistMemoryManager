@@ -10,6 +10,7 @@ var searchData=
   ['is_5finitialized_7',['is_initialized',['../classpmm_1_1PersistMemoryManager.html#a55c4db722ac210db29a7cfc73d4cc544',1,'pmm::PersistMemoryManager']]],
   ['is_5fnull_8',['is_null',['../classpmm_1_1pptr.html#a2cb78c12fac91ef44774308b0a7fc952',1,'pmm::pptr']]],
   ['is_5fopen_9',['is_open',['../classpmm_1_1MMapStorage.html#a7b6756bbf0a7929a36a227d59f098890',1,'pmm::MMapStorage']]],
-  ['is_5fvalid_5falignment_10',['is_valid_alignment',['../namespacepmm_1_1detail.html#a570c97994ec416915edafdbb1ed080b6',1,'pmm::detail']]],
-  ['is_5fvalid_5fblock_11',['is_valid_block',['../namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294',1,'pmm::detail']]]
+  ['is_5fpermanently_5flocked_10',['is_permanently_locked',['../classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda',1,'pmm::BlockStateBase::is_permanently_locked()'],['../classpmm_1_1PersistMemoryManager.html#ab3d073c0cdff0cf27816432777c01053',1,'pmm::PersistMemoryManager::is_permanently_locked()']]],
+  ['is_5fvalid_5falignment_11',['is_valid_alignment',['../namespacepmm_1_1detail.html#a570c97994ec416915edafdbb1ed080b6',1,'pmm::detail']]],
+  ['is_5fvalid_5fblock_12',['is_valid_block',['../namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294',1,'pmm::detail']]]
 ];

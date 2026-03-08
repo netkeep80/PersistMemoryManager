@@ -76,7 +76,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle"><div class="title">tree_node.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -93,13 +94,20 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html">pmm::TreeNode&lt; AddressTraitsT &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.  <a href="structpmm_1_1TreeNode.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm" id="r_namespacepmm"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html">pmm</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a030e138f0333b3e992a6141a013961b2" id="r_a030e138f0333b3e992a6141a013961b2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: std::uint16_t { <a class="el" href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2a7c460dc24ac944e43569e234270eff0a">pmm::kNodeReadWrite</a> = 0
+, <a class="el" href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2ac11052e6ba72efb94e8f459ba6fb39b6">pmm::kNodeReadOnly</a> = 1
+ }</td></tr>
+<tr class="memdesc:a030e138f0333b3e992a6141a013961b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.  <a href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2">More...</a><br /></td></tr>
+<tr class="separator:a030e138f0333b3e992a6141a013961b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>TreeNode&lt;AddressTraits&gt; — узел AVL-дерева для ПАП (Issue #87 Phase 2). </p>
@@ -109,9 +117,10 @@ Namespaces</h2></td></tr>
 <li><code>weight</code> — ключ балансировки; семантика определяется деревом-владельцем (для дерева свободных блоков — количество свободных гранул за этим узлом; для других деревьев — произвольный вес).</li>
 <li><code>root_offset</code> — идентификатор дерева-владельца: 0 = узел принадлежит дереву свободных блоков (ПАП); own_index = узел занят и является корнем своего дерева.</li>
 </ul>
-<p>Поля: <code>left_offset</code>, <code>right_offset</code>, <code>parent_offset</code>, <code>avl_height</code>, <code>_pad</code>, <code>weight</code>, <code>root_offset</code> соответствуют полям Block&lt;DefaultAddressTraits&gt; после LinkedListNode. Layout подтверждён через <code>static_assert</code> в <code><a class="el" href="types_8h.html" title="Core types and constants for PersistMemoryManager (Issue #95 refactoring).">types.h</a></code>.</p>
+<p>Поля (Issue #126 — новый порядок): <code>weight</code>, <code>left_offset</code>, <code>right_offset</code>, <code>parent_offset</code>, <code>root_offset</code>, <code>avl_height</code>, <code>node_type</code> соответствуют полям Block&lt;DefaultAddressTraits&gt; после LinkedListNode. Layout подтверждён через <code>static_assert</code> в <code><a class="el" href="types_8h.html" title="Core types and constants for PersistMemoryManager (Issue #95 refactoring).">types.h</a></code>.</p>
+<p>Issue #126: Поле <code>weight</code> перемещено в начало для ускорения доступа. Поля <code>avl_height</code> и <code>node_type</code> (бывший <code>_pad</code>) перемещены в конец. Два типа узлов: kNodeReadWrite (0) и kNodeReadOnly (1).</p>
 <dl class="section see"><dt>See also</dt><dd>plan_issue87.md §5 «Фаза 2: LinkedListNode и TreeNode» </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.2 (Issue #87 Phase 2 — weight+root_offset moved into TreeNode) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.3 (Issue #126 — reordered fields, renamed _pad to node_type) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 </div></div><!-- contents -->
