@@ -5,10 +5,10 @@
  * Параметрический узел двухсвязного списка, где тип индексных полей определяется
  * через `AddressTraits::index_type`.
  *
- * Обратная совместимость:
- *   `pmm::detail::BlockHeader` содержит поля `prev_offset` и `next_offset`,
- *   бинарно совместимые с `LinkedListNode<DefaultAddressTraits>`.
- *   Совместимость подтверждена через `static_assert` в `persist_memory_types.h`.
+ * Поля:
+ *   `prev_offset` и `next_offset` — гранульные индексы соседних блоков.
+ *   Совместимость с Block<DefaultAddressTraits> подтверждена через
+ *   `static_assert` в `types.h`.
  *
  * @see plan_issue87.md §5 «Фаза 2: LinkedListNode и TreeNode»
  * @version 0.1 (Issue #87 Phase 2)

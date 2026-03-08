@@ -107,7 +107,7 @@ using TinyAddressTraits = AddressTraits<std::uint8_t, 8>;
 /// 16-bit вариант (до 65535 гранул по 16 байт = ~1 МБ, small embedded).
 using SmallAddressTraits = AddressTraits<std::uint16_t, 16>;
 
-/// 32-bit вариант, 16-байтная гранула — текущий дефолт (совместим с BlockHeader).
+/// 32-bit вариант, 16-байтная гранула — текущий дефолт.
 using DefaultAddressTraits = AddressTraits<std::uint32_t, 16>;
 
 /// 64-bit вариант, 64-байтная гранула (для крупных промышленных БД).

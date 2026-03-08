@@ -12,10 +12,11 @@
  * - #83-R4: ManagerHeader stores granule_size; load() rejects wrong granule_size.
  */
 
-#include "pmm/pmm_presets.h"
-#include "pmm/io.h"
-#include "pmm/types.h"
+#include "pmm/block.h"
 #include "pmm/config.h"
+#include "pmm/io.h"
+#include "pmm/pmm_presets.h"
+#include "pmm/types.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -55,11 +56,12 @@ static_assert( pmm::kGranuleSize == 16, "#83-R1: kGranuleSize must equal 16" );
 
 // ─── #83-R2: kMinBlockSize and kMinMemorySize are computed ───────────────────
 
-static_assert( pmm::detail::kMinBlockSize == sizeof( pmm::detail::BlockHeader ) + pmm::kGranuleSize,
-               "#83-R2: kMinBlockSize must equal sizeof(BlockHeader) + kGranuleSize" );
-static_assert( pmm::detail::kMinMemorySize == sizeof( pmm::detail::BlockHeader ) +
-                                                  sizeof( pmm::detail::ManagerHeader ) +
-                                                  sizeof( pmm::detail::BlockHeader ) + pmm::detail::kMinBlockSize,
+// Issue #112: BlockHeader removed, using Block<DefaultAddressTraits> (same size: 32 bytes).
+static_assert( pmm::detail::kMinBlockSize == sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::kGranuleSize,
+               "#83-R2: kMinBlockSize must equal sizeof(Block<A>) + kGranuleSize" );
+static_assert( pmm::detail::kMinMemorySize ==
+                   sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + sizeof( pmm::detail::ManagerHeader ) +
+                       sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::detail::kMinBlockSize,
                "#83-R2: kMinMemorySize must be computed from struct sizes" );
 
 // ─── #83-R3: kDefaultGrowNumerator / kDefaultGrowDenominator ─────────────────
@@ -84,18 +86,19 @@ static bool test_power_of_two()
 
 static bool test_min_block_size_computed()
 {
-    // kMinBlockSize must equal BlockHeader (32) + kGranuleSize (16) = 48
+    // kMinBlockSize must equal Block<A> (32) + kGranuleSize (16) = 48 (Issue #112)
     PMM_TEST( pmm::detail::kMinBlockSize == 48 );
-    PMM_TEST( pmm::detail::kMinBlockSize == sizeof( pmm::detail::BlockHeader ) + pmm::kGranuleSize );
+    PMM_TEST( pmm::detail::kMinBlockSize == sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::kGranuleSize );
     return true;
 }
 
 static bool test_min_memory_size_computed()
 {
-    // kMinMemorySize = BlockHeader + ManagerHeader + BlockHeader + kMinBlockSize
+    // kMinMemorySize = Block_0 + ManagerHeader + Block_1 + kMinBlockSize (Issue #112)
     //                = 32 + 64 + 32 + 48 = 176
-    std::size_t expected = sizeof( pmm::detail::BlockHeader ) + sizeof( pmm::detail::ManagerHeader ) +
-                           sizeof( pmm::detail::BlockHeader ) + pmm::detail::kMinBlockSize;
+    using Block = pmm::Block<pmm::DefaultAddressTraits>;
+    std::size_t expected =
+        sizeof( Block ) + sizeof( pmm::detail::ManagerHeader ) + sizeof( Block ) + pmm::detail::kMinBlockSize;
     PMM_TEST( pmm::detail::kMinMemorySize == expected );
     PMM_TEST( pmm::detail::kMinMemorySize == 176 );
     return true;

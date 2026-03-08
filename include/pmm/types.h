@@ -2,20 +2,20 @@
  * @file pmm/types.h
  * @brief Core types and constants for PersistMemoryManager (Issue #95 refactoring).
  *
- * Contains: BlockHeader, ManagerHeader, MemoryStats, ManagerInfo,
+ * Contains: ManagerHeader, MemoryStats, ManagerInfo,
  * BlockView, FreeBlockView and utility functions for byte/granule conversion.
  *
  * Sizes of structures are protected by static_assert (Issue #59, #73 FR-03):
- *   BlockHeader   == 32 bytes
- *   ManagerHeader == 64 bytes
+ *   Block<DefaultAddressTraits> == 32 bytes
+ *   ManagerHeader               == 64 bytes
  *
  * Issue #95: Moved from persist_memory_types.h to pmm/types.h as part of
  * refactoring to consolidate all PMM code under include/pmm/.
  *
- * Issue #106: Added Block<A>* utilities alongside BlockHeader* ones to support
- * migration to BlockState machine. Internal allocator code now uses Block<A> layout.
+ * Issue #106: Block<A>* utilities replace legacy BlockHeader* ones.
+ * Issue #112: BlockHeader struct removed — Block<DefaultAddressTraits> is the sole block type.
  *
- * @version 2.1 (Issue #106 — BlockState machine integration)
+ * @version 2.2 (Issue #112 — BlockHeader removed)
  */
 
 #pragma once
@@ -102,36 +102,23 @@ struct FreeBlockView
 namespace detail
 {
 
-/// @brief Block header (32 bytes = 2 granules, Issue #59). size=0: free; size>0: data granules.
-/// root_offset=0: free-blocks tree; root_offset=own_idx: allocated block root (Issue #75).
-/// Issue #69: magic removed; validity via is_valid_block(). total_size = next_offset - idx.
-struct BlockHeader
-{
-    std::uint32_t size;          ///< [1] Data size in granules (0 = free block, Issue #75)
-    std::uint32_t prev_offset;   ///< [2] Previous block (granule index)
-    std::uint32_t next_offset;   ///< [3] Next block (granule index)
-    std::uint32_t left_offset;   ///< [4] Left child of AVL tree (granule index)
-    std::uint32_t right_offset;  ///< [5] Right child of AVL tree (granule index)
-    std::uint32_t parent_offset; ///< [6] Parent node of AVL tree (granule index)
-    std::int16_t  avl_height;    ///< AVL subtree height (0 = not in tree)
-    std::uint16_t _pad;          ///< Reserved (Issue #69: previously held magic[3:2])
-    std::uint32_t root_offset;   ///< 0=free block (free tree); own_idx=allocated (Issue #75)
-};
+// Issue #112: BlockHeader struct removed — Block<DefaultAddressTraits> is the sole block type.
+// All block metadata is stored in Block<AddressTraitsT> (LinkedListNode + TreeNode).
 
-static_assert( sizeof( BlockHeader ) == 32, "BlockHeader must be exactly 32 bytes (Issue #59, #73 FR-03)" );
-static_assert( sizeof( BlockHeader ) % kGranuleSize == 0,
-               "BlockHeader must be granule-aligned (Issue #59, #73 FR-03)" );
+// Issue #87: Verify Block<DefaultAddressTraits> layout and size constraints.
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
+               "Block<DefaultAddressTraits> must be 32 bytes (Issue #87, #112)" );
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) % kGranuleSize == 0,
+               "Block<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
 
-// Issue #87 Phase 2: verify binary compatibility of LinkedListNode/TreeNode with BlockHeader.
-// LinkedListNode<DefaultAddressTraits> maps to prev_offset/next_offset (8 bytes).
+// Issue #87 Phase 2: verify LinkedListNode<DefaultAddressTraits> layout.
 static_assert( sizeof( pmm::LinkedListNode<pmm::DefaultAddressTraits> ) == 2 * sizeof( std::uint32_t ),
                "LinkedListNode<DefaultAddressTraits> must be 8 bytes (Issue #87)" );
 static_assert( offsetof( pmm::LinkedListNode<pmm::DefaultAddressTraits>, prev_offset ) == 0,
                "LinkedListNode::prev_offset must be at offset 0 (Issue #87)" );
 static_assert( offsetof( pmm::LinkedListNode<pmm::DefaultAddressTraits>, next_offset ) == sizeof( std::uint32_t ),
                "LinkedListNode::next_offset must be at offset 4 (Issue #87)" );
-// TreeNode<DefaultAddressTraits> maps to left/right/parent + avl_height/_pad + weight + root_offset (24 bytes).
-// Phase 2 v0.2: weight and root_offset are now part of TreeNode (moved from Block own fields).
+// TreeNode<DefaultAddressTraits>: left/right/parent + avl_height/_pad + weight + root_offset (24 bytes).
 static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) ==
                    3 * sizeof( std::uint32_t ) + 4 + 2 * sizeof( std::uint32_t ),
                "TreeNode<DefaultAddressTraits> must be 24 bytes (Issue #87)" );
@@ -147,12 +134,9 @@ static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, weight ) == 3
                "TreeNode::weight must be at offset 16 within TreeNode (Issue #87)" );
 static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, root_offset ) == 4 * sizeof( std::uint32_t ) + 4,
                "TreeNode::root_offset must be at offset 20 within TreeNode (Issue #87)" );
-// Issue #87 Phase 3: verify sizeof(Block<DefaultAddressTraits>) == sizeof(BlockHeader).
-static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes (Issue #87)" );
 
-/// @brief Number of granules in BlockHeader (2 granules = 32 bytes)
-inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( BlockHeader ) / kGranuleSize;
+/// @brief Number of granules per block header (2 granules = 32 bytes, Issue #112)
+inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) / kGranuleSize;
 
 // kBlockMagic removed (Issue #69): block validity now uses is_valid_block() structural invariants.
 /// Issue #87 Phase 1: matches DefaultAddressTraits::no_block.
@@ -187,12 +171,13 @@ static_assert( sizeof( ManagerHeader ) % kGranuleSize == 0,
 /// @brief Number of granules in ManagerHeader
 inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader ) / kGranuleSize;
 
-/// @brief Issue #83: Minimum block size = BlockHeader + 1 data granule (computed, not hardcoded).
-inline constexpr std::size_t kMinBlockSize = sizeof( BlockHeader ) + kGranuleSize;
+/// @brief Issue #83: Minimum block size = Block header + 1 data granule (Issue #112: uses Block<A>).
+inline constexpr std::size_t kMinBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + kGranuleSize;
 
-/// @brief Issue #83: Minimum memory size = BlockHeader_0 + ManagerHeader + BlockHeader_1 + kMinBlockSize (computed).
-inline constexpr std::size_t kMinMemorySize =
-    sizeof( BlockHeader ) + sizeof( ManagerHeader ) + sizeof( BlockHeader ) + kMinBlockSize;
+/// @brief Issue #83: Minimum memory size = Block_0 + ManagerHeader + Block_1 + kMinBlockSize (Issue #112).
+inline constexpr std::size_t kMinMemorySize = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
+                                              sizeof( ManagerHeader ) +
+                                              sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + kMinBlockSize;
 
 // ─── Byte ↔ granule conversion ──────────────────────────────────────────────
 
@@ -233,43 +218,21 @@ inline bool is_valid_alignment( std::size_t align )
     return align == kGranuleSize;
 }
 
-/// @brief Get pointer to BlockHeader by granule index (legacy format).
-inline BlockHeader* block_at( std::uint8_t* base, std::uint32_t idx )
-{
-    assert( idx != kNoBlock );
-    return reinterpret_cast<BlockHeader*>( base + idx_to_byte_off( idx ) );
-}
-
-/// @brief Get const pointer to BlockHeader by granule index (read-only, legacy format).
-inline const BlockHeader* block_at( const std::uint8_t* base, std::uint32_t idx )
-{
-    assert( idx != kNoBlock );
-    return reinterpret_cast<const BlockHeader*>( base + idx_to_byte_off( idx ) );
-}
-
-/// @brief Get pointer to Block<DefaultAddressTraits> by granule index (Issue #106: BlockState layout).
-inline pmm::Block<pmm::DefaultAddressTraits>* block_at_block( std::uint8_t* base, std::uint32_t idx )
+/// @brief Get pointer to Block<DefaultAddressTraits> by granule index (Issue #112: sole block type).
+inline pmm::Block<pmm::DefaultAddressTraits>* block_at( std::uint8_t* base, std::uint32_t idx )
 {
     assert( idx != kNoBlock );
     return reinterpret_cast<pmm::Block<pmm::DefaultAddressTraits>*>( base + idx_to_byte_off( idx ) );
 }
 
 /// @brief Get const pointer to Block<DefaultAddressTraits> by granule index (read-only).
-inline const pmm::Block<pmm::DefaultAddressTraits>* block_at_block( const std::uint8_t* base, std::uint32_t idx )
+inline const pmm::Block<pmm::DefaultAddressTraits>* block_at( const std::uint8_t* base, std::uint32_t idx )
 {
     assert( idx != kNoBlock );
     return reinterpret_cast<const pmm::Block<pmm::DefaultAddressTraits>*>( base + idx_to_byte_off( idx ) );
 }
 
-/// @brief Get granule index of BlockHeader.
-inline std::uint32_t block_idx( const std::uint8_t* base, const BlockHeader* block )
-{
-    std::size_t byte_off = reinterpret_cast<const std::uint8_t*>( block ) - base;
-    assert( byte_off % kGranuleSize == 0 );
-    return static_cast<std::uint32_t>( byte_off / kGranuleSize );
-}
-
-/// @brief Get granule index of Block<A> (Issue #106).
+/// @brief Get granule index of Block<DefaultAddressTraits>.
 inline std::uint32_t block_idx( const std::uint8_t* base, const pmm::Block<pmm::DefaultAddressTraits>* block )
 {
     std::size_t byte_off = reinterpret_cast<const std::uint8_t*>( block ) - base;
@@ -277,7 +240,7 @@ inline std::uint32_t block_idx( const std::uint8_t* base, const pmm::Block<pmm::
     return static_cast<std::uint32_t>( byte_off / kGranuleSize );
 }
 
-/// @brief Compute total_size of block in granules (Block<A> layout, Issue #106).
+/// @brief Compute total granules of block (Issue #112: Block<A> layout).
 /// Issue #59: total_size is no longer stored — computed via next_offset.
 inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr,
                                            const pmm::Block<pmm::DefaultAddressTraits>* blk )
@@ -288,23 +251,13 @@ inline std::uint32_t block_total_granules( const std::uint8_t* base, const Manag
     return byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - this_idx;
 }
 
-/// @brief Compute total_size of block in granules (legacy BlockHeader layout).
-/// Issue #59: total_size is no longer stored — computed via next_offset.
-inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr, const BlockHeader* blk )
-{
-    std::uint32_t this_idx = block_idx( base, blk );
-    if ( blk->next_offset != kNoBlock )
-        return blk->next_offset - this_idx;
-    return byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - this_idx;
-}
-
-/// @brief Issue #69/#106: Structural block validity using Block<A> layout.
+/// @brief Issue #69/#106/#112: Structural block validity using Block<A> layout.
 /// Invariants: weight<total_gran, prev<idx<next, avl_height<32, distinct AVL refs.
 inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, std::uint32_t idx )
 {
     if ( idx == kNoBlock )
         return false;
-    if ( idx_to_byte_off( idx ) + sizeof( BlockHeader ) > hdr->total_size )
+    if ( idx_to_byte_off( idx ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) > hdr->total_size )
         return false;
 
     const auto*   blk = reinterpret_cast<const pmm::Block<pmm::DefaultAddressTraits>*>( base + idx_to_byte_off( idx ) );
@@ -329,37 +282,32 @@ inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, 
     return true;
 }
 
-/// @brief Compute user data address for block (block + sizeof(Block<A>), Issue #106).
+/// @brief Compute user data address for block (block + sizeof(Block<A>), Issue #106, #112).
 inline void* user_ptr( pmm::Block<pmm::DefaultAddressTraits>* block )
 {
     return reinterpret_cast<std::uint8_t*>( block ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> );
 }
 
-/// @brief Compute user data address for block (BlockHeader legacy).
-inline void* user_ptr( BlockHeader* block )
-{
-    return reinterpret_cast<std::uint8_t*>( block ) + sizeof( BlockHeader );
-}
-
 /// @brief O(1) get Block<A> from user_ptr (ptr - sizeof(Block<A>)); validated via is_valid_block().
-/// Issue #106: Block<A> layout replaces BlockHeader for allocator internals.
+/// Issue #112: Block<A> is the sole block type.
 inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t total_size )
 {
     if ( ptr == nullptr )
         return nullptr;
     std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
-    // First user data starts after BlockHeader_0 + ManagerHeader + BlockHeader_1 (Issue #75)
-    std::uint8_t* min_addr = base + sizeof( BlockHeader ) + sizeof( ManagerHeader ) + sizeof( BlockHeader );
+    // First user data starts after Block_0 + ManagerHeader + Block_1 (Issue #75, #112)
+    static constexpr std::size_t kBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
+    std::uint8_t*                min_addr   = base + kBlockSize + sizeof( ManagerHeader ) + kBlockSize;
     if ( raw_ptr < min_addr )
         return nullptr;
     if ( raw_ptr > base + total_size )
         return nullptr;
-    std::uint8_t* cand_addr = raw_ptr - sizeof( BlockHeader );
+    std::uint8_t* cand_addr = raw_ptr - kBlockSize;
     if ( ( reinterpret_cast<std::size_t>( cand_addr ) - reinterpret_cast<std::size_t>( base ) ) % kGranuleSize != 0 )
         return nullptr;
     std::uint32_t cand_idx = static_cast<std::uint32_t>( ( cand_addr - base ) / kGranuleSize );
-    // Issue #83: ManagerHeader is at base + sizeof(BlockHeader), not base.
-    const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base + sizeof( BlockHeader ) );
+    // Issue #83: ManagerHeader is at base + kBlockSize.
+    const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base + kBlockSize );
     if ( !is_valid_block( base, hdr_const, cand_idx ) )
         return nullptr;
     auto* cand = reinterpret_cast<pmm::Block<pmm::DefaultAddressTraits>*>( cand_addr );

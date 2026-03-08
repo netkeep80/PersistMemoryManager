@@ -43,13 +43,14 @@
 
 using Mgr = pmm::presets::SingleThreadedHeap;
 
-// ─── Test 1: BlockHeader structural sizes ─────────────────────────────────────
+// ─── Test 1: Block<A> structural sizes ────────────────────────────────────────
 
-/// BlockHeader must be 32 bytes = 2 granules.
+/// Block<DefaultAddressTraits> must be 32 bytes = 2 granules (Issue #112).
 static bool test_block_header_no_magic()
 {
-    static_assert( sizeof( pmm::detail::BlockHeader ) == 32, "BlockHeader must be exactly 32 bytes" );
-    static_assert( sizeof( pmm::detail::BlockHeader ) % pmm::kGranuleSize == 0, "BlockHeader must be granule-aligned" );
+    using Block = pmm::Block<pmm::DefaultAddressTraits>;
+    static_assert( sizeof( Block ) == 32, "Block<DefaultAddressTraits> must be exactly 32 bytes" );
+    static_assert( sizeof( Block ) % pmm::kGranuleSize == 0, "Block<DefaultAddressTraits> must be granule-aligned" );
     // kBlockMagic is gone (Issue #69): compilation success means this test passes
     return true;
 }

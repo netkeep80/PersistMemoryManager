@@ -18,12 +18,10 @@
  *                       0         = узел принадлежит дереву свободных блоков (ПАП);
  *                       own_index = узел занят и является корнем своего дерева.
  *
- * Обратная совместимость:
- *   `pmm::detail::BlockHeader` содержит поля `left_offset`, `right_offset`,
- *   `parent_offset`, `avl_height`, `_pad`, `size` (= weight), `root_offset`,
- *   бинарно совместимые с `TreeNode<DefaultAddressTraits>` при условии, что
- *   `TreeNode` располагается после `LinkedListNode` в структуре `Block`.
- *   Совместимость подтверждена через `static_assert` в `persist_memory_types.h`.
+ * Поля:
+ *   `left_offset`, `right_offset`, `parent_offset`, `avl_height`, `_pad`,
+ *   `weight`, `root_offset` соответствуют полям Block<DefaultAddressTraits>
+ *   после LinkedListNode.  Layout подтверждён через `static_assert` в `types.h`.
  *
  * @see plan_issue87.md §5 «Фаза 2: LinkedListNode и TreeNode»
  * @version 0.2 (Issue #87 Phase 2 — weight+root_offset moved into TreeNode)

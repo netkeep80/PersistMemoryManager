@@ -74,30 +74,34 @@ static bool test_cr_no_block_is_max_uint32()
     return true;
 }
 
-// ─── A2: BlockHeader layout ───────────────────────────────────────────────────
+// ─── A2: Block<DefaultAddressTraits> layout (Issue #112) ─────────────────────
 
 static bool test_cr_block_header_combines_list_and_tree()
 {
-    static_assert( offsetof( pmm::detail::BlockHeader, prev_offset ) == 4 );
-    static_assert( offsetof( pmm::detail::BlockHeader, next_offset ) == 8 );
-    static_assert( offsetof( pmm::detail::BlockHeader, left_offset ) == 12 );
-    static_assert( offsetof( pmm::detail::BlockHeader, right_offset ) == 16 );
-    static_assert( offsetof( pmm::detail::BlockHeader, parent_offset ) == 20 );
-    static_assert( offsetof( pmm::detail::BlockHeader, avl_height ) == 24 );
-    static_assert( offsetof( pmm::detail::BlockHeader, size ) == 0 );
-    static_assert( offsetof( pmm::detail::BlockHeader, root_offset ) == 28 );
-    static_assert( sizeof( pmm::detail::BlockHeader ) == 32 );
+    using Block = pmm::Block<pmm::DefaultAddressTraits>;
+    // LinkedListNode fields at start of Block
+    static_assert( offsetof( Block, prev_offset ) == 0 );
+    static_assert( offsetof( Block, next_offset ) == 4 );
+    // TreeNode fields follow LinkedListNode
+    static_assert( offsetof( Block, left_offset ) == 8 );
+    static_assert( offsetof( Block, right_offset ) == 12 );
+    static_assert( offsetof( Block, parent_offset ) == 16 );
+    static_assert( offsetof( Block, avl_height ) == 20 );
+    static_assert( offsetof( Block, weight ) == 24 );
+    static_assert( offsetof( Block, root_offset ) == 28 );
+    static_assert( sizeof( Block ) == 32 );
     return true;
 }
 
 static bool test_cr_block_header_uses_uint32_indices()
 {
-    static_assert( std::is_same<decltype( pmm::detail::BlockHeader::prev_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( pmm::detail::BlockHeader::next_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( pmm::detail::BlockHeader::left_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( pmm::detail::BlockHeader::right_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( pmm::detail::BlockHeader::parent_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( pmm::detail::BlockHeader::size ), std::uint32_t>::value );
+    using Block = pmm::Block<pmm::DefaultAddressTraits>;
+    static_assert( std::is_same<decltype( Block::prev_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Block::next_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Block::left_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Block::right_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Block::parent_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Block::weight ), std::uint32_t>::value );
     return true;
 }
 
@@ -240,7 +244,7 @@ static bool test_phase3_block_layout()
 {
     using A = pmm::DefaultAddressTraits;
 
-    static_assert( sizeof( pmm::Block<A> ) == sizeof( pmm::detail::BlockHeader ) );
+    static_assert( sizeof( pmm::Block<A> ) == 32 );
     static_assert( std::is_base_of<pmm::LinkedListNode<A>, pmm::Block<A>>::value );
     static_assert( std::is_base_of<pmm::TreeNode<A>, pmm::Block<A>>::value );
 
@@ -306,7 +310,7 @@ static bool test_integration_stats()
     PMM_TEST( pmm.create( 64 * 1024 ) );
 
     PMM_TEST( pmm.free_block_count() == 1 );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // BlockHeader_0
+    PMM_TEST( pmm.alloc_block_count() == 1 ); // Block_0 always allocated (Issue #75)
 
     auto p = pmm.allocate_typed<std::uint8_t>( 128 );
     PMM_TEST( !p.is_null() );
@@ -354,8 +358,8 @@ int main()
     std::cout << "--- Part A: Architecture facts ---\n";
     PMM_RUN( "A1: granule_size constant", test_cr_granule_size_is_hardcoded );
     PMM_RUN( "A2: kNoBlock is max uint32", test_cr_no_block_is_max_uint32 );
-    PMM_RUN( "A3: BlockHeader combines list+tree", test_cr_block_header_combines_list_and_tree );
-    PMM_RUN( "A4: BlockHeader uses uint32 indices", test_cr_block_header_uses_uint32_indices );
+    PMM_RUN( "A3: Block<A> combines list+tree (Issue #112)", test_cr_block_header_combines_list_and_tree );
+    PMM_RUN( "A4: Block<A> uses uint32 indices (Issue #112)", test_cr_block_header_uses_uint32_indices );
     PMM_RUN( "A5: pptr resolves via manager instance", test_cr_pptr_resolves_via_manager );
     PMM_RUN( "A6: config constants", test_cr_config_constants );
     PMM_RUN( "A7: PersistentAvlTree is standalone", test_cr_avl_tree_is_standalone );

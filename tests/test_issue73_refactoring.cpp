@@ -1,10 +1,11 @@
 /**
  * @file test_issue73_refactoring.cpp
- * @brief Tests for architectural refactoring Issue #73 (updated #110 — static API).
+ * @brief Tests for architectural refactoring Issue #73 (updated #110, #112 — static API).
  *
  * Issue #110: PersistMemoryManager<ConfigT, InstanceId> is a unified fully static
  * manager. Tests verify:
- * - FR-03: BlockHeader (32 bytes) and ManagerHeader (64 bytes) sizes unchanged
+ * - FR-03: Block<DefaultAddressTraits> (32 bytes) and ManagerHeader (64 bytes) sizes unchanged
+ *   (Issue #112: BlockHeader struct removed — Block<A> is the sole block type)
  * - FR-02/AR-03: PersistentAvlTree is a standalone class
  * - FR-04/AR-01: Public API works through static PersistMemoryManager presets
  * - AR-02: No virtual functions — all polymorphism is static
@@ -12,11 +13,12 @@
  * - Independence via InstanceId: distinct InstanceIds have separate static state
  */
 
+#include "pmm/address_traits.h"
+#include "pmm/block.h"
+#include "pmm/config.h"
+#include "pmm/free_block_tree.h"
 #include "pmm/pmm_presets.h"
 #include "pmm/types.h"
-#include "pmm/free_block_tree.h"
-#include "pmm/config.h"
-#include "pmm/address_traits.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -53,7 +55,9 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 
 // ─── FR-03: Binary-compatibility static_assert checks ────────────────────────
 
-static_assert( sizeof( pmm::detail::BlockHeader ) == 32, "FR-03: BlockHeader must be exactly 32 bytes" );
+// Issue #112: BlockHeader struct removed; Block<DefaultAddressTraits> is the sole block type.
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
+               "FR-03: Block<DefaultAddressTraits> must be exactly 32 bytes (Issue #112)" );
 static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "FR-03: ManagerHeader must be exactly 64 bytes" );
 static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr<T> must be exactly 4 bytes (Issue #59)" );
 
@@ -87,17 +91,17 @@ static bool test_instance_api()
     PMM_TEST( Mgr::create( 64 * 1024 ) );
     PMM_TEST( Mgr::is_initialized() );
 
-    PMM_TEST( Mgr::alloc_block_count() > 0 ); // BlockHeader_0
+    PMM_TEST( Mgr::alloc_block_count() > 0 ); // Block_0
     PMM_TEST( Mgr::free_block_count() == 1 );
-    PMM_TEST( Mgr::alloc_block_count() == 1 ); // BlockHeader_0
+    PMM_TEST( Mgr::alloc_block_count() == 1 ); // Block_0
 
     Mgr::pptr<std::uint8_t> p = Mgr::allocate_typed<std::uint8_t>( 128 );
     PMM_TEST( !p.is_null() );
 
-    PMM_TEST( Mgr::alloc_block_count() == 2 ); // BlockHeader_0 + p
+    PMM_TEST( Mgr::alloc_block_count() == 2 ); // Block_0 + p
 
     Mgr::deallocate_typed( p );
-    PMM_TEST( Mgr::alloc_block_count() == 1 ); // BlockHeader_0 only
+    PMM_TEST( Mgr::alloc_block_count() == 1 ); // Block_0 only
     Mgr::destroy();
     return true;
 }
@@ -146,7 +150,8 @@ static bool test_file_separation()
 {
     // Types from persist_memory_types.h
     static_assert( pmm::kGranuleSize == 16, "Types header must provide kGranuleSize" );
-    static_assert( sizeof( pmm::detail::BlockHeader ) == 32, "Types header: BlockHeader" );
+    // Issue #112: BlockHeader removed; Block<DefaultAddressTraits> is the sole block type.
+    static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Types header: Block<A> (Issue #112)" );
     static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "Types header: ManagerHeader" );
 
     // Config from pmm_config.h

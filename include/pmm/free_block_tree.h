@@ -13,13 +13,13 @@
  * Issue #95: AVL tree implementation moved here from persist_avl_tree.h
  * to consolidate all PMM code under include/pmm/.
  *
- * Issue #106: AvlFreeTree migrated to use Block<AddressTraitsT> layout (BlockState machine).
- * All field accesses now go through Block<A> (prev/next/left/right/parent/avl_height/weight/root_offset)
- * instead of the legacy BlockHeader (size/prev/next/left/right/parent/avl_height/_pad/root_offset).
+ * Issue #106: AvlFreeTree uses Block<AddressTraitsT> layout (BlockState machine).
+ * All field accesses go through Block<A> (prev/next/left/right/parent/avl_height/weight/root_offset).
+ * Issue #112: BlockHeader struct removed — Block<A> is the sole block type.
  *
  * @see plan_issue87.md "Phase 4: FreeBlockTree as template policy"
  * @see block_state.h — BlockState machine (Issue #93, #106)
- * @version 1.1 (Issue #106 — BlockState machine layout migration)
+ * @version 1.2 (Issue #112 — BlockHeader removed)
  */
 
 #pragma once
@@ -100,7 +100,7 @@ inline constexpr bool is_free_block_tree_policy_v =
  * Sort key: (total_granules, block_index) — strict ordering.
  * Best-fit search runs in O(log n).
  *
- * Issue #106: Now uses Block<AddressTraitsT> layout instead of BlockHeader.
+ * Issue #106/#112: Uses Block<AddressTraitsT> layout (BlockHeader struct removed).
  * Fields: prev_offset(0), next_offset(4), left_offset(8), right_offset(12),
  *         parent_offset(16), avl_height(20), _pad(22), weight(24), root_offset(28).
  *

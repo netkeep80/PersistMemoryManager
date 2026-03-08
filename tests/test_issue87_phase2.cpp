@@ -1,25 +1,25 @@
 /**
  * @file test_issue87_phase2.cpp
- * @brief Тесты Phase 2: LinkedListNode<A> и TreeNode<A> (Issue #87).
+ * @brief Тесты Phase 2: LinkedListNode<A> и TreeNode<A> (Issue #87, #112).
  *
  * Проверяет:
  *  - Типы полей LinkedListNode и TreeNode зависят от AddressTraits::index_type.
  *  - Размеры структур для разных AddressTraits (8/16/32/64-bit).
  *  - Смещения полей внутри LinkedListNode и TreeNode.
- *  - Бинарную совместимость LinkedListNode<DefaultAddressTraits> и
- *    TreeNode<DefaultAddressTraits> с соответствующими полями BlockHeader.
+ *  - Layout Block<DefaultAddressTraits> как составного типа (Issue #112).
  *  - Алиасы address_traits и index_type.
  *  - Наличие полей weight и root_offset в TreeNode (Phase 2 v0.2).
  *
  * @see include/pmm/linked_list_node.h
  * @see include/pmm/tree_node.h
  * @see plan_issue87.md §5 «Фаза 2: LinkedListNode и TreeNode»
- * @version 0.2 (Issue #87 Phase 2 — weight+root_offset moved into TreeNode)
+ * @version 0.3 (Issue #112 — BlockHeader removed, tests updated to Block<A>)
  */
 
+#include "pmm/block.h"
 #include "pmm/linked_list_node.h"
 #include "pmm/tree_node.h"
-#include "pmm/types.h" // для обратной совместимости: BlockHeader, kNoBlock
+#include "pmm/types.h" // kNoBlock и другие константы
 
 #include <cassert>
 #include <cstddef>
@@ -120,36 +120,28 @@ static bool test_p2_list_node_offsets()
     return true;
 }
 
-/// @brief Бинарная совместимость LinkedListNode<DefaultAddressTraits> с полями BlockHeader.
+/// @brief Layout LinkedListNode<DefaultAddressTraits> в составе Block<A> (Issue #112).
 static bool test_p2_list_node_blockheader_compat()
 {
-    using A    = pmm::DefaultAddressTraits;
-    using Node = pmm::LinkedListNode<A>;
-    using BH   = pmm::detail::BlockHeader;
+    using A     = pmm::DefaultAddressTraits;
+    using Node  = pmm::LinkedListNode<A>;
+    using Block = pmm::Block<A>;
 
     // Размер узла списка = 8 байт (два uint32_t поля)
     static_assert( sizeof( Node ) == 8 );
 
-    // Поля prev/next в BlockHeader соответствуют полям узла со смещением sizeof(uint32_t) = 4
-    // (в BlockHeader: size@0, prev@4, next@8)
-    // Проверяем, что типы совпадают
-    static_assert( std::is_same<decltype( Node::prev_offset ), decltype( BH::prev_offset )>::value,
-                   "prev_offset types must match" );
-    static_assert( std::is_same<decltype( Node::next_offset ), decltype( BH::next_offset )>::value,
-                   "next_offset types must match" );
+    // Типы полей
+    static_assert( std::is_same<decltype( Node::prev_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Node::next_offset ), std::uint32_t>::value );
 
-    // Смещение prev_offset в BlockHeader == sizeof(uint32_t) (после поля size)
-    static_assert( offsetof( BH, prev_offset ) == sizeof( std::uint32_t ),
-                   "BlockHeader::prev_offset must be at offset 4" );
-    // Смещение next_offset в BlockHeader == 2 * sizeof(uint32_t)
-    static_assert( offsetof( BH, next_offset ) == 2 * sizeof( std::uint32_t ),
-                   "BlockHeader::next_offset must be at offset 8" );
+    // В Block<A> LinkedListNode идёт первым — prev_offset и next_offset с offset 0 и 4
+    static_assert( offsetof( Block, prev_offset ) == 0, "Block::prev_offset must be at offset 0" );
+    static_assert( offsetof( Block, next_offset ) == sizeof( std::uint32_t ),
+                   "Block::next_offset must be at offset 4" );
 
-    // Смещение LinkedListNode в BlockHeader (начало: +4, т.е. после size) == offsetof(BH, prev_offset)
-    static_assert( offsetof( Node, prev_offset ) == 0 ); // относительно начала Node
-    // Если разместить Node как второй член (после uint32_t size), то:
-    //   offsetof_in_BH(prev) = sizeof(uint32_t) + offsetof(Node, prev) = 4 + 0 = 4 ✓
-    //   offsetof_in_BH(next) = sizeof(uint32_t) + offsetof(Node, next) = 4 + 4 = 8 ✓
+    // Смещения внутри Node
+    static_assert( offsetof( Node, prev_offset ) == 0 );
+    static_assert( offsetof( Node, next_offset ) == sizeof( std::uint32_t ) );
 
     return true;
 }
@@ -247,59 +239,39 @@ static bool test_p2_tree_node_offsets()
     return true;
 }
 
-/// @brief Бинарная совместимость TreeNode<DefaultAddressTraits> с полями BlockHeader.
-/// Примечание: BlockHeader имеет иной порядок полей (size первый, потом prev/next).
-/// TreeNode не является прямой проекцией BlockHeader — совместимость только на уровне
-/// типов полей и итогового sizeof(Block) == sizeof(BlockHeader).
+/// @brief Layout TreeNode<DefaultAddressTraits> в составе Block<A> (Issue #112).
 static bool test_p2_tree_node_blockheader_compat()
 {
-    using A    = pmm::DefaultAddressTraits;
-    using Node = pmm::TreeNode<A>;
-    using BH   = pmm::detail::BlockHeader;
+    using A     = pmm::DefaultAddressTraits;
+    using Node  = pmm::TreeNode<A>;
+    using Block = pmm::Block<A>;
 
-    // Типы AVL-полей совпадают с BlockHeader
-    static_assert( std::is_same<decltype( Node::left_offset ), decltype( BH::left_offset )>::value );
-    static_assert( std::is_same<decltype( Node::right_offset ), decltype( BH::right_offset )>::value );
-    static_assert( std::is_same<decltype( Node::parent_offset ), decltype( BH::parent_offset )>::value );
-    static_assert( std::is_same<decltype( Node::avl_height ), decltype( BH::avl_height )>::value );
-    static_assert( std::is_same<decltype( Node::_pad ), decltype( BH::_pad )>::value );
+    // Типы AVL-полей (все uint32_t кроме avl_height=int16_t, _pad=uint16_t)
+    static_assert( std::is_same<decltype( Node::left_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Node::right_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Node::parent_offset ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Node::avl_height ), std::int16_t>::value );
+    static_assert( std::is_same<decltype( Node::_pad ), std::uint16_t>::value );
+    static_assert( std::is_same<decltype( Node::weight ), std::uint32_t>::value );
+    static_assert( std::is_same<decltype( Node::root_offset ), std::uint32_t>::value );
 
-    // Тип weight соответствует типу BlockHeader::size (оба uint32_t)
-    static_assert( std::is_same<decltype( Node::weight ), decltype( BH::size )>::value,
-                   "TreeNode::weight type must match BlockHeader::size type" );
-    // Тип root_offset совпадает с BlockHeader::root_offset
-    static_assert( std::is_same<decltype( Node::root_offset ), decltype( BH::root_offset )>::value,
-                   "TreeNode::root_offset type must match BlockHeader::root_offset type" );
-
-    // Смещения в BlockHeader:
-    //   left_offset@12, right_offset@16, parent_offset@20, avl_height@24, _pad@26, root_offset@28
-    // Смещения внутри TreeNode:
-    //   left_offset@0,  right_offset@4,  parent_offset@8,  avl_height@12, _pad@14, weight@16, root_offset@20
-    // Разница = 12 = sizeof(uint32_t size) + sizeof(LinkedListNode) = 4 + 8
-    static_assert( offsetof( BH, left_offset ) == sizeof( std::uint32_t ) + 2 * sizeof( std::uint32_t ),
-                   "BlockHeader::left_offset must be at offset 12" );
-    static_assert( offsetof( BH, right_offset ) == sizeof( std::uint32_t ) + 3 * sizeof( std::uint32_t ),
-                   "BlockHeader::right_offset must be at offset 16" );
-    static_assert( offsetof( BH, parent_offset ) == sizeof( std::uint32_t ) + 4 * sizeof( std::uint32_t ),
-                   "BlockHeader::parent_offset must be at offset 20" );
-    static_assert( offsetof( BH, avl_height ) == sizeof( std::uint32_t ) + 5 * sizeof( std::uint32_t ),
-                   "BlockHeader::avl_height must be at offset 24" );
-    // BlockHeader::root_offset is at offset 28 = 7 * sizeof(uint32_t)
-    static_assert( offsetof( BH, root_offset ) == 7 * sizeof( std::uint32_t ),
-                   "BlockHeader::root_offset must be at offset 28" );
-
-    // Если разместить TreeNode как третий компонент после (uint32_t size) и (LinkedListNode):
-    //   смещение = sizeof(uint32_t) + sizeof(LinkedListNode) = 4 + 8 = 12 ✓
-    constexpr std::size_t tree_node_base_in_bh = sizeof( std::uint32_t ) + sizeof( pmm::LinkedListNode<A> );
-    static_assert( tree_node_base_in_bh == 12 );
-    static_assert( tree_node_base_in_bh + offsetof( Node, left_offset ) == offsetof( BH, left_offset ),
-                   "left_offset position in Block must match BlockHeader" );
-    static_assert( tree_node_base_in_bh + offsetof( Node, right_offset ) == offsetof( BH, right_offset ),
-                   "right_offset position in Block must match BlockHeader" );
-    static_assert( tree_node_base_in_bh + offsetof( Node, parent_offset ) == offsetof( BH, parent_offset ),
-                   "parent_offset position in Block must match BlockHeader" );
-    static_assert( tree_node_base_in_bh + offsetof( Node, avl_height ) == offsetof( BH, avl_height ),
-                   "avl_height position in Block must match BlockHeader" );
+    // В Block<A> TreeNode следует после LinkedListNode (8 байт),
+    // поэтому смещения в Block = 8 + смещения в TreeNode:
+    //   left_offset@8,   right_offset@12, parent_offset@16,
+    //   avl_height@20,   weight@24,        root_offset@28
+    constexpr std::size_t tree_base = sizeof( pmm::LinkedListNode<A> ); // = 8
+    static_assert( tree_base == 8 );
+    static_assert( tree_base + offsetof( Node, left_offset ) == offsetof( Block, left_offset ),
+                   "left_offset position in Block" );
+    static_assert( tree_base + offsetof( Node, right_offset ) == offsetof( Block, right_offset ),
+                   "right_offset position in Block" );
+    static_assert( tree_base + offsetof( Node, parent_offset ) == offsetof( Block, parent_offset ),
+                   "parent_offset position in Block" );
+    static_assert( tree_base + offsetof( Node, avl_height ) == offsetof( Block, avl_height ),
+                   "avl_height position in Block" );
+    static_assert( tree_base + offsetof( Node, weight ) == offsetof( Block, weight ), "weight position in Block" );
+    static_assert( tree_base + offsetof( Node, root_offset ) == offsetof( Block, root_offset ),
+                   "root_offset position in Block" );
 
     return true;
 }
@@ -426,13 +398,13 @@ int main()
     PMM_RUN( "P2-A1: LinkedListNode<Default> types and size", test_p2_list_node_default_types );
     PMM_RUN( "P2-A2: LinkedListNode with various AddressTraits (8/16/32/64-bit)", test_p2_list_node_various_traits );
     PMM_RUN( "P2-A3: LinkedListNode<Default> field offsets", test_p2_list_node_offsets );
-    PMM_RUN( "P2-A4: LinkedListNode<Default> binary compat with BlockHeader", test_p2_list_node_blockheader_compat );
+    PMM_RUN( "P2-A4: LinkedListNode<Default> layout in Block<A> (Issue #112)", test_p2_list_node_blockheader_compat );
 
     std::cout << "\n--- P2-B: TreeNode ---\n";
     PMM_RUN( "P2-B1: TreeNode<Default> types and size (incl. weight+root_offset)", test_p2_tree_node_default_types );
     PMM_RUN( "P2-B2: TreeNode with various AddressTraits (8/16/32/64-bit)", test_p2_tree_node_various_traits );
     PMM_RUN( "P2-B3: TreeNode<Default> field offsets (incl. weight+root_offset)", test_p2_tree_node_offsets );
-    PMM_RUN( "P2-B4: TreeNode<Default> field types compat with BlockHeader", test_p2_tree_node_blockheader_compat );
+    PMM_RUN( "P2-B4: TreeNode<Default> layout in Block<A> (Issue #112)", test_p2_tree_node_blockheader_compat );
 
     std::cout << "\n--- P2-C: Runtime initialization ---\n";
     PMM_RUN( "P2-C1: LinkedListNode runtime sentinel init", test_p2_list_node_runtime_init );

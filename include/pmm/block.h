@@ -17,12 +17,12 @@
  *   [8..31]  TreeNode<A>:       left_offset (4), right_offset (4), parent_offset (4),
  *                                avl_height (2), _pad (2), weight (4), root_offset (4)
  *
- * Бинарная совместимость:
- *   sizeof(Block<DefaultAddressTraits>) == sizeof(BlockHeader) == 32 байта.
- *   Совместимость подтверждена через static_assert в persist_memory_types.h.
+ * Размер и выравнивание:
+ *   sizeof(Block<DefaultAddressTraits>) == 32 байта (2 гранулы по 16 байт).
+ *   Подтверждено через static_assert в types.h. Issue #112: Block<A> — единственный тип блока.
  *
  * @see plan_issue87.md §5 «Фаза 3: Block — блок как составной тип»
- * @version 0.2 (Issue #87 Phase 3 — weight+root_offset moved to TreeNode)
+ * @version 0.3 (Issue #112 — BlockHeader removed, Block<A> is sole block type)
  */
 
 #pragma once
@@ -52,7 +52,7 @@ namespace pmm
  *     weight, root_offset               — через TreeNode<A>
  *
  * При AddressTraitsT = DefaultAddressTraits (uint32_t, 16):
- *   sizeof(Block<DefaultAddressTraits>) == 32 == sizeof(BlockHeader)
+ *   sizeof(Block<DefaultAddressTraits>) == 32 байта
  */
 template <typename AddressTraitsT> struct Block : LinkedListNode<AddressTraitsT>, TreeNode<AddressTraitsT>
 {

@@ -1,22 +1,24 @@
 /**
  * @file test_issue87_phase3.cpp
- * @brief Тесты Phase 3: Block<AddressTraits> (Issue #87).
+ * @brief Тесты Phase 3: Block<AddressTraits> (Issue #87, #112).
  *
  * Проверяет:
  *  - Block<A> наследует LinkedListNode<A> и TreeNode<A>.
  *  - Поля weight и root_offset доступны через TreeNode<A> (не собственные поля Block).
- *  - sizeof(Block<DefaultAddressTraits>) == sizeof(BlockHeader) == 32 байта.
+ *  - sizeof(Block<DefaultAddressTraits>) == 32 байта.
  *  - Размеры Block для разных AddressTraits (8/16/32/64-bit).
  *  - Алиасы address_traits и index_type.
  *  - Инициализацию полей sentinel-значениями во время выполнения.
  *
+ * Issue #112: BlockHeader struct removed — Block<A> is the sole block type.
+ *
  * @see include/pmm/block.h
  * @see plan_issue87.md §5 «Фаза 3: Block — блок как составной тип»
- * @version 0.2 (Issue #87 Phase 3 — weight+root_offset moved to TreeNode)
+ * @version 0.3 (Issue #112 — BlockHeader removed)
  */
 
 #include "pmm/block.h"
-#include "pmm/types.h" // для BlockHeader, kNoBlock
+#include "pmm/types.h" // kNoBlock и другие константы
 
 #include <cassert>
 #include <cstddef>
@@ -96,18 +98,15 @@ static bool test_p3_block_treenode_field_types()
 
 // ─── P3-B: Block — размеры ────────────────────────────────────────────────────
 
-/// @brief sizeof(Block<DefaultAddressTraits>) == sizeof(BlockHeader) == 32 байта.
+/// @brief sizeof(Block<DefaultAddressTraits>) == 32 байта (Issue #112).
 static bool test_p3_block_default_size_equals_blockheader()
 {
     using A     = pmm::DefaultAddressTraits;
     using Block = pmm::Block<A>;
-    using BH    = pmm::detail::BlockHeader;
 
-    // Обе структуры должны быть по 32 байта
+    // Block<DefaultAddressTraits> must be exactly 32 bytes (Issue #112: BlockHeader removed)
     static_assert( sizeof( Block ) == 32, "Block<DefaultAddressTraits> must be 32 bytes" );
-    static_assert( sizeof( BH ) == 32, "BlockHeader must be 32 bytes" );
-    static_assert( sizeof( Block ) == sizeof( BH ),
-                   "Block<DefaultAddressTraits> and BlockHeader must have the same size" );
+    static_assert( sizeof( Block ) % pmm::kGranuleSize == 0, "Block<DefaultAddressTraits> must be granule-aligned" );
 
     return true;
 }
@@ -279,21 +278,18 @@ static bool test_p3_block_tiny_traits()
     return true;
 }
 
-// ─── P3-E: Block — совместимость типов с BlockHeader ─────────────────────────
+// ─── P3-E: Block — типы полей (Issue #112) ───────────────────────────────────
 
-/// @brief Тип weight/root_offset в Block<Default> совпадает с типами size/root_offset в BlockHeader.
-/// Phase 3 v0.2: Block::weight (через TreeNode) ↔ BlockHeader::size; оба uint32_t.
+/// @brief Типы полей Block<Default>: weight и root_offset равны uint32_t (Issue #112).
 static bool test_p3_block_weight_type_matches_blockheader()
 {
     using A     = pmm::DefaultAddressTraits;
     using Block = pmm::Block<A>;
-    using BH    = pmm::detail::BlockHeader;
 
-    // weight (через TreeNode<A>) имеет тот же тип, что BlockHeader::size
-    static_assert( std::is_same<decltype( Block::weight ), decltype( BH::size )>::value,
-                   "Block::weight type must match BlockHeader::size type" );
-    static_assert( std::is_same<decltype( Block::root_offset ), decltype( BH::root_offset )>::value,
-                   "Block::root_offset type must match BlockHeader::root_offset type" );
+    // weight и root_offset должны быть uint32_t (через TreeNode<A>)
+    static_assert( std::is_same<decltype( Block::weight ), std::uint32_t>::value, "Block::weight must be uint32_t" );
+    static_assert( std::is_same<decltype( Block::root_offset ), std::uint32_t>::value,
+                   "Block::root_offset must be uint32_t" );
 
     return true;
 }
@@ -312,8 +308,7 @@ int main()
     PMM_RUN( "P3-A2: Block<Default> TreeNode field types (weight, root_offset)", test_p3_block_treenode_field_types );
 
     std::cout << "\n--- P3-B: Block — sizes ---\n";
-    PMM_RUN( "P3-B1: Block<Default> size == BlockHeader size == 32 bytes",
-             test_p3_block_default_size_equals_blockheader );
+    PMM_RUN( "P3-B1: Block<Default> size == 32 bytes (Issue #112)", test_p3_block_default_size_equals_blockheader );
     PMM_RUN( "P3-B2: Block with various AddressTraits (8/16/32/64-bit)", test_p3_block_various_traits );
 
     std::cout << "\n--- P3-C: Block — base class fields accessible ---\n";
@@ -324,8 +319,8 @@ int main()
     PMM_RUN( "P3-D1: Block weight+root_offset (from TreeNode) runtime init", test_p3_block_treenode_fields_runtime );
     PMM_RUN( "P3-D2: Block<TinyAddressTraits> 8-bit weight+root_offset via TreeNode", test_p3_block_tiny_traits );
 
-    std::cout << "\n--- P3-E: Block — type compatibility with BlockHeader ---\n";
-    PMM_RUN( "P3-E1: Block::weight (TreeNode) and root_offset types match BlockHeader",
+    std::cout << "\n--- P3-E: Block — field types (Issue #112) ---\n";
+    PMM_RUN( "P3-E1: Block::weight and root_offset are uint32_t (Issue #112)",
              test_p3_block_weight_type_matches_blockheader );
 
     std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
