@@ -1,8 +1,8 @@
 /**
  * @file pmm/storage_backend.h
- * @brief StorageBackend — концепт бэкенда хранилища ПАП (Issue #87 Phase 5).
+ * @brief StorageBackend — концепт бэкенда хранилища ПАП (Issue #87 Phase 5, #129).
  *
- * Определяет C++17 SFINAE-концепт `StorageBackendConcept<Backend>`,
+ * Определяет C++20 концепт `StorageBackendConcept<Backend>`,
  * которому должны соответствовать все реализации бэкендов:
  *   - `StaticStorage<Size, AddressTraitsT>` — буфер на стеке/глобально (static_storage.h)
  *   - `HeapStorage<AddressTraitsT>`         — динамическая память через malloc (heap_storage.h)
@@ -15,11 +15,12 @@
  *   - `bool     owns_memory() const`— true, если бэкенд владеет памятью и освободит её
  *
  * @see plan_issue87.md §5 «Фаза 5: StorageBackend — три бэкенда»
- * @version 0.1 (Issue #87 Phase 5)
+ * @version 0.2 (Issue #129 — переход на C++20 концепты)
  */
 
 #pragma once
 
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
@@ -27,48 +28,8 @@
 namespace pmm
 {
 
-// ─── SFINAE-утилиты для проверки концепта ─────────────────────────────────────
-
-namespace detail
-{
-
-template <typename Backend, typename = void> struct has_base_ptr : std::false_type
-{
-};
-template <typename Backend>
-struct has_base_ptr<Backend, std::void_t<decltype( std::declval<Backend&>().base_ptr() )>> : std::true_type
-{
-};
-
-template <typename Backend, typename = void> struct has_total_size : std::false_type
-{
-};
-template <typename Backend>
-struct has_total_size<Backend, std::void_t<decltype( std::declval<const Backend&>().total_size() )>> : std::true_type
-{
-};
-
-template <typename Backend, typename = void> struct has_expand : std::false_type
-{
-};
-template <typename Backend>
-struct has_expand<Backend, std::void_t<decltype( std::declval<Backend&>().expand( std::declval<std::size_t>() ) )>>
-    : std::true_type
-{
-};
-
-template <typename Backend, typename = void> struct has_owns_memory : std::false_type
-{
-};
-template <typename Backend>
-struct has_owns_memory<Backend, std::void_t<decltype( std::declval<const Backend&>().owns_memory() )>> : std::true_type
-{
-};
-
-} // namespace detail
-
 /**
- * @brief Проверка, соответствует ли Backend концепту StorageBackend.
+ * @brief C++20 концепт: проверяет, соответствует ли Backend концепту StorageBackend.
  *
  * Требует наличия:
  *   - `base_ptr()   -> uint8_t*`
@@ -79,8 +40,18 @@ struct has_owns_memory<Backend, std::void_t<decltype( std::declval<const Backend
  * @tparam Backend  Тип, проверяемый на соответствие концепту.
  */
 template <typename Backend>
-inline constexpr bool is_storage_backend_v =
-    detail::has_base_ptr<Backend>::value && detail::has_total_size<Backend>::value &&
-    detail::has_expand<Backend>::value && detail::has_owns_memory<Backend>::value;
+concept StorageBackendConcept = requires( Backend& b, const Backend& cb, std::size_t n ) {
+    { b.base_ptr() } -> std::convertible_to<std::uint8_t*>;
+    { cb.total_size() } -> std::convertible_to<std::size_t>;
+    { b.expand( n ) } -> std::convertible_to<bool>;
+    { cb.owns_memory() } -> std::convertible_to<bool>;
+};
+
+/**
+ * @brief Вспомогательная переменная: true если Backend удовлетворяет StorageBackendConcept.
+ *
+ * @tparam Backend  Тип, проверяемый на соответствие концепту.
+ */
+template <typename Backend> inline constexpr bool is_storage_backend_v = StorageBackendConcept<Backend>;
 
 } // namespace pmm

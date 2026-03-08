@@ -7,7 +7,7 @@ Thank you for contributing! This guide covers the development workflow and quali
 ### Prerequisites
 
 - CMake 3.16+
-- C++17 compiler (GCC, Clang, or MSVC)
+- C++20 compiler (GCC 10+, Clang 10+, or MSVC 2019 16.3+)
 - clang-format (for code formatting)
 - cppcheck (for static analysis)
 - Python 3 + pip (for pre-commit hooks)
@@ -121,7 +121,7 @@ Docs-only changes (`docs/`, `*.md`, `.github/workflows/`) do not require a fragm
      -print0 | xargs -0 clang-format --dry-run --Werror
 
    # Static analysis
-   cppcheck --enable=warning,performance --std=c++17 --error-exitcode=1 \
+   cppcheck --enable=warning,performance --std=c++20 --error-exitcode=1 \
      --suppress=missingIncludeSystem -I include \
      $(find . -name '*.cpp' ! -path './third_party/*')
 
