@@ -37,7 +37,7 @@ namespace pmm
 {
 
 /**
- * @brief Узел AVL-дерева для адресного пространства ПАП.
+ * @brief Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.
  *
  * @tparam AddressTraitsT  Traits адресного пространства (из address_traits.h).
  *                         Определяет тип индексных полей.
@@ -62,6 +62,7 @@ template <typename AddressTraitsT> struct TreeNode
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
 
+protected:
     /// Гранульный индекс левого дочернего узла AVL-дерева (или no_block).
     index_type left_offset;
     /// Гранульный индекс правого дочернего узла AVL-дерева (или no_block).
