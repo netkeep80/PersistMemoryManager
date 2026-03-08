@@ -6,6 +6,11 @@
  * build a per-byte PixelKind array, then downsamples to pixels for display.
  *
  * A logarithmic (power-of-2) slider controls how many bytes each pixel covers.
+ *
+ * Issue #118: Pixel map rendered as a 2D texture — pixels wrap into multiple
+ * rows so that the map fills the available panel width automatically.
+ * The number of pixels per row equals floor(panel_width / pixel_size).
+ * Row count = ceil(total_pixels / pixels_per_row).
  */
 
 #include "mem_map_view.h"
@@ -119,16 +124,20 @@ void MemMapView::rebuild_pixel_map()
 
 void MemMapView::render_pixel_map( float map_width )
 {
-    if ( byte_kinds_.empty() || bytes_per_pixel_ == 0 )
+    if ( byte_kinds_.empty() || bytes_per_pixel_ == 0 || map_width < 1.0f )
         return;
 
     std::size_t num_pixels = ( total_bytes_ + bytes_per_pixel_ - 1 ) / bytes_per_pixel_;
     if ( num_pixels == 0 )
         return;
 
-    // Pixel width: fill available area, at least 1 px.
-    float px_w = std::max( 1.0f, map_width / static_cast<float>( num_pixels ) );
-    float px_h = 16.0f;
+    // Issue #118: 2D texture layout.
+    // Each pixel is a square of side px_size.  Pixels wrap into rows so the
+    // map fills the available width.  The number of columns = floor(width / px_size).
+    const float       px_size        = pixel_size_;
+    const std::size_t pixels_per_row = std::max<std::size_t>( 1, static_cast<std::size_t>( map_width / px_size ) );
+    const std::size_t num_rows       = ( num_pixels + pixels_per_row - 1 ) / pixels_per_row;
+    const float       map_height     = static_cast<float>( num_rows ) * px_size;
 
     // Highlighted byte range (from highlighted_block granule index).
     std::size_t hl_byte_start = ( highlighted_block != static_cast<std::size_t>( -1 ) )
@@ -158,14 +167,17 @@ void MemMapView::render_pixel_map( float map_width )
         bool hl =
             ( hl_byte_start != static_cast<std::size_t>( -1 ) && byte_start < hl_byte_end && byte_end > hl_byte_start );
 
-        ImU32  col  = ImGui::ColorConvertFloat4ToU32( pixel_colour( dominant, hl ) );
-        ImVec2 pmin = ImVec2( cursor.x + static_cast<float>( p ) * px_w, cursor.y );
-        ImVec2 pmax = ImVec2( pmin.x + px_w, cursor.y + px_h );
+        ImU32       col  = ImGui::ColorConvertFloat4ToU32( pixel_colour( dominant, hl ) );
+        std::size_t col_ = p % pixels_per_row;
+        std::size_t row_ = p / pixels_per_row;
+        ImVec2      pmin =
+            ImVec2( cursor.x + static_cast<float>( col_ ) * px_size, cursor.y + static_cast<float>( row_ ) * px_size );
+        ImVec2 pmax = ImVec2( pmin.x + px_size, pmin.y + px_size );
         dl->AddRectFilled( pmin, pmax, col );
     }
 
-    // Advance cursor past the drawn area.
-    ImGui::Dummy( ImVec2( map_width, px_h ) );
+    // Advance cursor past the drawn 2D area.
+    ImGui::Dummy( ImVec2( map_width, map_height ) );
 }
 
 // ─── Main render ──────────────────────────────────────────────────────────────
@@ -191,9 +203,15 @@ void MemMapView::render()
         ImGui::Text( "= %zu B", bytes_per_pixel_ );
     }
 
+    // ── Pixel size slider (Issue #118: 2D texture, square pixel side) ────────
+    {
+        ImGui::SetNextItemWidth( 200.0f );
+        ImGui::SliderFloat( "Pixel size (px)", &pixel_size_, 1.0f, 16.0f, "%.0f" );
+    }
+
     ImGui::Spacing();
 
-    // ── Pixel map ─────────────────────────────────────────────────────────────
+    // ── Pixel map (Issue #118: 2D texture wrapping into rows) ─────────────────
     float map_width = ImGui::GetContentRegionAvail().x;
     render_pixel_map( map_width );
 
