@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.7.1] - 2026-03-08
+
+### Fixed
+- Added debug-mode assertions (`assert`) in `FreeBlock::cast_from_raw` and `AllocatedBlock::cast_from_raw` to validate block state invariants at the reinterpret-cast boundaries. Violations are now detected early in debug builds (Issue #144).
+
+### Added
+- Added test suite `test_issue144_code_review` covering: debug-mode cast validation, `bytes_to_granules` overflow handling, `block state` consistency checks, `recover_block_state` transitional states, `for_each_block` read-only callback safety, `lock_block_permanent` immutability, and `reset_block_avl_fields` field clearing (Issue #144).
+
+
 ## [0.7.0] - 2026-03-08
 
 ### Changed
