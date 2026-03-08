@@ -107,6 +107,9 @@ pmm_add_test(test_issue108_static_model test_issue108_static_model.cpp)
 # ─── Тесты новых пресетов: EmbeddedHeap, IndustrialDBHeap (Issue #123) ────────
 pmm_add_test(test_issue123_presets test_issue123_presets.cpp)
 
+# ─── Тесты улучшений по code review (Issue #144) ─────────────────────────────
+pmm_add_test(test_issue144_code_review test_issue144_code_review.cpp)
+
 # ─── Тесты самодостаточности single-header файлов (Issue #123) ───────────────
 # Каждый single-header файл тестируется отдельным исполняемым файлом.
 # Это гарантирует автономность: каждый файл компилируется без include/pmm/*.
