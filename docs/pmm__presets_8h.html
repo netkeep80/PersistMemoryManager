@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>pmm_presets — готовые инстанции PersistMemoryManager (Issue #87 Phase 8, #110, #123).  
+<p>pmm_presets — готовые инстанции PersistMemoryManager (Issue #87 Phase 8, #110, #123, #146).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="manager__configs_8h_source.html">pmm/manager_configs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="persist__memory__manager_8h_source.html">pmm/persist_memory_manager.h</a>&quot;</code><br />
@@ -97,33 +97,42 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:a596fad76677cdf53371726c5cdbca2ab" id="r_a596fad76677cdf53371726c5cdbca2ab"><td class="memTemplParams" colspan="2">template&lt;std::size_t BufferSize = 4096&gt; </td></tr>
+<tr class="memitem:a596fad76677cdf53371726c5cdbca2ab"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#a596fad76677cdf53371726c5cdbca2ab">pmm::presets::EmbeddedStaticHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1EmbeddedStaticConfig.html">EmbeddedStaticConfig</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">BufferSize</a> &gt;, 0 &gt;</td></tr>
+<tr class="memdesc:a596fad76677cdf53371726c5cdbca2ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Embedded-менеджер с фиксированным статическим буфером (без heap).  <br /></td></tr>
+<tr class="separator:a596fad76677cdf53371726c5cdbca2ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58d3e34f4cdc3d13d532edc8c4de5732" id="r_a58d3e34f4cdc3d13d532edc8c4de5732"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#a58d3e34f4cdc3d13d532edc8c4de5732">pmm::presets::EmbeddedHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1EmbeddedManagerConfig.html">EmbeddedManagerConfig</a>, 0 &gt;</td></tr>
+<tr class="memdesc:a58d3e34f4cdc3d13d532edc8c4de5732"><td class="mdescLeft">&#160;</td><td class="mdescRight">Стандартный embedded-менеджер с динамической памятью.  <br /></td></tr>
+<tr class="separator:a58d3e34f4cdc3d13d532edc8c4de5732"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26c22130e79e20183d2df7c4bec45b00" id="r_a26c22130e79e20183d2df7c4bec45b00"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#a26c22130e79e20183d2df7c4bec45b00">pmm::presets::SingleThreadedHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1CacheManagerConfig.html">CacheManagerConfig</a>, 0 &gt;</td></tr>
 <tr class="memdesc:a26c22130e79e20183d2df7c4bec45b00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Стандартный однопоточный динамический менеджер.  <br /></td></tr>
 <tr class="separator:a26c22130e79e20183d2df7c4bec45b00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11b19ac031d0a909931c0daed9b24a69" id="r_a11b19ac031d0a909931c0daed9b24a69"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#a11b19ac031d0a909931c0daed9b24a69">pmm::presets::MultiThreadedHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1PersistentDataConfig.html">PersistentDataConfig</a>, 0 &gt;</td></tr>
 <tr class="memdesc:a11b19ac031d0a909931c0daed9b24a69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Стандартный многопоточный динамический менеджер.  <br /></td></tr>
 <tr class="separator:a11b19ac031d0a909931c0daed9b24a69"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58d3e34f4cdc3d13d532edc8c4de5732" id="r_a58d3e34f4cdc3d13d532edc8c4de5732"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#a58d3e34f4cdc3d13d532edc8c4de5732">pmm::presets::EmbeddedHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1EmbeddedManagerConfig.html">EmbeddedManagerConfig</a>, 0 &gt;</td></tr>
-<tr class="memdesc:a58d3e34f4cdc3d13d532edc8c4de5732"><td class="mdescLeft">&#160;</td><td class="mdescRight">Менеджер для встраиваемых систем с ограниченными ресурсами.  <br /></td></tr>
-<tr class="separator:a58d3e34f4cdc3d13d532edc8c4de5732"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f4c296632b9efb00c37c763a9977cc4" id="r_a7f4c296632b9efb00c37c763a9977cc4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#a7f4c296632b9efb00c37c763a9977cc4">pmm::presets::IndustrialDBHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1IndustrialDBConfig.html">IndustrialDBConfig</a>, 0 &gt;</td></tr>
 <tr class="memdesc:a7f4c296632b9efb00c37c763a9977cc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Менеджер для промышленных баз данных с высокой нагрузкой.  <br /></td></tr>
 <tr class="separator:a7f4c296632b9efb00c37c763a9977cc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>pmm_presets — готовые инстанции PersistMemoryManager (Issue #87 Phase 8, #110, #123). </p>
+<div class="textblock"><p>pmm_presets — готовые инстанции PersistMemoryManager (Issue #87 Phase 8, #110, #123, #146). </p>
 <p>Предоставляет набор готовых псевдонимов для наиболее распространённых конфигураций менеджера персистентной памяти:</p>
-<ul>
-<li><code>SingleThreadedHeap</code> — 32-bit, NoLock, HeapStorage (однопоточные приложения)</li>
-<li><code>MultiThreadedHeap</code> — 32-bit, SharedMutexLock, HeapStorage (многопоточные)</li>
-<li><code>EmbeddedHeap</code> — 32-bit, NoLock, HeapStorage, рост 50% (встраиваемые системы)</li>
-<li><code>IndustrialDBHeap</code> — 32-bit, SharedMutexLock, HeapStorage, рост 100% (промышленные БД)</li>
+<p>&mdash; Embedded (статические, однопоточные) &mdash;</p><ul>
+<li><code>EmbeddedStaticHeap&lt;N&gt;</code> — 32-bit, NoLock, StaticStorage&lt;N&gt; (без heap, фиксированный пул)</li>
+<li><code>EmbeddedHeap</code> — 32-bit, NoLock, HeapStorage, рост 50% (embedded с heap)</li>
+</ul>
+<p>&mdash; Desktop (динамические, однопоточные/многопоточные) &mdash;</p><ul>
+<li><code>SingleThreadedHeap</code> — 32-bit/16B, NoLock, HeapStorage, рост 25%</li>
+<li><code>MultiThreadedHeap</code> — 32-bit/16B, SharedMutexLock, HeapStorage, рост 25%</li>
+</ul>
+<p>&mdash; Industrial DB (высоконагруженные, многопоточные) &mdash;</p><ul>
+<li><code>IndustrialDBHeap</code> — 32-bit/16B, SharedMutexLock, HeapStorage, рост 100%</li>
 </ul>
 <p>Использует унифицированный <code>PersistMemoryManager&lt;ConfigT, InstanceId&gt;</code> (Issue #110).</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — унифицированный статический менеджер ПАП (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (Issue #110) </dd>
 <dd>
-<a class="el" href="manager__configs_8h.html" title="Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110).">manager_configs.h</a> — готовые конфигурации менеджеров </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.3 (Issue #123 — добавлены EmbeddedHeap и IndustrialDBHeap) </dd></dl>
+<a class="el" href="manager__configs_8h.html" title="Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146).">manager_configs.h</a> — готовые конфигурации менеджеров </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.4 (Issue #146 — новые архитектурные пресеты и правила: EmbeddedStaticHeap) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
 </div></div><!-- contents -->

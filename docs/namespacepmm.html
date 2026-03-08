@@ -114,13 +114,16 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BlockView.html">BlockView</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1CacheManagerConfig.html">CacheManagerConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация кеш-менеджера.  <a href="structpmm_1_1CacheManagerConfig.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация кеш-менеджера (однопоточный, heap, 16B гранула).  <a href="structpmm_1_1CacheManagerConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1CoalescingBlock.html">CoalescingBlock</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями.">CoalescingBlock</a> — блок в процессе слияния с соседями.  <a href="classpmm_1_1CoalescingBlock.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1EmbeddedManagerConfig.html">EmbeddedManagerConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация embedded-менеджера.  <a href="structpmm_1_1EmbeddedManagerConfig.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация embedded-менеджера с динамическим хранилищем.  <a href="structpmm_1_1EmbeddedManagerConfig.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1EmbeddedStaticConfig.html">EmbeddedStaticConfig</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация embedded-менеджера со статическим фиксированным буфером.  <a href="structpmm_1_1EmbeddedStaticConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1FreeBlock.html">FreeBlock</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> — свободный блок в корректном состоянии.  <a href="classpmm_1_1FreeBlock.html#details">More...</a><br /></td></tr>
@@ -138,7 +141,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Динамический бэкенд хранилища — malloc/free.  <a href="classpmm_1_1HeapStorage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1IndustrialDBConfig.html">IndustrialDBConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация промышленной базы данных.  <a href="structpmm_1_1IndustrialDBConfig.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация промышленной базы данных (многопоточный, heap, 16B гранула).  <a href="structpmm_1_1IndustrialDBConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1is__persist__memory__manager.html">is_persist_memory_manager</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, является ли T корректным типом менеджера персистентной памяти.  <a href="structpmm_1_1is__persist__memory__manager.html#details">More...</a><br /></td></tr>
@@ -151,7 +154,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Бэкенд хранилища через отображение файла в память.  <a href="classpmm_1_1MMapStorage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1PersistentDataConfig.html">PersistentDataConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация менеджера персистентных данных.  <a href="structpmm_1_1PersistentDataConfig.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация менеджера персистентных данных (многопоточный, heap, 16B гранула).  <a href="structpmm_1_1PersistentDataConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Унифицированный статический менеджер персистентной памяти (Issue #110).  <a href="classpmm_1_1PersistMemoryManager.html#details">More...</a><br /></td></tr>
@@ -254,6 +257,9 @@ Variables</h2></td></tr>
 <tr class="memitem:a7a70401630d11010442cb6026f2a5654"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a7a70401630d11010442cb6026f2a5654">is_persist_memory_manager_v</a> = PersistMemoryManagerConcept&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a>&gt;</td></tr>
 <tr class="memdesc:a7a70401630d11010442cb6026f2a5654"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная для <a class="el" href="structpmm_1_1is__persist__memory__manager.html" title="Проверить, является ли T корректным типом менеджера персистентной памяти.">is_persist_memory_manager</a>.  <br /></td></tr>
 <tr class="separator:a7a70401630d11010442cb6026f2a5654"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7ae412e928bca11f0e3687e2acf680d" id="r_ad7ae412e928bca11f0e3687e2acf680d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad7ae412e928bca11f0e3687e2acf680d">kMinGranuleSize</a> = 4</td></tr>
+<tr class="memdesc:ad7ae412e928bca11f0e3687e2acf680d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Минимальный допустимый размер гранулы (размер слова архитектуры = 4 байта).  <br /></td></tr>
+<tr class="separator:ad7ae412e928bca11f0e3687e2acf680d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a921bde594db4955b918196479bbbff7b" id="r_a921bde594db4955b918196479bbbff7b"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Backend</a> &gt; </td></tr>
 <tr class="memitem:a921bde594db4955b918196479bbbff7b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">is_storage_backend_v</a> = StorageBackendConcept&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Backend</a>&gt;</td></tr>
 <tr class="memdesc:a921bde594db4955b918196479bbbff7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная: true если Backend удовлетворяет StorageBackendConcept.  <br /></td></tr>
@@ -966,6 +972,32 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>"PMM_V098" (Issue #138: block layout changed — prev/next now after <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a> fields) </p>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00047">47</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="ad7ae412e928bca11f0e3687e2acf680d" name="ad7ae412e928bca11f0e3687e2acf680d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7ae412e928bca11f0e3687e2acf680d">&#9670;&#160;</a></span>kMinGranuleSize</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t pmm::kMinGranuleSize = 4</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Минимальный допустимый размер гранулы (размер слова архитектуры = 4 байта). </p>
+
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00082">82</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Конфигурация embedded-менеджера.  
+<p>Конфигурация embedded-менеджера с динамическим хранилищем.  
  <a href="structpmm_1_1EmbeddedManagerConfig.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>&gt;</code></p>
@@ -110,16 +110,20 @@ Static Public Attributes</h2></td></tr>
 <tr class="separator:a97a7ec5667e1efd081e99c3e1381b087"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Конфигурация embedded-менеджера. </p>
-<p>Оптимизирован для встраиваемых систем с ограниченными ресурсами:</p><ul>
+<div class="textblock"><p>Конфигурация embedded-менеджера с динамическим хранилищем. </p>
+<p>Оптимизирован для встраиваемых/ресурсоограниченных систем с heap:</p><ul>
 <li>Нет блокировок (NoLock) — минимальные накладные расходы</li>
 <li>16-байтная гранула (DefaultAddressTraits), поддержка до 64 ГБ</li>
 <li><a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> — динамическая память</li>
-<li>Консервативный коэффициент роста 3/2 (50%) для лучшего использования памяти</li>
+<li>Консервативный коэффициент роста 3/2 (50%) для экономии памяти</li>
 </ul>
-<p>Типичный сценарий: микроконтроллеры, RTOS, системы с ограниченной памятью. </p>
+<p>Статические проверки (Issue #146):</p><ul>
+<li>granule_size &gt;= kMinGranuleSize (16 &gt;= 4) ✓</li>
+<li>granule_size — степень двойки ✓</li>
+</ul>
+<p>Типичный сценарий: Linux embedded (RPi, etc.), системы с ограниченной памятью. </p>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00108">108</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00209">209</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="afa6a17b12e4f9acf6993f3aee7fd3dc8" name="afa6a17b12e4f9acf6993f3aee7fd3dc8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afa6a17b12e4f9acf6993f3aee7fd3dc8">&#9670;&#160;</a></span>address_traits</h2>
@@ -133,7 +137,7 @@ Static Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00110">110</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00216">216</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -149,7 +153,7 @@ Static Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00112">112</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00218">218</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -165,7 +169,7 @@ Static Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00113">113</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00219">219</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -181,7 +185,7 @@ Static Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00111">111</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00217">217</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -206,7 +210,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00114">114</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00220">220</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -230,7 +234,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00117">117</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00223">223</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -254,7 +258,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00116">116</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00222">222</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -278,7 +282,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00115">115</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00221">221</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
