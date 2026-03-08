@@ -110,12 +110,6 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a2dc666692bcc44f8d694f4ba5b24d75e" id="r_a2dc666692bcc44f8d694f4ba5b24d75e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html#a2dc666692bcc44f8d694f4ba5b24d75e">blk_at</a> (std::uint8_t *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">base</a>, std::uint32_t <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">idx</a>)</td></tr>
-<tr class="memdesc:a2dc666692bcc44f8d694f4ba5b24d75e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get raw pointer to block memory by granule index.  <br /></td></tr>
-<tr class="separator:a2dc666692bcc44f8d694f4ba5b24d75e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac4ab8dd516edcb784475bf224b087ad2" id="r_ac4ab8dd516edcb784475bf224b087ad2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html#ac4ab8dd516edcb784475bf224b087ad2">blk_at</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">base</a>, std::uint32_t <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">idx</a>)</td></tr>
-<tr class="memdesc:ac4ab8dd516edcb784475bf224b087ad2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get const raw pointer to block memory by granule index.  <br /></td></tr>
-<tr class="separator:ac4ab8dd516edcb784475bf224b087ad2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac8cecebea9f68619628bad6d617836e4" id="r_ac8cecebea9f68619628bad6d617836e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html#ac8cecebea9f68619628bad6d617836e4">insert</a> (std::uint8_t *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">base</a>, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">hdr</a>, std::uint32_t <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">blk_idx</a>)</td></tr>
 <tr class="memdesc:ac8cecebea9f68619628bad6d617836e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert block into AVL tree of free blocks.  <br /></td></tr>
 <tr class="separator:ac8cecebea9f68619628bad6d617836e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -270,90 +264,6 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ac4ab8dd516edcb784475bf224b087ad2" name="ac4ab8dd516edcb784475bf224b087ad2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4ab8dd516edcb784475bf224b087ad2">&#9670;&#160;</a></span>blk_at() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> * <a class="el" href="structpmm_1_1AvlFreeTree.html">pmm::AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::blk_at </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> std::uint8_t *&#160;</td>
-          <td class="paramname"><em>base</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::uint32_t&#160;</td>
-          <td class="paramname"><em>idx</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get const raw pointer to block memory by granule index. </p>
-
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00099">99</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
-
-</div>
-</div>
-<a id="a2dc666692bcc44f8d694f4ba5b24d75e" name="a2dc666692bcc44f8d694f4ba5b24d75e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2dc666692bcc44f8d694f4ba5b24d75e">&#9670;&#160;</a></span>blk_at() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> * <a class="el" href="structpmm_1_1AvlFreeTree.html">pmm::AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::blk_at </td>
-          <td>(</td>
-          <td class="paramtype">std::uint8_t *&#160;</td>
-          <td class="paramname"><em>base</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::uint32_t&#160;</td>
-          <td class="paramname"><em>idx</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get raw pointer to block memory by granule index. </p>
-
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00092">92</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
-
-</div>
-</div>
 <a id="a6404447c36b2cb4af2107f99aa7479de" name="a6404447c36b2cb4af2107f99aa7479de"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6404447c36b2cb4af2107f99aa7479de">&#9670;&#160;</a></span>find_best_fit()</h2>
 
@@ -398,7 +308,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Find smallest block &gt;= needed granules (best-fit, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">O(log n)</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00197">197</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00184">184</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -446,7 +356,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Insert block into AVL tree of free blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00106">106</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00092">92</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -522,7 +432,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Remove block from AVL tree of free blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00143">143</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00129">129</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>

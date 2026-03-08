@@ -4,5 +4,5 @@ var searchData=
   ['unlock_1',['unlock',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a470dbe885a5caf385edf7fc522334c4d',1,'pmm::config::NoLock::mutex_type']]],
   ['unlock_5fshared_2',['unlock_shared',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a0d61581a96dfc7a1813c370097cccbe3',1,'pmm::config::NoLock::mutex_type']]],
   ['used_5fsize_3',['used_size',['../classpmm_1_1PersistMemoryManager.html#aab84f55bad9ba4f24570e958cc2f9112',1,'pmm::PersistMemoryManager']]],
-  ['user_5fptr_4',['user_ptr',['../classpmm_1_1AllocatedBlock.html#a782a4e71731bf970050c1e21cda76d74',1,'pmm::AllocatedBlock::user_ptr() noexcept'],['../classpmm_1_1AllocatedBlock.html#a7853e5753a5338051ff092f5a58fac39',1,'pmm::AllocatedBlock::user_ptr() const noexcept'],['../namespacepmm_1_1detail.html#a2a9d6b9b418a1e5b38f85b9dc6c060d5',1,'pmm::detail::user_ptr()']]]
+  ['user_5fptr_4',['user_ptr',['../classpmm_1_1AllocatedBlock.html#a782a4e71731bf970050c1e21cda76d74',1,'pmm::AllocatedBlock::user_ptr() noexcept'],['../classpmm_1_1AllocatedBlock.html#a7853e5753a5338051ff092f5a58fac39',1,'pmm::AllocatedBlock::user_ptr() const noexcept'],['../namespacepmm_1_1detail.html#ab5bf2915d9e0505bc7c75450028865b0',1,'pmm::detail::user_ptr()']]]
 ];
