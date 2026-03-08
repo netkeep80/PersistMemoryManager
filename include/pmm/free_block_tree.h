@@ -1,11 +1,11 @@
 /**
  * @file pmm/free_block_tree.h
- * @brief FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95).
+ * @brief FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95, #129).
  *
- * Defines C++17 SFINAE concept for free block tree policy and provides
- * the standard implementation `AvlFreeTree<AddressTraits>`.
+ * Defines C++20 concept `FreeBlockTreePolicyConcept<Policy>` for free block tree policy
+ * and provides the standard implementation `AvlFreeTree<AddressTraits>`.
  *
- * The `FreeBlockTreePolicy<Policy>` concept requires three static methods:
+ * The `FreeBlockTreePolicyConcept<Policy>` concept requires three static methods:
  *   - `insert(base, hdr, blk_idx)`       — add block to tree
  *   - `remove(base, hdr, blk_idx)`       — remove block from tree
  *   - `find_best_fit(base, hdr, needed)` — find smallest suitable block
@@ -19,7 +19,7 @@
  *
  * @see plan_issue87.md "Phase 4: FreeBlockTree as template policy"
  * @see block_state.h — BlockState machine (Issue #93, #106)
- * @version 1.2 (Issue #112 — BlockHeader removed)
+ * @version 1.3 (Issue #129 — переход на C++20 концепты)
  */
 
 #pragma once
@@ -29,6 +29,7 @@
 #include "pmm/types.h"
 
 #include <cassert>
+#include <concepts>
 #include <cstdint>
 #include <limits>
 #include <type_traits>
@@ -36,61 +37,29 @@
 namespace pmm
 {
 
-// ─── Helper utilities for concept checking ────────────────────────────────────
-
-namespace detail
-{
-
-/// @brief SFINAE check for Policy::insert(uint8_t*, ManagerHeader*, uint32_t).
-template <typename Policy, typename = void> struct has_insert : std::false_type
-{
-};
-template <typename Policy>
-struct has_insert<Policy, std::void_t<decltype( Policy::insert( std::declval<std::uint8_t*>(),
-                                                                std::declval<pmm::detail::ManagerHeader*>(),
-                                                                std::declval<std::uint32_t>() ) )>> : std::true_type
-{
-};
-
-/// @brief SFINAE check for Policy::remove(uint8_t*, ManagerHeader*, uint32_t).
-template <typename Policy, typename = void> struct has_remove : std::false_type
-{
-};
-template <typename Policy>
-struct has_remove<Policy, std::void_t<decltype( Policy::remove( std::declval<std::uint8_t*>(),
-                                                                std::declval<pmm::detail::ManagerHeader*>(),
-                                                                std::declval<std::uint32_t>() ) )>> : std::true_type
-{
-};
-
-/// @brief SFINAE check for Policy::find_best_fit(uint8_t*, ManagerHeader*, uint32_t).
-template <typename Policy, typename = void> struct has_find_best_fit : std::false_type
-{
-};
-template <typename Policy>
-struct has_find_best_fit<Policy, std::void_t<decltype( Policy::find_best_fit(
-                                     std::declval<std::uint8_t*>(), std::declval<pmm::detail::ManagerHeader*>(),
-                                     std::declval<std::uint32_t>() ) )>> : std::true_type
-{
-};
-
-} // namespace detail
-
 /**
- * @brief Check if Policy is a valid free block tree policy.
+ * @brief C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков.
  *
- * Policy must provide three static methods:
+ * Policy должна предоставлять три статических метода:
  *   - `insert(uint8_t* base, ManagerHeader* hdr, uint32_t blk_idx)   -> void`
  *   - `remove(uint8_t* base, ManagerHeader* hdr, uint32_t blk_idx)   -> void`
  *   - `find_best_fit(uint8_t* base, ManagerHeader* hdr, uint32_t n)  -> uint32_t`
  *
- * Used as type-concept (C++17 variable template).
- *
- * @tparam Policy  Type to check for compliance.
+ * @tparam Policy  Тип, проверяемый на соответствие концепту.
  */
 template <typename Policy>
-inline constexpr bool is_free_block_tree_policy_v =
-    detail::has_insert<Policy>::value && detail::has_remove<Policy>::value && detail::has_find_best_fit<Policy>::value;
+concept FreeBlockTreePolicyConcept = requires( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t idx ) {
+    { Policy::insert( base, hdr, idx ) };
+    { Policy::remove( base, hdr, idx ) };
+    { Policy::find_best_fit( base, hdr, idx ) } -> std::convertible_to<std::uint32_t>;
+};
+
+/**
+ * @brief Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.
+ *
+ * @tparam Policy  Тип, проверяемый на соответствие концепту.
+ */
+template <typename Policy> inline constexpr bool is_free_block_tree_policy_v = FreeBlockTreePolicyConcept<Policy>;
 
 /**
  * @brief Standard AVL tree implementation for free block tree policy.

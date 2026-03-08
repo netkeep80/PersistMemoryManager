@@ -1,6 +1,6 @@
 /**
  * @file pmm/pptr.h
- * @brief pptr<T, ManagerT> — персистентный типизированный указатель (Issue #102).
+ * @brief pptr<T, ManagerT> — персистентный типизированный указатель (Issue #102, #129).
  *
  * pptr<T, ManagerT> хранит гранульный индекс вместо адреса,
  * что делает его адресно-независимым и пригодным для персистентных хранилищ:
@@ -28,7 +28,7 @@
  * @endcode
  *
  * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
- * @version 0.5 (Issue #110 — index_type из ManagerT::address_traits::index_type)
+ * @version 0.6 (Issue #129 — переход на C++20: requires вместо static_assert для void-guard)
  */
 
 #pragma once
@@ -47,14 +47,15 @@ namespace detail
 
 /// @brief Вспомогательный trait: извлекает index_type из менеджера через address_traits.
 /// Если ManagerT::address_traits::index_type существует, использует его;
-/// иначе пробует ManagerT::index_type; иначе — uint32_t (для совместимости).
-template <typename ManagerT, typename = void> struct manager_index_type
+/// иначе — uint32_t (для совместимости).
+template <typename ManagerT> struct manager_index_type
 {
     using type = std::uint32_t;
 };
 
 template <typename ManagerT>
-struct manager_index_type<ManagerT, std::void_t<typename ManagerT::address_traits::index_type>>
+    requires requires { typename ManagerT::address_traits::index_type; }
+struct manager_index_type<ManagerT>
 {
     using type = typename ManagerT::address_traits::index_type;
 };
@@ -77,11 +78,10 @@ struct manager_index_type<ManagerT, std::void_t<typename ManagerT::address_trait
  * Поддерживается статическая модель разыменования:
  *   - `p.resolve()`, `*p`, `p->field` — через статический метод менеджера
  */
-template <class T, class ManagerT> class pptr
+template <class T, class ManagerT>
+    requires( !std::is_void_v<ManagerT> )
+class pptr
 {
-    static_assert( !std::is_void<ManagerT>::value,
-                   "pptr<T, void> is no longer supported. Use pptr<T, ManagerT> with a concrete manager type. "
-                   "See pmm_presets.h for available presets." );
 
   public:
     /// @brief Тип данных, на который ссылается pptr.
