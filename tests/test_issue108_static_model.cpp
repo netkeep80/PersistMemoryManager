@@ -3,14 +3,15 @@
  * @brief Тесты статической модели менеджера персистентной памяти (Issue #108).
  *
  * Issue #108: рефакторинг от объектной модели к статической.
- *   - StaticMemoryManager<ConfigT, InstanceId> — все члены и методы статические
+ * Issue #112: StaticMemoryManager удалён, заменён на PersistMemoryManager.
+ *   - PersistMemoryManager<ConfigT, InstanceId> — все члены и методы статические
  *   - pptr<T, ManagerT>::resolve() — без аргументов (вызывает статический метод)
  *   - pptr<T, ManagerT>::operator* и operator-> — для удобного разыменования
  *   - pptr<T, ManagerT>::index_type — использует ManagerT::index_type если доступен
  *   - InstanceId — несколько независимых менеджеров одной конфигурации
  *
  * Тесты:
- *   P108-A: StaticMemoryManager — базовые операции
+ *   P108-A: PersistMemoryManager — базовые операции
  *     - create()/destroy() — статические методы
  *     - allocate_typed<T>() — статический метод, возвращает pptr<T>
  *     - deallocate_typed(p) — статический метод
@@ -29,19 +30,19 @@
  *     - destroy() сбрасывает состояние
  *     - Повторная инициализация работает корректно
  *
- *   P108-E: Совместимость — объектная модель не сломана
- *     - Существующий API AbstractPersistMemoryManager работает
- *     - pptr::resolve(mgr) для объектной модели работает
+ *   P108-E: Унифицированный API PersistMemoryManager (Issue #110)
+ *     - PersistMemoryManager статический API работает
+ *     - pptr::resolve() без аргументов
  *
- * @see include/pmm/static_memory_manager.h — StaticMemoryManager
+ * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
  * @see include/pmm/pptr.h — pptr (обновлённый)
- * @version 0.1 (Issue #108)
+ * @version 0.2 (Issue #112 — StaticMemoryManager replaced by PersistMemoryManager)
  */
 
 #include "pmm/manager_configs.h"
+#include "pmm/persist_memory_manager.h"
 #include "pmm/pmm_presets.h"
 #include "pmm/pptr.h"
-#include "pmm/static_memory_manager.h"
 
 #include <cassert>
 #include <cstddef>
@@ -80,7 +81,7 @@
 static bool test_p108_basic_lifecycle()
 {
     // Используем уникальный InstanceId=10 чтобы не конфликтовать с другими тестами
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 10>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 10>;
 
     PMM_TEST( !Mgr::is_initialized() );
 
@@ -114,7 +115,7 @@ static bool test_p108_basic_lifecycle()
 /// @brief Аллокация массива через StaticMemoryManager.
 static bool test_p108_array_allocation()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 11>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 11>;
 
     PMM_TEST( Mgr::create( 256 * 1024 ) );
 
@@ -144,7 +145,7 @@ static bool test_p108_array_allocation()
 /// @brief StaticMemoryManager — несколько аллокаций разных типов.
 static bool test_p108_multiple_types()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 12>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 12>;
 
     PMM_TEST( Mgr::create( 256 * 1024 ) );
 
@@ -175,7 +176,7 @@ static bool test_p108_multiple_types()
 /// @brief StaticMemoryManager — auto-expand при нехватке памяти.
 static bool test_p108_auto_expand()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 13>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 13>;
 
     PMM_TEST( Mgr::create( 8 * 1024 ) );
 
@@ -202,7 +203,7 @@ static bool test_p108_auto_expand()
 /// @brief pptr::resolve() — без аргументов (статическая модель).
 static bool test_p108_pptr_resolve_no_arg()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 20>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 20>;
 
     PMM_TEST( Mgr::create( 64 * 1024 ) );
 
@@ -225,7 +226,7 @@ static bool test_p108_pptr_resolve_no_arg()
 /// @brief pptr::operator* (статическая модель).
 static bool test_p108_pptr_operator_deref()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 21>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 21>;
 
     PMM_TEST( Mgr::create( 64 * 1024 ) );
 
@@ -254,7 +255,7 @@ static bool test_p108_pptr_operator_arrow()
         int y = 0;
     };
 
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 22>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 22>;
 
     PMM_TEST( Mgr::create( 64 * 1024 ) );
 
@@ -285,7 +286,7 @@ static bool test_p108_pptr_operator_arrow()
 /// @brief pptr::index_type — тип индекса из менеджера (Issue #108 comment).
 static bool test_p108_pptr_index_type()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 23>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 23>;
 
     // StaticMemoryManager предоставляет index_type = DefaultAddressTraits::index_type = uint32_t
     static_assert( std::is_same_v<Mgr::index_type, std::uint32_t>,
@@ -307,7 +308,7 @@ static bool test_p108_pptr_index_type()
 /// @brief pptr null-указатель в статической модели.
 static bool test_p108_pptr_null_static()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 24>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 24>;
 
     PMM_TEST( Mgr::create( 64 * 1024 ) );
 
@@ -329,7 +330,7 @@ static bool test_p108_pptr_null_static()
 /// @brief pptr — деаллокация null (статическая модель).
 static bool test_p108_pptr_deallocate_null_static()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 25>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 25>;
 
     PMM_TEST( Mgr::create( 64 * 1024 ) );
 
@@ -349,8 +350,8 @@ static bool test_p108_pptr_deallocate_null_static()
 /// @brief Менеджеры с разными InstanceId независимы.
 static bool test_p108_instance_independence()
 {
-    using Mgr0 = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 30>;
-    using Mgr1 = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 31>;
+    using Mgr0 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 30>;
+    using Mgr1 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 31>;
 
     // Разные типы менеджеров
     static_assert( !std::is_same_v<Mgr0, Mgr1>, "Different InstanceId must produce different manager types" );
@@ -400,9 +401,9 @@ static bool test_p108_instance_independence()
 /// @brief Три независимых менеджера одной конфигурации через InstanceId.
 static bool test_p108_three_instances()
 {
-    using A = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 40>;
-    using B = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 41>;
-    using C = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 42>;
+    using A = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 40>;
+    using B = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 41>;
+    using C = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 42>;
 
     PMM_TEST( A::create( 8 * 1024 ) );
     PMM_TEST( B::create( 16 * 1024 ) );
@@ -434,8 +435,8 @@ static bool test_p108_three_instances()
 /// @brief Менеджеры с разными конфигурациями также независимы.
 static bool test_p108_different_configs()
 {
-    using CacheMgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 50>;
-    using DataMgr  = pmm::StaticMemoryManager<pmm::PersistentDataConfig, 50>;
+    using CacheMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 50>;
+    using DataMgr  = pmm::PersistMemoryManager<pmm::PersistentDataConfig, 50>;
 
     // Разные конфигурации при одном InstanceId → разные типы
     static_assert( !std::is_same_v<CacheMgr, DataMgr>,
@@ -469,7 +470,7 @@ static bool test_p108_different_configs()
 /// @brief destroy() сбрасывает состояние, повторная инициализация работает.
 static bool test_p108_reinitialize_after_destroy()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 60>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 60>;
 
     // Первый цикл
     PMM_TEST( Mgr::create( 16 * 1024 ) );
@@ -502,7 +503,7 @@ static bool test_p108_reinitialize_after_destroy()
 /// @brief destroy() без предшествующего create() безопасно.
 static bool test_p108_destroy_uninitialized()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 61>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 61>;
 
     PMM_TEST( !Mgr::is_initialized() );
     Mgr::destroy(); // должно быть безопасно
@@ -514,7 +515,7 @@ static bool test_p108_destroy_uninitialized()
 /// @brief Статистика корректно отражает состояние.
 static bool test_p108_statistics()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 62>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 62>;
 
     PMM_TEST( Mgr::create( 64 * 1024 ) );
 
@@ -583,7 +584,7 @@ static bool test_p108_unified_index_type()
 /// @brief Сравнение pptr в статической модели.
 static bool test_p108_pptr_comparison_static()
 {
-    using Mgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig, 70>;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 70>;
 
     PMM_TEST( Mgr::create( 64 * 1024 ) );
 

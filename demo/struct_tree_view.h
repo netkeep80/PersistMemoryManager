@@ -40,9 +40,10 @@ class StructTreeView
     /**
      * @brief Rebuild the structural snapshot from live PMM state.
      *
-     * @param mgr Live PMM instance (not null).
+     * Reads statistics via DemoMgr:: static methods.
+     * Call only when g_pmm is true (manager active).
      */
-    void update_snapshot( DemoMgr* mgr );
+    void update_snapshot();
 
     /**
      * @brief Render the Struct Tree ImGui panel.

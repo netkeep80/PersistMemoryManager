@@ -2,9 +2,8 @@
  * @file mem_map_view.h
  * @brief MemMapView: visualises the PMM managed memory as a colour-coded bar.
  *
- * The new AbstractPersistMemoryManager API does not expose for_each_block() or
- * manager_header_size(). This panel renders a simple proportional bar showing
- * used vs. free memory and provides basic statistics.
+ * DemoMgr is a fully static class — update_snapshot() reads statistics via
+ * static DemoMgr:: methods directly (no instance pointer needed).
  *
  * A block can be highlighted by setting highlighted_block before calling render()
  * (retained for API compatibility; block-level colouring is not available).
@@ -22,8 +21,8 @@ namespace demo
 /**
  * @brief ImGui panel that renders a simple memory usage bar for the PMM region.
  *
- * Shows used/free/total sizes from the new API. Block-level pixel colouring
- * (for_each_block) is not available in the AbstractPersistMemoryManager API.
+ * Shows used/free/total sizes from the new static API. Block-level pixel
+ * colouring (for_each_block) is not available in the PersistMemoryManager API.
  */
 class MemMapView
 {
@@ -34,9 +33,10 @@ class MemMapView
     /**
      * @brief Rebuild the snapshot from live PMM state.
      *
-     * @param mgr Live PMM instance (not null).
+     * Reads statistics via DemoMgr:: static methods.
+     * Call only when g_pmm is true (manager active).
      */
-    void update_snapshot( DemoMgr* mgr );
+    void update_snapshot();
 
     /// Render the Memory Map ImGui panel (call without holding any lock).
     void render();

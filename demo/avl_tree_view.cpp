@@ -18,20 +18,12 @@ namespace demo
 
 // ─── Snapshot builder ─────────────────────────────────────────────────────────
 
-void AvlTreeView::update_snapshot( DemoMgr* mgr )
+void AvlTreeView::update_snapshot()
 {
-    free_block_count_ = 0;
-    total_size_       = 0;
-    used_size_        = 0;
-    free_size_        = 0;
-
-    if ( !mgr )
-        return;
-
-    free_block_count_ = mgr->free_block_count();
-    total_size_       = mgr->total_size();
-    used_size_        = mgr->used_size();
-    free_size_        = mgr->free_size();
+    free_block_count_ = DemoMgr::free_block_count();
+    total_size_       = DemoMgr::total_size();
+    used_size_        = DemoMgr::used_size();
+    free_size_        = DemoMgr::free_size();
 }
 
 // ─── Main render ──────────────────────────────────────────────────────────────

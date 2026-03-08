@@ -32,9 +32,10 @@ class AvlTreeView
     /**
      * @brief Rebuild the snapshot from live PMM state.
      *
-     * @param mgr Live PMM instance (not null).
+     * Reads statistics via DemoMgr:: static methods.
+     * Call only when g_pmm is true (manager active).
      */
-    void update_snapshot( DemoMgr* mgr );
+    void update_snapshot();
 
     /// Render the AVL Tree ImGui panel (call without holding any lock).
     void render();

@@ -1,9 +1,12 @@
 /**
  * @file test_scenario_coordinator.cpp
- * @brief Phase 10 unit tests for ScenarioCoordinator (migrated to new API, Issue #102).
+ * @brief Phase 10 unit tests for ScenarioCoordinator (migrated to static API, Issue #112).
  *
  * Verifies the pause/resume protocol that allows scenarios to safely
  * synchronise while other scenario threads are running.
+ *
+ * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
+ * g_pmm is a boolean flag: true when the manager is active.
  *
  * Tests:
  *  - test_pause_blocks_thread(): yield_if_paused() blocks until resume_others().
@@ -62,26 +65,21 @@
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
 static constexpr std::size_t kDefaultPmmSize = 16 * 1024 * 1024;
-static demo::DemoMgr*        g_test_mgr      = nullptr;
 
 static void pmm_setup( std::size_t size = kDefaultPmmSize )
 {
-    g_test_mgr = new demo::DemoMgr();
-    if ( !g_test_mgr->create( size ) )
+    if ( !demo::DemoMgr::create( size ) )
     {
-        delete g_test_mgr;
-        g_test_mgr = nullptr;
         std::cerr << "DemoMgr::create() failed\n";
         std::exit( 1 );
     }
-    demo::g_pmm.store( g_test_mgr );
+    demo::g_pmm.store( true );
 }
 
 static void pmm_teardown()
 {
-    demo::g_pmm.store( nullptr );
-    delete g_test_mgr;
-    g_test_mgr = nullptr;
+    demo::g_pmm.store( false );
+    demo::DemoMgr::destroy();
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -242,9 +240,8 @@ static bool test_persistence_cycle_safety()
         sm.join_all();
     }
 
-    auto* inst = demo::g_pmm.load();
-    PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->is_initialized() );
+    PMM_TEST( demo::g_pmm.load() );
+    PMM_TEST( demo::DemoMgr::is_initialized() );
 
     pmm_teardown();
     return true;

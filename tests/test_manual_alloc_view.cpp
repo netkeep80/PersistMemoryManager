@@ -1,6 +1,9 @@
 /**
  * @file test_manual_alloc_view.cpp
- * @brief Headless tests for ManualAllocView (migrated to new API, Issue #102).
+ * @brief Headless tests for ManualAllocView (migrated to static API, Issue #112).
+ *
+ * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
+ * g_pmm is a boolean flag: true when the manager is active.
  *
  * Tests:
  *  1. clear() on empty view must not crash.
@@ -49,18 +52,16 @@
 
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
-static demo::DemoMgr* make_pmm( std::size_t sz )
+static void make_pmm( std::size_t sz )
 {
-    auto* mgr = new demo::DemoMgr();
-    mgr->create( sz );
-    demo::g_pmm.store( mgr );
-    return mgr;
+    demo::DemoMgr::create( sz );
+    demo::g_pmm.store( true );
 }
 
-static void destroy_pmm( demo::DemoMgr* mgr )
+static void destroy_pmm()
 {
-    demo::g_pmm.store( nullptr );
-    delete mgr;
+    demo::g_pmm.store( false );
+    demo::DemoMgr::destroy();
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -81,21 +82,21 @@ static bool test_clear_empty_view()
  */
 static bool test_clear_frees_blocks()
 {
-    auto* mgr = make_pmm( 256 * 1024 );
-    PMM_TEST( mgr != nullptr );
+    make_pmm( 256 * 1024 );
+    PMM_TEST( demo::g_pmm.load() );
 
-    const std::size_t used_before = mgr->used_size();
+    const std::size_t used_before = demo::DemoMgr::used_size();
 
     // Allocate some blocks outside the view, verify PMM is valid after the scenario.
     std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
     for ( int i = 0; i < 5; ++i )
     {
-        demo::DemoMgr::pptr<std::uint8_t> p = mgr->allocate_typed<std::uint8_t>( 64 );
+        demo::DemoMgr::pptr<std::uint8_t> p = demo::DemoMgr::allocate_typed<std::uint8_t>( 64 );
         PMM_TEST( !p.is_null() );
         ptrs.push_back( p );
     }
 
-    PMM_TEST( mgr->used_size() > used_before );
+    PMM_TEST( demo::DemoMgr::used_size() > used_before );
 
     // Exercise clear() on an empty view (no blocks tracked by the view).
     {
@@ -106,10 +107,10 @@ static bool test_clear_frees_blocks()
     }
 
     for ( auto& p : ptrs )
-        mgr->deallocate_typed( p );
+        demo::DemoMgr::deallocate_typed( p );
 
-    PMM_TEST( mgr->is_initialized() );
-    destroy_pmm( mgr );
+    PMM_TEST( demo::DemoMgr::is_initialized() );
+    destroy_pmm();
     return true;
 }
 
@@ -118,8 +119,8 @@ static bool test_clear_frees_blocks()
  */
 static bool test_repeated_clear()
 {
-    auto* mgr = make_pmm( 128 * 1024 );
-    PMM_TEST( mgr != nullptr );
+    make_pmm( 128 * 1024 );
+    PMM_TEST( demo::g_pmm.load() );
 
     {
         demo::ManualAllocView view;
@@ -129,8 +130,8 @@ static bool test_repeated_clear()
         PMM_TEST( view.live_count() == 0 );
     }
 
-    PMM_TEST( mgr->is_initialized() );
-    destroy_pmm( mgr );
+    PMM_TEST( demo::DemoMgr::is_initialized() );
+    destroy_pmm();
     return true;
 }
 

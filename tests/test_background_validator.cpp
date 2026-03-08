@@ -1,6 +1,6 @@
 /**
  * @file test_background_validator.cpp
- * @brief Phase 12 tests: background integrity validation (migrated to new API, Issue #102).
+ * @brief Phase 12 tests: background integrity validation (migrated to static API, Issue #112).
  *
  * These headless tests verify that:
  *  - ValidationResult is initialised to State::Unknown.
@@ -9,6 +9,9 @@
  *  - MetricsView::validate_requested() returns false by default.
  *  - is_initialized() on a fresh and on a used PMM returns true.
  *  - The kValidateIntervalSec constant equals 5.
+ *
+ * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
+ * g_pmm is a boolean flag: true when the manager is active.
  *
  * All tests are headless — no window or OpenGL context is required.
  */
@@ -35,24 +38,21 @@ static void fail( const char* name, const char* reason )
     std::exit( 1 );
 }
 
-// Create a fresh DemoMgr and register it as the global.
-static demo::DemoMgr* make_pmm( std::size_t sz )
+// Create a fresh DemoMgr (static) and set the global flag.
+static void make_pmm( std::size_t sz )
 {
-    auto* mgr = new demo::DemoMgr();
-    if ( !mgr->create( sz ) )
+    if ( !demo::DemoMgr::create( sz ) )
     {
-        delete mgr;
         std::fprintf( stderr, "DemoMgr::create() failed\n" );
         std::exit( 1 );
     }
-    demo::g_pmm.store( mgr );
-    return mgr;
+    demo::g_pmm.store( true );
 }
 
-static void destroy_pmm( demo::DemoMgr* mgr )
+static void destroy_pmm()
 {
-    demo::g_pmm.store( nullptr );
-    delete mgr;
+    demo::g_pmm.store( false );
+    demo::DemoMgr::destroy();
 }
 
 // ─── test: ValidationResult default state ────────────────────────────────────
@@ -117,14 +117,14 @@ static void test_metrics_view_update_validation_failed()
 
 static void test_validate_fresh_pmm_returns_ok()
 {
-    const char*    name = "validate_fresh_pmm_returns_ok";
-    demo::DemoMgr* mgr  = make_pmm( 1 * 1024 * 1024 );
+    const char* name = "validate_fresh_pmm_returns_ok";
+    make_pmm( 1 * 1024 * 1024 );
 
-    bool ok = mgr->is_initialized();
+    bool ok = demo::DemoMgr::is_initialized();
     if ( !ok )
         fail( name, "is_initialized() returned false on a freshly created PMM" );
 
-    destroy_pmm( mgr );
+    destroy_pmm();
     pass( name );
 }
 
@@ -132,24 +132,24 @@ static void test_validate_fresh_pmm_returns_ok()
 
 static void test_validate_after_allocations()
 {
-    const char*    name = "validate_after_allocations";
-    demo::DemoMgr* mgr  = make_pmm( 1 * 1024 * 1024 );
+    const char* name = "validate_after_allocations";
+    make_pmm( 1 * 1024 * 1024 );
 
-    demo::DemoMgr::pptr<std::uint8_t> p1 = mgr->allocate_typed<std::uint8_t>( 256 );
-    demo::DemoMgr::pptr<std::uint8_t> p2 = mgr->allocate_typed<std::uint8_t>( 512 );
-    demo::DemoMgr::pptr<std::uint8_t> p3 = mgr->allocate_typed<std::uint8_t>( 1024 );
+    demo::DemoMgr::pptr<std::uint8_t> p1 = demo::DemoMgr::allocate_typed<std::uint8_t>( 256 );
+    demo::DemoMgr::pptr<std::uint8_t> p2 = demo::DemoMgr::allocate_typed<std::uint8_t>( 512 );
+    demo::DemoMgr::pptr<std::uint8_t> p3 = demo::DemoMgr::allocate_typed<std::uint8_t>( 1024 );
     if ( p1.is_null() || p2.is_null() || p3.is_null() )
         fail( name, "allocate() returned null unexpectedly" );
 
-    mgr->deallocate_typed( p2 ); // free middle block to exercise coalescing
+    demo::DemoMgr::deallocate_typed( p2 ); // free middle block to exercise coalescing
 
-    bool ok = mgr->is_initialized();
+    bool ok = demo::DemoMgr::is_initialized();
     if ( !ok )
         fail( name, "is_initialized() returned false after alloc/dealloc sequence" );
 
-    mgr->deallocate_typed( p1 );
-    mgr->deallocate_typed( p3 );
-    destroy_pmm( mgr );
+    demo::DemoMgr::deallocate_typed( p1 );
+    demo::DemoMgr::deallocate_typed( p3 );
+    destroy_pmm();
     pass( name );
 }
 
@@ -157,10 +157,10 @@ static void test_validate_after_allocations()
 
 static void test_validation_timestamp_is_recent()
 {
-    const char*    name = "validation_timestamp_is_recent";
-    demo::DemoMgr* mgr  = make_pmm( 512 * 1024 );
+    const char* name = "validation_timestamp_is_recent";
+    make_pmm( 512 * 1024 );
 
-    bool ok    = mgr->is_initialized();
+    bool ok    = demo::DemoMgr::is_initialized();
     auto after = std::chrono::steady_clock::now();
 
     demo::ValidationResult r;
@@ -172,7 +172,7 @@ static void test_validation_timestamp_is_recent()
     if ( age_ms > 1000 )
         fail( name, "timestamp is older than 1 second — clock mismatch" );
 
-    destroy_pmm( mgr );
+    destroy_pmm();
     pass( name );
 }
 

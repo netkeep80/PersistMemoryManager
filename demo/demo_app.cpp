@@ -2,10 +2,11 @@
  * @file demo_app.cpp
  * @brief Implementation of DemoApp.
  *
- * The PMM manager is a DemoMgr (MultiThreadedHeap) owned by this class as a
- * unique_ptr and exposed to scenario threads via demo::g_pmm.
+ * DemoMgr (MultiThreadedHeap) is a fully static class — all methods are static
+ * and no instance is created. The global flag demo::g_pmm tracks whether the
+ * manager is currently active.
  *
- * run_validate() uses mgr->is_initialized() instead of the removed validate().
+ * run_validate() uses DemoMgr::is_initialized() to check the manager state.
  *
  * Issue #65: AvlTreeView (AVL free-block tree visualisation) and ManualAllocView
  * (interactive step-by-step alloc/free) panels added.
@@ -38,11 +39,11 @@ DemoApp::DemoApp()
     : mem_map_view_( std::make_unique<MemMapView>() ), metrics_view_( std::make_unique<MetricsView>() ),
       struct_tree_view_( std::make_unique<StructTreeView>() ), scenario_manager_( std::make_unique<ScenarioManager>() ),
       avl_tree_view_( std::make_unique<AvlTreeView>() ), manual_alloc_view_( std::make_unique<ManualAllocView>() ),
-      pmm_manager_( std::make_unique<DemoMgr>() ), last_ops_sample_( std::chrono::steady_clock::now() )
+      last_ops_sample_( std::chrono::steady_clock::now() )
 {
     pmm_size_ = kPmmSizes[pmm_size_idx_];
-    pmm_manager_->create( pmm_size_ );
-    g_pmm.store( pmm_manager_.get() );
+    DemoMgr::create( pmm_size_ );
+    g_pmm.store( true );
 }
 
 DemoApp::~DemoApp()
@@ -53,9 +54,9 @@ DemoApp::~DemoApp()
     // Free manually-allocated blocks before destroying PMM.
     manual_alloc_view_->clear();
 
-    // Unregister global pointer before destroying the manager.
-    g_pmm.store( nullptr );
-    pmm_manager_.reset();
+    // Unregister global flag before destroying the manager.
+    g_pmm.store( false );
+    DemoMgr::destroy();
 }
 
 // ─── Render (called every frame) ─────────────────────────────────────────────
@@ -65,23 +66,23 @@ void DemoApp::render()
     render_dockspace();
     render_main_menu();
 
-    auto* mgr = g_pmm.load();
+    bool active = g_pmm.load();
 
     // ── Collect snapshots (PMM methods are individually thread-safe) ──────────
-    if ( mgr )
+    if ( active )
     {
-        mem_map_view_->update_snapshot( mgr );
-        struct_tree_view_->update_snapshot( mgr );
-        avl_tree_view_->update_snapshot( mgr );
+        mem_map_view_->update_snapshot();
+        struct_tree_view_->update_snapshot();
+        avl_tree_view_->update_snapshot();
 
         // Build MetricsSnapshot from new API
         MetricsSnapshot snap;
-        snap.total_size       = mgr->total_size();
-        snap.used_size        = mgr->used_size();
-        snap.free_size        = mgr->free_size();
-        snap.total_blocks     = mgr->block_count();
-        snap.allocated_blocks = mgr->alloc_block_count();
-        snap.free_blocks      = mgr->free_block_count();
+        snap.total_size       = DemoMgr::total_size();
+        snap.used_size        = DemoMgr::used_size();
+        snap.free_size        = DemoMgr::free_size();
+        snap.total_blocks     = DemoMgr::block_count();
+        snap.allocated_blocks = DemoMgr::alloc_block_count();
+        snap.free_blocks      = DemoMgr::free_block_count();
         // fragmentation, largest_free, smallest_free not available in new API
         snap.fragmentation = 0;
         snap.largest_free  = 0;
@@ -91,7 +92,7 @@ void DemoApp::render()
     } // snapshots collected
 
     // ── Phase 12: periodic is_initialized() check every kValidateIntervalSec seconds ────
-    if ( mgr )
+    if ( active )
     {
         auto now     = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>( now - last_validate_time_ ).count();
@@ -114,7 +115,7 @@ void DemoApp::render()
     manual_alloc_view_->render(); // Issue #65: manual alloc/free
 
     // ── Phase 12: handle "Validate now" button press ──────────────────────────
-    if ( metrics_view_->validate_requested() && mgr )
+    if ( metrics_view_->validate_requested() && active )
         run_validate();
 
     if ( show_help_ )
@@ -257,14 +258,13 @@ void DemoApp::apply_pmm_size()
     // Free manually-allocated blocks before destroying PMM.
     manual_alloc_view_->clear();
 
-    // Unregister the global pointer before replacing the manager.
-    g_pmm.store( nullptr );
-    pmm_manager_.reset();
+    // Unregister the global flag before replacing the manager.
+    g_pmm.store( false );
+    DemoMgr::destroy();
 
-    pmm_size_    = kPmmSizes[pmm_size_idx_];
-    pmm_manager_ = std::make_unique<DemoMgr>();
-    pmm_manager_->create( pmm_size_ );
-    g_pmm.store( pmm_manager_.get() );
+    pmm_size_ = kPmmSizes[pmm_size_idx_];
+    DemoMgr::create( pmm_size_ );
+    g_pmm.store( true );
 
     // Reset validate state so a fresh check runs on the new PMM instance.
     first_validate_  = true;
@@ -276,8 +276,7 @@ void DemoApp::apply_pmm_size()
 void DemoApp::run_validate()
 {
     last_validate_time_        = std::chrono::steady_clock::now();
-    auto* mgr                  = g_pmm.load();
-    bool  ok                   = ( mgr != nullptr ) && mgr->is_initialized();
+    bool ok                    = DemoMgr::is_initialized();
     last_validation_.state     = ok ? ValidationResult::State::Ok : ValidationResult::State::Failed;
     last_validation_.timestamp = last_validate_time_;
     metrics_view_->update_validation( last_validation_ );

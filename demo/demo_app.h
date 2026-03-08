@@ -2,12 +2,12 @@
  * @file demo_app.h
  * @brief DemoApp: top-level application class for the PMM visual demo.
  *
- * DemoApp owns all UI panels and the PMM memory manager. Each frame:
+ * DemoApp owns all UI panels and manages the PMM lifecycle. Each frame:
  *  1. Acquire snapshots from live PMM state.
  *  2. Render all ImGui panels.
  *
- * The manager is a DemoMgr (MultiThreadedHeap) whose raw pointer is exposed
- * globally via demo::g_pmm for access by scenario threads.
+ * DemoMgr (MultiThreadedHeap) is a fully static class — no instance is held.
+ * The global flag demo::g_pmm tracks whether the manager is currently active.
  *
  * Issue #65 addition: AvlTreeView and ManualAllocView panels.
  */
@@ -62,9 +62,8 @@ class DemoApp
     bool        show_settings_     = false;
     std::size_t highlighted_block_ = static_cast<std::size_t>( -1 );
 
-    // ── PMM manager ───────────────────────────────────────────────────────────
-    std::unique_ptr<DemoMgr> pmm_manager_;
-    std::size_t              pmm_size_ = 8 * 1024 * 1024; // 8 MiB default
+    // ── PMM manager (fully static — DemoMgr has no instances) ─────────────────
+    std::size_t pmm_size_ = 8 * 1024 * 1024; // 8 MiB default
 
     // ── ops/s measurement ─────────────────────────────────────────────────────
     std::atomic<uint64_t>                 ops_counter_{ 0 };

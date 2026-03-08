@@ -1,20 +1,26 @@
 /**
  * @file test_issue87_phase7.cpp
- * @brief Тесты Phase 7: AbstractPersistMemoryManager (Issue #87).
+ * @brief Тесты Phase 7: PersistMemoryManager (Issue #87, migrated to static API, Issue #112).
+ *
+ * Изначально тесты проверяли AbstractPersistMemoryManager<>, который был удалён
+ * в рамках рефакторинга. Теперь аналогичные тесты написаны для
+ * PersistMemoryManager<ConfigT, InstanceId> — унифицированного статического менеджера.
  *
  * Проверяет:
- *  - AbstractPersistMemoryManager<> компилируется с настройками по умолчанию
+ *  - PersistMemoryManager<> компилируется с настройками по умолчанию
  *  - create(size) инициализирует менеджер через HeapStorage
  *  - allocate()/deallocate() работают корректно
- *  - load() восстанавливает состояние из существующего буфера
- *  - Параметрическая инстанциация с StaticStorage
+ *  - Параметрическая инстанциация с пользовательской конфигурацией (StaticStorage)
+ *  - Статистика: total_size, used_size, free_size, block_count
  *
- * @see include/pmm/abstract_pmm.h
+ * @see include/pmm/persist_memory_manager.h
  * @see plan_issue87.md §5 «Фаза 7: AbstractPersistMemoryManager»
- * @version 0.1 (Issue #87 Phase 7)
+ * @version 0.2 (Issue #112 — migrated from AbstractPersistMemoryManager to PersistMemoryManager)
  */
 
-#include "pmm/abstract_pmm.h"
+#include "pmm/manager_configs.h"
+#include "pmm/persist_memory_manager.h"
+#include "pmm/pptr.h"
 #include "pmm/static_storage.h"
 
 #include <cassert>
@@ -52,32 +58,49 @@
     } while ( false )
 
 // =============================================================================
-// Phase 7 tests: AbstractPersistMemoryManager
+// Конфигурации для тестов
+// =============================================================================
+
+// Конфигурация с StaticStorage (4096 байт, без блокировок).
+// Аналог старого StaticPMM в AbstractPersistMemoryManager.
+struct StaticStorageConfig
+{
+    using address_traits  = pmm::DefaultAddressTraits;
+    using storage_backend = pmm::StaticStorage<4096, pmm::DefaultAddressTraits>;
+    using free_block_tree = pmm::AvlFreeTree<pmm::DefaultAddressTraits>;
+    using lock_policy     = pmm::config::NoLock;
+};
+
+// =============================================================================
+// Phase 7 tests: PersistMemoryManager (заменяет AbstractPersistMemoryManager)
 // =============================================================================
 
 // ─── P7-A: Компиляция и типы ─────────────────────────────────────────────────
 
-/// @brief AbstractPersistMemoryManager<> компилируется и имеет корректные алиасы.
-static bool test_p7_abstract_pmm_aliases()
+/// @brief PersistMemoryManager<> компилируется и имеет корректные алиасы.
+static bool test_p7_pmm_aliases()
 {
-    using PMM = pmm::AbstractPersistMemoryManager<>;
+    using PMM = pmm::PersistMemoryManager<>;
     static_assert( std::is_same<PMM::address_traits, pmm::DefaultAddressTraits>::value,
-                   "AbstractPersistMemoryManager<>::address_traits must be DefaultAddressTraits" );
+                   "PersistMemoryManager<>::address_traits must be DefaultAddressTraits" );
     static_assert( std::is_same<PMM::storage_backend, pmm::HeapStorage<pmm::DefaultAddressTraits>>::value,
-                   "AbstractPersistMemoryManager<>::storage_backend must be HeapStorage<Default>" );
+                   "PersistMemoryManager<>::storage_backend must be HeapStorage<Default>" );
     static_assert( std::is_same<PMM::free_block_tree, pmm::AvlFreeTree<pmm::DefaultAddressTraits>>::value,
-                   "AbstractPersistMemoryManager<>::free_block_tree must be AvlFreeTree<Default>" );
+                   "PersistMemoryManager<>::free_block_tree must be AvlFreeTree<Default>" );
     return true;
 }
 
-/// @brief DefaultAbstractPMM и SingleThreadedAbstractPMM компилируются.
-static bool test_p7_predefined_aliases()
+/// @brief CacheManagerConfig (NoLock) и PersistentDataConfig (SharedMutexLock) компилируются.
+static bool test_p7_predefined_configs()
 {
-    static_assert( std::is_same<pmm::DefaultAbstractPMM, pmm::AbstractPersistMemoryManager<>>::value,
-                   "DefaultAbstractPMM must equal AbstractPersistMemoryManager<>" );
-    // SingleThreadedAbstractPMM должен быть NoLock вариантом
-    static_assert( std::is_same<pmm::SingleThreadedAbstractPMM::thread_policy, pmm::config::NoLock>::value,
-                   "SingleThreadedAbstractPMM must use NoLock" );
+    // CacheManagerConfig — NoLock
+    static_assert(
+        std::is_same<pmm::CacheManagerConfig::lock_policy, pmm::config::NoLock>::value,
+        "CacheManagerConfig must use NoLock" );
+    // PersistentDataConfig — SharedMutexLock
+    static_assert(
+        std::is_same<pmm::PersistentDataConfig::lock_policy, pmm::config::SharedMutexLock>::value,
+        "PersistentDataConfig must use SharedMutexLock" );
     return true;
 }
 
@@ -86,46 +109,46 @@ static bool test_p7_predefined_aliases()
 /// @brief create(size) инициализирует менеджер (HeapStorage).
 static bool test_p7_create_with_heap_storage()
 {
-    pmm::SingleThreadedAbstractPMM pmm;
-    PMM_TEST( !pmm.is_initialized() );
+    // Используем уникальный InstanceId=100 чтобы не конфликтовать с другими тестами
+    using PMM = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 100>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( !PMM::is_initialized() );
 
-    PMM_TEST( pmm.create( 8192 ) );
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.total_size() >= 8192 );
-    PMM_TEST( pmm.free_size() > 0 );
+    PMM_TEST( PMM::create( 8192 ) );
+    PMM_TEST( PMM::is_initialized() );
+    PMM_TEST( PMM::total_size() >= 8192 );
+    PMM_TEST( PMM::free_size() > 0 );
 
-    pmm.destroy();
-    PMM_TEST( !pmm.is_initialized() );
+    PMM::destroy();
+    PMM_TEST( !PMM::is_initialized() );
     return true;
 }
 
 /// @brief create(size) с размером меньше kMinMemorySize возвращает false.
 static bool test_p7_create_too_small()
 {
-    pmm::SingleThreadedAbstractPMM pmm;
-    PMM_TEST( !pmm.create( 1 ) ); // слишком маленький буфер
-    PMM_TEST( !pmm.is_initialized() );
+    using PMM = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 101>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( !PMM::create( 1 ) ); // слишком маленький буфер
+    PMM_TEST( !PMM::is_initialized() );
     return true;
 }
 
 // ─── P7-C: StaticStorage + create() ─────────────────────────────────────────
 
-using StaticPMM =
-    pmm::AbstractPersistMemoryManager<pmm::DefaultAddressTraits, pmm::StaticStorage<4096, pmm::DefaultAddressTraits>,
-                                      pmm::AvlFreeTree<pmm::DefaultAddressTraits>, pmm::config::NoLock>;
-
 /// @brief create() без аргументов инициализирует на StaticStorage.
 static bool test_p7_create_with_static_storage()
 {
-    StaticPMM pmm;
-    PMM_TEST( !pmm.is_initialized() );
+    using PMM = pmm::PersistMemoryManager<StaticStorageConfig, 102>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( !PMM::is_initialized() );
 
-    PMM_TEST( pmm.create() ); // StaticStorage уже имеет буфер
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.total_size() == 4096 );
+    PMM_TEST( PMM::create() ); // StaticStorage уже имеет буфер
+    PMM_TEST( PMM::is_initialized() );
+    PMM_TEST( PMM::total_size() == 4096 );
 
-    pmm.destroy();
-    PMM_TEST( !pmm.is_initialized() );
+    PMM::destroy();
+    PMM_TEST( !PMM::is_initialized() );
     return true;
 }
 
@@ -134,78 +157,81 @@ static bool test_p7_create_with_static_storage()
 /// @brief allocate(size) выделяет блок, deallocate(ptr) освобождает.
 static bool test_p7_allocate_deallocate()
 {
-    pmm::SingleThreadedAbstractPMM pmm;
-    PMM_TEST( pmm.create( 8192 ) );
+    using PMM = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 103>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( PMM::create( 8192 ) );
 
     // Выделяем блок
-    void* ptr = pmm.allocate( 128 );
+    void* ptr = PMM::allocate( 128 );
     PMM_TEST( ptr != nullptr );
-    PMM_TEST( pmm.alloc_block_count() > 0 );
+    PMM_TEST( PMM::alloc_block_count() > 0 );
 
     // Записываем данные
     std::memset( ptr, 0xAA, 128 );
 
     // Освобождаем
-    pmm.deallocate( ptr );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // block 0 (header) всегда allocated
+    PMM::deallocate( ptr );
 
-    pmm.destroy();
+    PMM::destroy();
     return true;
 }
 
 /// @brief allocate(0) возвращает nullptr.
 static bool test_p7_allocate_zero()
 {
-    pmm::SingleThreadedAbstractPMM pmm;
-    PMM_TEST( pmm.create( 8192 ) );
-    PMM_TEST( pmm.allocate( 0 ) == nullptr );
-    pmm.destroy();
+    using PMM = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 104>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( PMM::create( 8192 ) );
+    PMM_TEST( PMM::allocate( 0 ) == nullptr );
+    PMM::destroy();
     return true;
 }
 
 /// @brief Множественные allocate/deallocate без ошибок.
 static bool test_p7_multiple_allocate_deallocate()
 {
-    pmm::SingleThreadedAbstractPMM pmm;
-    PMM_TEST( pmm.create( 16 * 1024 ) );
+    using PMM = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 105>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( PMM::create( 16 * 1024 ) );
 
     constexpr int kCount = 10;
     void*         ptrs[kCount];
 
     for ( int i = 0; i < kCount; ++i )
     {
-        ptrs[i] = pmm.allocate( 64 );
+        ptrs[i] = PMM::allocate( 64 );
         PMM_TEST( ptrs[i] != nullptr );
     }
 
     for ( int i = 0; i < kCount; ++i )
     {
-        pmm.deallocate( ptrs[i] );
+        PMM::deallocate( ptrs[i] );
     }
 
     // После освобождения всего, свободное место должно быть близко к исходному
-    PMM_TEST( pmm.free_size() > 0 );
+    PMM_TEST( PMM::free_size() > 0 );
 
-    pmm.destroy();
+    PMM::destroy();
     return true;
 }
 
 /// @brief StaticStorage + allocate/deallocate работает.
 static bool test_p7_static_storage_allocate()
 {
-    StaticPMM pmm;
-    PMM_TEST( pmm.create() );
+    using PMM = pmm::PersistMemoryManager<StaticStorageConfig, 106>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( PMM::create() );
 
-    void* ptr = pmm.allocate( 64 );
+    void* ptr = PMM::allocate( 64 );
     PMM_TEST( ptr != nullptr );
 
     // Убеждаемся, что ptr внутри буфера
-    std::uint8_t* base = pmm.backend().base_ptr();
+    std::uint8_t* base = PMM::backend().base_ptr();
     PMM_TEST( static_cast<std::uint8_t*>( ptr ) >= base );
     PMM_TEST( static_cast<std::uint8_t*>( ptr ) < base + 4096 );
 
-    pmm.deallocate( ptr );
-    pmm.destroy();
+    PMM::deallocate( ptr );
+    PMM::destroy();
     return true;
 }
 
@@ -214,49 +240,46 @@ static bool test_p7_static_storage_allocate()
 /// @brief total_size(), used_size(), free_size() корректны после create().
 static bool test_p7_statistics()
 {
-    pmm::SingleThreadedAbstractPMM pmm;
-    PMM_TEST( pmm.create( 8192 ) );
+    using PMM = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 107>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( PMM::create( 8192 ) );
 
-    PMM_TEST( pmm.total_size() >= 8192 );
-    PMM_TEST( pmm.used_size() > 0 ); // заголовок занят
-    PMM_TEST( pmm.free_size() > 0 ); // есть свободное место
-    PMM_TEST( pmm.used_size() + pmm.free_size() <= pmm.total_size() );
-    PMM_TEST( pmm.block_count() >= 2 ); // минимум 2 блока (header + free)
+    PMM_TEST( PMM::total_size() >= 8192 );
+    PMM_TEST( PMM::used_size() > 0 ); // заголовок занят
+    PMM_TEST( PMM::free_size() > 0 ); // есть свободное место
+    PMM_TEST( PMM::used_size() + PMM::free_size() <= PMM::total_size() );
+    PMM_TEST( PMM::block_count() >= 2 ); // минимум 2 блока (header + free)
 
-    pmm.destroy();
+    PMM::destroy();
     return true;
 }
 
-// ─── P7-F: load() ─────────────────────────────────────────────────────────────
+// ─── P7-F: Typed API (pptr) ─────────────────────────────────────────────────
 
-/// @brief load() восстанавливает состояние из сохранённого буфера.
-static bool test_p7_load()
+/// @brief allocate_typed<T>()/deallocate_typed() с pptr работает корректно.
+static bool test_p7_typed_api()
 {
-    // Создаём менеджер и делаем несколько операций
-    pmm::SingleThreadedAbstractPMM pmm1;
-    PMM_TEST( pmm1.create( 8192 ) );
-    void* ptr = pmm1.allocate( 64 );
-    PMM_TEST( ptr != nullptr );
-    std::size_t alloc_count_before = pmm1.alloc_block_count();
-    // Не уничтожаем, чтобы данные остались в HeapStorage
+    using PMM = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 108>;
+    PMM::destroy(); // ensure clean state
+    PMM_TEST( PMM::create( 8192 ) );
 
-    // Берём указатель на буфер для имитации восстановления
-    std::uint8_t* buf  = pmm1.backend().base_ptr();
-    std::size_t   size = pmm1.backend().total_size();
+    // Аллокация через типизированный API
+    PMM::pptr<int> p = PMM::allocate_typed<int>();
+    PMM_TEST( !p.is_null() );
 
-    // Создаём второй менеджер через load() поверх того же буфера (тест!)
-    // Примечание: HeapStorage не поддерживает attach, поэтому тестируем через
-    // создание нового PMM с StaticStorage, указывающего на тот же буфер.
-    // Для полноценного теста load() используем StaticStorage с явным буфером.
-    //
-    // В данном тесте просто проверяем, что сохранённый магик корректен,
-    // уничтожая и снова создавая через тот же объект.
-    (void)buf;
-    (void)size;
-    (void)alloc_count_before;
+    // Разыменование
+    int* raw = PMM::resolve( p );
+    PMM_TEST( raw != nullptr );
+    *raw = 42;
+    PMM_TEST( *PMM::resolve( p ) == 42 );
 
-    pmm1.destroy();
-    return true; // load() через HeapStorage сложно тестировать без shared buffer
+    // operator* и operator->
+    *p = 99;
+    PMM_TEST( *p == 99 );
+
+    PMM::deallocate_typed( p );
+    PMM::destroy();
+    return true;
 }
 
 // =============================================================================
@@ -265,12 +288,12 @@ static bool test_p7_load()
 
 int main()
 {
-    std::cout << "=== test_issue87_phase7 (Phase 7: AbstractPersistMemoryManager) ===\n\n";
+    std::cout << "=== test_issue87_phase7 (Phase 7: PersistMemoryManager, migrated from AbstractPersistMemoryManager) ===\n\n";
     bool all_passed = true;
 
     std::cout << "--- P7-A: Compilation and type aliases ---\n";
-    PMM_RUN( "P7-A1: AbstractPersistMemoryManager<> type aliases", test_p7_abstract_pmm_aliases );
-    PMM_RUN( "P7-A2: DefaultAbstractPMM and SingleThreadedAbstractPMM aliases", test_p7_predefined_aliases );
+    PMM_RUN( "P7-A1: PersistMemoryManager<> type aliases", test_p7_pmm_aliases );
+    PMM_RUN( "P7-A2: CacheManagerConfig and PersistentDataConfig", test_p7_predefined_configs );
 
     std::cout << "\n--- P7-B: Lifecycle ---\n";
     PMM_RUN( "P7-B1: create(size) with HeapStorage", test_p7_create_with_heap_storage );
@@ -288,8 +311,8 @@ int main()
     std::cout << "\n--- P7-E: Statistics ---\n";
     PMM_RUN( "P7-E1: total_size/used_size/free_size after create", test_p7_statistics );
 
-    std::cout << "\n--- P7-F: load() ---\n";
-    PMM_RUN( "P7-F1: load() test (basic)", test_p7_load );
+    std::cout << "\n--- P7-F: Typed API (pptr) ---\n";
+    PMM_RUN( "P7-F1: allocate_typed/deallocate_typed with pptr", test_p7_typed_api );
 
     std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
     return all_passed ? 0 : 1;

@@ -2,9 +2,8 @@
  * @file mem_map_view.cpp
  * @brief Implementation of MemMapView: PMM memory usage bar widget.
  *
- * The AbstractPersistMemoryManager API does not expose for_each_block() or
- * manager_header_size(), so this panel renders a simple proportional bar
- * based on total_size/used_size/free_size.
+ * DemoMgr is a fully static class. Statistics are read via static DemoMgr::
+ * methods directly — no instance pointer is needed.
  */
 
 #include "mem_map_view.h"
@@ -18,14 +17,11 @@ namespace demo
 
 // ─── Snapshot builder ─────────────────────────────────────────────────────────
 
-void MemMapView::update_snapshot( DemoMgr* mgr )
+void MemMapView::update_snapshot()
 {
-    if ( !mgr )
-        return;
-
-    total_bytes_ = mgr->total_size();
-    used_bytes_  = mgr->used_size();
-    free_bytes_  = mgr->free_size();
+    total_bytes_ = DemoMgr::total_size();
+    used_bytes_  = DemoMgr::used_size();
+    free_bytes_  = DemoMgr::free_size();
 }
 
 // ─── Main render ──────────────────────────────────────────────────────────────

@@ -1,12 +1,15 @@
 /**
  * @file test_demo_headless.cpp
- * @brief Phase 8 headless smoke test for PMM demo scenarios (migrated to new API, Issue #102).
+ * @brief Phase 8 headless smoke test for PMM demo scenarios (migrated to static API, Issue #112).
  *
  * Tests the core scenario logic without a graphical window:
- *  - Creates a DemoMgr instance and a ScenarioManager.
+ *  - Creates a DemoMgr static manager and a ScenarioManager.
  *  - Starts all 8 scenarios for 2 seconds.
  *  - Verifies: no crash/segfault, is_initialized() == true, total ops > 0.
  *  - Verifies: all threads finish cleanly within 5 seconds.
+ *
+ * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
+ * g_pmm is a boolean flag: true when the manager is active.
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
  */
@@ -50,18 +53,16 @@
 
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
-static demo::DemoMgr* make_pmm( std::size_t sz )
+static void make_pmm( std::size_t sz )
 {
-    auto* mgr = new demo::DemoMgr();
-    mgr->create( sz );
-    demo::g_pmm.store( mgr );
-    return mgr;
+    demo::DemoMgr::create( sz );
+    demo::g_pmm.store( true );
 }
 
-static void destroy_pmm( demo::DemoMgr* mgr )
+static void destroy_pmm()
 {
-    demo::g_pmm.store( nullptr );
-    delete mgr;
+    demo::g_pmm.store( false );
+    demo::DemoMgr::destroy();
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -70,14 +71,14 @@ static void destroy_pmm( demo::DemoMgr* mgr )
  * @brief Start 6 concurrent scenarios for 2 s, then stop and join.
  *
  * Scenario 6 (PersistenceCycle) and 7 (ReallocateTyped) are included since
- * they now use the global g_pmm rather than singleton destroy/create.
+ * they use the global g_pmm flag rather than singleton destroy/create.
  */
 static bool test_all_scenarios_run()
 {
     constexpr std::size_t kPmmSize = 16 * 1024 * 1024; // 16 MiB
-    auto*                 mgr      = make_pmm( kPmmSize );
-    PMM_TEST( mgr != nullptr );
-    PMM_TEST( mgr->is_initialized() );
+    make_pmm( kPmmSize );
+    PMM_TEST( demo::g_pmm.load() );
+    PMM_TEST( demo::DemoMgr::is_initialized() );
 
     {
         demo::ScenarioManager sm;
@@ -95,12 +96,11 @@ static bool test_all_scenarios_run()
         PMM_TEST( std::chrono::steady_clock::now() < deadline );
     }
 
-    auto* inst = demo::g_pmm.load();
-    PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->is_initialized() );
+    PMM_TEST( demo::g_pmm.load() );
+    PMM_TEST( demo::DemoMgr::is_initialized() );
 
-    destroy_pmm( mgr );
-    PMM_TEST( demo::g_pmm.load() == nullptr );
+    destroy_pmm();
+    PMM_TEST( !demo::g_pmm.load() );
     return true;
 }
 
@@ -110,8 +110,8 @@ static bool test_all_scenarios_run()
 static bool test_ops_counter_increments()
 {
     constexpr std::size_t kPmmSize = 8 * 1024 * 1024; // 8 MiB
-    auto*                 mgr      = make_pmm( kPmmSize );
-    PMM_TEST( mgr != nullptr );
+    make_pmm( kPmmSize );
+    PMM_TEST( demo::g_pmm.load() );
 
     uint64_t ops_before = 0;
     uint64_t ops_after  = 0;
@@ -141,11 +141,10 @@ static bool test_ops_counter_increments()
 
     PMM_TEST( ops_after > ops_before );
 
-    auto* inst = demo::g_pmm.load();
-    PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->is_initialized() );
+    PMM_TEST( demo::g_pmm.load() );
+    PMM_TEST( demo::DemoMgr::is_initialized() );
 
-    destroy_pmm( mgr );
+    destroy_pmm();
     return true;
 }
 
@@ -155,8 +154,8 @@ static bool test_ops_counter_increments()
 static bool test_stop_all_fast()
 {
     constexpr std::size_t kPmmSize = 8 * 1024 * 1024;
-    auto*                 mgr      = make_pmm( kPmmSize );
-    PMM_TEST( mgr != nullptr );
+    make_pmm( kPmmSize );
+    PMM_TEST( demo::g_pmm.load() );
 
     {
         demo::ScenarioManager sm;
@@ -173,7 +172,7 @@ static bool test_stop_all_fast()
         PMM_TEST( elapsed < std::chrono::seconds( 5 ) );
     }
 
-    destroy_pmm( mgr );
+    destroy_pmm();
     return true;
 }
 

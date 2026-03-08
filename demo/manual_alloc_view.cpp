@@ -5,7 +5,8 @@
  * Issue #65: provides "Alloc" and "Free" buttons so the user can manually test the
  * memory manager one operation at a time while watching the AVL tree and memory map.
  *
- * Uses the new AbstractPersistMemoryManager API via demo::g_pmm.
+ * DemoMgr is a fully static class — all PMM calls use DemoMgr:: static methods.
+ * g_pmm is a boolean flag: true when the manager is active.
  */
 
 #include "manual_alloc_view.h"
@@ -22,13 +23,12 @@ namespace demo
 
 void ManualAllocView::clear()
 {
-    auto* mgr = g_pmm.load();
-    if ( mgr )
+    if ( g_pmm.load() )
     {
         for ( auto& blk : blocks_ )
         {
             if ( !blk.ptr.is_null() )
-                mgr->deallocate_typed( blk.ptr );
+                DemoMgr::deallocate_typed( blk.ptr );
         }
     }
     blocks_.clear();
@@ -41,7 +41,7 @@ void ManualAllocView::render()
 {
     ImGui::Begin( "Manual Alloc" );
 
-    auto* mgr = g_pmm.load();
+    bool active = g_pmm.load();
 
     // ── Allocation controls ───────────────────────────────────────────────────
     ImGui::TextUnformatted( "Allocation size (bytes):" );
@@ -53,13 +53,14 @@ void ManualAllocView::render()
 
     ImGui::SameLine();
 
-    bool can_alloc = ( mgr != nullptr );
+    bool can_alloc = active;
     if ( !can_alloc )
         ImGui::BeginDisabled();
 
     if ( ImGui::Button( "Alloc" ) && can_alloc )
     {
-        DemoMgr::pptr<std::uint8_t> ptr = mgr->allocate_typed<std::uint8_t>( static_cast<std::size_t>( alloc_size_ ) );
+        DemoMgr::pptr<std::uint8_t> ptr =
+            DemoMgr::allocate_typed<std::uint8_t>( static_cast<std::size_t>( alloc_size_ ) );
         if ( !ptr.is_null() )
         {
             ManualBlock blk;
@@ -84,7 +85,7 @@ void ManualAllocView::render()
     // ── Free controls ─────────────────────────────────────────────────────────
     ImGui::SameLine();
 
-    bool can_free = ( mgr != nullptr && selected_idx_ >= 0 && selected_idx_ < static_cast<int>( blocks_.size() ) );
+    bool can_free = ( active && selected_idx_ >= 0 && selected_idx_ < static_cast<int>( blocks_.size() ) );
     if ( !can_free )
         ImGui::BeginDisabled();
 
@@ -92,7 +93,7 @@ void ManualAllocView::render()
     {
         auto& blk = blocks_[static_cast<std::size_t>( selected_idx_ )];
         if ( !blk.ptr.is_null() )
-            mgr->deallocate_typed( blk.ptr );
+            DemoMgr::deallocate_typed( blk.ptr );
         blocks_.erase( blocks_.begin() + selected_idx_ );
         selected_idx_ = -1;
     }
@@ -102,7 +103,7 @@ void ManualAllocView::render()
 
     ImGui::SameLine();
 
-    bool can_free_all = ( mgr != nullptr && !blocks_.empty() );
+    bool can_free_all = ( active && !blocks_.empty() );
     if ( !can_free_all )
         ImGui::BeginDisabled();
 

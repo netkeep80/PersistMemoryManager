@@ -2,8 +2,10 @@
  * @file demo_globals.h
  * @brief Global shared PMM manager for the visual demo.
  *
- * Provides a global std::atomic<DemoMgr*> accessed by all demo threads
- * and panels. The manager itself is owned by DemoApp.
+ * DemoMgr is a fully static class (PersistMemoryManager), so no instance
+ * pointer is needed. g_pmm is a boolean flag indicating whether the manager
+ * is currently active (initialized). All demo threads check this flag before
+ * calling DemoMgr static methods.
  */
 
 #pragma once
@@ -18,8 +20,8 @@ namespace demo
 /// @brief Manager type used throughout the demo (multi-threaded, heap-backed).
 using DemoMgr = pmm::presets::MultiThreadedHeap;
 
-/// @brief Global pointer to the active manager. nullptr means no active manager.
-/// Owned by DemoApp; all other code reads via load().
-extern std::atomic<DemoMgr*> g_pmm;
+/// @brief Global flag: true when the DemoMgr static manager is active.
+/// Set to true after DemoMgr::create(), false after DemoMgr::destroy().
+extern std::atomic<bool> g_pmm;
 
 } // namespace demo

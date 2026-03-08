@@ -1,6 +1,9 @@
 /**
  * @file test_scenario_manager.cpp
- * @brief Phase 8 unit tests for ScenarioManager lifecycle (migrated to new API, Issue #102).
+ * @brief Phase 8 unit tests for ScenarioManager lifecycle (migrated to static API, Issue #112).
+ *
+ * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
+ * g_pmm is a boolean flag: true when the manager is active.
  *
  * Tests:
  *  - Start 3 scenarios, call stop_all() + join_all(), verify all threads
@@ -50,26 +53,21 @@
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
 static constexpr std::size_t kDefaultPmmSize = 16 * 1024 * 1024;
-static demo::DemoMgr*        g_test_mgr      = nullptr;
 
 static void pmm_setup( std::size_t size = kDefaultPmmSize )
 {
-    g_test_mgr = new demo::DemoMgr();
-    if ( !g_test_mgr->create( size ) )
+    if ( !demo::DemoMgr::create( size ) )
     {
-        delete g_test_mgr;
-        g_test_mgr = nullptr;
         std::cerr << "DemoMgr::create() failed\n";
         std::exit( 1 );
     }
-    demo::g_pmm.store( g_test_mgr );
+    demo::g_pmm.store( true );
 }
 
 static void pmm_teardown()
 {
-    demo::g_pmm.store( nullptr );
-    delete g_test_mgr;
-    g_test_mgr = nullptr;
+    demo::g_pmm.store( false );
+    demo::DemoMgr::destroy();
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -137,9 +135,8 @@ static bool test_start_stop_single()
         mgr.join_all();
     }
 
-    auto* inst = demo::g_pmm.load();
-    PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->is_initialized() );
+    PMM_TEST( demo::g_pmm.load() );
+    PMM_TEST( demo::DemoMgr::is_initialized() );
 
     pmm_teardown();
     return true;
@@ -160,9 +157,8 @@ static bool test_destructor_cleans_up()
         // Let destructor call stop_all + join_all
     }
 
-    auto* inst = demo::g_pmm.load();
-    PMM_TEST( inst != nullptr );
-    PMM_TEST( inst->is_initialized() );
+    PMM_TEST( demo::g_pmm.load() );
+    PMM_TEST( demo::DemoMgr::is_initialized() );
 
     pmm_teardown();
     return true;

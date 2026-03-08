@@ -20,17 +20,14 @@ namespace demo
 
 // ─── Snapshot builder ─────────────────────────────────────────────────────────
 
-void StructTreeView::update_snapshot( DemoMgr* mgr )
+void StructTreeView::update_snapshot()
 {
-    if ( !mgr )
-        return;
-
-    snapshot_.total_size  = mgr->total_size();
-    snapshot_.used_size   = mgr->used_size();
-    snapshot_.free_size   = mgr->free_size();
-    snapshot_.block_count = mgr->block_count();
-    snapshot_.free_count  = mgr->free_block_count();
-    snapshot_.alloc_count = mgr->alloc_block_count();
+    snapshot_.total_size  = DemoMgr::total_size();
+    snapshot_.used_size   = DemoMgr::used_size();
+    snapshot_.free_size   = DemoMgr::free_size();
+    snapshot_.block_count = DemoMgr::block_count();
+    snapshot_.free_count  = DemoMgr::free_block_count();
+    snapshot_.alloc_count = DemoMgr::alloc_block_count();
 }
 
 // ─── Renderer ─────────────────────────────────────────────────────────────────
