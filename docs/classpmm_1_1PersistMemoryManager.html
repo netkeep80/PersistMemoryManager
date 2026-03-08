@@ -164,6 +164,14 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:aa83533fb25e93de9f1e42f2ee85d8c65"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89879a510adcf526920f5b152c5bee97" id="r_a89879a510adcf526920f5b152c5bee97"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a89879a510adcf526920f5b152c5bee97">alloc_block_count</a> () <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="separator:a89879a510adcf526920f5b152c5bee97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32b359e75926faeb48211d7019343f09" id="r_a32b359e75926faeb48211d7019343f09"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Callback</a> &gt; </td></tr>
+<tr class="memitem:a32b359e75926faeb48211d7019343f09"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a32b359e75926faeb48211d7019343f09">for_each_block</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Callback</a> &amp;&amp;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">callback</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="memdesc:a32b359e75926faeb48211d7019343f09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Обойти все блоки в управляемой области и вызвать callback для каждого.  <br /></td></tr>
+<tr class="separator:a32b359e75926faeb48211d7019343f09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa91cabbb0711fae28590c571dcb1a112" id="r_aa91cabbb0711fae28590c571dcb1a112"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Callback</a> &gt; </td></tr>
+<tr class="memitem:aa91cabbb0711fae28590c571dcb1a112"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#aa91cabbb0711fae28590c571dcb1a112">for_each_free_block</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Callback</a> &amp;&amp;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">callback</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="memdesc:aa91cabbb0711fae28590c571dcb1a112"><td class="mdescLeft">&#160;</td><td class="mdescRight">Обойти только свободные блоки в AVL-дереве и вызвать callback для каждого.  <br /></td></tr>
+<tr class="separator:aa91cabbb0711fae28590c571dcb1a112"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ba654fb9ac85913bb21d9a708b92c6a" id="r_a1ba654fb9ac85913bb21d9a708b92c6a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="classpmm_1_1PersistMemoryManager.html#a21a29f95d2f488d380f006c4187af55f">storage_backend</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a1ba654fb9ac85913bb21d9a708b92c6a">backend</a> () <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:a1ba654fb9ac85913bb21d9a708b92c6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Доступ к статическому бэкенду (для продвинутых сценариев).  <br /></td></tr>
 <tr class="separator:a1ba654fb9ac85913bb21d9a708b92c6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -525,7 +533,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Доступ к статическому бэкенду (для продвинутых сценариев). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00388">388</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00461">461</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -737,6 +745,104 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Обнуляет флаг инициализации. Необходим для изоляции тестов. </p>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00189">189</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a32b359e75926faeb48211d7019343f09" name="a32b359e75926faeb48211d7019343f09"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a32b359e75926faeb48211d7019343f09">&#9670;&#160;</a></span>for_each_block()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ConfigT</a>  = CacheManagerConfig, std::size_t InstanceId = 0&gt; </div>
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Callback</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> <a class="el" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ConfigT</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">InstanceId</a> &gt;::for_each_block </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Callback</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>callback</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Обойти все блоки в управляемой области и вызвать callback для каждого. </p>
+<p>Callback принимает <code><a class="el" href="structpmm_1_1BlockView.html">BlockView</a></code> — описание блока (смещение, размеры, занятость). Блоки итерируются в порядке адресного пространства (от меньшего к большему).</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Callback</td><td>Тип callable: <code>void(const <a class="el" href="structpmm_1_1BlockView.html">pmm::BlockView</a>&amp;)</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">callback</td><td>Функция, вызываемая для каждого блока. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>false если менеджер не инициализирован, true иначе.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Метод выполняется под блокировкой — не вызывайте allocate/deallocate из callback во избежание дедлока. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00402">402</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="aa91cabbb0711fae28590c571dcb1a112" name="aa91cabbb0711fae28590c571dcb1a112"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa91cabbb0711fae28590c571dcb1a112">&#9670;&#160;</a></span>for_each_free_block()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ConfigT</a>  = CacheManagerConfig, std::size_t InstanceId = 0&gt; </div>
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Callback</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> <a class="el" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ConfigT</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">InstanceId</a> &gt;::for_each_free_block </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Callback</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>callback</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Обойти только свободные блоки в AVL-дереве и вызвать callback для каждого. </p>
+<p>Callback принимает <code><a class="el" href="structpmm_1_1FreeBlockView.html" title="View of a single free block in the AVL tree for visualisation (Issue #65). All _offset fields are byt...">FreeBlockView</a></code> — описание свободного блока (смещение, размер, AVL-ссылки, высота). Итерация выполняется in-order (по возрастанию размера блока).</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Callback</td><td>Тип callable: <code>void(const <a class="el" href="structpmm_1_1FreeBlockView.html" title="View of a single free block in the AVL tree for visualisation (Issue #65). All _offset fields are byt...">pmm::FreeBlockView</a>&amp;)</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">callback</td><td>Функция, вызываемая для каждого свободного блока. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>false если менеджер не инициализирован, true иначе.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Метод выполняется под блокировкой — не вызывайте allocate/deallocate из callback во избежание дедлока. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00449">449</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
