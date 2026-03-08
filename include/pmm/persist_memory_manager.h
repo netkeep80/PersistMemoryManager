@@ -246,10 +246,12 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         detail::ManagerHeader*      hdr  = get_header( base );
         pmm::Block<address_traits>* blk =
             detail::header_from_ptr( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
-        if ( blk == nullptr || blk->weight == 0 )
+        if ( blk == nullptr )
+            return;
+        std::uint32_t freed = BlockStateBase<address_traits>::get_weight( blk );
+        if ( freed == 0 )
             return;
 
-        std::uint32_t freed   = blk->weight;
         std::uint32_t blk_idx = detail::block_idx( base, blk );
 
         AllocatedBlock<address_traits>* alloc = AllocatedBlock<address_traits>::cast_from_raw( blk );
@@ -405,18 +407,20 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized )
             return false;
         const std::uint8_t*          base = _backend.base_ptr();
+        using BlockState = BlockStateBase<address_traits>;
         const detail::ManagerHeader* hdr  = get_header_c( base );
         std::uint32_t                idx  = hdr->first_block_offset;
         while ( idx != detail::kNoBlock )
         {
             if ( detail::idx_to_byte_off( idx ) + sizeof( Block<address_traits> ) > hdr->total_size )
                 break;
-            const Block<address_traits>* blk =
-                reinterpret_cast<const Block<address_traits>*>( base + detail::idx_to_byte_off( idx ) );
+            const void*         blk_raw    = base + detail::idx_to_byte_off( idx );
+            const Block<address_traits>* blk = reinterpret_cast<const Block<address_traits>*>( blk_raw );
             std::uint32_t total_gran = detail::block_total_granules( base, hdr, blk );
-            bool          is_used    = ( blk->weight > 0 );
+            auto          w          = BlockState::get_weight( blk_raw );
+            bool          is_used    = ( w > 0 );
             std::size_t   hdr_bytes  = sizeof( Block<address_traits> );
-            std::size_t   data_bytes = is_used ? detail::granules_to_bytes( blk->weight ) : 0;
+            std::size_t   data_bytes = is_used ? detail::granules_to_bytes( w ) : 0;
 
             BlockView view;
             view.index       = idx;
@@ -427,7 +431,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             view.alignment   = kGranuleSize;
             view.used        = is_used;
             callback( view );
-            idx = blk->next_offset;
+            idx = BlockState::get_next_offset( blk_raw );
         }
         return true;
     }
@@ -479,15 +483,20 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static void for_each_free_block_inorder( const std::uint8_t* base, const detail::ManagerHeader* hdr,
                                              std::uint32_t node_idx, int depth, Callback&& callback ) noexcept
     {
+        using BlockState = BlockStateBase<address_traits>;
         if ( node_idx == detail::kNoBlock )
             return;
         if ( detail::idx_to_byte_off( node_idx ) + sizeof( Block<address_traits> ) > hdr->total_size )
             return;
-        const Block<address_traits>* blk =
-            reinterpret_cast<const Block<address_traits>*>( base + detail::idx_to_byte_off( node_idx ) );
+        const void* blk_raw = base + detail::idx_to_byte_off( node_idx );
+        const Block<address_traits>* blk = reinterpret_cast<const Block<address_traits>*>( blk_raw );
+
+        auto left_off   = BlockState::get_left_offset( blk_raw );
+        auto right_off  = BlockState::get_right_offset( blk_raw );
+        auto parent_off = BlockState::get_parent_offset( blk_raw );
 
         // Visit left subtree first (smaller blocks)
-        for_each_free_block_inorder( base, hdr, blk->left_offset, depth + 1, callback );
+        for_each_free_block_inorder( base, hdr, left_off, depth + 1, callback );
 
         // Visit current node
         std::uint32_t total_gran = detail::block_total_granules( base, hdr, blk );
@@ -495,21 +504,21 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         view.offset        = static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( node_idx ) );
         view.total_size    = detail::granules_to_bytes( total_gran );
         view.free_size     = detail::granules_to_bytes( total_gran - detail::kBlockHeaderGranules );
-        view.left_offset   = ( blk->left_offset != detail::kNoBlock )
-                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->left_offset ) )
+        view.left_offset   = ( left_off != detail::kNoBlock )
+                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( left_off ) )
                                  : -1;
-        view.right_offset  = ( blk->right_offset != detail::kNoBlock )
-                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->right_offset ) )
+        view.right_offset  = ( right_off != detail::kNoBlock )
+                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( right_off ) )
                                  : -1;
-        view.parent_offset = ( blk->parent_offset != detail::kNoBlock )
-                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->parent_offset ) )
+        view.parent_offset = ( parent_off != detail::kNoBlock )
+                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( parent_off ) )
                                  : -1;
-        view.avl_height    = blk->avl_height;
+        view.avl_height    = BlockState::get_avl_height( blk_raw );
         view.avl_depth     = depth;
         callback( view );
 
         // Visit right subtree (larger blocks)
-        for_each_free_block_inorder( base, hdr, blk->right_offset, depth + 1, callback );
+        for_each_free_block_inorder( base, hdr, right_off, depth + 1, callback );
     }
 
     static detail::ManagerHeader* get_header( std::uint8_t* base ) noexcept
@@ -524,22 +533,22 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static bool init_layout( std::uint8_t* base, std::size_t size ) noexcept
     {
+        using BlockState = BlockStateBase<address_traits>;
         static constexpr std::uint32_t kHdrBlkIdx  = 0;
         static constexpr std::uint32_t kFreeBlkIdx = detail::kBlockHeaderGranules + detail::kManagerHeaderGranules;
 
         if ( detail::idx_to_byte_off( kFreeBlkIdx ) + sizeof( Block<address_traits> ) + detail::kMinBlockSize > size )
             return false;
 
-        Block<address_traits>* hdr_blk = reinterpret_cast<Block<address_traits>*>( base );
+        // Инициализация блока-заголовка (Block_0) через state machine утилиты
+        void* hdr_blk = base;
         std::memset( hdr_blk, 0, sizeof( Block<address_traits> ) );
-        hdr_blk->weight        = detail::kManagerHeaderGranules;
-        hdr_blk->prev_offset   = detail::kNoBlock;
-        hdr_blk->next_offset   = kFreeBlkIdx;
-        hdr_blk->left_offset   = detail::kNoBlock;
-        hdr_blk->right_offset  = detail::kNoBlock;
-        hdr_blk->parent_offset = detail::kNoBlock;
-        hdr_blk->avl_height    = 0;
-        hdr_blk->root_offset   = kHdrBlkIdx;
+        BlockState::init_fields( hdr_blk,
+                                 /*prev*/ detail::kNoBlock,
+                                 /*next*/ kFreeBlkIdx,
+                                 /*avl_height*/ 0,
+                                 /*weight*/ detail::kManagerHeaderGranules,
+                                 /*root_offset*/ kHdrBlkIdx );
 
         detail::ManagerHeader* hdr = get_header( base );
         std::memset( hdr, 0, sizeof( detail::ManagerHeader ) );
@@ -550,17 +559,15 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         hdr->free_tree_root     = detail::kNoBlock;
         hdr->granule_size       = static_cast<std::uint16_t>( kGranuleSize );
 
-        Block<address_traits>* blk =
-            reinterpret_cast<Block<address_traits>*>( base + detail::idx_to_byte_off( kFreeBlkIdx ) );
+        // Инициализация первого свободного блока через state machine утилиты
+        void* blk = base + detail::idx_to_byte_off( kFreeBlkIdx );
         std::memset( blk, 0, sizeof( Block<address_traits> ) );
-        blk->prev_offset   = kHdrBlkIdx;
-        blk->next_offset   = detail::kNoBlock;
-        blk->left_offset   = detail::kNoBlock;
-        blk->right_offset  = detail::kNoBlock;
-        blk->parent_offset = detail::kNoBlock;
-        blk->avl_height    = 1;
-        blk->weight        = 0;
-        blk->root_offset   = 0;
+        BlockState::init_fields( blk,
+                                 /*prev*/ kHdrBlkIdx,
+                                 /*next*/ detail::kNoBlock,
+                                 /*avl_height*/ 1,
+                                 /*weight*/ 0,
+                                 /*root_offset*/ 0 );
 
         hdr->last_block_offset = kFreeBlkIdx;
         hdr->free_tree_root    = kFreeBlkIdx;
@@ -575,6 +582,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static bool do_expand( std::size_t user_size ) noexcept
     {
+        using BlockState = BlockStateBase<address_traits>;
         if ( !_initialized )
             return false;
         std::uint8_t*          base     = _backend.base_ptr();
@@ -600,14 +608,14 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         std::uint32_t extra_idx  = detail::byte_off_to_idx( old_size );
         std::size_t   extra_size = new_size - old_size;
 
-        Block<address_traits>* last_blk = ( hdr->last_block_offset != detail::kNoBlock )
-                                              ? reinterpret_cast<Block<address_traits>*>(
-                                                    new_base + detail::idx_to_byte_off( hdr->last_block_offset ) )
-                                              : nullptr;
+        void* last_blk_raw = ( hdr->last_block_offset != detail::kNoBlock )
+                                 ? static_cast<void*>( new_base + detail::idx_to_byte_off( hdr->last_block_offset ) )
+                                 : nullptr;
 
-        if ( last_blk != nullptr && last_blk->weight == 0 )
+        if ( last_blk_raw != nullptr && BlockState::get_weight( last_blk_raw ) == 0 )
         {
-            std::uint32_t loff = detail::block_idx( new_base, last_blk );
+            Block<address_traits>* last_blk = reinterpret_cast<Block<address_traits>*>( last_blk_raw );
+            std::uint32_t          loff     = detail::block_idx( new_base, last_blk );
             free_block_tree::remove( new_base, hdr, loff );
             hdr->total_size = new_size;
             free_block_tree::insert( new_base, hdr, loff );
@@ -616,26 +624,28 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         {
             if ( extra_size < sizeof( Block<address_traits> ) + detail::kMinBlockSize )
                 return false;
-            Block<address_traits>* nb_blk =
-                reinterpret_cast<Block<address_traits>*>( new_base + detail::idx_to_byte_off( extra_idx ) );
+            void* nb_blk = new_base + detail::idx_to_byte_off( extra_idx );
             std::memset( nb_blk, 0, sizeof( Block<address_traits> ) );
-            nb_blk->left_offset   = detail::kNoBlock;
-            nb_blk->right_offset  = detail::kNoBlock;
-            nb_blk->parent_offset = detail::kNoBlock;
-            nb_blk->avl_height    = 1;
-            nb_blk->weight        = 0;
-            nb_blk->root_offset   = 0;
-            if ( last_blk != nullptr )
+            if ( last_blk_raw != nullptr )
             {
-                std::uint32_t loff    = detail::block_idx( new_base, last_blk );
-                nb_blk->prev_offset   = loff;
-                nb_blk->next_offset   = detail::kNoBlock;
-                last_blk->next_offset = extra_idx;
+                Block<address_traits>* last_blk = reinterpret_cast<Block<address_traits>*>( last_blk_raw );
+                std::uint32_t          loff      = detail::block_idx( new_base, last_blk );
+                BlockState::init_fields( nb_blk,
+                                         /*prev*/ loff,
+                                         /*next*/ detail::kNoBlock,
+                                         /*avl_height*/ 1,
+                                         /*weight*/ 0,
+                                         /*root_offset*/ 0 );
+                BlockState::set_next_offset_of( last_blk_raw, extra_idx );
             }
             else
             {
-                nb_blk->prev_offset     = detail::kNoBlock;
-                nb_blk->next_offset     = detail::kNoBlock;
+                BlockState::init_fields( nb_blk,
+                                         /*prev*/ detail::kNoBlock,
+                                         /*next*/ detail::kNoBlock,
+                                         /*avl_height*/ 1,
+                                         /*weight*/ 0,
+                                         /*root_offset*/ 0 );
                 hdr->first_block_offset = extra_idx;
             }
             hdr->last_block_offset = extra_idx;

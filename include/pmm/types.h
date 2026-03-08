@@ -112,28 +112,13 @@ static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) % kGranuleSize ==
                "Block<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
 
 // Issue #87 Phase 2: verify LinkedListNode<DefaultAddressTraits> layout.
+// Note: offsetof checks on protected fields are in linked_list_node.h and tree_node.h (Issue #120).
 static_assert( sizeof( pmm::LinkedListNode<pmm::DefaultAddressTraits> ) == 2 * sizeof( std::uint32_t ),
                "LinkedListNode<DefaultAddressTraits> must be 8 bytes (Issue #87)" );
-static_assert( offsetof( pmm::LinkedListNode<pmm::DefaultAddressTraits>, prev_offset ) == 0,
-               "LinkedListNode::prev_offset must be at offset 0 (Issue #87)" );
-static_assert( offsetof( pmm::LinkedListNode<pmm::DefaultAddressTraits>, next_offset ) == sizeof( std::uint32_t ),
-               "LinkedListNode::next_offset must be at offset 4 (Issue #87)" );
 // TreeNode<DefaultAddressTraits>: left/right/parent + avl_height/_pad + weight + root_offset (24 bytes).
 static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) ==
                    3 * sizeof( std::uint32_t ) + 4 + 2 * sizeof( std::uint32_t ),
                "TreeNode<DefaultAddressTraits> must be 24 bytes (Issue #87)" );
-static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, left_offset ) == 0,
-               "TreeNode::left_offset must be at offset 0 within TreeNode (Issue #87)" );
-static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, right_offset ) == sizeof( std::uint32_t ),
-               "TreeNode::right_offset must be at offset 4 within TreeNode (Issue #87)" );
-static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, parent_offset ) == 2 * sizeof( std::uint32_t ),
-               "TreeNode::parent_offset must be at offset 8 within TreeNode (Issue #87)" );
-static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, avl_height ) == 3 * sizeof( std::uint32_t ),
-               "TreeNode::avl_height must be at offset 12 within TreeNode (Issue #87)" );
-static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, weight ) == 3 * sizeof( std::uint32_t ) + 4,
-               "TreeNode::weight must be at offset 16 within TreeNode (Issue #87)" );
-static_assert( offsetof( pmm::TreeNode<pmm::DefaultAddressTraits>, root_offset ) == 4 * sizeof( std::uint32_t ) + 4,
-               "TreeNode::root_offset must be at offset 20 within TreeNode (Issue #87)" );
 
 /// @brief Number of granules per block header (2 granules = 32 bytes, Issue #112)
 inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) / kGranuleSize;
@@ -245,9 +230,11 @@ inline std::uint32_t block_idx( const std::uint8_t* base, const pmm::Block<pmm::
 inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr,
                                            const pmm::Block<pmm::DefaultAddressTraits>* blk )
 {
-    std::uint32_t this_idx = block_idx( base, blk );
-    if ( blk->next_offset != kNoBlock )
-        return blk->next_offset - this_idx;
+    using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
+    std::uint32_t this_idx   = block_idx( base, blk );
+    auto          next_off   = BlockState::get_next_offset( blk );
+    if ( next_off != kNoBlock )
+        return next_off - this_idx;
     return byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - this_idx;
 }
 
@@ -255,29 +242,35 @@ inline std::uint32_t block_total_granules( const std::uint8_t* base, const Manag
 /// Invariants: weight<total_gran, prev<idx<next, avl_height<32, distinct AVL refs.
 inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, std::uint32_t idx )
 {
+    using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     if ( idx == kNoBlock )
         return false;
     if ( idx_to_byte_off( idx ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) > hdr->total_size )
         return false;
 
-    const auto*   blk = reinterpret_cast<const pmm::Block<pmm::DefaultAddressTraits>*>( base + idx_to_byte_off( idx ) );
-    std::uint32_t total_gran = ( blk->next_offset != kNoBlock )
-                                   ? ( blk->next_offset - idx )
+    const void*   blk        = base + idx_to_byte_off( idx );
+    auto          next_off   = BlockState::get_next_offset( blk );
+    std::uint32_t total_gran = ( next_off != kNoBlock )
+                                   ? ( next_off - idx )
                                    : ( byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - idx );
-    if ( blk->weight >= total_gran )
+    if ( BlockState::get_weight( blk ) >= total_gran )
         return false;
-    if ( blk->prev_offset != kNoBlock && blk->prev_offset >= idx )
+    auto prev_off = BlockState::get_prev_offset( blk );
+    if ( prev_off != kNoBlock && prev_off >= idx )
         return false;
-    if ( blk->next_offset != kNoBlock && blk->next_offset <= idx )
+    if ( next_off != kNoBlock && next_off <= idx )
         return false;
-    if ( blk->avl_height >= 32 )
+    if ( BlockState::get_avl_height( blk ) >= 32 )
         return false;
-    const bool l = ( blk->left_offset != kNoBlock );
-    const bool r = ( blk->right_offset != kNoBlock );
-    const bool p = ( blk->parent_offset != kNoBlock );
-    if ( ( l || r || p ) && ( ( l && r && blk->left_offset == blk->right_offset ) ||
-                              ( l && p && blk->left_offset == blk->parent_offset ) ||
-                              ( r && p && blk->right_offset == blk->parent_offset ) ) )
+    auto       left_off   = BlockState::get_left_offset( blk );
+    auto       right_off  = BlockState::get_right_offset( blk );
+    auto       parent_off = BlockState::get_parent_offset( blk );
+    const bool l          = ( left_off != kNoBlock );
+    const bool r          = ( right_off != kNoBlock );
+    const bool p          = ( parent_off != kNoBlock );
+    if ( ( l || r || p ) && ( ( l && r && left_off == right_off ) ||
+                              ( l && p && left_off == parent_off ) ||
+                              ( r && p && right_off == parent_off ) ) )
         return false;
     return true;
 }
@@ -292,6 +285,7 @@ inline void* user_ptr( pmm::Block<pmm::DefaultAddressTraits>* block )
 /// Issue #112: Block<A> is the sole block type.
 inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t total_size )
 {
+    using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     if ( ptr == nullptr )
         return nullptr;
     std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
@@ -310,10 +304,9 @@ inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* bas
     const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base + kBlockSize );
     if ( !is_valid_block( base, hdr_const, cand_idx ) )
         return nullptr;
-    auto* cand = reinterpret_cast<pmm::Block<pmm::DefaultAddressTraits>*>( cand_addr );
-    if ( cand->weight == 0 )
+    if ( BlockState::get_weight( cand_addr ) == 0 )
         return nullptr;
-    return cand;
+    return reinterpret_cast<pmm::Block<pmm::DefaultAddressTraits>*>( cand_addr );
 }
 
 /// @brief Minimum block granules for user_bytes (header + data, minimum 1 data granule).
