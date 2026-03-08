@@ -166,6 +166,13 @@ inline constexpr std::size_t kMinMemorySize = sizeof( pmm::Block<pmm::DefaultAdd
                                               sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + kMinBlockSize;
 
 // ─── Byte ↔ granule conversion ──────────────────────────────────────────────
+//
+// Note (Issue #141): AddressTraits<IndexT, GranuleSz> in address_traits.h also provides
+// bytes_to_granules / granules_to_bytes / idx_to_byte_off / byte_off_to_idx methods.
+// The duplication is intentional: address_traits.h versions are templated on GranuleSz
+// (supporting TinyAddressTraits, SmallAddressTraits, LargeAddressTraits), while the
+// detail:: versions below are fixed to the compile-time constant kGranuleSize and add
+// overflow checking and assertions required by the manager's internal logic.
 
 /// @brief Convert bytes to granules (ceiling). Returns 0 on overflow.
 inline std::uint32_t bytes_to_granules( std::size_t bytes )
@@ -204,18 +211,22 @@ inline bool is_valid_alignment( std::size_t align )
     return align == kGranuleSize;
 }
 
-/// @brief Get pointer to Block<DefaultAddressTraits> by granule index (Issue #112: sole block type).
-inline pmm::Block<pmm::DefaultAddressTraits>* block_at( std::uint8_t* base, std::uint32_t idx )
+/// @brief Get pointer to Block<AddressTraitsT> by granule index.
+/// Single canonical implementation replacing per-file blk_at() helpers in
+/// allocator_policy.h and free_block_tree.h (Issue #141).
+template <typename AddressTraitsT = pmm::DefaultAddressTraits>
+inline pmm::Block<AddressTraitsT>* block_at( std::uint8_t* base, std::uint32_t idx )
 {
     assert( idx != kNoBlock );
-    return reinterpret_cast<pmm::Block<pmm::DefaultAddressTraits>*>( base + idx_to_byte_off( idx ) );
+    return reinterpret_cast<pmm::Block<AddressTraitsT>*>( base + idx_to_byte_off( idx ) );
 }
 
-/// @brief Get const pointer to Block<DefaultAddressTraits> by granule index (read-only).
-inline const pmm::Block<pmm::DefaultAddressTraits>* block_at( const std::uint8_t* base, std::uint32_t idx )
+/// @brief Get const pointer to Block<AddressTraitsT> by granule index (read-only).
+template <typename AddressTraitsT = pmm::DefaultAddressTraits>
+inline const pmm::Block<AddressTraitsT>* block_at( const std::uint8_t* base, std::uint32_t idx )
 {
     assert( idx != kNoBlock );
-    return reinterpret_cast<const pmm::Block<pmm::DefaultAddressTraits>*>( base + idx_to_byte_off( idx ) );
+    return reinterpret_cast<const pmm::Block<AddressTraitsT>*>( base + idx_to_byte_off( idx ) );
 }
 
 /// @brief Get granule index of Block<DefaultAddressTraits>.
@@ -275,10 +286,12 @@ inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, 
     return true;
 }
 
-/// @brief Compute user data address for block (block + sizeof(Block<A>), Issue #106, #112).
-inline void* user_ptr( pmm::Block<pmm::DefaultAddressTraits>* block )
+/// @brief Compute user data address for block (block + sizeof(Block<A>), Issue #106, #112, #141).
+/// Single canonical implementation — use this instead of duplicating the cast in each call site.
+template <typename AddressTraitsT = pmm::DefaultAddressTraits>
+inline void* user_ptr( pmm::Block<AddressTraitsT>* block )
 {
-    return reinterpret_cast<std::uint8_t*>( block ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> );
+    return reinterpret_cast<std::uint8_t*>( block ) + sizeof( pmm::Block<AddressTraitsT> );
 }
 
 /// @brief O(1) get Block<A> from user_ptr (ptr - sizeof(Block<A>)); validated via is_valid_block().
