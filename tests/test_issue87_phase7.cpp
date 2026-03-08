@@ -94,13 +94,11 @@ static bool test_p7_pmm_aliases()
 static bool test_p7_predefined_configs()
 {
     // CacheManagerConfig — NoLock
-    static_assert(
-        std::is_same<pmm::CacheManagerConfig::lock_policy, pmm::config::NoLock>::value,
-        "CacheManagerConfig must use NoLock" );
+    static_assert( std::is_same<pmm::CacheManagerConfig::lock_policy, pmm::config::NoLock>::value,
+                   "CacheManagerConfig must use NoLock" );
     // PersistentDataConfig — SharedMutexLock
-    static_assert(
-        std::is_same<pmm::PersistentDataConfig::lock_policy, pmm::config::SharedMutexLock>::value,
-        "PersistentDataConfig must use SharedMutexLock" );
+    static_assert( std::is_same<pmm::PersistentDataConfig::lock_policy, pmm::config::SharedMutexLock>::value,
+                   "PersistentDataConfig must use SharedMutexLock" );
     return true;
 }
 
@@ -128,7 +126,7 @@ static bool test_p7_create_with_heap_storage()
 static bool test_p7_create_too_small()
 {
     using PMM = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 101>;
-    PMM::destroy(); // ensure clean state
+    PMM::destroy();                // ensure clean state
     PMM_TEST( !PMM::create( 1 ) ); // слишком маленький буфер
     PMM_TEST( !PMM::is_initialized() );
     return true;
@@ -288,7 +286,8 @@ static bool test_p7_typed_api()
 
 int main()
 {
-    std::cout << "=== test_issue87_phase7 (Phase 7: PersistMemoryManager, migrated from AbstractPersistMemoryManager) ===\n\n";
+    std::cout << "=== test_issue87_phase7 (Phase 7: PersistMemoryManager, migrated from AbstractPersistMemoryManager) "
+                 "===\n\n";
     bool all_passed = true;
 
     std::cout << "--- P7-A: Compilation and type aliases ---\n";

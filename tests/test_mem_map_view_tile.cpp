@@ -225,13 +225,13 @@ int main()
     // Tests are ordered by increasing PMM size so the static backend (which
     // retains its capacity after destroy()) never causes a subsequent test to
     // receive a larger-than-expected backend.
-    PMM_RUN( "small_pmm_total_bytes", test_small_pmm_total_bytes );         // 128 KiB
+    PMM_RUN( "small_pmm_total_bytes", test_small_pmm_total_bytes );           // 128 KiB
     PMM_RUN( "tile_snapshot_inactive_mgr", test_tile_snapshot_inactive_mgr ); // no PMM change
-    PMM_RUN( "used_block_reflected", test_used_block_reflected );           // 256 KiB
-    PMM_RUN( "freed_blocks_view", test_freed_blocks_view );                 // 256 KiB
-    PMM_RUN( "total_bytes_nonzero", test_total_bytes_nonzero );             // 256 KiB
-    PMM_RUN( "large_pmm_total_bytes", test_large_pmm_total_bytes );         // 4 MiB
-    PMM_RUN( "very_large_pmm", test_very_large_pmm );                       // 64 MiB
+    PMM_RUN( "used_block_reflected", test_used_block_reflected );             // 256 KiB
+    PMM_RUN( "freed_blocks_view", test_freed_blocks_view );                   // 256 KiB
+    PMM_RUN( "total_bytes_nonzero", test_total_bytes_nonzero );               // 256 KiB
+    PMM_RUN( "large_pmm_total_bytes", test_large_pmm_total_bytes );           // 4 MiB
+    PMM_RUN( "very_large_pmm", test_very_large_pmm );                         // 64 MiB
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;
