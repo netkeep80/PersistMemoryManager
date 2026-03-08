@@ -96,14 +96,15 @@ static bool test_p3_block_treenode_field_types()
 
 // ─── P3-B: Block — размеры ────────────────────────────────────────────────────
 
-/// @brief sizeof(Block<DefaultAddressTraits>) == 32 байта (Issue #112).
+/// @brief sizeof(Block<DefaultAddressTraits>) == 16 байт (Issue #136).
 static bool test_p3_block_default_size_equals_blockheader()
 {
     using A     = pmm::DefaultAddressTraits;
     using Block = pmm::Block<A>;
 
-    // Block<DefaultAddressTraits> must be exactly 32 bytes (Issue #112: BlockHeader removed)
-    static_assert( sizeof( Block ) == 32, "Block<DefaultAddressTraits> must be 32 bytes" );
+    // Issue #136: Block<DefaultAddressTraits> reduced from 32 to 16 bytes (1 granule).
+    // FreeBlockData (prev/left/right/parent) stored after block header in data area.
+    static_assert( sizeof( Block ) == 16, "Block<DefaultAddressTraits> must be 16 bytes (Issue #136)" );
     static_assert( sizeof( Block ) % pmm::kGranuleSize == 0, "Block<DefaultAddressTraits> must be granule-aligned" );
 
     return true;
@@ -113,37 +114,39 @@ static bool test_p3_block_default_size_equals_blockheader()
 /// Phase 3 v0.4: weight+root_offset теперь в TreeNode, собственных полей у Block нет.
 static bool test_p3_block_various_traits()
 {
+    // Issue #136: prev/left/right/parent_offset moved from block header to FreeBlockData.
+    // Block = LinkedListNode + TreeNode only.
     // 8-bit:
-    //   LinkedListNode<Tiny> = 2 bytes
-    //   TreeNode<Tiny> = 3*1 + [1 pad] + 2 + 2 + 1 + 1 = 10 bytes (int16_t alignment)
-    //   Block = 2 + 10 = 12 bytes
+    //   LinkedListNode<Tiny> = 1 byte (only next_offset)
+    //   TreeNode<Tiny> = weight(1)+root_offset(1)+avl_height(2)+node_type(2) = 6 bytes
+    //   Block = 1 + 6 = 7 bytes (+ possible padding to alignment)
     using Block8 = pmm::Block<pmm::TinyAddressTraits>;
     static_assert( std::is_same<Block8::index_type, std::uint8_t>::value );
-    static_assert( sizeof( Block8 ) >= 12, "Block<Tiny> must be at least 12 bytes" );
+    static_assert( sizeof( Block8 ) >= 7, "Block<Tiny> must be at least 7 bytes (Issue #136)" );
 
     // 16-bit:
-    //   LinkedListNode<Small> = 4 bytes
-    //   TreeNode<Small> = 3*2 + 2 + 2 + 2 + 2 = 14 bytes
-    //   Block = 4 + 14 = 18 bytes
+    //   LinkedListNode<Small> = 2 bytes (only next_offset)
+    //   TreeNode<Small> = weight(2)+root_offset(2)+avl_height(2)+node_type(2) = 8 bytes
+    //   Block = 2 + 8 = 10 bytes
     using Block16 = pmm::Block<pmm::SmallAddressTraits>;
     static_assert( std::is_same<Block16::index_type, std::uint16_t>::value );
-    static_assert( sizeof( Block16 ) == 18, "Block<Small> must be 18 bytes" );
+    static_assert( sizeof( Block16 ) == 10, "Block<Small> must be 10 bytes (Issue #136)" );
 
     // 32-bit (default):
-    //   LinkedListNode<Default> = 8 bytes
-    //   TreeNode<Default> = 3*4 + 2+2 + 4+4 = 24 bytes
-    //   Block = 8 + 24 = 32 bytes
+    //   LinkedListNode<Default> = 4 bytes (only next_offset)
+    //   TreeNode<Default> = weight(4)+root_offset(4)+avl_height(2)+node_type(2) = 12 bytes
+    //   Block = 4 + 12 = 16 bytes
     using Block32 = pmm::Block<pmm::DefaultAddressTraits>;
     static_assert( std::is_same<Block32::index_type, std::uint32_t>::value );
-    static_assert( sizeof( Block32 ) == 32, "Block<Default> must be 32 bytes" );
+    static_assert( sizeof( Block32 ) == 16, "Block<Default> must be 16 bytes (Issue #136)" );
 
     // 64-bit:
-    //   LinkedListNode<Large> = 16 bytes
-    //   TreeNode<Large> = 3*8 + 2+2 + [4 pad] + 8+8 = 48 bytes (uint64_t alignment)
-    //   Block = 16 + 48 = 64 bytes
+    //   LinkedListNode<Large> = 8 bytes (only next_offset)
+    //   TreeNode<Large> = weight(8)+root_offset(8)+avl_height(2)+node_type(2)+[4 pad] = 24 bytes
+    //   Block = 8 + 24 = 32 bytes
     using Block64 = pmm::Block<pmm::LargeAddressTraits>;
     static_assert( std::is_same<Block64::index_type, std::uint64_t>::value );
-    static_assert( sizeof( Block64 ) >= 60, "Block<Large> must be at least 60 bytes" );
+    static_assert( sizeof( Block64 ) >= 28, "Block<Large> must be at least 28 bytes (Issue #136)" );
 
     return true;
 }
@@ -151,12 +154,14 @@ static bool test_p3_block_various_traits()
 // ─── P3-C: Block — поля доступны через BlockStateBase API ────────────────────
 
 /// @brief Поля LinkedListNode доступны через BlockStateBase API (Issue #120).
+/// Issue #136: для свободных блоков нужен буфер Block<A> + FreeBlockData<A>.
 static bool test_p3_block_list_node_fields()
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
+    // Issue #136: буфер Block<A> + FreeBlockData<A> для free blocks.
+    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> ) + sizeof( pmm::FreeBlockData<A> )] = {};
 
     // Инициализация через BlockStateBase::init_fields
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0, 0 );
@@ -174,14 +179,16 @@ static bool test_p3_block_list_node_fields()
 }
 
 /// @brief Поля TreeNode (включая weight и root_offset) доступны через BlockStateBase API (Issue #120).
+/// Issue #136: left/right/parent_offset перемещены в FreeBlockData.
 static bool test_p3_block_tree_node_fields()
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
+    // Issue #136: буфер Block<A> + FreeBlockData<A> для free blocks.
+    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> ) + sizeof( pmm::FreeBlockData<A> )] = {};
 
-    // Инициализация через BlockStateBase::init_fields
+    // Инициализация через BlockStateBase::init_fields (weight=0 => free block => FreeBlockData initialized)
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0u, 0u );
 
     PMM_TEST( BlockState::get_left_offset( buf ) == pmm::detail::kNoBlock );
@@ -217,7 +224,8 @@ static bool test_p3_block_treenode_fields_runtime()
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
+    // Issue #136: буфер Block<A> + FreeBlockData<A> для free blocks (weight=0).
+    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> ) + sizeof( pmm::FreeBlockData<A> )] = {};
 
     // Свободный блок: weight == 0, root_offset == 0
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0u, 0u );
@@ -230,7 +238,7 @@ static bool test_p3_block_treenode_fields_runtime()
     PMM_TEST( BlockState::get_weight( buf ) == 10u );
     PMM_TEST( BlockState::get_root_offset( buf ) == 0u );
 
-    // Занятый блок: weight > 0, root_offset == собственный индекс
+    // Занятый блок: weight > 0 — только block header needed
     alignas( pmm::Block<A> ) std::uint8_t buf2[sizeof( pmm::Block<A> )] = {};
     BlockState::init_fields( buf2, A::no_block, A::no_block, 0, 42u, 20u );
     PMM_TEST( BlockState::get_weight( buf2 ) == 42u );
@@ -248,7 +256,8 @@ static bool test_p3_block_tiny_traits()
 
     static_assert( std::is_same<BlockState::index_type, std::uint8_t>::value );
 
-    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
+    // Issue #136: буфер Block<A> + FreeBlockData<A> для free blocks (weight=0).
+    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> ) + sizeof( pmm::FreeBlockData<A> )] = {};
 
     // Инициализация через BlockStateBase::init_fields
     BlockState::init_fields( buf, A::no_block, 0u, 0, 0u, 0u );
@@ -287,23 +296,25 @@ static bool test_p3_block_weight_type_matches_blockheader()
 
 // ─── P3-F: Block layout offsets (Issue #120) ─────────────────────────────────
 
-/// @brief Смещения полей Block<Default> (через BlockStateBase::kOffset*) корректны (Issue #120).
+/// @brief Смещения полей Block<Default> (через BlockStateBase::kOffset*) корректны (Issue #120, #136).
 static bool test_p3_block_layout_offsets()
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
 
-    // Verify layout: LinkedListNode fields at start, TreeNode fields follow (Issue #126: new order)
-    static_assert( BlockState::kOffsetPrevOffset == 0 );
-    static_assert( BlockState::kOffsetNextOffset == 4 );
-    // Issue #126: weight moved to first field of TreeNode
-    static_assert( BlockState::kOffsetWeight == 8 );
-    static_assert( BlockState::kOffsetLeftOffset == 12 );
-    static_assert( BlockState::kOffsetRightOffset == 16 );
-    static_assert( BlockState::kOffsetParentOffset == 20 );
-    static_assert( BlockState::kOffsetRootOffset == 24 );
-    // Issue #126: avl_height and node_type (renamed from _pad) moved to end
-    static_assert( BlockState::kOffsetAvlHeight == 28 );
-    static_assert( BlockState::kOffsetNodeType == 30 );
+    // Issue #136: Block header reduced from 32 to 16 bytes.
+    // LinkedListNode has only next_offset (4 bytes); prev_offset moved to FreeBlockData.
+    static_assert( BlockState::kOffsetNextOffset == 0 );
+    // Issue #126: weight moved to first field of TreeNode; Issue #136: now at offset 4 (after LLNode)
+    static_assert( BlockState::kOffsetWeight == 4 );
+    static_assert( BlockState::kOffsetRootOffset == 8 );
+    // Issue #126: avl_height and node_type (renamed from _pad) at end of TreeNode header
+    static_assert( BlockState::kOffsetAvlHeight == 12 );
+    static_assert( BlockState::kOffsetNodeType == 14 );
+    // Issue #136: prev/left/right/parent_offset in FreeBlockData, stored after block header
+    static_assert( BlockState::kOffsetPrevOffset == 16 );
+    static_assert( BlockState::kOffsetLeftOffset == 20 );
+    static_assert( BlockState::kOffsetRightOffset == 24 );
+    static_assert( BlockState::kOffsetParentOffset == 28 );
 
     return true;
 }

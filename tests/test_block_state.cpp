@@ -57,12 +57,14 @@
 
 // ─── P9-A: Бинарная совместимость BlockStateBase ──────────────────────────────
 
-/// @brief sizeof(BlockStateBase<DefaultAddressTraits>) == sizeof(Block<A>) == 32.
+/// @brief sizeof(BlockStateBase<DefaultAddressTraits>) == sizeof(Block<A>) == 16 (Issue #136).
 static bool test_p9_block_state_base_size()
 {
     using A = pmm::DefaultAddressTraits;
 
-    static_assert( sizeof( pmm::BlockStateBase<A> ) == 32, "BlockStateBase<DefaultAddressTraits> must be 32 bytes" );
+    // Issue #136: Block<A> reduced from 32 to 16 bytes. FreeBlockData stored separately.
+    static_assert( sizeof( pmm::BlockStateBase<A> ) == 16,
+                   "BlockStateBase<DefaultAddressTraits> must be 16 bytes (Issue #136)" );
     static_assert( sizeof( pmm::BlockStateBase<A> ) == sizeof( pmm::Block<A> ),
                    "BlockStateBase must match Block size" );
 
@@ -70,16 +72,19 @@ static bool test_p9_block_state_base_size()
 }
 
 /// @brief Все состояния блока имеют одинаковый размер (бинарная совместимость).
+/// Issue #136: Block<A> reduced to 16 bytes. State wrapper types match Block<A> size.
 static bool test_p9_all_states_same_size()
 {
     using A = pmm::DefaultAddressTraits;
 
-    static_assert( sizeof( pmm::FreeBlock<A> ) == 32, "FreeBlock must be 32 bytes" );
-    static_assert( sizeof( pmm::AllocatedBlock<A> ) == 32, "AllocatedBlock must be 32 bytes" );
-    static_assert( sizeof( pmm::FreeBlockRemovedAVL<A> ) == 32, "FreeBlockRemovedAVL must be 32 bytes" );
-    static_assert( sizeof( pmm::FreeBlockNotInAVL<A> ) == 32, "FreeBlockNotInAVL must be 32 bytes" );
-    static_assert( sizeof( pmm::SplittingBlock<A> ) == 32, "SplittingBlock must be 32 bytes" );
-    static_assert( sizeof( pmm::CoalescingBlock<A> ) == 32, "CoalescingBlock must be 32 bytes" );
+    // Issue #136: All state types are wrappers over Block<A> = 16 bytes.
+    // FreeBlockData (prev/left/right/parent) is at block+16 in memory, not in the struct.
+    static_assert( sizeof( pmm::FreeBlock<A> ) == 16, "FreeBlock must be 16 bytes (Issue #136)" );
+    static_assert( sizeof( pmm::AllocatedBlock<A> ) == 16, "AllocatedBlock must be 16 bytes (Issue #136)" );
+    static_assert( sizeof( pmm::FreeBlockRemovedAVL<A> ) == 16, "FreeBlockRemovedAVL must be 16 bytes (Issue #136)" );
+    static_assert( sizeof( pmm::FreeBlockNotInAVL<A> ) == 16, "FreeBlockNotInAVL must be 16 bytes (Issue #136)" );
+    static_assert( sizeof( pmm::SplittingBlock<A> ) == 16, "SplittingBlock must be 16 bytes (Issue #136)" );
+    static_assert( sizeof( pmm::CoalescingBlock<A> ) == 16, "CoalescingBlock must be 16 bytes (Issue #136)" );
 
     return true;
 }
@@ -92,19 +97,31 @@ static bool test_p9_accessors()
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    // Создаём блок через BlockStateBase::init_fields + static setters (Issue #120)
-    alignas( 16 ) std::uint8_t buffer[32];
+    // Issue #136: prev_offset is stored in FreeBlockData (data area of free blocks).
+    // For allocated blocks (weight > 0), prev_offset is not stored.
+    // Test prev_offset with a free block (weight == 0).
+    // Buffer must include space for FreeBlockData (16 bytes after Block<A> header).
+    alignas( 16 ) std::uint8_t buffer[sizeof( pmm::Block<A> ) + sizeof( pmm::FreeBlockData<A> )];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    BlockState::init_fields( buffer, 10u, 20u, 0, 5u, 6u );
+    // weight=0 → free block; prev_offset=10 will be stored in FreeBlockData
+    BlockState::init_fields( buffer, 10u, 20u, 1, 0u, 0u );
 
-    // Интерпретируем как BlockStateBase
     auto* state = reinterpret_cast<pmm::BlockStateBase<A>*>( buffer );
 
-    PMM_TEST( state->prev_offset() == 10 );
+    PMM_TEST( state->prev_offset() == 10 ); // stored in FreeBlockData (Issue #136)
     PMM_TEST( state->next_offset() == 20 );
-    PMM_TEST( state->weight() == 5 );
-    PMM_TEST( state->root_offset() == 6 );
+    PMM_TEST( state->weight() == 0 );
+    PMM_TEST( state->root_offset() == 0 );
+
+    // For an allocated block, prev_offset is not stored (user data area)
+    alignas( 16 ) std::uint8_t alloc_buf[sizeof( pmm::Block<A> )];
+    std::memset( alloc_buf, 0, sizeof( alloc_buf ) );
+    BlockState::init_fields( alloc_buf, 10u, 20u, 0, 5u, 6u );
+    auto* alloc_state = reinterpret_cast<pmm::BlockStateBase<A>*>( alloc_buf );
+    PMM_TEST( alloc_state->next_offset() == 20 );
+    PMM_TEST( alloc_state->weight() == 5 );
+    PMM_TEST( alloc_state->root_offset() == 6 );
 
     return true;
 }
@@ -290,7 +307,7 @@ static bool test_p9_allocated_block_cast_and_verify()
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    alignas( 16 ) std::uint8_t buffer[64]; // 32 header + 32 data
+    alignas( 16 ) std::uint8_t buffer[64]; // 16 header + 48 data
     std::memset( buffer, 0, sizeof( buffer ) );
 
     // Initialize via BlockStateBase static API (Issue #120)
@@ -302,9 +319,9 @@ static bool test_p9_allocated_block_cast_and_verify()
     PMM_TEST( alloc->verify_invariants( 0 ) == true );
     PMM_TEST( alloc->verify_invariants( 1 ) == false ); // Неверный idx
 
-    // user_ptr = header + sizeof(Block<A>)
+    // Issue #136: user_ptr = header + sizeof(Block<A>) = header + 16
     void* uptr = alloc->user_ptr();
-    PMM_TEST( uptr == buffer + 32 );
+    PMM_TEST( uptr == buffer + 16 );
 
     return true;
 }

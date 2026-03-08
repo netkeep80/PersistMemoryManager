@@ -171,10 +171,12 @@ static bool test_multi_expand()
     ptrs.reserve( 500 );
     sizes.reserve( 500 );
 
-    std::size_t prev_total    = MgrT::total_size();
-    int         expand_count  = 0;
-    const int   max_expands   = 5;
-    const int   max_alloc_cnt = 500;
+    std::size_t prev_total   = MgrT::total_size();
+    int         expand_count = 0;
+    // Issue #136: Block<A> reduced from 32 to 16 bytes, so more allocations fit per expand.
+    // With smaller block overhead, fewer expands are needed for the same number of allocations.
+    const int max_expands   = 4;
+    const int max_alloc_cnt = 500;
 
     auto t0 = now();
 

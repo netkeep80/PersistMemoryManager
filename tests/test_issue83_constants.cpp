@@ -82,21 +82,23 @@ static bool test_power_of_two()
 
 static bool test_min_block_size_computed()
 {
-    // kMinBlockSize must equal Block<A> (32) + kGranuleSize (16) = 48 (Issue #112)
-    PMM_TEST( pmm::detail::kMinBlockSize == 48 );
+    // Issue #136: kMinBlockSize = Block<A>(16) + FreeBlockData<A>(16) = 32
+    // A free block must be large enough to hold FreeBlockData (16 bytes = 1 granule).
+    // Previously (pre-Issue #136): Block<A>(32) + kGranuleSize(16) = 48
+    PMM_TEST( pmm::detail::kMinBlockSize == 32 );
     PMM_TEST( pmm::detail::kMinBlockSize == sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::kGranuleSize );
     return true;
 }
 
 static bool test_min_memory_size_computed()
 {
-    // kMinMemorySize = Block_0 + ManagerHeader + Block_1 + kMinBlockSize (Issue #112)
-    //                = 32 + 64 + 32 + 48 = 176
+    // Issue #136: kMinMemorySize = Block_0(16) + ManagerHeader(64) + Block_1(16) + kMinBlockSize(32) = 128
+    // Previously (pre-Issue #136): Block_0(32) + ManagerHeader(64) + Block_1(32) + kMinBlockSize(48) = 176
     using Block = pmm::Block<pmm::DefaultAddressTraits>;
     std::size_t expected =
         sizeof( Block ) + sizeof( pmm::detail::ManagerHeader ) + sizeof( Block ) + pmm::detail::kMinBlockSize;
     PMM_TEST( pmm::detail::kMinMemorySize == expected );
-    PMM_TEST( pmm::detail::kMinMemorySize == 176 );
+    PMM_TEST( pmm::detail::kMinMemorySize == 128 );
     return true;
 }
 

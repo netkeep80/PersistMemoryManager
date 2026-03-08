@@ -43,7 +43,7 @@
  * @see plan_issue87.md §5 «Фаза 6: AllocatorPolicy»
  * @see block_state.h — автомат состояний блока (Issue #93, #106, #114)
  * @see free_block_tree.h — концепт FreeBlockTree
- * @version 0.4 (Issue #114 — устранение нарушений инкапсуляции Block<A>)
+ * @version 0.5 (Issue #136 — Block<A> reduced to 16 bytes, FreeBlockData in free block data area)
  */
 
 #pragma once
@@ -116,8 +116,12 @@ class AllocatorPolicy
         std::uint32_t blk_total_gran = detail::block_total_granules( base, hdr, blk_at( base, blk_idx ) );
         std::uint32_t data_gran      = detail::bytes_to_granules( user_size );
         std::uint32_t needed_gran    = detail::kBlockHeaderGranules + data_gran;
-        std::uint32_t min_rem_gran   = detail::kBlockHeaderGranules + 1;
-        bool          can_split      = ( blk_total_gran >= needed_gran + min_rem_gran );
+        // Issue #136: remainder block must fit Block<A> header + FreeBlockData (both 1 granule each = 2 granules).
+        // FreeBlockData is stored in the data area of free blocks.
+        static constexpr std::uint32_t kFreeBlockDataGranules =
+            static_cast<std::uint32_t>( detail::kFreeBlockDataSize / kGranuleSize );
+        std::uint32_t min_rem_gran = detail::kBlockHeaderGranules + kFreeBlockDataGranules;
+        bool          can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {
@@ -220,7 +224,24 @@ class AllocatorPolicy
 
         // Слияние с левым соседом
         // State: CoalescingBlock::coalesce_with_prev → результат CoalescingBlock(prv)
+        // Issue #136: prev_offset is in FreeBlockData and may be no_block for a just-freed block.
+        // Scan forward from first_block_offset to find the actual previous block (which has next==b_idx).
         index_type curr_prev = coalescing->prev_offset();
+        if ( curr_prev == detail::kNoBlock )
+        {
+            index_type scan_idx = hdr->first_block_offset;
+            while ( scan_idx != detail::kNoBlock )
+            {
+                const void* scan_blk  = blk_at( base, scan_idx );
+                index_type  scan_next = read_block_next_offset<AddressTraitsT>( scan_blk );
+                if ( scan_next == static_cast<index_type>( b_idx ) )
+                {
+                    curr_prev = scan_idx;
+                    break;
+                }
+                scan_idx = scan_next;
+            }
+        }
         if ( curr_prev != detail::kNoBlock )
         {
             const BlockStateBase<AddressTraitsT>* prv_state =
@@ -280,14 +301,16 @@ class AllocatorPolicy
         {
             void* blk_ptr = blk_at( base, idx );
 
-            // Reset AVL fields via state machine utility (Issue #114)
-            reset_block_avl_fields<AddressTraitsT>( blk_ptr );
-
             // Issue #106: recover_block_state — исправить некорректные переходные состояния
             recover_block_state<AddressTraitsT>( blk_ptr, idx );
 
             if ( read_block_weight<AddressTraitsT>( blk_ptr ) == 0 ) // free block
+            {
+                // Issue #136: Reset AVL fields only for FREE blocks.
+                // For allocated blocks, FreeBlockData area is user data — must not overwrite.
+                reset_block_avl_fields<AddressTraitsT>( blk_ptr );
                 FreeBlockTreeT::insert( base, hdr, idx );
+            }
             index_type next_idx = read_block_next_offset<AddressTraitsT>( blk_ptr );
             if ( next_idx == detail::kNoBlock )
                 hdr->last_block_offset = idx;

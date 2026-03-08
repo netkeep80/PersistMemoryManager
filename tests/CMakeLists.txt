@@ -118,3 +118,6 @@ foreach(preset single_threaded multi_threaded embedded industrial_db)
     target_link_libraries(${target} PRIVATE Threads::Threads)
     add_test(NAME ${target} COMMAND ${target})
 endforeach()
+
+# ─── Тесты переноса узла двухсвязного списка внутрь блока (Issue #136) ────────
+pmm_add_test(test_issue136_embedded_list_node test_issue136_embedded_list_node.cpp)

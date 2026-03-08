@@ -56,7 +56,8 @@ static bool test_create_basic()
 
 static bool test_create_too_small()
 {
-    PMM_TEST( !Mgr::create( 128 ) );
+    // Issue #136: kMinMemorySize = 128 (Block_0(16) + ManagerHeader(64) + Block_1(16) + kMinBlockSize(32))
+    PMM_TEST( !Mgr::create( 127 ) );
     return true;
 }
 

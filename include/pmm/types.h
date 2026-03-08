@@ -6,7 +6,7 @@
  * BlockView, FreeBlockView and utility functions for byte/granule conversion.
  *
  * Sizes of structures are protected by static_assert (Issue #59, #73 FR-03):
- *   Block<DefaultAddressTraits> == 32 bytes
+ *   Block<DefaultAddressTraits> == 16 bytes (Issue #136: reduced from 32 bytes)
  *   ManagerHeader               == 64 bytes
  *
  * Issue #95: Moved from persist_memory_types.h to pmm/types.h as part of
@@ -14,8 +14,10 @@
  *
  * Issue #106: Block<A>* utilities replace legacy BlockHeader* ones.
  * Issue #112: BlockHeader struct removed — Block<DefaultAddressTraits> is the sole block type.
+ * Issue #136: Block<A> reduced from 32 to 16 bytes — prev_offset, left_offset, right_offset,
+ *             parent_offset moved to FreeBlockData<A> in the free block data area.
  *
- * @version 2.2 (Issue #112 — BlockHeader removed)
+ * @version 2.3 (Issue #136 — Block<A> reduced to 16 bytes, FreeBlockData in data area)
  */
 
 #pragma once
@@ -23,6 +25,7 @@
 #include "pmm/address_traits.h"
 #include "pmm/block.h"
 #include "pmm/block_state.h"
+#include "pmm/free_block_data.h"
 #include "pmm/linked_list_node.h"
 #include "pmm/tree_node.h"
 
@@ -105,22 +108,28 @@ namespace detail
 // Issue #112: BlockHeader struct removed — Block<DefaultAddressTraits> is the sole block type.
 // All block metadata is stored in Block<AddressTraitsT> (LinkedListNode + TreeNode).
 
-// Issue #87: Verify Block<DefaultAddressTraits> layout and size constraints.
-static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes (Issue #87, #112)" );
+// Issue #136: Block<DefaultAddressTraits> reduced from 32 to 16 bytes.
+// FreeBlockData<A> (16 bytes) is stored in the data area of free blocks.
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 16,
+               "Block<DefaultAddressTraits> must be 16 bytes (Issue #136)" );
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) % kGranuleSize == 0,
                "Block<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
 
+// Issue #136: FreeBlockData<DefaultAddressTraits>: prev + left + right + parent (16 bytes).
+static_assert( sizeof( pmm::FreeBlockData<pmm::DefaultAddressTraits> ) == 4 * sizeof( std::uint32_t ),
+               "FreeBlockData<DefaultAddressTraits> must be 16 bytes (Issue #136)" );
 // Issue #87 Phase 2: verify LinkedListNode<DefaultAddressTraits> layout.
+// Issue #136: LinkedListNode now contains only next_offset (4 bytes).
 // Note: offsetof checks on protected fields are in linked_list_node.h and tree_node.h (Issue #120).
-static_assert( sizeof( pmm::LinkedListNode<pmm::DefaultAddressTraits> ) == 2 * sizeof( std::uint32_t ),
-               "LinkedListNode<DefaultAddressTraits> must be 8 bytes (Issue #87)" );
-// TreeNode<DefaultAddressTraits>: weight + left/right/parent + root_offset + avl_height/node_type (24 bytes).
-// Issue #126: weight moved to first field, avl_height/node_type (renamed from _pad) moved to end.
-static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 5 * sizeof( std::uint32_t ) + 4,
-               "TreeNode<DefaultAddressTraits> must be 24 bytes (Issue #87, #126)" );
+static_assert( sizeof( pmm::LinkedListNode<pmm::DefaultAddressTraits> ) == sizeof( std::uint32_t ),
+               "LinkedListNode<DefaultAddressTraits> must be 4 bytes (Issue #136)" );
+// Issue #136: TreeNode<DefaultAddressTraits>: weight + root_offset + avl_height + node_type (12 bytes).
+// left_offset, right_offset, parent_offset moved to FreeBlockData<A>.
+static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 2 * sizeof( std::uint32_t ) + 4,
+               "TreeNode<DefaultAddressTraits> must be 12 bytes (Issue #136)" );
 
-/// @brief Number of granules per block header (2 granules = 32 bytes, Issue #112)
+/// @brief Number of granules per block header (1 granule = 16 bytes, Issue #136: reduced from 2).
+/// Issue #136: Block<A> reduced from 32 bytes (2 granules) to 16 bytes (1 granule).
 inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) / kGranuleSize;
 
 // kBlockMagic removed (Issue #69): block validity now uses is_valid_block() structural invariants.
@@ -156,8 +165,15 @@ static_assert( sizeof( ManagerHeader ) % kGranuleSize == 0,
 /// @brief Number of granules in ManagerHeader
 inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader ) / kGranuleSize;
 
-/// @brief Issue #83: Minimum block size = Block header + 1 data granule (Issue #112: uses Block<A>).
-inline constexpr std::size_t kMinBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + kGranuleSize;
+/// @brief Issue #83/#136: Minimum block size = Block header + FreeBlockData + at least alignment.
+/// Issue #136: Free blocks store FreeBlockData<A> in their data area. The minimum free block must
+/// be large enough to hold FreeBlockData (16 bytes = 1 granule). This means:
+///   min free block = sizeof(Block<A>) + sizeof(FreeBlockData<A>) = 16 + 16 = 32 bytes (2 granules).
+///   min allocated block = sizeof(Block<A>) + 1 granule = 16 + 16 = 32 bytes (2 granules).
+/// For splitting: both resulting blocks must meet their minimum size requirements.
+inline constexpr std::size_t kFreeBlockDataSize = sizeof( pmm::FreeBlockData<pmm::DefaultAddressTraits> );
+inline constexpr std::size_t kMinBlockSize      = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
+                                             ( kFreeBlockDataSize > kGranuleSize ? kFreeBlockDataSize : kGranuleSize );
 
 /// @brief Issue #83: Minimum memory size = Block_0 + ManagerHeader + Block_1 + kMinBlockSize (Issue #112).
 inline constexpr std::size_t kMinMemorySize = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
@@ -238,8 +254,9 @@ inline std::uint32_t block_total_granules( const std::uint8_t* base, const Manag
     return byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - this_idx;
 }
 
-/// @brief Issue #69/#106/#112: Structural block validity using Block<A> layout.
-/// Invariants: weight<total_gran, prev<idx<next, avl_height<32, distinct AVL refs.
+/// @brief Issue #69/#106/#112/#136: Structural block validity using Block<A> layout.
+/// Issue #136: prev_offset and AVL refs are in FreeBlockData (only accessible for free blocks).
+/// Invariants: weight<total_gran, next_off>idx, avl_height<32, distinct AVL refs (free blocks only).
 inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, std::uint32_t idx )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
@@ -255,22 +272,33 @@ inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, 
                                    : ( byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - idx );
     if ( BlockState::get_weight( blk ) >= total_gran )
         return false;
-    auto prev_off = BlockState::get_prev_offset( blk );
-    if ( prev_off != kNoBlock && prev_off >= idx )
-        return false;
     if ( next_off != kNoBlock && next_off <= idx )
         return false;
     if ( BlockState::get_avl_height( blk ) >= 32 )
         return false;
-    auto       left_off   = BlockState::get_left_offset( blk );
-    auto       right_off  = BlockState::get_right_offset( blk );
-    auto       parent_off = BlockState::get_parent_offset( blk );
-    const bool l          = ( left_off != kNoBlock );
-    const bool r          = ( right_off != kNoBlock );
-    const bool p          = ( parent_off != kNoBlock );
-    if ( ( l || r || p ) && ( ( l && r && left_off == right_off ) || ( l && p && left_off == parent_off ) ||
-                              ( r && p && right_off == parent_off ) ) )
-        return false;
+    // Issue #136: AVL refs (left/right/parent) and prev_offset are in FreeBlockData.
+    // Validate them only for free blocks (weight == 0) that have sufficient space.
+    if ( BlockState::get_weight( blk ) == 0 )
+    {
+        // Free block: validate FreeBlockData if there is enough space for it
+        if ( idx_to_byte_off( idx ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
+                 sizeof( pmm::FreeBlockData<pmm::DefaultAddressTraits> ) <=
+             hdr->total_size )
+        {
+            auto       left_off   = BlockState::get_left_offset( blk );
+            auto       right_off  = BlockState::get_right_offset( blk );
+            auto       parent_off = BlockState::get_parent_offset( blk );
+            const bool l          = ( left_off != kNoBlock );
+            const bool r          = ( right_off != kNoBlock );
+            const bool p          = ( parent_off != kNoBlock );
+            if ( ( l || r || p ) && ( ( l && r && left_off == right_off ) || ( l && p && left_off == parent_off ) ||
+                                      ( r && p && right_off == parent_off ) ) )
+                return false;
+            auto prev_off = BlockState::get_prev_offset( blk );
+            if ( prev_off != kNoBlock && prev_off >= idx )
+                return false;
+        }
+    }
     return true;
 }
 
@@ -309,6 +337,10 @@ inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* bas
 }
 
 /// @brief Minimum block granules for user_bytes (header + data, minimum 1 data granule).
+/// Issue #136: Block header is now 1 granule (16 bytes). Minimum data is also 1 granule.
+/// Note: When splitting, the remainder block must hold FreeBlockData (16 bytes = 1 granule),
+/// so the split remainder is always at least 2 granules (header + FreeBlockData).
+/// This is handled in AllocatorPolicy::allocate_from_block() via kBlockHeaderGranules + 1.
 inline std::uint32_t required_block_granules( std::size_t user_bytes )
 {
     std::uint32_t data_granules = bytes_to_granules( user_bytes );

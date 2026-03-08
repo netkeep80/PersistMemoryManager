@@ -75,18 +75,21 @@ static bool test_cr_no_block_is_max_uint32()
 static bool test_cr_block_header_combines_list_and_tree()
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
-    // LinkedListNode fields at start of Block (verified via BlockStateBase::kOffset* — Issue #120)
-    static_assert( BlockState::kOffsetPrevOffset == 0 );
-    static_assert( BlockState::kOffsetNextOffset == 4 );
+    // Issue #136: LinkedListNode now has only next_offset (4 bytes); prev_offset moved to FreeBlockData.
+    // next_offset is the only field, at offset 0 (start of LinkedListNode = start of Block).
+    static_assert( BlockState::kOffsetNextOffset == 0 );
     // TreeNode fields follow LinkedListNode (Issue #126: weight moved to first field)
-    static_assert( BlockState::kOffsetWeight == 8 );
-    static_assert( BlockState::kOffsetLeftOffset == 12 );
-    static_assert( BlockState::kOffsetRightOffset == 16 );
-    static_assert( BlockState::kOffsetParentOffset == 20 );
-    static_assert( BlockState::kOffsetRootOffset == 24 );
-    static_assert( BlockState::kOffsetAvlHeight == 28 );
-    static_assert( BlockState::kOffsetNodeType == 30 );
-    static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32 );
+    static_assert( BlockState::kOffsetWeight == 4 );
+    static_assert( BlockState::kOffsetRootOffset == 8 );
+    static_assert( BlockState::kOffsetAvlHeight == 12 );
+    static_assert( BlockState::kOffsetNodeType == 14 );
+    // Issue #136: FreeBlockData stored after block header (offset 16) in data area of free blocks
+    static_assert( BlockState::kOffsetPrevOffset == 16 );
+    static_assert( BlockState::kOffsetLeftOffset == 20 );
+    static_assert( BlockState::kOffsetRightOffset == 24 );
+    static_assert( BlockState::kOffsetParentOffset == 28 );
+    // Issue #136: Block<A> reduced from 32 bytes (2 granules) to 16 bytes (1 granule)
+    static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 16 );
     return true;
 }
 
@@ -234,7 +237,8 @@ static bool test_phase3_block_layout()
 {
     using A = pmm::DefaultAddressTraits;
 
-    static_assert( sizeof( pmm::Block<A> ) == 32 );
+    // Issue #136: Block<A> reduced from 32 bytes (2 granules) to 16 bytes (1 granule)
+    static_assert( sizeof( pmm::Block<A> ) == 16 );
     static_assert( std::is_base_of<pmm::LinkedListNode<A>, pmm::Block<A>>::value );
     static_assert( std::is_base_of<pmm::TreeNode<A>, pmm::Block<A>>::value );
 

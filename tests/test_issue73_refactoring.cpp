@@ -51,8 +51,9 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 // ─── FR-03: Binary-compatibility static_assert checks ────────────────────────
 
 // Issue #112: BlockHeader struct removed; Block<DefaultAddressTraits> is the sole block type.
-static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "FR-03: Block<DefaultAddressTraits> must be exactly 32 bytes (Issue #112)" );
+// Issue #136: Block<DefaultAddressTraits> reduced from 32 to 16 bytes (1 granule).
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 16,
+               "FR-03: Block<DefaultAddressTraits> must be exactly 16 bytes (Issue #136)" );
 static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "FR-03: ManagerHeader must be exactly 64 bytes" );
 static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr<T> must be exactly 4 bytes (Issue #59)" );
 
@@ -146,7 +147,8 @@ static bool test_file_separation()
     // Types from persist_memory_types.h
     static_assert( pmm::kGranuleSize == 16, "Types header must provide kGranuleSize" );
     // Issue #112: BlockHeader removed; Block<DefaultAddressTraits> is the sole block type.
-    static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Types header: Block<A> (Issue #112)" );
+    // Issue #136: Block<A> reduced from 32 to 16 bytes (1 granule).
+    static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 16, "Types header: Block<A> (Issue #136)" );
     static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "Types header: ManagerHeader" );
 
     // Config from pmm_config.h

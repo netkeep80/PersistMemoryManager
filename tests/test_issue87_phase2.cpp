@@ -77,8 +77,9 @@ static bool test_p2_list_node_default_types()
     // Тип полей = index_type (Issue #120: поля protected, проверяем через index_type)
     static_assert( std::is_same<Node::index_type, std::uint32_t>::value, "index_type must be uint32_t" );
 
-    // Размер: 2 * sizeof(uint32_t) = 8 байт
-    static_assert( sizeof( Node ) == 8, "LinkedListNode<Default> must be 8 bytes" );
+    // Issue #136: prev_offset moved to FreeBlockData; LinkedListNode only has next_offset.
+    // Размер: 1 * sizeof(uint32_t) = 4 байта
+    static_assert( sizeof( Node ) == 4, "LinkedListNode<Default> must be 4 bytes (Issue #136)" );
 
     return true;
 }
@@ -89,36 +90,38 @@ static bool test_p2_list_node_various_traits()
     // 8-bit
     using Node8 = pmm::LinkedListNode<pmm::TinyAddressTraits>;
     static_assert( std::is_same<Node8::index_type, std::uint8_t>::value );
-    static_assert( sizeof( Node8 ) == 2, "LinkedListNode<Tiny> must be 2 bytes" );
+    // Issue #136: prev_offset moved to FreeBlockData; each variant has 1 field only.
+    static_assert( sizeof( Node8 ) == 1, "LinkedListNode<Tiny> must be 1 byte (Issue #136)" );
 
     // 16-bit
     using Node16 = pmm::LinkedListNode<pmm::SmallAddressTraits>;
     static_assert( std::is_same<Node16::index_type, std::uint16_t>::value );
-    static_assert( sizeof( Node16 ) == 4, "LinkedListNode<Small> must be 4 bytes" );
+    static_assert( sizeof( Node16 ) == 2, "LinkedListNode<Small> must be 2 bytes (Issue #136)" );
 
     // 32-bit (default)
     using Node32 = pmm::LinkedListNode<pmm::DefaultAddressTraits>;
     static_assert( std::is_same<Node32::index_type, std::uint32_t>::value );
-    static_assert( sizeof( Node32 ) == 8, "LinkedListNode<Default> must be 8 bytes" );
+    static_assert( sizeof( Node32 ) == 4, "LinkedListNode<Default> must be 4 bytes (Issue #136)" );
 
     // 64-bit
     using Node64 = pmm::LinkedListNode<pmm::LargeAddressTraits>;
     static_assert( std::is_same<Node64::index_type, std::uint64_t>::value );
-    static_assert( sizeof( Node64 ) == 16, "LinkedListNode<Large> must be 16 bytes" );
+    static_assert( sizeof( Node64 ) == 8, "LinkedListNode<Large> must be 8 bytes (Issue #136)" );
 
     return true;
 }
 
 /// @brief Смещения полей LinkedListNode<DefaultAddressTraits>.
 /// Issue #120: поля protected, смещения проверяются через BlockStateBase::kOffset*.
+/// Issue #136: prev_offset перемещён в FreeBlockData (offset 16, после заголовка блока).
 static bool test_p2_list_node_offsets()
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
 
-    // prev_offset — первое поле (offset 0)
-    static_assert( BlockState::kOffsetPrevOffset == 0, "prev_offset must be at offset 0" );
-    // next_offset — второе поле (offset 4 = sizeof(uint32_t))
-    static_assert( BlockState::kOffsetNextOffset == sizeof( std::uint32_t ), "next_offset must be at offset 4" );
+    // Issue #136: next_offset — единственное поле LinkedListNode, теперь на offset 0.
+    static_assert( BlockState::kOffsetNextOffset == 0, "next_offset must be at offset 0 (Issue #136)" );
+    // Issue #136: prev_offset перемещён в FreeBlockData (хранится после заголовка блока, offset 16).
+    static_assert( BlockState::kOffsetPrevOffset == 16, "prev_offset in FreeBlockData at offset 16 (Issue #136)" );
 
     return true;
 }
@@ -131,15 +134,16 @@ static bool test_p2_list_node_blockheader_compat()
     using Node       = pmm::LinkedListNode<A>;
     using BlockState = pmm::BlockStateBase<A>;
 
-    // Размер узла списка = 8 байт (два index_type поля)
-    static_assert( sizeof( Node ) == 8 );
+    // Issue #136: Размер узла списка = 4 байта (только next_offset; prev_offset в FreeBlockData)
+    static_assert( sizeof( Node ) == 4 );
 
     // Тип полей = index_type (Issue #120: поля protected)
     static_assert( std::is_same<Node::index_type, std::uint32_t>::value );
 
-    // В Block<A> LinkedListNode идёт первым — prev_offset и next_offset с offset 0 и 4
-    static_assert( BlockState::kOffsetPrevOffset == 0, "Block::prev_offset must be at offset 0" );
-    static_assert( BlockState::kOffsetNextOffset == sizeof( std::uint32_t ), "Block::next_offset must be at offset 4" );
+    // В Block<A> LinkedListNode идёт первым — next_offset на offset 0 (Issue #136)
+    // prev_offset перемещён в FreeBlockData на offset 16 (после заголовка блока)
+    static_assert( BlockState::kOffsetNextOffset == 0, "Block::next_offset must be at offset 0 (Issue #136)" );
+    static_assert( BlockState::kOffsetPrevOffset == 16, "prev_offset in FreeBlockData at offset 16 (Issue #136)" );
 
     return true;
 }
@@ -166,10 +170,10 @@ static bool test_p2_tree_node_default_types()
     static_assert( std::is_same<Node::index_type, std::uint32_t>::value,
                    "TreeNode::index_type must be uint32_t for DefaultAddressTraits" );
 
-    // Размер: 3 * sizeof(uint32_t) + sizeof(int16_t) + sizeof(uint16_t)
-    //         + sizeof(uint32_t) + sizeof(uint32_t)
-    //       = 12 + 2 + 2 + 4 + 4 = 24 байта
-    static_assert( sizeof( Node ) == 24, "TreeNode<Default> must be 24 bytes" );
+    // Issue #136: left_offset, right_offset, parent_offset перемещены в FreeBlockData.
+    // Размер: sizeof(uint32_t) + sizeof(int16_t) + sizeof(uint16_t) + sizeof(uint32_t)
+    //       = weight(4) + avl_height(2) + node_type(2) + root_offset(4) = 12 байт
+    static_assert( sizeof( Node ) == 12, "TreeNode<Default> must be 12 bytes (Issue #136)" );
 
     return true;
 }
@@ -179,60 +183,70 @@ static bool test_p2_tree_node_default_types()
 /// Issue #120: Поля protected, тип проверяется через index_type.
 static bool test_p2_tree_node_various_traits()
 {
-    // 8-bit: 3*1 + 2+2 + 1+1 = 10 байт (может быть паддинг из-за выравнивания int16_t)
+    // Issue #136: left_offset, right_offset, parent_offset moved to FreeBlockData.
+    // TreeNode now has only: weight + root_offset + avl_height + node_type.
+    // 8-bit: weight(1) + root_offset(1) + avl_height(2) + node_type(2) = 6 байт
     using Node8 = pmm::TreeNode<pmm::TinyAddressTraits>;
     static_assert( std::is_same<Node8::index_type, std::uint8_t>::value );
-    static_assert( sizeof( Node8 ) >= 10, "TreeNode<Tiny> must be at least 10 bytes" );
+    static_assert( sizeof( Node8 ) >= 6, "TreeNode<Tiny> must be at least 6 bytes (Issue #136)" );
 
-    // 16-bit: 3*2 + 2+2 + 2+2 = 14 байт
+    // 16-bit: weight(2) + root_offset(2) + avl_height(2) + node_type(2) = 8 байт
     using Node16 = pmm::TreeNode<pmm::SmallAddressTraits>;
     static_assert( std::is_same<Node16::index_type, std::uint16_t>::value );
-    static_assert( sizeof( Node16 ) == 14, "TreeNode<Small> must be 14 bytes" );
+    static_assert( sizeof( Node16 ) == 8, "TreeNode<Small> must be 8 bytes (Issue #136)" );
 
-    // 32-bit (default): 3*4 + 2+2 + 4+4 = 24 байта
+    // 32-bit (default): weight(4) + root_offset(4) + avl_height(2) + node_type(2) = 12 байт
     using Node32 = pmm::TreeNode<pmm::DefaultAddressTraits>;
     static_assert( std::is_same<Node32::index_type, std::uint32_t>::value );
-    static_assert( sizeof( Node32 ) == 24, "TreeNode<Default> must be 24 bytes" );
+    static_assert( sizeof( Node32 ) == 12, "TreeNode<Default> must be 12 bytes (Issue #136)" );
 
-    // 64-bit: 3*8 + 2+2 + 8+8 = 44 байта (может быть паддинг до 48 для 8-байтного выравнивания)
+    // 64-bit: weight(8) + root_offset(8) + avl_height(2) + node_type(2) + [4 pad] = 24 байта
     using Node64 = pmm::TreeNode<pmm::LargeAddressTraits>;
     static_assert( std::is_same<Node64::index_type, std::uint64_t>::value );
-    static_assert( sizeof( Node64 ) >= 44, "TreeNode<Large> must be at least 44 bytes" );
+    static_assert( sizeof( Node64 ) >= 20, "TreeNode<Large> must be at least 20 bytes (Issue #136)" );
 
     return true;
 }
 
 /// @brief Смещения полей TreeNode<DefaultAddressTraits>.
 /// Issue #126: новый порядок полей — weight первым, avl_height/node_type в конце.
+/// Issue #136: left_offset, right_offset, parent_offset перемещены в FreeBlockData.
 /// Issue #120: поля protected, смещения через BlockStateBase::kOffset*.
 static bool test_p2_tree_node_offsets()
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     using Node       = pmm::TreeNode<pmm::DefaultAddressTraits>;
 
-    // TreeNode начинается после LinkedListNode (sizeof(LLNode) = 8)
+    // Issue #136: TreeNode начинается после LinkedListNode (sizeof(LLNode) = 4 теперь)
     constexpr std::size_t tree_base = sizeof( pmm::LinkedListNode<pmm::DefaultAddressTraits> );
-    static_assert( tree_base == 8 );
+    static_assert( tree_base == 4 );
 
-    // Issue #126: weight — первое поле TreeNode (offset 8 в Block)
-    static_assert( BlockState::kOffsetWeight == tree_base + 0, "weight must be at offset 8" );
-    static_assert( BlockState::kOffsetLeftOffset == tree_base + sizeof( std::uint32_t ),
-                   "left_offset must be at offset 12" );
-    static_assert( BlockState::kOffsetRightOffset == tree_base + 2 * sizeof( std::uint32_t ),
-                   "right_offset must be at offset 16" );
-    static_assert( BlockState::kOffsetParentOffset == tree_base + 3 * sizeof( std::uint32_t ),
-                   "parent_offset must be at offset 20" );
-    static_assert( BlockState::kOffsetRootOffset == tree_base + 4 * sizeof( std::uint32_t ),
-                   "root_offset must be at offset 24" );
-    // Issue #126: avl_height follows weight+left+right+parent+root (5 x uint32_t = 20 bytes)
-    static_assert( BlockState::kOffsetAvlHeight == tree_base + 5 * sizeof( std::uint32_t ),
-                   "avl_height must be at offset 28" );
-    // Issue #126: node_type (renamed from _pad) follows avl_height (2 bytes)
-    static_assert( BlockState::kOffsetNodeType == tree_base + 5 * sizeof( std::uint32_t ) + 2,
-                   "node_type must be at offset 30" );
+    // Issue #126: weight — первое поле TreeNode; Issue #136: теперь на offset 4 в Block
+    static_assert( BlockState::kOffsetWeight == tree_base + 0, "weight must be at offset 4 (Issue #136)" );
+    // Issue #136: root_offset второе поле TreeNode (offset 8)
+    static_assert( BlockState::kOffsetRootOffset == tree_base + sizeof( std::uint32_t ),
+                   "root_offset must be at offset 8 (Issue #136)" );
+    // Issue #126+#136: avl_height follows weight+root_offset (2 x uint32_t = 8 bytes)
+    static_assert( BlockState::kOffsetAvlHeight == tree_base + 2 * sizeof( std::uint32_t ),
+                   "avl_height must be at offset 12 (Issue #136)" );
+    // Issue #126+#136: node_type follows avl_height (2 bytes)
+    static_assert( BlockState::kOffsetNodeType == tree_base + 2 * sizeof( std::uint32_t ) + 2,
+                   "node_type must be at offset 14 (Issue #136)" );
 
-    // Also verify TreeNode size
-    static_assert( sizeof( Node ) == 24, "TreeNode<Default> must be 24 bytes" );
+    // Issue #136: left/right/parent_offset now in FreeBlockData (stored after block header at offset 16)
+    constexpr std::size_t blk_size = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
+    static_assert( blk_size == 16 );
+    static_assert( BlockState::kOffsetPrevOffset == blk_size + 0,
+                   "prev_offset in FreeBlockData at offset 16 (Issue #136)" );
+    static_assert( BlockState::kOffsetLeftOffset == blk_size + sizeof( std::uint32_t ),
+                   "left_offset in FreeBlockData at offset 20 (Issue #136)" );
+    static_assert( BlockState::kOffsetRightOffset == blk_size + 2 * sizeof( std::uint32_t ),
+                   "right_offset in FreeBlockData at offset 24 (Issue #136)" );
+    static_assert( BlockState::kOffsetParentOffset == blk_size + 3 * sizeof( std::uint32_t ),
+                   "parent_offset in FreeBlockData at offset 28 (Issue #136)" );
+
+    // Also verify TreeNode size (Issue #136: reduced from 24 to 12 bytes)
+    static_assert( sizeof( Node ) == 12, "TreeNode<Default> must be 12 bytes (Issue #136)" );
 
     return true;
 }
@@ -240,6 +254,7 @@ static bool test_p2_tree_node_offsets()
 /// @brief Layout TreeNode<DefaultAddressTraits> в составе Block<A> (Issue #112).
 /// Issue #120: поля protected, layout через BlockStateBase::kOffset*.
 /// Issue #126: новый порядок полей — weight первым, avl_height/node_type в конце.
+/// Issue #136: left/right/parent_offset перемещены в FreeBlockData.
 static bool test_p2_tree_node_blockheader_compat()
 {
     using A          = pmm::DefaultAddressTraits;
@@ -249,24 +264,17 @@ static bool test_p2_tree_node_blockheader_compat()
     // Тип полей = index_type = uint32_t (Issue #120: поля protected)
     static_assert( std::is_same<Node::index_type, std::uint32_t>::value );
 
-    // В Block<A> TreeNode следует после LinkedListNode (8 байт),
-    // поэтому смещения в Block = 8 + смещения в TreeNode.
-    // Проверяем через BlockStateBase::kOffset* (Issue #126: новый порядок):
-    constexpr std::size_t tree_base = sizeof( pmm::LinkedListNode<A> ); // = 8
-    static_assert( tree_base == 8 );
-    static_assert( BlockState::kOffsetWeight == tree_base + 0, "weight position in Block" );
-    static_assert( BlockState::kOffsetLeftOffset == tree_base + sizeof( std::uint32_t ),
-                   "left_offset position in Block" );
-    static_assert( BlockState::kOffsetRightOffset == tree_base + 2 * sizeof( std::uint32_t ),
-                   "right_offset position in Block" );
-    static_assert( BlockState::kOffsetParentOffset == tree_base + 3 * sizeof( std::uint32_t ),
-                   "parent_offset position in Block" );
-    static_assert( BlockState::kOffsetRootOffset == tree_base + 4 * sizeof( std::uint32_t ),
-                   "root_offset position in Block" );
-    static_assert( BlockState::kOffsetAvlHeight == tree_base + 5 * sizeof( std::uint32_t ),
-                   "avl_height position in Block" );
-    static_assert( BlockState::kOffsetNodeType == tree_base + 5 * sizeof( std::uint32_t ) + 2,
-                   "node_type position in Block" );
+    // Issue #136: В Block<A> TreeNode следует после LinkedListNode (теперь 4 байта, не 8).
+    // Проверяем через BlockStateBase::kOffset* (Issue #126+#136: новый порядок):
+    constexpr std::size_t tree_base = sizeof( pmm::LinkedListNode<A> ); // = 4 (Issue #136)
+    static_assert( tree_base == 4 );
+    static_assert( BlockState::kOffsetWeight == tree_base + 0, "weight position in Block (offset 4)" );
+    static_assert( BlockState::kOffsetRootOffset == tree_base + sizeof( std::uint32_t ),
+                   "root_offset position in Block (offset 8, Issue #136)" );
+    static_assert( BlockState::kOffsetAvlHeight == tree_base + 2 * sizeof( std::uint32_t ),
+                   "avl_height position in Block (offset 12, Issue #136)" );
+    static_assert( BlockState::kOffsetNodeType == tree_base + 2 * sizeof( std::uint32_t ) + 2,
+                   "node_type position in Block (offset 14, Issue #136)" );
 
     return true;
 }
@@ -277,13 +285,14 @@ static bool test_p2_tree_node_blockheader_compat()
 
 /// @brief Проверяем, что поля LinkedListNode инициализируются через state machine.
 /// Issue #120: прямой доступ к полям запрещён, используем BlockStateBase.
+/// Issue #136: для свободных блоков нужен буфер Block<A> + FreeBlockData<A>.
 static bool test_p2_list_node_runtime_init()
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    // Выделяем буфер размером Block<A> и инициализируем через state machine
-    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
+    // Issue #136: буфер должен вмещать Block<A> + FreeBlockData<A> (prev/left/right/parent).
+    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> ) + sizeof( pmm::FreeBlockData<A> )] = {};
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0, 0 );
 
     PMM_TEST( BlockState::get_prev_offset( buf ) == pmm::detail::kNoBlock );
@@ -300,13 +309,14 @@ static bool test_p2_list_node_runtime_init()
 
 /// @brief Проверяем, что поля TreeNode инициализируются через state machine.
 /// Issue #120: прямой доступ к полям запрещён, используем BlockStateBase.
+/// Issue #136: для свободных блоков нужен буфер Block<A> + FreeBlockData<A>.
 static bool test_p2_tree_node_runtime_init()
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    // Выделяем буфер и инициализируем через state machine
-    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
+    // Issue #136: буфер должен вмещать Block<A> + FreeBlockData<A> (prev/left/right/parent).
+    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> ) + sizeof( pmm::FreeBlockData<A> )] = {};
 
     // Свободный блок: weight=0, root_offset=0
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0, 0 );
@@ -339,7 +349,8 @@ static bool test_p2_tiny_traits_nodes()
     using A          = pmm::TinyAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
+    // Issue #136: буфер должен вмещать Block<A> + FreeBlockData<A> (prev/left/right/parent).
+    alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> ) + sizeof( pmm::FreeBlockData<A> )] = {};
 
     // Инициализация через state machine
     BlockState::init_fields( buf, A::no_block, 0u, 1, 0, 0 );
