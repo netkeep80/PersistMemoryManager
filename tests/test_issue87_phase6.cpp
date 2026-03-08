@@ -116,12 +116,12 @@ static bool test_p6_repair_linked_list_via_manager()
 
     std::uint32_t alloc_before = pmm1.alloc_block_count();
 
-    PMM_TEST( pmm::save_manager( pmm1, TEST_FILE ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
     PMM_TEST( pmm2.create( 8192 ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, TEST_FILE ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( TEST_FILE ) );
     PMM_TEST( pmm2.is_initialized() );
     PMM_TEST( pmm2.alloc_block_count() == alloc_before );
 
@@ -142,12 +142,12 @@ static bool test_p6_rebuild_free_tree_via_manager()
     pmm1.deallocate_typed( p );
 
     PMM_TEST( pmm1.free_block_count() >= 1 );
-    PMM_TEST( pmm::save_manager( pmm1, TEST_FILE ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
     PMM_TEST( pmm2.create( 8192 ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, TEST_FILE ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( TEST_FILE ) );
     PMM_TEST( pmm2.is_initialized() );
 
     // Should be able to allocate after loading (requires valid free tree)

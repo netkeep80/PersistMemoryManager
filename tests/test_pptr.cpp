@@ -92,11 +92,11 @@ static bool test_pptr_resolve()
     PMM_TEST( !p.is_null() );
 
     // Разыменование через resolve(mgr) — единственный способ в новом API
-    int* ptr = p.resolve( pmm );
+    int* ptr = p.resolve();
     PMM_TEST( ptr != nullptr );
 
     *ptr = 42;
-    PMM_TEST( *p.resolve( pmm ) == 42 );
+    PMM_TEST( *p.resolve() == 42 );
 
     pmm.deallocate_typed( p );
     pmm.destroy();
@@ -114,11 +114,11 @@ static bool test_pptr_write_read()
     PMM_TEST( !p.is_null() );
 
     // Write/read via resolve
-    *p.resolve( pmm ) = 42;
-    PMM_TEST( *p.resolve( pmm ) == 42 );
+    *p.resolve() = 42;
+    PMM_TEST( *p.resolve() == 42 );
 
-    *p.resolve( pmm ) = 100;
-    PMM_TEST( *p.resolve( pmm ) == 100 );
+    *p.resolve() = 100;
+    PMM_TEST( *p.resolve() == 100 );
 
     pmm.deallocate_typed( p );
     pmm.destroy();
@@ -155,7 +155,7 @@ static bool test_pptr_null_resolve()
     PMM_TEST( pmm.create( size ) );
 
     Mgr::pptr<int> p; // null by default
-    PMM_TEST( p.resolve( pmm ) == nullptr );
+    PMM_TEST( p.resolve() == nullptr );
 
     pmm.destroy();
     return true;
@@ -173,13 +173,13 @@ static bool test_pptr_allocate_array()
     PMM_TEST( !p.is_null() );
     PMM_TEST( pmm.is_initialized() );
 
-    int* arr = p.resolve( pmm );
+    int* arr = p.resolve();
     PMM_TEST( arr != nullptr );
     for ( std::size_t i = 0; i < count; i++ )
         arr[i] = static_cast<int>( i * 10 );
 
     for ( std::size_t i = 0; i < count; i++ )
-        PMM_TEST( p.resolve( pmm )[i] == static_cast<int>( i * 10 ) );
+        PMM_TEST( p.resolve()[i] == static_cast<int>( i * 10 ) );
 
     pmm.deallocate_typed( p );
     PMM_TEST( pmm.is_initialized() );
@@ -199,7 +199,7 @@ static bool test_pptr_resolve_at()
     Mgr::pptr<double> p = pmm.allocate_typed<double>( count );
     PMM_TEST( !p.is_null() );
 
-    double* arr = p.resolve( pmm );
+    double* arr = p.resolve();
     PMM_TEST( arr != nullptr );
     for ( std::size_t i = 0; i < count; i++ )
         arr[i] = static_cast<double>( i ) * 1.5;
@@ -217,29 +217,31 @@ static bool test_pptr_persistence()
     const std::size_t size     = 64 * 1024;
     const char*       filename = "pptr_test.dat";
 
-    Mgr pmm1;
-    PMM_TEST( pmm1.create( size ) );
+    // Use distinct InstanceId values to simulate two separate manager "sessions"
+    using Mgr1 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 200>;
+    using Mgr2 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 201>;
 
-    Mgr::pptr<int> p1 = pmm1.allocate_typed<int>();
+    PMM_TEST( Mgr1::create( size ) );
+
+    Mgr1::pptr<int> p1 = Mgr1::allocate_typed<int>();
     PMM_TEST( !p1.is_null() );
-    *p1.resolve( pmm1 ) = 12345;
+    *p1.resolve() = 12345;
 
     std::uint32_t saved_offset = p1.offset();
-    PMM_TEST( pmm::save_manager( pmm1, filename ) );
-    pmm1.destroy();
+    PMM_TEST( pmm::save_manager<Mgr1>( filename ) );
+    Mgr1::destroy();
 
-    Mgr pmm2;
-    PMM_TEST( pmm2.create( size ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, filename ) );
-    PMM_TEST( pmm2.is_initialized() );
+    PMM_TEST( Mgr2::create( size ) );
+    PMM_TEST( pmm::load_manager_from_file<Mgr2>( filename ) );
+    PMM_TEST( Mgr2::is_initialized() );
 
     // Restore pptr by saved offset
-    Mgr::pptr<int> p2( saved_offset );
+    Mgr2::pptr<int> p2( saved_offset );
     PMM_TEST( !p2.is_null() );
-    PMM_TEST( *p2.resolve( pmm2 ) == 12345 );
+    PMM_TEST( *p2.resolve() == 12345 );
 
-    pmm2.deallocate_typed( p2 );
-    pmm2.destroy();
+    Mgr2::deallocate_typed( p2 );
+    Mgr2::destroy();
     std::remove( filename );
     return true;
 }
@@ -281,13 +283,13 @@ static bool test_pptr_multiple_types()
     PMM_TEST( !pc.is_null() );
     PMM_TEST( pmm.is_initialized() );
 
-    *pi.resolve( pmm ) = 7;
-    *pd.resolve( pmm ) = 3.14;
-    std::memcpy( pc.resolve( pmm ), "hello", 6 );
+    *pi.resolve() = 7;
+    *pd.resolve() = 3.14;
+    std::memcpy( pc.resolve(), "hello", 6 );
 
-    PMM_TEST( *pi.resolve( pmm ) == 7 );
-    PMM_TEST( *pd.resolve( pmm ) == 3.14 );
-    PMM_TEST( std::memcmp( pc.resolve( pmm ), "hello", 6 ) == 0 );
+    PMM_TEST( *pi.resolve() == 7 );
+    PMM_TEST( *pd.resolve() == 3.14 );
+    PMM_TEST( std::memcmp( pc.resolve(), "hello", 6 ) == 0 );
 
     pmm.deallocate_typed( pi );
     pmm.deallocate_typed( pd );
@@ -300,28 +302,31 @@ static bool test_pptr_multiple_types()
 
 /**
  * @brief При нехватке памяти менеджер (HeapStorage) автоматически расширяется.
+ *
+ * Uses unique InstanceId (202) to start with a fresh backend of exactly 8K.
  */
 static bool test_pptr_allocate_auto_expand()
 {
+    using MgrExpand = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 202>;
+
     const std::size_t initial_size = 8 * 1024;
 
-    Mgr pmm;
-    PMM_TEST( pmm.create( initial_size ) );
+    PMM_TEST( MgrExpand::create( initial_size ) );
 
-    std::size_t initial_total = pmm.total_size();
+    std::size_t initial_total = MgrExpand::total_size();
 
     // Fill most of initial buffer
-    Mgr::pptr<std::uint8_t> p1 = pmm.allocate_typed<std::uint8_t>( 4 * 1024 );
+    MgrExpand::pptr<std::uint8_t> p1 = MgrExpand::allocate_typed<std::uint8_t>( 4 * 1024 );
     PMM_TEST( !p1.is_null() );
 
     // Request second large block — should trigger expansion
-    Mgr::pptr<std::uint8_t> p2 = pmm.allocate_typed<std::uint8_t>( 4 * 1024 );
+    MgrExpand::pptr<std::uint8_t> p2 = MgrExpand::allocate_typed<std::uint8_t>( 4 * 1024 );
     PMM_TEST( !p2.is_null() );
 
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.total_size() > initial_total );
+    PMM_TEST( MgrExpand::is_initialized() );
+    PMM_TEST( MgrExpand::total_size() > initial_total );
 
-    pmm.destroy();
+    MgrExpand::destroy();
     return true;
 }
 

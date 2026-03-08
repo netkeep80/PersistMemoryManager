@@ -1,8 +1,9 @@
 /**
  * @file test_stress_auto_grow.cpp
- * @brief Стресс-тест автоматического роста (Issue #30, обновлено #102 — новый API)
+ * @brief Стресс-тест автоматического роста (Issue #30, обновлено #110 — статический API)
  *
- * Issue #102: использует AbstractPersistMemoryManager через pmm_presets.h.
+ * Issue #110: использует PersistMemoryManager<ConfigT, InstanceId> через pmm_presets.h.
+ * Каждый тест использует уникальный InstanceId для изоляции бэкенда.
  * Примечание: reallocate_typed() удалён из нового API.
  *   Тест 4 заменён на "large alloc triggers expand".
  */
@@ -40,8 +41,6 @@
         }                                                                                                              \
     } while ( false )
 
-using Mgr = pmm::presets::SingleThreadedHeap;
-
 static auto now()
 {
     return std::chrono::high_resolution_clock::now();
@@ -75,37 +74,40 @@ struct Rng
 
 } // namespace
 
+// Each test uses a unique InstanceId to ensure a fresh backend (no carryover from expand).
+
 static bool test_single_expand()
 {
+    using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 700>;
+
     const std::size_t initial_size = 64UL * 1024;
 
-    Mgr pmm;
-    if ( !pmm.create( initial_size ) )
+    if ( !MgrT::create( initial_size ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
     }
 
-    const std::size_t                    block_size = 512;
-    std::vector<Mgr::pptr<std::uint8_t>> ptrs;
+    const std::size_t                     block_size = 512;
+    std::vector<MgrT::pptr<std::uint8_t>> ptrs;
     ptrs.reserve( 300 );
 
     const uint8_t pattern = 0xAB;
     auto          t0      = now();
 
-    std::size_t total_before = pmm.total_size();
+    std::size_t total_before = MgrT::total_size();
     int         expand_count = 0;
 
     for ( int i = 0; i < 300 && expand_count < 2; ++i )
     {
-        Mgr::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( block_size );
+        MgrT::pptr<std::uint8_t> p = MgrT::allocate_typed<std::uint8_t>( block_size );
         if ( p.is_null() )
             break;
 
-        std::memset( p.resolve( pmm ), static_cast<int>( pattern ), block_size );
+        std::memset( p.resolve(), static_cast<int>( pattern ), block_size );
         ptrs.push_back( p );
 
-        std::size_t cur = pmm.total_size();
+        std::size_t cur = MgrT::total_size();
         if ( cur > total_before )
         {
             expand_count++;
@@ -116,12 +118,12 @@ static bool test_single_expand()
     }
 
     PMM_TEST( expand_count >= 1 );
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( MgrT::is_initialized() );
 
     bool data_ok = true;
     for ( auto& p : ptrs )
     {
-        const auto* bytes = p.resolve( pmm );
+        const auto* bytes = p.resolve();
         for ( std::size_t i = 0; i < block_size; ++i )
         {
             if ( bytes[i] != pattern )
@@ -137,25 +139,26 @@ static bool test_single_expand()
     PMM_TEST( data_ok );
 
     for ( auto& p : ptrs )
-        pmm.deallocate_typed( p );
+        MgrT::deallocate_typed( p );
     ptrs.clear();
 
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    PMM_TEST( MgrT::is_initialized() );
+    PMM_TEST( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
-    pmm.destroy();
+    MgrT::destroy();
     return true;
 }
 
 static bool test_multi_expand()
 {
+    using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 701>;
+
     const std::size_t initial_size = 16 * 1024; // start small
 
-    Mgr pmm;
-    if ( !pmm.create( initial_size ) )
+    if ( !MgrT::create( initial_size ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -163,12 +166,12 @@ static bool test_multi_expand()
 
     Rng rng( 7777 );
 
-    std::vector<Mgr::pptr<std::uint8_t>> ptrs;
-    std::vector<std::size_t>             sizes;
+    std::vector<MgrT::pptr<std::uint8_t>> ptrs;
+    std::vector<std::size_t>              sizes;
     ptrs.reserve( 500 );
     sizes.reserve( 500 );
 
-    std::size_t prev_total    = pmm.total_size();
+    std::size_t prev_total    = MgrT::total_size();
     int         expand_count  = 0;
     const int   max_expands   = 5;
     const int   max_alloc_cnt = 500;
@@ -177,25 +180,25 @@ static bool test_multi_expand()
 
     for ( int i = 0; i < max_alloc_cnt && expand_count < max_expands; ++i )
     {
-        std::size_t             sz = rng.next_block_size_small();
-        Mgr::pptr<std::uint8_t> p  = pmm.allocate_typed<std::uint8_t>( sz );
+        std::size_t              sz = rng.next_block_size_small();
+        MgrT::pptr<std::uint8_t> p  = MgrT::allocate_typed<std::uint8_t>( sz );
         if ( p.is_null() )
         {
             std::cerr << "  ERROR: allocate returned null at i=" << i << "\n";
-            pmm.destroy();
+            MgrT::destroy();
             return false;
         }
 
-        std::memset( p.resolve( pmm ), static_cast<int>( i & 0xFF ), sz );
+        std::memset( p.resolve(), static_cast<int>( i & 0xFF ), sz );
         ptrs.push_back( p );
         sizes.push_back( sz );
 
-        std::size_t cur = pmm.total_size();
+        std::size_t cur = MgrT::total_size();
         if ( cur > prev_total )
         {
             expand_count++;
             prev_total = cur;
-            std::cout << "    expand #" << expand_count << ": buffer " << pmm.total_size() / 1024 << " KB, "
+            std::cout << "    expand #" << expand_count << ": buffer " << MgrT::total_size() / 1024 << " KB, "
                       << "live blocks: " << ptrs.size() << "\n";
         }
     }
@@ -203,12 +206,12 @@ static bool test_multi_expand()
     std::cout << "    Allocated: " << ptrs.size() << " blocks, expand() called: " << expand_count << " times\n";
 
     PMM_TEST( expand_count >= max_expands );
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( MgrT::is_initialized() );
 
     bool data_ok = true;
     for ( int i = 0; i < static_cast<int>( ptrs.size() ); ++i )
     {
-        const auto*   bytes   = ptrs[i].resolve( pmm );
+        const auto*   bytes   = ptrs[i].resolve();
         const uint8_t pattern = static_cast<uint8_t>( i & 0xFF );
         for ( std::size_t j = 0; j < sizes[i]; ++j )
         {
@@ -225,25 +228,26 @@ static bool test_multi_expand()
     PMM_TEST( data_ok );
 
     for ( auto& p : ptrs )
-        pmm.deallocate_typed( p );
+        MgrT::deallocate_typed( p );
     ptrs.clear();
 
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    PMM_TEST( MgrT::is_initialized() );
+    PMM_TEST( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
-    pmm.destroy();
+    MgrT::destroy();
     return true;
 }
 
 static bool test_expand_with_mixed_ops()
 {
+    using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 702>;
+
     const std::size_t initial_size = 32UL * 1024;
 
-    Mgr pmm;
-    if ( !pmm.create( initial_size ) )
+    if ( !MgrT::create( initial_size ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -251,12 +255,12 @@ static bool test_expand_with_mixed_ops()
 
     Rng rng( 31415 );
 
-    std::vector<Mgr::pptr<std::uint8_t>> live;
-    std::vector<std::size_t>             live_sizes;
+    std::vector<MgrT::pptr<std::uint8_t>> live;
+    std::vector<std::size_t>              live_sizes;
     live.reserve( 100000 );
     live_sizes.reserve( 100000 );
 
-    std::size_t prev_total   = pmm.total_size();
+    std::size_t prev_total   = MgrT::total_size();
     int         expand_count = 0;
     int         alloc_ok     = 0;
     int         dealloc_cnt  = 0;
@@ -269,11 +273,11 @@ static bool test_expand_with_mixed_ops()
     {
         if ( rng.next_n( 10 ) < 7 || live.empty() )
         {
-            std::size_t             sz = rng.next_block_size_small();
-            Mgr::pptr<std::uint8_t> p  = pmm.allocate_typed<std::uint8_t>( sz );
+            std::size_t              sz = rng.next_block_size_small();
+            MgrT::pptr<std::uint8_t> p  = MgrT::allocate_typed<std::uint8_t>( sz );
             if ( !p.is_null() )
             {
-                std::memset( p.resolve( pmm ), static_cast<int>( alloc_ok & 0xFF ), sz );
+                std::memset( p.resolve(), static_cast<int>( alloc_ok & 0xFF ), sz );
                 live.push_back( p );
                 live_sizes.push_back( sz );
                 alloc_ok++;
@@ -282,7 +286,7 @@ static bool test_expand_with_mixed_ops()
         else
         {
             uint32_t idx = rng.next_n( static_cast<uint32_t>( live.size() ) );
-            pmm.deallocate_typed( live[idx] );
+            MgrT::deallocate_typed( live[idx] );
             live[idx]       = live.back();
             live_sizes[idx] = live_sizes.back();
             live.pop_back();
@@ -290,7 +294,7 @@ static bool test_expand_with_mixed_ops()
             dealloc_cnt++;
         }
 
-        std::size_t cur = pmm.total_size();
+        std::size_t cur = MgrT::total_size();
         if ( cur > prev_total )
         {
             expand_count++;
@@ -304,28 +308,29 @@ static bool test_expand_with_mixed_ops()
     std::cout << "    Live blocks: " << live.size() << "  expand() called: " << expand_count << " times\n";
 
     PMM_TEST( expand_count >= 1 );
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( MgrT::is_initialized() );
 
     for ( auto& p : live )
-        pmm.deallocate_typed( p );
+        MgrT::deallocate_typed( p );
     live.clear();
 
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    PMM_TEST( MgrT::is_initialized() );
+    PMM_TEST( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
-    pmm.destroy();
+    MgrT::destroy();
     return true;
 }
 
 static bool test_large_alloc_triggers_expand()
 {
+    using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 703>;
+
     const std::size_t initial_size = 16UL * 1024;
 
-    Mgr pmm;
-    if ( !pmm.create( initial_size ) )
+    if ( !MgrT::create( initial_size ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -334,54 +339,55 @@ static bool test_large_alloc_triggers_expand()
     auto t0 = now();
 
     // Allocate a few small blocks
-    const std::size_t                    block_sz = 64;
-    const int                            n_blocks = 5;
-    std::vector<Mgr::pptr<std::uint8_t>> ptrs;
+    const std::size_t                     block_sz = 64;
+    const int                             n_blocks = 5;
+    std::vector<MgrT::pptr<std::uint8_t>> ptrs;
     ptrs.reserve( n_blocks );
 
     for ( int i = 0; i < n_blocks; ++i )
     {
-        Mgr::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( block_sz );
+        MgrT::pptr<std::uint8_t> p = MgrT::allocate_typed<std::uint8_t>( block_sz );
         PMM_TEST( !p.is_null() );
-        std::memset( p.resolve( pmm ), i + 1, block_sz );
+        std::memset( p.resolve(), i + 1, block_sz );
         ptrs.push_back( p );
     }
 
     std::cout << "    Allocated " << n_blocks << " blocks before large alloc\n";
-    std::size_t size_before = pmm.total_size();
+    std::size_t size_before = MgrT::total_size();
 
     // Allocate a large block that won't fit in the initial buffer
-    const std::size_t       big_sz = initial_size * 2;
-    Mgr::pptr<std::uint8_t> big    = pmm.allocate_typed<std::uint8_t>( big_sz );
+    const std::size_t        big_sz = initial_size * 2;
+    MgrT::pptr<std::uint8_t> big    = MgrT::allocate_typed<std::uint8_t>( big_sz );
     PMM_TEST( !big.is_null() );
 
-    std::size_t size_after = pmm.total_size();
+    std::size_t size_after = MgrT::total_size();
     bool        did_expand = size_after > size_before;
     std::cout << "    large alloc expand: " << ( did_expand ? "yes" : "no" ) << "\n";
     std::cout << "    Buffer: " << size_before / 1024 << " KB -> " << size_after / 1024 << " KB\n";
 
     PMM_TEST( did_expand );
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( MgrT::is_initialized() );
 
-    pmm.deallocate_typed( big );
+    MgrT::deallocate_typed( big );
     for ( int i = 0; i < n_blocks; ++i )
-        pmm.deallocate_typed( ptrs[i] );
+        MgrT::deallocate_typed( ptrs[i] );
 
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( MgrT::is_initialized() );
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
-    pmm.destroy();
+    MgrT::destroy();
     return true;
 }
 
 static bool test_grow_factor()
 {
+    using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 704>;
+
     const std::size_t initial_size = 8UL * 1024;
 
-    Mgr pmm;
-    if ( !pmm.create( initial_size ) )
+    if ( !MgrT::create( initial_size ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -389,26 +395,26 @@ static bool test_grow_factor()
 
     auto t0 = now();
 
-    std::size_t last_size     = pmm.total_size();
+    std::size_t last_size     = MgrT::total_size();
     int         expand_count  = 0;
     bool        grow_ok       = true;
     const int   max_expands   = 5;
     const int   max_alloc_cnt = 1000;
 
-    std::vector<Mgr::pptr<std::uint8_t>> ptrs;
+    std::vector<MgrT::pptr<std::uint8_t>> ptrs;
 
     for ( int i = 0; i < max_alloc_cnt && expand_count < max_expands; ++i )
     {
-        Mgr::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( 64 );
+        MgrT::pptr<std::uint8_t> p = MgrT::allocate_typed<std::uint8_t>( 64 );
         if ( p.is_null() )
         {
             std::cerr << "  ERROR: allocate returned null at i=" << i << "\n";
-            pmm.destroy();
+            MgrT::destroy();
             return false;
         }
         ptrs.push_back( p );
 
-        std::size_t cur = pmm.total_size();
+        std::size_t cur = MgrT::total_size();
         if ( cur > last_size )
         {
             expand_count++;
@@ -425,18 +431,18 @@ static bool test_grow_factor()
 
     PMM_TEST( grow_ok );
     PMM_TEST( expand_count >= max_expands );
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( MgrT::is_initialized() );
 
     for ( auto& p : ptrs )
-        pmm.deallocate_typed( p );
+        MgrT::deallocate_typed( p );
 
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    PMM_TEST( MgrT::is_initialized() );
+    PMM_TEST( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
-    pmm.destroy();
+    MgrT::destroy();
     return true;
 }
 

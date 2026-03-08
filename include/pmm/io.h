@@ -1,70 +1,63 @@
 /**
- * @file persist_memory_io.h
- * @brief Утилиты файлового ввода/вывода для AbstractPersistMemoryManager (Issue #102)
+ * @file pmm/io.h
+ * @brief Утилиты файлового ввода/вывода для PersistMemoryManager (Issue #102, #110)
  *
  * Вспомогательный заголовочный файл с функциями сохранения и загрузки
  * образа памяти в/из файла. Вынесен в отдельный файл, так как файловый
  * ввод/вывод не является основной функциональностью менеджера памяти,
  * но необходим для тестов и примеров использования персистентности.
  *
- * Использование:
+ * Использование (Issue #110 — статический интерфейс):
  * @code
- * #include "pmm/pmm_presets.h"
+ * #include "pmm/manager_configs.h"
+ * #include "pmm/persist_memory_manager.h"
  * #include "pmm/io.h"
  *
- * pmm::presets::SingleThreadedHeap pmm;
- * pmm.create(64 * 1024);
+ * using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+ * MyMgr::create(64 * 1024);
  *
  * // Сохранить образ в файл
- * bool ok = pmm::save_manager(pmm, "heap.dat");
+ * bool ok = pmm::save_manager<MyMgr>("heap.dat");
  *
- * // Загрузить образ из файла (через HeapStorage — сначала нужно выделить буфер)
- * pmm::presets::SingleThreadedHeap pmm2;
- * pmm2.create(64 * 1024);   // выделяем буфер нужного размера
- * bool ok2 = pmm::load_manager_from_file(pmm2, "heap.dat");
+ * // Загрузить образ из файла (сначала нужно выделить буфер нужного размера)
+ * MyMgr::create(64 * 1024);
+ * bool ok2 = pmm::load_manager_from_file<MyMgr>("heap.dat");
  * @endcode
+ *
+ * @version 0.2 (Issue #110 — обновлено для статического интерфейса PersistMemoryManager)
  */
 
 #pragma once
 
-#include "pmm/abstract_pmm.h"
+#include "pmm/types.h"
 
+#include <cstdint>
 #include <cstdio>
 
 namespace pmm
 {
 
-// ─── Новый API для AbstractPersistMemoryManager (Issue #97) ──────────────────
-
 /**
- * @brief Сохранить образ AbstractPersistMemoryManager в файл.
+ * @brief Сохранить образ PersistMemoryManager в файл (Issue #110 — статический интерфейс).
  *
  * Записывает весь управляемый буфер в файл побайтово.
  * Поскольку все метаданные используют смещения (offsets) от начала буфера,
  * образ корректно загружается по любому базовому адресу через load_manager_from_file().
  *
- * Issue #97: работает с любым экземпляром AbstractPersistMemoryManager (не синглтон).
- *
- * @tparam AddressTraitsT  Traits адресного пространства.
- * @tparam StorageBackendT Бэкенд хранилища.
- * @tparam FreeBlockTreeT  Политика дерева свободных блоков.
- * @tparam ThreadPolicyT   Политика многопоточности.
- * @param mgr      Менеджер персистентной памяти.
+ * @tparam MgrT    Тип статического менеджера (PersistMemoryManager<ConfigT, Id>).
  * @param filename Путь к выходному файлу.
  * @return true при успешной записи, false при ошибке ввода/вывода или если не инициализирован.
  *
- * Предусловие:  filename != nullptr, mgr.is_initialized() == true.
+ * Предусловие:  filename != nullptr, MgrT::is_initialized() == true.
  * Постусловие: файл содержит точную копию управляемой области памяти.
  */
-template <typename AddressTraitsT, typename StorageBackendT, typename FreeBlockTreeT, typename ThreadPolicyT>
-inline bool
-save_manager( const AbstractPersistMemoryManager<AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT>& mgr,
-              const char* filename )
+template <typename MgrT>
+inline bool save_manager( const char* filename )
 {
-    if ( filename == nullptr || !mgr.is_initialized() )
+    if ( filename == nullptr || !MgrT::is_initialized() )
         return false;
-    const std::uint8_t* data  = mgr.backend().base_ptr();
-    std::size_t         total = mgr.backend().total_size();
+    const std::uint8_t* data  = MgrT::backend().base_ptr();
+    std::size_t         total = MgrT::backend().total_size();
     if ( data == nullptr || total == 0 )
         return false;
     std::FILE* f = std::fopen( filename, "wb" );
@@ -76,38 +69,29 @@ save_manager( const AbstractPersistMemoryManager<AddressTraitsT, StorageBackendT
 }
 
 /**
- * @brief Загрузить образ менеджера из файла в экземпляр AbstractPersistMemoryManager.
+ * @brief Загрузить образ менеджера из файла в PersistMemoryManager (Issue #110 — статический интерфейс).
  *
  * Читает файл, записанный функцией save_manager(), в буфер менеджера,
- * затем вызывает mgr.load() для проверки заголовка и восстановления состояния.
- *
- * Issue #97: работает с любым экземпляром AbstractPersistMemoryManager (не синглтон).
+ * затем вызывает MgrT::load() для проверки заголовка и восстановления состояния.
  *
  * Примечание: бэкенд менеджера должен уже иметь выделенный буфер достаточного размера.
- * Для HeapStorage вызовите create(size) перед load_manager_from_file().
- * Для MMapStorage вызовите backend().open() перед load_manager_from_file().
+ * Для HeapStorage вызовите MgrT::create(size) перед load_manager_from_file().
  *
- * @tparam AddressTraitsT  Traits адресного пространства.
- * @tparam StorageBackendT Бэкенд хранилища.
- * @tparam FreeBlockTreeT  Политика дерева свободных блоков.
- * @tparam ThreadPolicyT   Политика многопоточности.
- * @param mgr      Менеджер персистентной памяти (должен иметь уже выделенный буфер).
+ * @tparam MgrT    Тип статического менеджера (PersistMemoryManager<ConfigT, Id>).
  * @param filename Путь к файлу с образом.
  * @return true при успешной загрузке, false при ошибке.
  *
- * Предусловие:  filename != nullptr, mgr.backend().base_ptr() != nullptr.
+ * Предусловие:  filename != nullptr, MgrT::backend().base_ptr() != nullptr.
  * Постусловие: менеджер восстановлен из файла.
  */
-template <typename AddressTraitsT, typename StorageBackendT, typename FreeBlockTreeT, typename ThreadPolicyT>
-inline bool load_manager_from_file(
-    AbstractPersistMemoryManager<AddressTraitsT, StorageBackendT, FreeBlockTreeT, ThreadPolicyT>& mgr,
-    const char*                                                                                   filename )
+template <typename MgrT>
+inline bool load_manager_from_file( const char* filename )
 {
     if ( filename == nullptr )
         return false;
 
-    std::uint8_t* buf  = mgr.backend().base_ptr();
-    std::size_t   size = mgr.backend().total_size();
+    std::uint8_t* buf  = MgrT::backend().base_ptr();
+    std::size_t   size = MgrT::backend().total_size();
     if ( buf == nullptr || size < detail::kMinMemorySize )
         return false;
 
@@ -141,7 +125,7 @@ inline bool load_manager_from_file(
     if ( read_bytes != file_size )
         return false;
 
-    return mgr.load();
+    return MgrT::load();
 }
 
 } // namespace pmm

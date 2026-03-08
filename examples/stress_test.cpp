@@ -1,17 +1,14 @@
 /**
  * @file stress_test.cpp
- * @brief PersistMemoryManager stress test (updated #102)
+ * @brief PersistMemoryManager stress test (updated #110)
  *
  * Tests correctness and performance under:
  * - 100 000 sequential allocations
  * - 1 000 000 alternating allocate/deallocate operations
  *
- * Issue #102: uses new AbstractPersistMemoryManager API via pmm_presets.h.
- * - No legacy_manager.h
- * - No singleton PersistMemoryManager<>
- * - Uses Manager::pptr<T> instead of pmm::pptr<T>
- * - Uses p.resolve(mgr) instead of p.get()
- * - Uses pmm.is_initialized() instead of pmm.validate()
+ * Issue #110: uses new unified PersistMemoryManager<ConfigT, InstanceId> static API.
+ * - All methods are static (Mgr::create(), Mgr::allocate(), etc.)
+ * - p.resolve() — no argument needed (uses static manager resolve)
  */
 
 #include "pmm/pmm_presets.h"
@@ -21,8 +18,6 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
-
-using Mgr = pmm::presets::SingleThreadedHeap;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -41,12 +36,13 @@ static double elapsed_ms( std::chrono::high_resolution_clock::time_point start,
 
 static bool test_100k_allocations()
 {
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 20>;
+
     std::cout << "\n[Test 1] 100 000 sequential allocations\n";
 
     const std::size_t memory_size = 32UL * 1024 * 1024; // 32 MB
 
-    Mgr pmm;
-    if ( !pmm.create( memory_size ) )
+    if ( !Mgr::create( memory_size ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -61,13 +57,13 @@ static bool test_100k_allocations()
     int  allocated = 0;
     for ( int i = 0; i < N; i++ )
     {
-        ptrs[i] = pmm.allocate_typed<uint8_t>( BSIZ );
+        ptrs[i] = Mgr::allocate_typed<uint8_t>( BSIZ );
         if ( ptrs[i].is_null() )
         {
             std::cout << "  Limit reached at i=" << i << " (not enough memory)\n";
             break;
         }
-        std::memset( ptrs[i].resolve( pmm ), static_cast<int>( i & 0xFF ), BSIZ );
+        std::memset( ptrs[i].resolve(), static_cast<int>( i & 0xFF ), BSIZ );
         allocated++;
     }
     auto   t1       = now();
@@ -80,7 +76,7 @@ static bool test_100k_allocations()
     bool data_ok = true;
     for ( int i = 0; i < allocated && i < 1000; i++ )
     {
-        const std::uint8_t* p       = ptrs[i].resolve( pmm );
+        const std::uint8_t* p       = ptrs[i].resolve();
         const std::uint8_t  pattern = static_cast<std::uint8_t>( i & 0xFF );
         for ( std::size_t j = 0; j < BSIZ; j++ )
         {
@@ -95,25 +91,25 @@ static bool test_100k_allocations()
             break;
     }
 
-    if ( !pmm.is_initialized() )
+    if ( !Mgr::is_initialized() )
     {
         std::cerr << "  ERROR: manager not initialized after allocations\n";
-        pmm.destroy();
+        Mgr::destroy();
         return false;
     }
 
     // Deallocation phase
     auto t2 = now();
     for ( int i = 0; i < allocated; i++ )
-        pmm.deallocate_typed( ptrs[i] );
+        Mgr::deallocate_typed( ptrs[i] );
     auto   t3         = now();
     double ms_dealloc = elapsed_ms( t2, t3 );
 
     std::cout << "  Dealloc time: " << ms_dealloc << " ms\n";
-    std::cout << "  Free after dealloc: " << pmm.free_size() << " bytes\n";
-    std::cout << "  Used after dealloc: " << pmm.used_size() << " bytes\n";
+    std::cout << "  Free after dealloc: " << Mgr::free_size() << " bytes\n";
+    std::cout << "  Used after dealloc: " << Mgr::used_size() << " bytes\n";
 
-    pmm.destroy();
+    Mgr::destroy();
 
     bool passed = data_ok && ( allocated > 0 );
     std::cout << "  Result: " << ( passed ? "PASS" : "FAIL" ) << "\n";
@@ -124,12 +120,13 @@ static bool test_100k_allocations()
 
 static bool test_1m_alternating()
 {
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 21>;
+
     std::cout << "\n[Test 2] 1 000 000 alternating allocate/deallocate\n";
 
     const std::size_t memory_size = 8UL * 1024 * 1024; // 8 MB
 
-    Mgr pmm;
-    if ( !pmm.create( memory_size ) )
+    if ( !Mgr::create( memory_size ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -159,11 +156,11 @@ static bool test_1m_alternating()
         if ( pool[slot].is_null() )
         {
             std::size_t sz   = SIZES[next_rng() % 8];
-            pool[slot]       = pmm.allocate_typed<uint8_t>( sz );
+            pool[slot]       = Mgr::allocate_typed<uint8_t>( sz );
             pool_sizes[slot] = sz;
             if ( !pool[slot].is_null() )
             {
-                std::memset( pool[slot].resolve( pmm ), static_cast<int>( slot & 0xFF ), sz );
+                std::memset( pool[slot].resolve(), static_cast<int>( slot & 0xFF ), sz );
                 alloc_ops++;
             }
             else
@@ -174,7 +171,7 @@ static bool test_1m_alternating()
         }
         else
         {
-            pmm.deallocate_typed( pool[slot] );
+            Mgr::deallocate_typed( pool[slot] );
             pool_sizes[slot] = 0;
             dealloc_ops++;
         }
@@ -194,7 +191,7 @@ static bool test_1m_alternating()
     {
         if ( !pool[i].is_null() && pool_sizes[i] > 0 )
         {
-            const std::uint8_t* p       = pool[i].resolve( pmm );
+            const std::uint8_t* p       = pool[i].resolve();
             const std::uint8_t  pattern = static_cast<std::uint8_t>( i & 0xFF );
             for ( std::size_t j = 0; j < ( std::min )( pool_sizes[i], std::size_t( 8 ) ); j++ )
             {
@@ -212,12 +209,12 @@ static bool test_1m_alternating()
     for ( int i = 0; i < POOL; i++ )
     {
         if ( !pool[i].is_null() )
-            pmm.deallocate_typed( pool[i] );
+            Mgr::deallocate_typed( pool[i] );
     }
 
-    bool valid = pmm.is_initialized();
+    bool valid = Mgr::is_initialized();
 
-    pmm.destroy();
+    Mgr::destroy();
 
     bool passed = data_ok && valid;
     std::cout << "  Result: " << ( passed ? "PASS" : "FAIL" ) << "\n";
@@ -228,7 +225,7 @@ static bool test_1m_alternating()
 
 int main()
 {
-    std::cout << "=== PersistMemoryManager — Stress Test (updated #102) ===\n";
+    std::cout << "=== PersistMemoryManager — Stress Test (updated #110) ===\n";
 
     bool all_passed = true;
 

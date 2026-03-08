@@ -225,12 +225,12 @@ static bool test_avl_survives_save_load()
     std::size_t free_before   = pmm1.free_block_count();
     std::size_t alloc_before  = pmm1.alloc_block_count();
 
-    PMM_TEST( pmm::save_manager( pmm1, TEST_FILE ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
     PMM_TEST( pmm2.create( size ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, TEST_FILE ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( TEST_FILE ) );
     PMM_TEST( pmm2.is_initialized() );
 
     PMM_TEST( pmm2.block_count() == blocks_before );
@@ -307,20 +307,20 @@ static bool test_alloc_dealloc_works()
     PMM_TEST( !ptr.is_null() );
 
     // Write data
-    std::memset( ptr.resolve( pmm ), 0xAB, 256 );
+    std::memset( ptr.resolve(), 0xAB, 256 );
 
     // Allocate a bigger block (no reallocate in new API)
     Mgr::pptr<std::uint8_t> new_ptr = pmm.allocate_typed<std::uint8_t>( 512 );
     PMM_TEST( !new_ptr.is_null() );
 
     // Copy data
-    std::memcpy( new_ptr.resolve( pmm ), ptr.resolve( pmm ), 256 );
+    std::memcpy( new_ptr.resolve(), ptr.resolve(), 256 );
     pmm.deallocate_typed( ptr );
 
     PMM_TEST( pmm.is_initialized() );
 
     // Verify data preserved
-    const std::uint8_t* p = new_ptr.resolve( pmm );
+    const std::uint8_t* p = new_ptr.resolve();
     for ( std::size_t i = 0; i < 256; i++ )
         PMM_TEST( p[i] == 0xAB );
 

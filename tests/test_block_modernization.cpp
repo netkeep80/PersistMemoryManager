@@ -97,9 +97,9 @@ static bool test_save_load_new_format()
     auto p3 = pmm1.allocate_typed<std::uint8_t>( 300 );
     PMM_TEST( !p1.is_null() && !p2.is_null() && !p3.is_null() );
 
-    std::memset( p1.resolve( pmm1 ), 0x11, 100 );
-    std::memset( p2.resolve( pmm1 ), 0x22, 200 );
-    std::memset( p3.resolve( pmm1 ), 0x33, 300 );
+    std::memset( p1.resolve(), 0x11, 100 );
+    std::memset( p2.resolve(), 0x22, 200 );
+    std::memset( p3.resolve(), 0x33, 300 );
 
     // Free middle block (creates fragmentation)
     pmm1.deallocate_typed( p2 );
@@ -110,12 +110,12 @@ static bool test_save_load_new_format()
     std::uint32_t off1         = p1.offset();
     std::uint32_t off3         = p3.offset();
 
-    PMM_TEST( pmm::save_manager( pmm1, TEST_FILE ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
     PMM_TEST( pmm2.create( 64 * 1024 ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, TEST_FILE ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( TEST_FILE ) );
     PMM_TEST( pmm2.is_initialized() );
 
     // Verify block counts are preserved
@@ -126,9 +126,9 @@ static bool test_save_load_new_format()
     Mgr::pptr<std::uint8_t> q1( off1 );
     Mgr::pptr<std::uint8_t> q3( off3 );
     for ( std::size_t i = 0; i < 100; i++ )
-        PMM_TEST( q1.resolve( pmm2 )[i] == 0x11 );
+        PMM_TEST( q1.resolve()[i] == 0x11 );
     for ( std::size_t i = 0; i < 300; i++ )
-        PMM_TEST( q3.resolve( pmm2 )[i] == 0x33 );
+        PMM_TEST( q3.resolve()[i] == 0x33 );
 
     pmm2.deallocate_typed( q1 );
     pmm2.deallocate_typed( q3 );
@@ -181,7 +181,7 @@ static bool test_stress_save_load()
     {
         ptrs[i] = pmm1.allocate_typed<std::uint8_t>( ( i + 1 ) * 16 );
         PMM_TEST( !ptrs[i].is_null() );
-        std::memset( ptrs[i].resolve( pmm1 ), static_cast<int>( i + 1 ), ( i + 1 ) * 16 );
+        std::memset( ptrs[i].resolve(), static_cast<int>( i + 1 ), ( i + 1 ) * 16 );
     }
 
     // Free half
@@ -192,12 +192,12 @@ static bool test_stress_save_load()
     std::uint32_t alloc_before = pmm1.alloc_block_count();
     std::uint32_t free_before  = pmm1.free_block_count();
 
-    PMM_TEST( pmm::save_manager( pmm1, TEST_FILE ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
     PMM_TEST( pmm2.create( 128 * 1024 ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, TEST_FILE ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( TEST_FILE ) );
     PMM_TEST( pmm2.is_initialized() );
 
     PMM_TEST( pmm2.alloc_block_count() == alloc_before );
@@ -207,7 +207,7 @@ static bool test_stress_save_load()
     for ( int i = 1; i < N; i += 2 )
     {
         std::size_t block_size = static_cast<std::size_t>( ( i + 1 ) * 16 );
-        const auto* bytes      = ptrs[i].resolve( pmm2 );
+        const auto* bytes      = ptrs[i].resolve();
         for ( std::size_t j = 0; j < block_size; j++ )
             PMM_TEST( bytes[j] == static_cast<std::uint8_t>( i + 1 ) );
     }

@@ -2,36 +2,19 @@
  * @file pmm/pptr.h
  * @brief pptr<T, ManagerT> — персистентный типизированный указатель (Issue #102).
  *
- * Выделен из legacy_manager.h для использования с AbstractPersistMemoryManager.
- *
  * pptr<T, ManagerT> хранит гранульный индекс вместо адреса,
  * что делает его адресно-независимым и пригодным для персистентных хранилищ:
- *   - Хранит индекс типа ManagerT::address_traits::index_type (обычно uint32_t = 4 байта)
+ *   - Хранит индекс типа ManagerT::address_traits::index_type
  *   - Нет смещения при повторной загрузке по другому адресу
  *   - Запрет адресной арифметики (pptr++ запрещён)
  *   - Index 0 означает null
  *
  * Поддерживаемые режимы разыменования (Issue #102, #108):
- *   - Объектная модель: `p.resolve(mgr)` или `mgr.resolve<T>(p)` — через экземпляр менеджера
  *   - Статическая модель: `p.resolve()`, `*p`, `p->field` — через статический метод менеджера
- *     (только для менеджеров с статическим API, например StaticMemoryManager)
  *
- * Пример использования с AbstractPersistMemoryManager (объектная модель):
+ * Пример использования с PersistMemoryManager (статическая модель):
  * @code
- *   using MyMgr = pmm::presets::SingleThreadedHeap;
- *   MyMgr pmm;
- *   pmm.create(64 * 1024);
- *
- *   MyMgr::pptr<int> p = pmm.allocate_typed<int>();
- *   if (p) {
- *       *p.resolve(pmm) = 42;  // разыменование через экземпляр менеджера
- *   }
- *   pmm.deallocate_typed(p);
- * @endcode
- *
- * Пример использования с StaticMemoryManager (статическая модель):
- * @code
- *   using MyMgr = pmm::StaticMemoryManager<pmm::CacheManagerConfig>;
+ *   using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
  *   MyMgr::create(64 * 1024);
  *
  *   MyMgr::pptr<int> p = MyMgr::allocate_typed<int>();
@@ -44,9 +27,8 @@
  *   MyMgr::destroy();
  * @endcode
  *
- * @see abstract_pmm.h — AbstractPersistMemoryManager::allocate_typed()
- * @see static_memory_manager.h — StaticMemoryManager (статическая модель)
- * @version 0.4 (Issue #108 — добавлен беззаргументный resolve(), operator*, operator->)
+ * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
+ * @version 0.5 (Issue #110 — index_type из ManagerT::address_traits::index_type)
  */
 
 #pragma once
@@ -63,16 +45,18 @@ namespace detail
 
 /// @cond INTERNAL
 
-/// @brief Вспомогательный trait: извлекает index_type из менеджера (через address_traits).
-/// Если ManagerT::index_type существует, использует его; иначе — uint32_t.
+/// @brief Вспомогательный trait: извлекает index_type из менеджера через address_traits.
+/// Если ManagerT::address_traits::index_type существует, использует его;
+/// иначе пробует ManagerT::index_type; иначе — uint32_t (для совместимости).
 template <typename ManagerT, typename = void> struct manager_index_type
 {
     using type = std::uint32_t;
 };
 
-template <typename ManagerT> struct manager_index_type<ManagerT, std::void_t<typename ManagerT::index_type>>
+template <typename ManagerT>
+struct manager_index_type<ManagerT, std::void_t<typename ManagerT::address_traits::index_type>>
 {
-    using type = typename ManagerT::index_type;
+    using type = typename ManagerT::address_traits::index_type;
 };
 
 /// @endcond
@@ -85,15 +69,13 @@ template <typename ManagerT> struct manager_index_type<ManagerT, std::void_t<typ
  * Хранит гранульный индекс пользовательских данных, а не адрес.
  * Адресно-независим: корректно загружается из файла по другому базовому адресу.
  *
- * Тип индекса определяется через `ManagerT::index_type` (если менеджер его предоставляет),
- * иначе используется `uint32_t` (Issue #108).
+ * Тип индекса определяется через `ManagerT::address_traits::index_type` (Issue #110).
  *
  * @tparam T Тип данных, на который указывает pptr.
  * @tparam ManagerT Тип менеджера (обязателен, void не допускается).
  *
- * Поддерживаются два режима разыменования:
- *   - Объектная модель: `p.resolve(mgr)` или `mgr.resolve<T>(p)`
- *   - Статическая модель: `p.resolve()`, `*p`, `p->field` (если ManagerT имеет статический resolve)
+ * Поддерживается статическая модель разыменования:
+ *   - `p.resolve()`, `*p`, `p->field` — через статический метод менеджера
  */
 template <class T, class ManagerT> class pptr
 {
@@ -108,7 +90,7 @@ template <class T, class ManagerT> class pptr
     /// @brief Тип менеджера, к которому привязан pptr.
     using manager_type = ManagerT;
 
-    /// @brief Тип гранульного индекса (берётся из ManagerT::index_type, иначе uint32_t).
+    /// @brief Тип гранульного индекса (берётся из ManagerT::address_traits::index_type).
     using index_type = typename detail::manager_index_type<ManagerT>::type;
 
   private:
@@ -139,18 +121,6 @@ template <class T, class ManagerT> class pptr
     /// @brief Сравнение персистентных указателей одного типа.
     constexpr bool operator==( const pptr& other ) const noexcept { return _idx == other._idx; }
     constexpr bool operator!=( const pptr& other ) const noexcept { return _idx != other._idx; }
-
-    // ─── Разыменование через экземпляр менеджера (объектная модель) ──────────
-
-    /**
-     * @brief Разыменовать через экземпляр менеджера (объектная модель).
-     *
-     * Эквивалентно mgr.resolve<T>(*this).
-     *
-     * @param mgr Экземпляр менеджера, с которым связан данный pptr.
-     * @return T* — указатель на данные или nullptr если is_null().
-     */
-    T* resolve( ManagerT& mgr ) const noexcept { return mgr.template resolve<T>( *this ); }
 
     // ─── Разыменование через статический менеджер (статическая модель) ────────
 
@@ -185,8 +155,8 @@ template <class T, class ManagerT> class pptr
     T* operator->() const noexcept { return resolve(); }
 };
 
-// pptr<T, ManagerT> должен быть 4 байта (uint32_t гранульный индекс) — ManagerT не хранится
-static_assert( sizeof( pptr<int, struct DummyMgr> ) == 4, "sizeof(pptr<T,ManagerT>) must be 4 bytes (Issue #59)" );
-static_assert( sizeof( pptr<double, struct DummyMgr2> ) == 4, "sizeof(pptr<T,ManagerT>) must be 4 bytes (Issue #59)" );
+// pptr<T, ManagerT> хранит только гранульный индекс — ManagerT не хранится.
+// Размер зависит от ManagerT::address_traits::index_type (Issue #110).
+// Для DefaultAddressTraits (uint32_t) размер равен 4 байтам.
 
 } // namespace pmm

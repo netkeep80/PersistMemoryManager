@@ -168,7 +168,7 @@ static void test_concurrent_manual_grow_correctness()
     {
         ptrs[t] = pmm.allocate_typed<std::uint8_t>( kInitSize );
         PMM_TEST( !ptrs[t].is_null(), "concurrent_manual_grow: initial alloc" );
-        std::memset( ptrs[t].resolve( pmm ), kPattern, kInitSize );
+        std::memset( ptrs[t].resolve(), kPattern, kInitSize );
     }
 
     std::atomic<int>         corrupted{ 0 };
@@ -186,9 +186,9 @@ static void test_concurrent_manual_grow_correctness()
                     Mgr::pptr<std::uint8_t> new_p  = pmm.allocate_typed<std::uint8_t>( new_sz );
                     if ( !new_p.is_null() )
                     {
-                        std::memcpy( new_p.resolve( pmm ), ptrs[t].resolve( pmm ), cur_size );
+                        std::memcpy( new_p.resolve(), ptrs[t].resolve(), cur_size );
                         // Verify first byte is still kPattern
-                        if ( new_p.resolve( pmm )[0] != kPattern )
+                        if ( new_p.resolve()[0] != kPattern )
                             corrupted.fetch_add( 1 );
                         pmm.deallocate_typed( ptrs[t] );
                         ptrs[t]  = new_p;

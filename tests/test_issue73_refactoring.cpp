@@ -1,13 +1,15 @@
 /**
  * @file test_issue73_refactoring.cpp
- * @brief Tests for architectural refactoring Issue #73 (updated #102 — new API).
+ * @brief Tests for architectural refactoring Issue #73 (updated #110 — static API).
  *
- * Issue #102: PersistMemoryManager<> (singleton) removed. Tests verify:
+ * Issue #110: PersistMemoryManager<ConfigT, InstanceId> is a unified fully static
+ * manager. Tests verify:
  * - FR-03: BlockHeader (32 bytes) and ManagerHeader (64 bytes) sizes unchanged
  * - FR-02/AR-03: PersistentAvlTree is a standalone class
- * - FR-04/AR-01: Public API works through AbstractPersistMemoryManager presets
+ * - FR-04/AR-01: Public API works through static PersistMemoryManager presets
  * - AR-02: No virtual functions — all polymorphism is static
  * - AR-04: File separation: types, avl, manager, io
+ * - Independence via InstanceId: distinct InstanceIds have separate static state
  */
 
 #include "pmm/pmm_presets.h"
@@ -60,79 +62,79 @@ static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr<T> must be exactly 4 bytes (
 /// @brief Verify PersistentAvlTree is all-static and callable directly.
 static bool test_avl_tree_standalone()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 128 * 1024 ) );
+    PMM_TEST( Mgr::create( 128 * 1024 ) );
 
     // Allocate some blocks to create a non-trivial free tree
-    Mgr::pptr<std::uint8_t> p1 = pmm.allocate_typed<std::uint8_t>( 256 );
-    Mgr::pptr<std::uint8_t> p2 = pmm.allocate_typed<std::uint8_t>( 512 );
-    Mgr::pptr<std::uint8_t> p3 = pmm.allocate_typed<std::uint8_t>( 128 );
+    Mgr::pptr<std::uint8_t> p1 = Mgr::allocate_typed<std::uint8_t>( 256 );
+    Mgr::pptr<std::uint8_t> p2 = Mgr::allocate_typed<std::uint8_t>( 512 );
+    Mgr::pptr<std::uint8_t> p3 = Mgr::allocate_typed<std::uint8_t>( 128 );
     PMM_TEST( !p1.is_null() && !p2.is_null() && !p3.is_null() );
-    pmm.deallocate_typed( p1 );
+    Mgr::deallocate_typed( p1 );
 
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( Mgr::is_initialized() );
 
-    pmm.deallocate_typed( p2 );
-    pmm.deallocate_typed( p3 );
-    pmm.destroy();
+    Mgr::deallocate_typed( p2 );
+    Mgr::deallocate_typed( p3 );
+    Mgr::destroy();
     return true;
 }
 
-// ─── FR-04/AR-01: Public API via AbstractPersistMemoryManager ────────────────
+// ─── FR-04/AR-01: Public API via static PersistMemoryManager ─────────────────
 
-/// @brief Verify the new instance-based API works correctly (replaces static PMM).
+/// @brief Verify the static API works correctly.
 static bool test_instance_api()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    PMM_TEST( Mgr::is_initialized() );
 
-    PMM_TEST( pmm.alloc_block_count() > 0 ); // BlockHeader_0
-    PMM_TEST( pmm.free_block_count() == 1 );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // BlockHeader_0
+    PMM_TEST( Mgr::alloc_block_count() > 0 ); // BlockHeader_0
+    PMM_TEST( Mgr::free_block_count() == 1 );
+    PMM_TEST( Mgr::alloc_block_count() == 1 ); // BlockHeader_0
 
-    Mgr::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( 128 );
+    Mgr::pptr<std::uint8_t> p = Mgr::allocate_typed<std::uint8_t>( 128 );
     PMM_TEST( !p.is_null() );
 
-    PMM_TEST( pmm.alloc_block_count() == 2 ); // BlockHeader_0 + p
+    PMM_TEST( Mgr::alloc_block_count() == 2 ); // BlockHeader_0 + p
 
-    pmm.deallocate_typed( p );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // BlockHeader_0 only
-    pmm.destroy();
+    Mgr::deallocate_typed( p );
+    PMM_TEST( Mgr::alloc_block_count() == 1 ); // BlockHeader_0 only
+    Mgr::destroy();
     return true;
 }
 
-/// @brief Verify two independent manager instances don't share state.
+/// @brief Verify two managers with distinct InstanceIds don't share state.
 static bool test_two_instances_independent()
 {
-    Mgr pmm1, pmm2;
-    PMM_TEST( pmm1.create( 64 * 1024 ) );
-    PMM_TEST( pmm2.create( 64 * 1024 ) );
+    using Mgr1 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 600>;
+    using Mgr2 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 601>;
 
-    PMM_TEST( pmm1.is_initialized() );
-    PMM_TEST( pmm2.is_initialized() );
+    PMM_TEST( Mgr1::create( 64 * 1024 ) );
+    PMM_TEST( Mgr2::create( 64 * 1024 ) );
+
+    PMM_TEST( Mgr1::is_initialized() );
+    PMM_TEST( Mgr2::is_initialized() );
 
     // Each has separate total_size
-    PMM_TEST( pmm1.total_size() > 0 );
-    PMM_TEST( pmm2.total_size() > 0 );
+    PMM_TEST( Mgr1::total_size() > 0 );
+    PMM_TEST( Mgr2::total_size() > 0 );
 
-    Mgr::pptr<std::uint32_t> p1 = pmm1.allocate_typed<std::uint32_t>( 4 );
+    Mgr1::pptr<std::uint32_t> p1 = Mgr1::allocate_typed<std::uint32_t>( 4 );
     PMM_TEST( !p1.is_null() );
-    PMM_TEST( pmm2.alloc_block_count() == 1 ); // pmm2 unaffected
+    PMM_TEST( Mgr2::alloc_block_count() == 1 ); // Mgr2 unaffected
 
-    pmm1.deallocate_typed( p1 );
-    pmm1.destroy();
-    pmm2.destroy();
+    Mgr1::deallocate_typed( p1 );
+    Mgr1::destroy();
+    Mgr2::destroy();
     return true;
 }
 
 // ─── AR-02: No virtual functions ─────────────────────────────────────────────
 
-/// @brief Ensure AbstractPersistMemoryManager has no virtual functions (AR-02).
+/// @brief Ensure PersistMemoryManager has no virtual functions (AR-02).
 static bool test_no_virtual_functions()
 {
     static_assert( !std::is_polymorphic<Mgr>::value,
-                   "AR-02: AbstractPersistMemoryManager must have no virtual functions" );
+                   "AR-02: PersistMemoryManager must have no virtual functions" );
     static_assert( !std::is_polymorphic<pmm::PersistentAvlTree>::value,
                    "AR-02: PersistentAvlTree must have no virtual functions" );
     return true;
@@ -166,45 +168,44 @@ static bool test_file_separation()
 /// @brief Verify SingleThreadedHeap uses NoLock.
 static bool test_nolock_preset()
 {
-    using NoLockMgr = pmm::presets::SingleThreadedHeap;
+    using NoLockMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 602>;
 
-    NoLockMgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
-    PMM_TEST( pmm.is_initialized() );
+    PMM_TEST( NoLockMgr::create( 64 * 1024 ) );
+    PMM_TEST( NoLockMgr::is_initialized() );
 
-    Mgr::pptr<std::uint32_t> p = pmm.allocate_typed<std::uint32_t>( 4 );
+    NoLockMgr::pptr<std::uint32_t> p = NoLockMgr::allocate_typed<std::uint32_t>( 4 );
     PMM_TEST( !p.is_null() );
 
-    pmm.deallocate_typed( p );
-    pmm.destroy();
+    NoLockMgr::deallocate_typed( p );
+    NoLockMgr::destroy();
     return true;
 }
 
 // ─── Integration: multiple presets coexist ────────────────────────────────────
 
-/// @brief Verify that two different preset types can be used simultaneously.
+/// @brief Verify that two different InstanceId types can be used simultaneously.
 static bool test_presets_coexist()
 {
-    using ST = pmm::presets::SingleThreadedHeap;
+    using ST1 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 603>;
+    using ST2 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 604>;
 
-    ST pmm1, pmm2;
-    PMM_TEST( pmm1.create( 64 * 1024 ) );
-    PMM_TEST( pmm2.create( 64 * 1024 ) );
+    PMM_TEST( ST1::create( 64 * 1024 ) );
+    PMM_TEST( ST2::create( 64 * 1024 ) );
 
-    PMM_TEST( pmm1.is_initialized() );
-    PMM_TEST( pmm2.is_initialized() );
+    PMM_TEST( ST1::is_initialized() );
+    PMM_TEST( ST2::is_initialized() );
 
-    // Each has separate total_size
-    PMM_TEST( pmm1.total_size() == pmm2.total_size() );
+    // Each has separate total_size (same value but independent storage)
+    PMM_TEST( ST1::total_size() == ST2::total_size() );
 
-    pmm1.destroy();
-    pmm2.destroy();
+    ST1::destroy();
+    ST2::destroy();
     return true;
 }
 
 int main()
 {
-    std::cout << "=== test_issue73_refactoring (updated #102 — new API) ===\n";
+    std::cout << "=== test_issue73_refactoring (updated #110 — static API) ===\n";
     bool all_passed = true;
 
     PMM_RUN( "FR-03: struct sizes", test_file_separation );

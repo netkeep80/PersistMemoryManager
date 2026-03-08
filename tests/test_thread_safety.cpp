@@ -176,7 +176,7 @@ static void test_concurrent_manual_grow()
                     Mgr::pptr<std::uint8_t> new_p  = pmm.allocate_typed<std::uint8_t>( new_sz );
                     if ( !new_p.is_null() )
                     {
-                        std::memcpy( new_p.resolve( pmm ), blocks[t].resolve( pmm ), cur_size );
+                        std::memcpy( new_p.resolve(), blocks[t].resolve(), cur_size );
                         pmm.deallocate_typed( blocks[t] );
                         blocks[t] = new_p;
                         cur_size  = new_sz;
@@ -227,7 +227,7 @@ static void test_no_data_races()
                     if ( !p.is_null() )
                     {
                         int val = t * 1000 + i;
-                        std::memcpy( p.resolve( pmm ), &val, sizeof( int ) );
+                        std::memcpy( p.resolve(), &val, sizeof( int ) );
                         allocs.emplace_back( p, val );
                     }
                 }
@@ -235,7 +235,7 @@ static void test_no_data_races()
                 for ( auto& [p, expected] : allocs )
                 {
                     int actual = 0;
-                    std::memcpy( &actual, p.resolve( pmm ), sizeof( int ) );
+                    std::memcpy( &actual, p.resolve(), sizeof( int ) );
                     if ( actual != expected )
                         mismatches.fetch_add( 1 );
                     pmm.deallocate_typed( p );

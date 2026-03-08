@@ -1,45 +1,43 @@
 /**
  * @file pmm/manager_concept.h
- * @brief PersistMemoryManagerConcept — концепция для проверки типов менеджеров ПАП (Issue #100).
+ * @brief PersistMemoryManagerConcept — концепция для проверки типов менеджеров ПАП (Issue #100, #110).
  *
  * Определяет концепцию `PersistMemoryManagerConcept` и вспомогательные type traits,
  * позволяющие проверить во время компиляции, является ли тип корректным менеджером
- * персистентной памяти (удовлетворяет ли интерфейсу AbstractPersistMemoryManager).
+ * персистентной памяти (удовлетворяет ли статическому интерфейсу PersistMemoryManager).
  *
- * Требования к типу менеджера:
+ * Требования к типу менеджера (Issue #110 — статический интерфейс):
  *   - `manager_type` — typedef на собственный тип (self-type)
  *   - `address_traits` — тип адресных traits
  *   - `storage_backend` — тип бэкенда хранилища
  *   - `free_block_tree` — тип политики дерева свободных блоков
  *   - `thread_policy` — тип политики многопоточности
- *   - `create()` / `create(size_t)` — инициализация
- *   - `load()` — загрузка состояния
- *   - `destroy()` — сброс состояния
- *   - `is_initialized()` — проверка инициализации
- *   - `allocate(size_t)` → void* — выделение сырой памяти
- *   - `deallocate(void*)` — освобождение сырой памяти
- *   - `allocate_typed<T>()` → pptr<T, manager_type> — типизированное выделение
- *   - `deallocate_typed(pptr<T>)` — типизированное освобождение
- *   - `resolve<T>(pptr<T>)` → T* — разыменование
- *   - `total_size()`, `used_size()`, `free_size()` — статистика
+ *   - статический `create(size_t)` — инициализация
+ *   - статический `load()` — загрузка состояния
+ *   - статический `destroy()` — сброс состояния
+ *   - статический `is_initialized()` — проверка инициализации
+ *   - статический `allocate(size_t)` → void* — выделение сырой памяти
+ *   - статический `deallocate(void*)` — освобождение сырой памяти
+ *   - статический `total_size()` → size_t — статистика
  *
  * Использование:
  * @code
  *   // Проверка во время компиляции
- *   static_assert(pmm::is_persist_memory_manager_v<pmm::presets::SingleThreadedHeap>,
- *                 "SingleThreadedHeap must be a valid PersistMemoryManager");
+ *   static_assert(pmm::is_persist_memory_manager_v<pmm::PersistMemoryManager<pmm::CacheManagerConfig>>,
+ *                 "PersistMemoryManager<CacheManagerConfig> must be a valid PersistMemoryManager");
  *
  *   // Ограничение шаблонного параметра
  *   template <typename MgrT>
- *   void process(MgrT& mgr) {
+ *   void process() {
  *       static_assert(pmm::is_persist_memory_manager_v<MgrT>);
- *       // ... работа с менеджером
+ *       MgrT::create(64 * 1024);
+ *       // ...
  *   }
  * @endcode
  *
- * @see abstract_pmm.h — AbstractPersistMemoryManager (реализация)
+ * @see persist_memory_manager.h — PersistMemoryManager (Issue #110)
  * @see pptr.h — pptr<T, ManagerT>
- * @version 0.1 (Issue #100 — Phase 1: Infrastructure Preparation)
+ * @version 0.2 (Issue #110 — обновлено для статического интерфейса PersistMemoryManager)
  */
 
 #pragma once
@@ -55,7 +53,7 @@ namespace detail
 namespace mgr_concept
 {
 
-// ─── SFINAE-детекторы для интерфейса менеджера ────────────────────────────────
+// ─── SFINAE-детекторы для статического интерфейса менеджера ──────────────────
 
 /// @cond INTERNAL
 
@@ -80,11 +78,12 @@ template <typename T> struct has_storage_backend_type<T, std::void_t<typename T:
 {
 };
 
+// Проверка статических методов через указатели на статические функции-члены
 template <typename T, typename = void> struct has_is_initialized : std::false_type
 {
 };
 template <typename T>
-struct has_is_initialized<T, std::void_t<decltype( std::declval<const T&>().is_initialized() )>> : std::true_type
+struct has_is_initialized<T, std::void_t<decltype( T::is_initialized() )>> : std::true_type
 {
 };
 
@@ -92,7 +91,7 @@ template <typename T, typename = void> struct has_allocate_method : std::false_t
 {
 };
 template <typename T>
-struct has_allocate_method<T, std::void_t<decltype( std::declval<T&>().allocate( std::size_t{} ) )>> : std::true_type
+struct has_allocate_method<T, std::void_t<decltype( T::allocate( std::size_t{} ) )>> : std::true_type
 {
 };
 
@@ -100,7 +99,7 @@ template <typename T, typename = void> struct has_deallocate_method : std::false
 {
 };
 template <typename T>
-struct has_deallocate_method<T, std::void_t<decltype( std::declval<T&>().deallocate( static_cast<void*>( nullptr ) ) )>>
+struct has_deallocate_method<T, std::void_t<decltype( T::deallocate( static_cast<void*>( nullptr ) ) )>>
     : std::true_type
 {
 };
@@ -109,7 +108,7 @@ template <typename T, typename = void> struct has_total_size_method : std::false
 {
 };
 template <typename T>
-struct has_total_size_method<T, std::void_t<decltype( std::declval<const T&>().total_size() )>> : std::true_type
+struct has_total_size_method<T, std::void_t<decltype( T::total_size() )>> : std::true_type
 {
 };
 
@@ -117,7 +116,7 @@ template <typename T, typename = void> struct has_destroy_method : std::false_ty
 {
 };
 template <typename T>
-struct has_destroy_method<T, std::void_t<decltype( std::declval<T&>().destroy() )>> : std::true_type
+struct has_destroy_method<T, std::void_t<decltype( T::destroy() )>> : std::true_type
 {
 };
 
@@ -129,15 +128,15 @@ struct has_destroy_method<T, std::void_t<decltype( std::declval<T&>().destroy() 
 /**
  * @brief Проверить, является ли T корректным типом менеджера персистентной памяти.
  *
- * Тип считается менеджером ПАП, если он предоставляет:
+ * Тип считается менеджером ПАП, если он предоставляет (Issue #110 — статический интерфейс):
  *   - typedef `manager_type`
  *   - typedef `address_traits`
  *   - typedef `storage_backend`
- *   - метод `is_initialized() const → bool`
- *   - метод `allocate(size_t) → void*`
- *   - метод `deallocate(void*)`
- *   - метод `total_size() const → size_t`
- *   - метод `destroy()`
+ *   - статический метод `is_initialized() → bool`
+ *   - статический метод `allocate(size_t) → void*`
+ *   - статический метод `deallocate(void*)`
+ *   - статический метод `total_size() → size_t`
+ *   - статический метод `destroy()`
  *
  * @tparam T Проверяемый тип.
  */

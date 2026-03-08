@@ -1,16 +1,15 @@
 /**
  * @file benchmark.cpp
- * @brief PersistMemoryManager performance benchmark (updated #102)
+ * @brief PersistMemoryManager performance benchmark (updated #110)
  *
  * Measures allocate/deallocate performance per target benchmarks:
  *   - allocate 100K blocks ≤ 100 ms
  *   - deallocate 100K blocks ≤ 100 ms
  *
- * Issue #102: uses new AbstractPersistMemoryManager API via pmm_presets.h.
- * - No legacy_manager.h
- * - No singleton PersistMemoryManager<>
+ * Issue #110: uses new unified PersistMemoryManager<ConfigT, InstanceId> static API.
+ * - All methods are static (Mgr::create(), Mgr::allocate(), etc.)
+ * - p.resolve() — no argument needed (uses static manager resolve)
  * - No reallocate_typed() — uses manual alloc-copy-dealloc
- * - Uses Manager::pptr<T> instead of pmm::pptr<T>
  */
 
 #include "pmm/pmm_presets.h"
@@ -20,8 +19,6 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
-
-using Mgr = pmm::presets::SingleThreadedHeap;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -40,12 +37,13 @@ static double elapsed_ms( std::chrono::high_resolution_clock::time_point start,
 
 static bool bench_100k_alloc()
 {
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 30>;
+
     const std::size_t MEMORY_SIZE = 32UL * 1024 * 1024; // 32 MB
     const int         N           = 100'000;
     const std::size_t BLOCK_SIZE  = 64;
 
-    Mgr pmm;
-    if ( !pmm.create( MEMORY_SIZE ) )
+    if ( !Mgr::create( MEMORY_SIZE ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -58,7 +56,7 @@ static bool bench_100k_alloc()
     int  allocated = 0;
     for ( int i = 0; i < N; i++ )
     {
-        ptrs[i] = pmm.allocate_typed<uint8_t>( BLOCK_SIZE );
+        ptrs[i] = Mgr::allocate_typed<uint8_t>( BLOCK_SIZE );
         if ( ptrs[i].is_null() )
             break;
         allocated++;
@@ -69,11 +67,11 @@ static bool bench_100k_alloc()
     // Deallocation
     auto t2 = now();
     for ( int i = 0; i < allocated; i++ )
-        pmm.deallocate_typed( ptrs[i] );
+        Mgr::deallocate_typed( ptrs[i] );
     auto   t3         = now();
     double ms_dealloc = elapsed_ms( t2, t3 );
 
-    bool valid      = pmm.is_initialized();
+    bool valid      = Mgr::is_initialized();
     bool alloc_ok   = ( ms_alloc <= 100.0 );
     bool dealloc_ok = ( ms_dealloc <= 100.0 );
 
@@ -84,7 +82,7 @@ static bool bench_100k_alloc()
               << "]\n";
     std::cout << "  Manager valid      : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
-    pmm.destroy();
+    Mgr::destroy();
     return alloc_ok && dealloc_ok && valid && ( allocated == N );
 }
 
@@ -92,11 +90,12 @@ static bool bench_100k_alloc()
 
 static bool bench_100k_mixed_sizes()
 {
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 31>;
+
     const std::size_t MEMORY_SIZE = 64UL * 1024 * 1024; // 64 MB
     const int         N           = 100'000;
 
-    Mgr pmm;
-    if ( !pmm.create( MEMORY_SIZE ) )
+    if ( !Mgr::create( MEMORY_SIZE ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -110,7 +109,7 @@ static bool bench_100k_mixed_sizes()
     int  allocated = 0;
     for ( int i = 0; i < N; i++ )
     {
-        ptrs[i] = pmm.allocate_typed<uint8_t>( SIZES[i % 4] );
+        ptrs[i] = Mgr::allocate_typed<uint8_t>( SIZES[i % 4] );
         if ( ptrs[i].is_null() )
             break;
         allocated++;
@@ -120,11 +119,11 @@ static bool bench_100k_mixed_sizes()
 
     auto t2 = now();
     for ( int i = 0; i < allocated; i++ )
-        pmm.deallocate_typed( ptrs[i] );
+        Mgr::deallocate_typed( ptrs[i] );
     auto   t3         = now();
     double ms_dealloc = elapsed_ms( t2, t3 );
 
-    bool valid      = pmm.is_initialized();
+    bool valid      = Mgr::is_initialized();
     bool alloc_ok   = ( ms_alloc <= 100.0 );
     bool dealloc_ok = ( ms_dealloc <= 100.0 );
 
@@ -135,7 +134,7 @@ static bool bench_100k_mixed_sizes()
               << "]\n";
     std::cout << "  Manager valid      : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
-    pmm.destroy();
+    Mgr::destroy();
     return alloc_ok && dealloc_ok && valid && ( allocated == N );
 }
 
@@ -143,11 +142,12 @@ static bool bench_100k_mixed_sizes()
 
 static bool bench_manual_realloc()
 {
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 32>;
+
     const std::size_t MEMORY_SIZE = 16UL * 1024 * 1024; // 16 MB
     const int         N           = 10'000;
 
-    Mgr pmm;
-    if ( !pmm.create( MEMORY_SIZE ) )
+    if ( !Mgr::create( MEMORY_SIZE ) )
     {
         std::cerr << "  ERROR: failed to create manager\n";
         return false;
@@ -158,9 +158,9 @@ static bool bench_manual_realloc()
     // Allocate initial 64-byte blocks
     for ( int i = 0; i < N; i++ )
     {
-        ptrs[i] = pmm.allocate_typed<uint8_t>( 64 );
+        ptrs[i] = Mgr::allocate_typed<uint8_t>( 64 );
         if ( !ptrs[i].is_null() )
-            std::memset( ptrs[i].resolve( pmm ), i & 0xFF, 64 );
+            std::memset( ptrs[i].resolve(), i & 0xFF, 64 );
     }
 
     // Manual realloc: alloc-copy-dealloc (128 bytes)
@@ -170,11 +170,11 @@ static bool bench_manual_realloc()
     {
         if ( ptrs[i].is_null() )
             continue;
-        Mgr::pptr<uint8_t> new_ptr = pmm.allocate_typed<uint8_t>( 128 );
+        Mgr::pptr<uint8_t> new_ptr = Mgr::allocate_typed<uint8_t>( 128 );
         if ( !new_ptr.is_null() )
         {
-            std::memcpy( new_ptr.resolve( pmm ), ptrs[i].resolve( pmm ), 64 );
-            pmm.deallocate_typed( ptrs[i] );
+            std::memcpy( new_ptr.resolve(), ptrs[i].resolve(), 64 );
+            Mgr::deallocate_typed( ptrs[i] );
             ptrs[i] = new_ptr;
             realloc_ok_count++;
         }
@@ -182,19 +182,19 @@ static bool bench_manual_realloc()
     auto   t1 = now();
     double ms = elapsed_ms( t0, t1 );
 
-    bool valid = pmm.is_initialized();
+    bool valid = Mgr::is_initialized();
 
     for ( int i = 0; i < N; i++ )
     {
         if ( !ptrs[i].is_null() )
-            pmm.deallocate_typed( ptrs[i] );
+            Mgr::deallocate_typed( ptrs[i] );
     }
 
     std::cout << "  Manual reallocs    : " << realloc_ok_count << " / " << N << "\n";
     std::cout << "  Total realloc time : " << ms << " ms\n";
     std::cout << "  Manager valid      : " << ( valid ? "OK" : "FAIL" ) << "\n";
 
-    pmm.destroy();
+    Mgr::destroy();
     return valid;
 }
 
@@ -202,7 +202,7 @@ static bool bench_manual_realloc()
 
 int main()
 {
-    std::cout << "=== PersistMemoryManager — Benchmark (updated #102) ===\n";
+    std::cout << "=== PersistMemoryManager — Benchmark (updated #110) ===\n";
     std::cout << "Targets: allocate/deallocate 100K blocks ≤ 100 ms\n\n";
 
     bool all_passed = true;

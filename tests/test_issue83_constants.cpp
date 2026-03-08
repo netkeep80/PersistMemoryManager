@@ -129,12 +129,12 @@ static bool test_load_preserves_granule_size()
     auto p = pmm1.allocate_typed<int>();
     PMM_TEST( !p.is_null() );
 
-    PMM_TEST( pmm::save_manager( pmm1, TEST_FILE ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
     PMM_TEST( pmm2.create( 64 * 1024 ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, TEST_FILE ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( TEST_FILE ) );
     PMM_TEST( pmm2.is_initialized() );
     pmm2.destroy();
 

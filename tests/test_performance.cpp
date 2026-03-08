@@ -175,7 +175,7 @@ static bool test_memory_reuse()
     {
         ptrs[i] = pmm.allocate_typed<std::uint8_t>( 128 );
         PMM_TEST( !ptrs[i].is_null() );
-        std::memset( ptrs[i].resolve( pmm ), i & 0xFF, 128 );
+        std::memset( ptrs[i].resolve(), i & 0xFF, 128 );
     }
 
     for ( int i = 0; i < N; i += 2 )
@@ -226,12 +226,12 @@ static bool test_free_list_after_load()
     std::uint32_t off1 = p1.offset();
     std::uint32_t off3 = p3.offset();
 
-    PMM_TEST( pmm::save_manager( pmm1, TEST_FILE ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
     PMM_TEST( pmm2.create( MEMORY_SIZE ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, TEST_FILE ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( TEST_FILE ) );
     PMM_TEST( pmm2.is_initialized() );
 
     Mgr::pptr<std::uint8_t> p4 = pmm2.allocate_typed<std::uint8_t>( 64 );
@@ -268,7 +268,7 @@ static bool test_data_integrity_with_free_list()
     {
         ptrs[i] = pmm.allocate_typed<std::uint8_t>( BLOCK );
         PMM_TEST( !ptrs[i].is_null() );
-        std::memset( ptrs[i].resolve( pmm ), i & 0xFF, BLOCK );
+        std::memset( ptrs[i].resolve(), i & 0xFF, BLOCK );
     }
 
     for ( int i = 0; i < N; i += 3 )
@@ -283,7 +283,7 @@ static bool test_data_integrity_with_free_list()
     {
         if ( ptrs[i].is_null() )
             continue;
-        const std::uint8_t* p = ptrs[i].resolve( pmm );
+        const std::uint8_t* p = ptrs[i].resolve();
         for ( std::size_t j = 0; j < BLOCK; j++ )
             PMM_TEST( p[j] == static_cast<std::uint8_t>( i & 0xFF ) );
     }

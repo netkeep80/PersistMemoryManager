@@ -117,7 +117,7 @@ static bool test_cr_pptr_resolves_via_manager()
 
     Mgr::pptr<int> p = pmm.allocate_typed<int>( 1 );
     PMM_TEST( !p.is_null() );
-    PMM_TEST( p.resolve( pmm ) != nullptr );
+    PMM_TEST( p.resolve() != nullptr );
 
     pmm.deallocate_typed( p );
     pmm.destroy();
@@ -280,20 +280,20 @@ static bool test_integration_persistence()
     PMM_TEST( pmm1.create( 64 * 1024 ) );
     auto p = pmm1.allocate_typed<std::uint64_t>( 1 );
     PMM_TEST( !p.is_null() );
-    *p.resolve( pmm1 )         = 0xDEADBEEFCAFEBABEULL;
+    *p.resolve()         = 0xDEADBEEFCAFEBABEULL;
     std::uint32_t saved_offset = p.offset();
 
-    PMM_TEST( pmm::save_manager( pmm1, TEST_FILE ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
     PMM_TEST( pmm2.create( 64 * 1024 ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, TEST_FILE ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( TEST_FILE ) );
     PMM_TEST( pmm2.is_initialized() );
 
     Mgr::pptr<std::uint64_t> p2( saved_offset );
-    PMM_TEST( p2.resolve( pmm2 ) != nullptr );
-    PMM_TEST( *p2.resolve( pmm2 ) == 0xDEADBEEFCAFEBABEULL );
+    PMM_TEST( p2.resolve() != nullptr );
+    PMM_TEST( *p2.resolve() == 0xDEADBEEFCAFEBABEULL );
 
     pmm2.destroy();
     std::remove( TEST_FILE );

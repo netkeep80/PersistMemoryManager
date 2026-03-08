@@ -1,31 +1,23 @@
 /**
  * @file new_api_usage.cpp
- * @brief Пример использования нового API AbstractPersistMemoryManager (Issue #97)
+ * @brief Example of unified PersistMemoryManager<ConfigT, InstanceId> API (Issue #110)
  *
- * Демонстрирует миграцию с устаревшего синглтон-API на новый параметрический API.
- * По требованию Issue #97: снаружи менеджера используются только pptr<T>.
+ * Demonstrates the unified static API introduced in Issue #110.
  *
- * Было (устаревший синглтон):
- *   auto p = PersistMemoryManager<>::allocate_typed<int>();
- *   *p = 42; // разыменование через синглтон
+ * Issue #110: single PersistMemoryManager<ConfigT, InstanceId> replaces
+ * both AbstractPersistMemoryManager (object model) and StaticMemoryManager.
  *
- * Стало (новый RAII-стиль с pptr<T>):
- *   pmm::presets::SingleThreadedHeap pmm;
- *   pmm.create(1024);
- *   pmm::pptr<int> p = pmm.allocate_typed<int>(); // возвращает pptr<T>
- *   *pmm.resolve(p) = 42;                          // разыменование через экземпляр
- *   pmm.deallocate_typed(p);                       // освобождение через pptr<T>
+ * Key API:
+ *   - All methods are static: Mgr::create(), Mgr::allocate_typed(), etc.
+ *   - p.resolve() — no argument needed (uses static manager resolve)
+ *   - pmm::save_manager<Mgr>(filename) — template-based save
+ *   - pmm::load_manager_from_file<Mgr>(filename) — template-based load
+ *   - Multiple independent managers via distinct InstanceIds
  *
- * Ключевые преимущества pptr<T>:
- *   - 4 байта вместо 8 (address-independent 32-bit granule index)
- *   - Корректно загружается из файла по другому базовому адресу
- *   - Запрет p++ / p-- (нет случайной адресной арифметики)
- *
- * Примеры пресетов:
- *   - EmbeddedStatic4K  — без malloc (для embedded-систем)
- *   - SingleThreadedHeap — однопоточный с HeapStorage
- *   - MultiThreadedHeap  — многопоточный с SharedMutexLock
- *   - PersistentFileMapped — файловый с персистентностью через mmap
+ * Key advantages of pptr<T>:
+ *   - 4 bytes instead of 8 (address-independent 32-bit granule index)
+ *   - Correctly loads from file at a different base address
+ *   - No p++/p-- (no accidental pointer arithmetic)
  */
 
 #include "pmm/io.h"
@@ -35,38 +27,7 @@
 #include <cstring>
 #include <iostream>
 
-// ─── 1. EmbeddedStatic4K — без динамических выделений ───────────────────────
-
-static void demo_embedded_static()
-{
-    std::cout << "=== EmbeddedStatic4K (StaticStorage, no malloc) ===\n";
-
-    pmm::presets::EmbeddedStatic4K pmm;
-    if ( !pmm.create() )
-    {
-        std::cerr << "Failed to create EmbeddedStatic4K\n";
-        return;
-    }
-
-    std::cout << "Total: " << pmm.total_size() << " bytes\n";
-    std::cout << "Free:  " << pmm.free_size() << " bytes\n";
-
-    // Issue #97: снаружи менеджера используем только pptr<T, MgrT>
-    pmm::presets::EmbeddedStatic4K::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( 64 );
-    if ( p )
-    {
-        std::uint8_t* raw = pmm.resolve( p );
-        std::memset( raw, 0xAA, 64 );
-        std::cout << "Allocated 64 bytes (pptr offset=" << p.offset() << ", sizeof(pptr)=" << sizeof( p ) << ")\n";
-        pmm.deallocate_typed( p );
-        std::cout << "Deallocated via pptr<T, MgrT>.\n";
-    }
-
-    pmm.destroy();
-    std::cout << "\n";
-}
-
-// ─── 2. SingleThreadedHeap — динамический однопоточный с pptr<T> ─────────────
+// ─── 1. Single-threaded heap manager ──────────────────────────────────────────
 
 struct Point
 {
@@ -75,139 +36,151 @@ struct Point
 
 static void demo_single_threaded_heap()
 {
-    std::cout << "=== SingleThreadedHeap (HeapStorage, NoLock) — pptr<T> API ===\n";
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 40>;
 
-    pmm::presets::SingleThreadedHeap pmm;
-    if ( !pmm.create( 64 * 1024 ) ) // 64 KiB
+    std::cout << "=== SingleThreadedHeap (HeapStorage, NoLock) — static API ===\n";
+
+    if ( !Mgr::create( 64 * 1024 ) ) // 64 KiB
     {
-        std::cerr << "Failed to create SingleThreadedHeap\n";
+        std::cerr << "Failed to create manager\n";
         return;
     }
 
-    std::cout << "Total: " << pmm.total_size() << " bytes\n";
+    std::cout << "Total: " << Mgr::total_size() << " bytes\n";
 
-    // Выделяем структуру через typed API — снаружи только pptr<T, MgrT>
-    using STHeap                = pmm::presets::SingleThreadedHeap;
-    STHeap::pptr<Point> p_point = pmm.allocate_typed<Point>();
-    STHeap::pptr<int>   p_arr   = pmm.allocate_typed<int>( 10 ); // массив из 10 int
+    // Allocate typed objects — externally only pptr<T, MgrT>
+    Mgr::pptr<Point> p_point = Mgr::allocate_typed<Point>();
+    Mgr::pptr<int>   p_arr   = Mgr::allocate_typed<int>( 10 ); // array of 10 ints
 
-    if ( p_point && p_arr )
+    if ( !p_point.is_null() && !p_arr.is_null() )
     {
-        // Разыменование через resolve (единственный правильный способ с AbstractPMM)
-        Point* pt = pmm.resolve( p_point );
+        // Dereference via resolve() — no argument needed with static model
+        Point* pt = p_point.resolve();
         pt->x     = 1.5;
         pt->y     = 2.5;
-        std::cout << "Point: (" << pmm.resolve( p_point )->x << ", " << pmm.resolve( p_point )->y << ")\n";
+        std::cout << "Point: (" << p_point.resolve()->x << ", " << p_point.resolve()->y << ")\n";
 
-        // Запись в массив через resolve_at
+        // Write to array via resolve() + index
+        int* arr = p_arr.resolve();
         for ( int i = 0; i < 10; ++i )
-            *pmm.resolve_at( p_arr, static_cast<std::size_t>( i ) ) = i * i;
+            arr[i] = i * i;
 
         int sum = 0;
         for ( int i = 0; i < 10; ++i )
-            sum += *pmm.resolve_at( p_arr, static_cast<std::size_t>( i ) );
+            sum += arr[i];
         std::cout << "Array sum of squares: " << sum << " (expected: 285)\n";
 
-        std::cout << "Used: " << pmm.used_size() << " bytes\n";
-        std::cout << "Free: " << pmm.free_size() << " bytes\n";
+        std::cout << "Used: " << Mgr::used_size() << " bytes\n";
+        std::cout << "Free: " << Mgr::free_size() << " bytes\n";
 
-        // Сохраняем гранульный индекс для демонстрации персистентности
+        // Save granule offset — demonstrates address-independence
         std::uint32_t point_offset = p_point.offset();
         std::cout << "Point pptr offset=" << point_offset << " (4 bytes, address-independent)\n";
 
-        pmm.deallocate_typed( p_point );
-        pmm.deallocate_typed( p_arr );
+        Mgr::deallocate_typed( p_point );
+        Mgr::deallocate_typed( p_arr );
     }
 
-    pmm.destroy();
+    Mgr::destroy();
     std::cout << "\n";
 }
 
-// ─── 3. PersistentFileMapped — файловая персистентность с pptr<T> ────────────
+// ─── 2. Multi-threaded heap manager ───────────────────────────────────────────
 
-static void demo_persistent_file_mapped()
+static void demo_multi_threaded_heap()
 {
-    std::cout << "=== PersistentFileMapped (MMapStorage) — pptr<T> persistence ===\n";
+    using Mgr = pmm::PersistMemoryManager<pmm::PersistentDataConfig, 41>;
 
-    const char*       filename = "/tmp/demo_pmm.dat";
-    const std::size_t kSize    = 64 * 1024;
+    std::cout << "=== MultiThreadedHeap (HeapStorage, SharedMutexLock) — static API ===\n";
 
-    std::uint32_t saved_offset = 0; // Сохранённый pptr offset (персистентный)
-
-    // Первый запуск: создаём и сохраняем данные через pptr<T>
+    if ( !Mgr::create( 32 * 1024 ) )
     {
-        pmm::presets::PersistentFileMapped pmm;
-        if ( !pmm.backend().open( filename, kSize ) )
-        {
-            std::cerr << "Failed to open mmap file\n";
-            return;
-        }
-
-        if ( !pmm.load() )
-        {
-            if ( !pmm.create() )
-            {
-                std::cerr << "Failed to create PersistentFileMapped\n";
-                return;
-            }
-            std::cout << "First run: created new PMM\n";
-        }
-        else
-        {
-            std::cout << "Subsequent run: loaded existing PMM\n";
-        }
-
-        // Выделяем через pptr<T, MgrT>
-        pmm::presets::PersistentFileMapped::pptr<int> p = pmm.allocate_typed<int>();
-        if ( p )
-        {
-            *pmm.resolve( p ) = 42;
-            saved_offset      = p.offset(); // Сохраняем pptr offset (не адрес!)
-            std::cout << "Allocated int=42 via pptr<int, MgrT> (offset=" << saved_offset << ")\n";
-        }
-
-        std::cout << "Blocks: " << pmm.alloc_block_count() << " allocated\n";
-        pmm.backend().close(); // данные записаны в файл через mmap
+        std::cerr << "Failed to create MultiThreadedHeap\n";
+        return;
     }
 
-    // Второй запуск: загружаем и проверяем через сохранённый pptr offset
+    std::cout << "Total: " << Mgr::total_size() << " bytes\n";
+
+    Mgr::pptr<std::uint8_t> p = Mgr::allocate_typed<std::uint8_t>( 128 );
+    if ( !p.is_null() )
     {
-        pmm::presets::PersistentFileMapped pmm;
-        if ( !pmm.backend().open( filename, kSize ) || !pmm.load() )
-        {
-            std::cerr << "Failed to reload PMM\n";
-        }
-        else
-        {
-            // Восстанавливаем pptr из сохранённого смещения
-            pmm::presets::PersistentFileMapped::pptr<int> p( saved_offset );
-            std::cout << "Reloaded: pptr<int>(offset=" << saved_offset << ") → value=" << *pmm.resolve( p )
-                      << " (expected: 42)\n";
-            pmm.backend().close();
-        }
+        std::memset( p.resolve(), 0xBB, 128 );
+        std::cout << "Allocated 128 bytes (pptr offset=" << p.offset()
+                  << ", sizeof(pptr)=" << sizeof( p ) << ")\n";
+        Mgr::deallocate_typed( p );
+        std::cout << "Deallocated via pptr<T, MgrT>.\n";
     }
 
-    // Демонстрация нового IO API (Issue #97): save_manager / load_manager_from_file
-    {
-        pmm::presets::SingleThreadedHeap pmm;
-        if ( pmm.create( kSize ) )
-        {
-            pmm::presets::SingleThreadedHeap::pptr<double> p = pmm.allocate_typed<double>();
-            if ( p )
-                *pmm.resolve( p ) = 3.14;
+    Mgr::destroy();
+    std::cout << "\n";
+}
 
-            const char* export_file = "/tmp/demo_pmm_export.dat";
-            if ( pmm::save_manager( pmm, export_file ) )
-            {
-                std::cout << "Saved via save_manager() (Issue #97)\n";
-                std::remove( export_file );
-            }
-            pmm.deallocate_typed( p );
-            pmm.destroy();
-        }
+// ─── 3. Persistence with save/load ───────────────────────────────────────────
+
+// Session A: create and populate
+using SessionA = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 42>;
+// Session B: reload and verify
+using SessionB = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 43>;
+
+static void demo_persistence()
+{
+    std::cout << "=== Persistence demo: save_manager / load_manager_from_file ===\n";
+
+    const char*       export_file = "/tmp/demo_pmm_export.dat";
+    const std::size_t kSize       = 64 * 1024;
+
+    std::uint32_t saved_offset = 0;
+
+    // Session A: create, allocate, save
+    if ( !SessionA::create( kSize ) )
+    {
+        std::cerr << "Failed to create session A\n";
+        return;
     }
 
-    std::remove( filename );
+    SessionA::pptr<double> p = SessionA::allocate_typed<double>();
+    if ( !p.is_null() )
+    {
+        *p.resolve()  = 3.14;
+        saved_offset = p.offset();
+        std::cout << "Allocated double=3.14 via pptr<double> (offset=" << saved_offset << ")\n";
+    }
+
+    if ( pmm::save_manager<SessionA>( export_file ) )
+    {
+        std::cout << "Saved via save_manager<SessionA>()\n";
+    }
+    else
+    {
+        std::cerr << "Failed to save\n";
+        SessionA::destroy();
+        return;
+    }
+
+    SessionA::destroy();
+
+    // Session B: reload and verify
+    if ( !SessionB::create( kSize ) )
+    {
+        std::cerr << "Failed to create session B\n";
+        std::remove( export_file );
+        return;
+    }
+
+    if ( pmm::load_manager_from_file<SessionB>( export_file ) )
+    {
+        // Reconstruct pptr from saved granule offset
+        SessionB::pptr<double> q( saved_offset );
+        std::cout << "Reloaded: pptr<double>(offset=" << saved_offset
+                  << ") → value=" << *q.resolve() << " (expected: 3.14)\n";
+    }
+    else
+    {
+        std::cerr << "Failed to load\n";
+    }
+
+    SessionB::destroy();
+    std::remove( export_file );
     std::cout << "\n";
 }
 
@@ -215,16 +188,16 @@ static void demo_persistent_file_mapped()
 
 int main()
 {
-    std::cout << "PersistMemoryManager — новый API с pptr<T> (Issue #97)\n\n";
-    std::cout << "Миграция:\n";
-    std::cout << "  Было: PersistMemoryManager<>::allocate_typed<int>() → pptr<int>\n";
-    std::cout << "  Стало: pmm.allocate_typed<int>() → pptr<int> (resolve через экземпляр)\n\n";
-    std::cout << "Правило (Issue #97): снаружи менеджера — только pptr<T>, не void*!\n\n";
+    std::cout << "PersistMemoryManager — unified static API (Issue #110)\n\n";
+    std::cout << "Architecture: PersistMemoryManager<ConfigT, InstanceId>\n";
+    std::cout << "  - All methods static: Mgr::create(), Mgr::allocate_typed(), etc.\n";
+    std::cout << "  - p.resolve() — no argument (uses static manager resolve)\n";
+    std::cout << "  - Multiple managers: distinct InstanceIds = distinct static state\n\n";
 
-    demo_embedded_static();
     demo_single_threaded_heap();
-    demo_persistent_file_mapped();
+    demo_multi_threaded_heap();
+    demo_persistence();
 
-    std::cout << "Все демо завершены успешно.\n";
+    std::cout << "All demos completed successfully.\n";
     return 0;
 }

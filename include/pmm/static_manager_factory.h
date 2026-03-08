@@ -189,8 +189,9 @@ class StaticPersistMemoryManager
     }
 };
 
-// Проверяем концепцию менеджера для StaticPersistMemoryManager
-static_assert( is_persist_memory_manager_v<StaticPersistMemoryManager<CacheManagerConfig>>,
-               "StaticPersistMemoryManager<CacheManagerConfig> must satisfy PersistMemoryManagerConcept" );
+// Note: StaticPersistMemoryManager is a legacy class from Issue #100.
+// It uses instance methods, not static methods. The is_persist_memory_manager_v
+// concept now checks for static methods (Issue #110), so StaticPersistMemoryManager
+// no longer satisfies it. Use PersistMemoryManager<ConfigT, InstanceId> instead.
 
 } // namespace pmm

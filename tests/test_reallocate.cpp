@@ -53,7 +53,7 @@ static Mgr::pptr<T> manual_realloc( Mgr& mgr, Mgr::pptr<T> old_p, std::size_t ol
     if ( new_p.is_null() )
         return new_p; // failure
     std::size_t copy_count = old_count < new_count ? old_count : new_count;
-    std::memcpy( new_p.resolve( mgr ), old_p.resolve( mgr ), copy_count * sizeof( T ) );
+    std::memcpy( new_p.resolve(), old_p.resolve(), copy_count * sizeof( T ) );
     mgr.deallocate_typed( old_p );
     return new_p;
 }
@@ -105,14 +105,14 @@ static bool test_manual_grow_preserves_data()
     Mgr::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( 128 );
     PMM_TEST( !p.is_null() );
     for ( std::size_t i = 0; i < 128; ++i )
-        p.resolve( pmm )[i] = static_cast<std::uint8_t>( i & 0xFF );
+        p.resolve()[i] = static_cast<std::uint8_t>( i & 0xFF );
 
     Mgr::pptr<std::uint8_t> p2 = manual_realloc( pmm, p, 128, 512 );
     PMM_TEST( !p2.is_null() );
     PMM_TEST( pmm.is_initialized() );
 
     for ( std::size_t i = 0; i < 128; ++i )
-        PMM_TEST( p2.resolve( pmm )[i] == static_cast<std::uint8_t>( i & 0xFF ) );
+        PMM_TEST( p2.resolve()[i] == static_cast<std::uint8_t>( i & 0xFF ) );
 
     pmm.deallocate_typed( p2 );
     pmm.destroy();
@@ -128,7 +128,7 @@ static bool test_manual_repeated_grow()
 
     Mgr::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( 64 );
     PMM_TEST( !p.is_null() );
-    std::memset( p.resolve( pmm ), 0xAB, 64 );
+    std::memset( p.resolve(), 0xAB, 64 );
 
     std::size_t prev_count = 64;
     std::size_t counts[]   = { 128, 256, 512, 1024 };
@@ -138,7 +138,7 @@ static bool test_manual_repeated_grow()
         PMM_TEST( !p2.is_null() );
         // First 64 bytes must still be 0xAB
         for ( std::size_t i = 0; i < 64; ++i )
-            PMM_TEST( p2.resolve( pmm )[i] == 0xAB );
+            PMM_TEST( p2.resolve()[i] == 0xAB );
         PMM_TEST( pmm.is_initialized() );
         p          = p2;
         prev_count = new_count;
@@ -227,7 +227,7 @@ static bool test_manual_grow_triggers_expand_preserves_data()
     Mgr::pptr<std::uint8_t> p          = pmm.allocate_typed<std::uint8_t>( orig_count );
     PMM_TEST( !p.is_null() );
     for ( std::size_t i = 0; i < orig_count; ++i )
-        p.resolve( pmm )[i] = static_cast<std::uint8_t>( 0xAA );
+        p.resolve()[i] = static_cast<std::uint8_t>( 0xAA );
 
     // Allocate many blocks to fill memory and exercise auto-expand path.
     // Keep allocating until auto-expand triggers (total_size grows).
@@ -256,7 +256,7 @@ static bool test_manual_grow_triggers_expand_preserves_data()
 
     // The original 64 bytes of pattern 0xAA must be intact.
     for ( std::size_t i = 0; i < orig_count; ++i )
-        PMM_TEST( p2.resolve( pmm )[i] == 0xAA );
+        PMM_TEST( p2.resolve()[i] == 0xAA );
 
     pmm.deallocate_typed( p2 );
     for ( auto& f : fillers )
@@ -280,7 +280,7 @@ static bool test_manual_grow_no_expand_when_space_available()
 
     Mgr::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( 128 );
     PMM_TEST( !p.is_null() );
-    std::memset( p.resolve( pmm ), 0x55, 128 );
+    std::memset( p.resolve(), 0x55, 128 );
 
     // Grow to 1 KB — still within the 256 KB buffer.
     Mgr::pptr<std::uint8_t> p2 = manual_realloc( pmm, p, 128, 1024 );
@@ -290,7 +290,7 @@ static bool test_manual_grow_no_expand_when_space_available()
 
     // Data preserved.
     for ( std::size_t i = 0; i < 128; ++i )
-        PMM_TEST( p2.resolve( pmm )[i] == 0x55 );
+        PMM_TEST( p2.resolve()[i] == 0x55 );
 
     pmm.deallocate_typed( p2 );
     pmm.destroy();
@@ -308,19 +308,19 @@ static bool test_manual_grow_typed_uint32()
 
     Mgr::pptr<std::uint32_t> p = pmm.allocate_typed<std::uint32_t>( 4 );
     PMM_TEST( !p.is_null() );
-    p.resolve( pmm )[0] = 0xDEADBEEFU;
-    p.resolve( pmm )[1] = 0xCAFEBABEU;
-    p.resolve( pmm )[2] = 0x12345678U;
-    p.resolve( pmm )[3] = 0xABCDEF01U;
+    p.resolve()[0] = 0xDEADBEEFU;
+    p.resolve()[1] = 0xCAFEBABEU;
+    p.resolve()[2] = 0x12345678U;
+    p.resolve()[3] = 0xABCDEF01U;
 
     Mgr::pptr<std::uint32_t> p2 = manual_realloc( pmm, p, 4, 16 );
     PMM_TEST( !p2.is_null() );
     PMM_TEST( pmm.is_initialized() );
 
-    PMM_TEST( p2.resolve( pmm )[0] == 0xDEADBEEFU );
-    PMM_TEST( p2.resolve( pmm )[1] == 0xCAFEBABEU );
-    PMM_TEST( p2.resolve( pmm )[2] == 0x12345678U );
-    PMM_TEST( p2.resolve( pmm )[3] == 0xABCDEF01U );
+    PMM_TEST( p2.resolve()[0] == 0xDEADBEEFU );
+    PMM_TEST( p2.resolve()[1] == 0xCAFEBABEU );
+    PMM_TEST( p2.resolve()[2] == 0x12345678U );
+    PMM_TEST( p2.resolve()[3] == 0xABCDEF01U );
 
     pmm.deallocate_typed( p2 );
     pmm.destroy();
@@ -342,7 +342,7 @@ static bool test_manual_grow_multiple_blocks_independent()
     {
         ptrs[i] = pmm.allocate_typed<std::uint8_t>( 64 );
         PMM_TEST( !ptrs[i].is_null() );
-        std::memset( ptrs[i].resolve( pmm ), static_cast<int>( 0x10 + i ), 64 );
+        std::memset( ptrs[i].resolve(), static_cast<int>( 0x10 + i ), 64 );
     }
 
     // Manual realloc each to 256 bytes and verify its own pattern.
@@ -351,7 +351,7 @@ static bool test_manual_grow_multiple_blocks_independent()
         Mgr::pptr<std::uint8_t> p2 = manual_realloc( pmm, ptrs[i], 64, 256 );
         PMM_TEST( !p2.is_null() );
         for ( std::size_t j = 0; j < 64; ++j )
-            PMM_TEST( p2.resolve( pmm )[j] == static_cast<std::uint8_t>( 0x10 + i ) );
+            PMM_TEST( p2.resolve()[j] == static_cast<std::uint8_t>( 0x10 + i ) );
         ptrs[i] = p2;
     }
 

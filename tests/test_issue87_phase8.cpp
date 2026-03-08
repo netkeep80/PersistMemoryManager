@@ -1,18 +1,14 @@
 /**
  * @file test_issue87_phase8.cpp
- * @brief Тесты Phase 8: pmm_presets.h — готовые инстанции (Issue #87).
+ * @brief Тесты Phase 8: pmm_presets.h — готовые инстанции (Issue #87, обновлено #110).
  *
- * Проверяет:
- *  - Все предустановки компилируются без ошибок
- *  - EmbeddedStatic4K/EmbeddedStatic1K: create() и базовые операции
- *  - SingleThreadedHeap: create(size) и allocate/deallocate
- *  - MultiThreadedHeap: компилируется и функционирует
- *  - PersistentFileMapped: компилируется (mmap-тест без реального файла)
- *  - IndustrialDB: компилируется
+ * Issue #110: pmm_presets.h обновлён для использования PersistMemoryManager.
+ * Только два пресета: SingleThreadedHeap и MultiThreadedHeap.
+ * Все методы статические.
  *
  * @see include/pmm/pmm_presets.h
  * @see plan_issue87.md §5 «Фаза 8: pmm_presets.h»
- * @version 0.1 (Issue #87 Phase 8)
+ * @version 0.2 (Issue #110 — обновлено для статического API)
  */
 
 #include "pmm/pmm_presets.h"
@@ -52,79 +48,27 @@
     } while ( false )
 
 // =============================================================================
-// Phase 8 tests: pmm_presets.h
+// Phase 8 tests: pmm_presets.h (updated for Issue #110)
 // =============================================================================
 
-// ─── P8-A: Компиляция всех предустановок ─────────────────────────────────────
+// ─── P8-A: Компиляция предустановок ──────────────────────────────────────────
 
-/// @brief Все предустановки компилируются (инстанциация типов).
+/// @brief Предустановки компилируются (инстанциация типов).
 static bool test_p8_all_presets_compile()
 {
-    // Просто инстанциируем каждый тип — ошибки компиляции поймаем здесь
-    using E   = pmm::presets::EmbeddedStatic4K;
-    using E1  = pmm::presets::EmbeddedStatic1K;
     using STH = pmm::presets::SingleThreadedHeap;
     using MTH = pmm::presets::MultiThreadedHeap;
-    using PFM = pmm::presets::PersistentFileMapped;
-    using IDB = pmm::presets::IndustrialDB;
 
-    static_assert( std::is_same<E, E1>::value, "EmbeddedStatic1K must be alias for EmbeddedStatic4K" );
-
-    // Проверяем алиасы address_traits и thread_policy
-    static_assert( std::is_same<STH::thread_policy, pmm::config::NoLock>::value, "SingleThreadedHeap must use NoLock" );
+    // Проверяем thread_policy
+    static_assert( std::is_same<STH::thread_policy, pmm::config::NoLock>::value,
+                   "SingleThreadedHeap must use NoLock" );
     static_assert( std::is_same<MTH::thread_policy, pmm::config::SharedMutexLock>::value,
                    "MultiThreadedHeap must use SharedMutexLock" );
-    static_assert( std::is_same<PFM::thread_policy, pmm::config::SharedMutexLock>::value,
-                   "PersistentFileMapped must use SharedMutexLock" );
-    static_assert( std::is_same<IDB::thread_policy, pmm::config::SharedMutexLock>::value,
-                   "IndustrialDB must use SharedMutexLock" );
 
-    (void)0; // suppress unused variable warnings for type aliases
-    return true;
-}
+    // Проверяем что оба пресета — static managers
+    static_assert( sizeof( STH::pptr<int> ) == 4, "SingleThreadedHeap pptr must be 4 bytes" );
+    static_assert( sizeof( MTH::pptr<int> ) == 4, "MultiThreadedHeap pptr must be 4 bytes" );
 
-// ─── P8-B: EmbeddedStatic4K — функциональность ─────────────────────────────
-
-/// @brief EmbeddedStatic4K: create() и базовые операции.
-static bool test_p8_embedded_static_create()
-{
-    pmm::presets::EmbeddedStatic4K pmm;
-    PMM_TEST( !pmm.is_initialized() );
-
-    PMM_TEST( pmm.create() ); // StaticStorage уже имеет 4096 байт
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.total_size() == 4096 );
-    PMM_TEST( pmm.free_size() > 0 );
-
-    void* ptr = pmm.allocate( 64 );
-    PMM_TEST( ptr != nullptr );
-    std::memset( ptr, 0x42, 64 );
-    pmm.deallocate( ptr );
-
-    pmm.destroy();
-    PMM_TEST( !pmm.is_initialized() );
-    return true;
-}
-
-/// @brief EmbeddedStatic4K: множественные аллокации.
-static bool test_p8_embedded_static_multiple_alloc()
-{
-    pmm::presets::EmbeddedStatic4K pmm;
-    PMM_TEST( pmm.create() );
-
-    constexpr int kCount = 5;
-    void*         ptrs[kCount];
-    for ( int i = 0; i < kCount; ++i )
-    {
-        ptrs[i] = pmm.allocate( 32 );
-        PMM_TEST( ptrs[i] != nullptr );
-    }
-    for ( int i = 0; i < kCount; ++i )
-    {
-        pmm.deallocate( ptrs[i] );
-    }
-
-    pmm.destroy();
     return true;
 }
 
@@ -133,37 +77,60 @@ static bool test_p8_embedded_static_multiple_alloc()
 /// @brief SingleThreadedHeap: create(size) и allocate/deallocate.
 static bool test_p8_single_threaded_heap_create()
 {
-    pmm::presets::SingleThreadedHeap pmm;
-    PMM_TEST( !pmm.is_initialized() );
+    using STH = pmm::presets::SingleThreadedHeap;
 
-    PMM_TEST( pmm.create( 16 * 1024 ) ); // 16 KiB
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.total_size() >= 16 * 1024 );
+    PMM_TEST( !STH::is_initialized() );
 
-    void* ptr = pmm.allocate( 256 );
+    PMM_TEST( STH::create( 16 * 1024 ) ); // 16 KiB
+    PMM_TEST( STH::is_initialized() );
+    PMM_TEST( STH::total_size() >= 16 * 1024 );
+
+    void* ptr = STH::allocate( 256 );
     PMM_TEST( ptr != nullptr );
     std::memset( ptr, 0xAA, 256 );
-    pmm.deallocate( ptr );
+    STH::deallocate( ptr );
 
-    pmm.destroy();
+    STH::destroy();
+    PMM_TEST( !STH::is_initialized() );
+    return true;
+}
+
+/// @brief SingleThreadedHeap: typed allocation via allocate_typed<T>.
+static bool test_p8_single_threaded_heap_typed_alloc()
+{
+    using STH = pmm::presets::SingleThreadedHeap;
+
+    PMM_TEST( STH::create( 64 * 1024 ) );
+    PMM_TEST( STH::is_initialized() );
+
+    STH::pptr<int> p = STH::allocate_typed<int>();
+    PMM_TEST( !p.is_null() );
+    PMM_TEST( p.offset() > 0 );
+
+    *p.resolve() = 12345;
+    PMM_TEST( *p.resolve() == 12345 );
+
+    STH::deallocate_typed( p );
+    STH::destroy();
     return true;
 }
 
 /// @brief SingleThreadedHeap: auto-expand при нехватке места.
 static bool test_p8_single_threaded_heap_expand()
 {
-    pmm::presets::SingleThreadedHeap pmm;
-    PMM_TEST( pmm.create( pmm::detail::kMinMemorySize ) ); // минимальный размер
+    using STH = pmm::presets::SingleThreadedHeap;
+
+    PMM_TEST( STH::create( pmm::detail::kMinMemorySize ) ); // минимальный размер
 
     // Пытаемся выделить больше, чем есть — должен расшириться
-    void* ptr = pmm.allocate( 4096 );
+    void* ptr = STH::allocate( 4096 );
     if ( ptr != nullptr )
     {
-        pmm.deallocate( ptr );
+        STH::deallocate( ptr );
     }
     // Тест проходит, если не крашится (expand может не сработать на малых буферах)
 
-    pmm.destroy();
+    STH::destroy();
     return true;
 }
 
@@ -172,38 +139,36 @@ static bool test_p8_single_threaded_heap_expand()
 /// @brief MultiThreadedHeap: create(size) и allocate/deallocate с блокировками.
 static bool test_p8_multi_threaded_heap_create()
 {
-    pmm::presets::MultiThreadedHeap pmm;
-    PMM_TEST( pmm.create( 16 * 1024 ) );
-    PMM_TEST( pmm.is_initialized() );
+    using MTH = pmm::presets::MultiThreadedHeap;
 
-    void* ptr = pmm.allocate( 128 );
+    PMM_TEST( MTH::create( 16 * 1024 ) );
+    PMM_TEST( MTH::is_initialized() );
+
+    void* ptr = MTH::allocate( 128 );
     PMM_TEST( ptr != nullptr );
-    pmm.deallocate( ptr );
+    std::memset( ptr, 0xBB, 128 );
+    MTH::deallocate( ptr );
 
-    pmm.destroy();
+    MTH::destroy();
     return true;
 }
 
-// ─── P8-E: PersistentFileMapped — компиляция ─────────────────────────────────
-
-/// @brief PersistentFileMapped компилируется и создаётся без краша.
-static bool test_p8_persistent_file_mapped_compiles()
+/// @brief MultiThreadedHeap: typed allocation.
+static bool test_p8_multi_threaded_heap_typed_alloc()
 {
-    pmm::presets::PersistentFileMapped pmm;
-    PMM_TEST( !pmm.is_initialized() );
-    // Без открытия файла — просто проверяем, что объект создаётся
-    PMM_TEST( pmm.backend().base_ptr() == nullptr );
-    return true;
-}
+    using MTH = pmm::presets::MultiThreadedHeap;
 
-// ─── P8-F: IndustrialDB — компиляция ─────────────────────────────────────────
+    PMM_TEST( MTH::create( 64 * 1024 ) );
+    PMM_TEST( MTH::is_initialized() );
 
-/// @brief IndustrialDB компилируется и создаётся без краша.
-static bool test_p8_industrial_db_compiles()
-{
-    pmm::presets::IndustrialDB pmm;
-    PMM_TEST( !pmm.is_initialized() );
-    PMM_TEST( pmm.backend().base_ptr() == nullptr );
+    MTH::pptr<double> p = MTH::allocate_typed<double>();
+    PMM_TEST( !p.is_null() );
+
+    *p.resolve() = 3.14;
+    PMM_TEST( *p.resolve() == 3.14 );
+
+    MTH::deallocate_typed( p );
+    MTH::destroy();
     return true;
 }
 
@@ -213,28 +178,20 @@ static bool test_p8_industrial_db_compiles()
 
 int main()
 {
-    std::cout << "=== test_issue87_phase8 (Phase 8: pmm_presets.h) ===\n\n";
+    std::cout << "=== test_issue87_phase8 (Phase 8: pmm_presets.h, Issue #110) ===\n\n";
     bool all_passed = true;
 
     std::cout << "--- P8-A: All presets compile ---\n";
-    PMM_RUN( "P8-A1: All presets instantiate without compile errors", test_p8_all_presets_compile );
-
-    std::cout << "\n--- P8-B: EmbeddedStatic4K ---\n";
-    PMM_RUN( "P8-B1: EmbeddedStatic4K create() and basic ops", test_p8_embedded_static_create );
-    PMM_RUN( "P8-B2: EmbeddedStatic4K multiple allocations", test_p8_embedded_static_multiple_alloc );
+    PMM_RUN( "P8-A1: Presets instantiate without compile errors", test_p8_all_presets_compile );
 
     std::cout << "\n--- P8-C: SingleThreadedHeap ---\n";
     PMM_RUN( "P8-C1: SingleThreadedHeap create(size) and alloc/dealloc", test_p8_single_threaded_heap_create );
-    PMM_RUN( "P8-C2: SingleThreadedHeap auto-expand", test_p8_single_threaded_heap_expand );
+    PMM_RUN( "P8-C2: SingleThreadedHeap typed allocation", test_p8_single_threaded_heap_typed_alloc );
+    PMM_RUN( "P8-C3: SingleThreadedHeap auto-expand", test_p8_single_threaded_heap_expand );
 
     std::cout << "\n--- P8-D: MultiThreadedHeap ---\n";
     PMM_RUN( "P8-D1: MultiThreadedHeap create(size) and alloc/dealloc", test_p8_multi_threaded_heap_create );
-
-    std::cout << "\n--- P8-E: PersistentFileMapped ---\n";
-    PMM_RUN( "P8-E1: PersistentFileMapped compiles and constructs", test_p8_persistent_file_mapped_compiles );
-
-    std::cout << "\n--- P8-F: IndustrialDB ---\n";
-    PMM_RUN( "P8-F1: IndustrialDB compiles and constructs", test_p8_industrial_db_compiles );
+    PMM_RUN( "P8-D2: MultiThreadedHeap typed allocation", test_p8_multi_threaded_heap_typed_alloc );
 
     std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
     return all_passed ? 0 : 1;

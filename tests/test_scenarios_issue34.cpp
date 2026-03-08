@@ -116,7 +116,7 @@ static bool test_shredder()
         Mgr::pptr<std::uint8_t> ptr = pmm.allocate_typed<std::uint8_t>( sz );
         if ( !ptr.is_null() )
         {
-            std::memset( ptr.resolve( pmm ), static_cast<int>( i & 0xFF ), sz );
+            std::memset( ptr.resolve(), static_cast<int>( i & 0xFF ), sz );
             all_ptrs.push_back( ptr );
         }
         else
@@ -238,7 +238,7 @@ static bool test_persistent_cycle()
             return false;
         }
 
-        Node* node_ptr = n.resolve( pmm1 );
+        Node* node_ptr = n.resolve();
         node_ptr->id   = i;
         node_ptr->next = Mgr::pptr<Node>(); // null initially
         // Checksum will be updated when next is set
@@ -251,16 +251,16 @@ static bool test_persistent_cycle()
         }
         else
         {
-            tail.resolve( pmm1 )->next = n;
+            tail.resolve()->next = n;
             // Update tail checksum
-            tail.resolve( pmm1 )->checksum =
-                compute_checksum( tail.resolve( pmm1 )->id, tail.resolve( pmm1 )->next.offset() );
+            tail.resolve()->checksum =
+                compute_checksum( tail.resolve()->id, tail.resolve()->next.offset() );
             tail = n;
         }
     }
     // Final node checksum (no next)
     if ( !tail.is_null() )
-        tail.resolve( pmm1 )->checksum = compute_checksum( tail.resolve( pmm1 )->id, 0 );
+        tail.resolve()->checksum = compute_checksum( tail.resolve()->id, 0 );
 
     std::cout << "    Built " << node_count << " nodes in " << elapsed_ms( t0, now() ) << " ms\n";
     PMM_TEST( pmm1.is_initialized() );
@@ -270,7 +270,7 @@ static bool test_persistent_cycle()
     // Phase 2: Save
     std::cout << "  Phase 2: saving state...\n";
     auto t1 = now();
-    PMM_TEST( pmm::save_manager( pmm1, filename ) );
+    PMM_TEST( pmm::save_manager<decltype(pmm1)>( filename ) );
     pmm1.destroy();
     std::cout << "    Saved in " << elapsed_ms( t1, now() ) << " ms\n";
 
@@ -278,7 +278,7 @@ static bool test_persistent_cycle()
     std::cout << "  Phase 3: loading state...\n";
     Mgr pmm2;
     PMM_TEST( pmm2.create( memory_size ) );
-    PMM_TEST( pmm::load_manager_from_file( pmm2, filename ) );
+    PMM_TEST( pmm::load_manager_from_file<decltype(pmm2)>( filename ) );
     PMM_TEST( pmm2.is_initialized() );
     std::cout << "    Loaded (new manager instance)\n";
 
@@ -294,7 +294,7 @@ static bool test_persistent_cycle()
 
     while ( !cur.is_null() )
     {
-        Node* n = cur.resolve( pmm2 );
+        Node* n = cur.resolve();
         if ( n == nullptr )
         {
             std::cerr << "  ERROR: resolve() returned nullptr at node " << traversed << "\n";
@@ -331,7 +331,7 @@ static bool test_persistent_cycle()
     cur = Mgr::pptr<Node>( head_offset );
     while ( !cur.is_null() )
     {
-        Mgr::pptr<Node> next_node = cur.resolve( pmm2 )->next;
+        Mgr::pptr<Node> next_node = cur.resolve()->next;
         pmm2.deallocate_typed( cur );
         cur = next_node;
     }

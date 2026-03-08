@@ -1,8 +1,8 @@
 /**
  * @file test_deallocate.cpp
- * @brief Тесты освобождения памяти (Issue #102 — новый API)
+ * @brief Тесты освобождения памяти (Issue #110 — новый API)
  *
- * Issue #102: использует AbstractPersistMemoryManager через pmm_presets.h.
+ * Issue #110: использует AbstractPersistMemoryManager через pmm_presets.h.
  *   - Все операции через экземпляр менеджера.
  *   - Выделение через allocate_typed<T>(), освобождение через deallocate_typed().
  */
@@ -44,211 +44,200 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 
 static bool test_deallocate_null()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<std::uint8_t> null_p;
-    pmm.deallocate_typed( null_p );
-    PMM_TEST( pmm.is_initialized() );
+    Mgr::deallocate_typed( null_p );
+    PMM_TEST( Mgr::is_initialized() );
 
-    pmm.destroy();
+    Mgr::destroy();
     return true;
 }
 
 static bool test_deallocate_single()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
 
-    Mgr::pptr<std::uint8_t> ptr = pmm.allocate_typed<std::uint8_t>( 256 );
+    Mgr::pptr<std::uint8_t> ptr = Mgr::allocate_typed<std::uint8_t>( 256 );
     PMM_TEST( !ptr.is_null() );
-    std::size_t used_after_alloc = pmm.used_size();
+    std::size_t used_after_alloc = Mgr::used_size();
 
-    pmm.deallocate_typed( ptr );
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.used_size() < used_after_alloc );
+    Mgr::deallocate_typed( ptr );
+    PMM_TEST( Mgr::is_initialized() );
+    PMM_TEST( Mgr::used_size() < used_after_alloc );
 
-    pmm.destroy();
+    Mgr::destroy();
     return true;
 }
 
 static bool test_deallocate_reuse()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
 
-    Mgr::pptr<std::uint8_t> ptr1 = pmm.allocate_typed<std::uint8_t>( 256 );
+    Mgr::pptr<std::uint8_t> ptr1 = Mgr::allocate_typed<std::uint8_t>( 256 );
     PMM_TEST( !ptr1.is_null() );
 
-    pmm.deallocate_typed( ptr1 );
+    Mgr::deallocate_typed( ptr1 );
 
-    Mgr::pptr<std::uint8_t> ptr2 = pmm.allocate_typed<std::uint8_t>( 256 );
+    Mgr::pptr<std::uint8_t> ptr2 = Mgr::allocate_typed<std::uint8_t>( 256 );
     PMM_TEST( !ptr2.is_null() );
 
-    pmm.deallocate_typed( ptr2 );
-    pmm.destroy();
+    Mgr::deallocate_typed( ptr2 );
+    Mgr::destroy();
     return true;
 }
 
 static bool test_deallocate_multiple_fifo()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 256 * 1024 ) );
+    PMM_TEST( Mgr::create( 256 * 1024 ) );
 
     const int               num = 5;
     Mgr::pptr<std::uint8_t> ptrs[num];
     for ( int i = 0; i < num; i++ )
     {
-        ptrs[i] = pmm.allocate_typed<std::uint8_t>( 512 );
+        ptrs[i] = Mgr::allocate_typed<std::uint8_t>( 512 );
         PMM_TEST( !ptrs[i].is_null() );
     }
 
     for ( int i = 0; i < num; i++ )
     {
-        pmm.deallocate_typed( ptrs[i] );
+        Mgr::deallocate_typed( ptrs[i] );
     }
 
-    pmm.destroy();
+    Mgr::destroy();
     return true;
 }
 
 static bool test_deallocate_multiple_lifo()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 256 * 1024 ) );
+    PMM_TEST( Mgr::create( 256 * 1024 ) );
 
     const int               num = 5;
     Mgr::pptr<std::uint8_t> ptrs[num];
     for ( int i = 0; i < num; i++ )
     {
-        ptrs[i] = pmm.allocate_typed<std::uint8_t>( 512 );
+        ptrs[i] = Mgr::allocate_typed<std::uint8_t>( 512 );
         PMM_TEST( !ptrs[i].is_null() );
     }
 
     for ( int i = num - 1; i >= 0; i-- )
     {
-        pmm.deallocate_typed( ptrs[i] );
+        Mgr::deallocate_typed( ptrs[i] );
     }
 
-    pmm.destroy();
+    Mgr::destroy();
     return true;
 }
 
 static bool test_deallocate_random_order()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 256 * 1024 ) );
+    PMM_TEST( Mgr::create( 256 * 1024 ) );
 
     Mgr::pptr<std::uint8_t> ptrs[6];
     for ( int i = 0; i < 6; i++ )
     {
-        ptrs[i] = pmm.allocate_typed<std::uint8_t>( static_cast<std::size_t>( ( i + 1 ) * 128 ) );
+        ptrs[i] = Mgr::allocate_typed<std::uint8_t>( static_cast<std::size_t>( ( i + 1 ) * 128 ) );
         PMM_TEST( !ptrs[i].is_null() );
     }
 
     int order[] = { 2, 5, 0, 3, 1, 4 };
     for ( int idx : order )
     {
-        pmm.deallocate_typed( ptrs[idx] );
+        Mgr::deallocate_typed( ptrs[idx] );
     }
 
-    pmm.destroy();
+    Mgr::destroy();
     return true;
 }
 
 static bool test_deallocate_all_then_check_free()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 128 * 1024 ) );
+    PMM_TEST( Mgr::create( 128 * 1024 ) );
 
-    std::size_t free_before = pmm.free_size();
+    std::size_t free_before = Mgr::free_size();
 
-    Mgr::pptr<std::uint8_t> ptr = pmm.allocate_typed<std::uint8_t>( 1024 );
+    Mgr::pptr<std::uint8_t> ptr = Mgr::allocate_typed<std::uint8_t>( 1024 );
     PMM_TEST( !ptr.is_null() );
-    PMM_TEST( pmm.free_size() < free_before );
+    PMM_TEST( Mgr::free_size() < free_before );
 
-    pmm.deallocate_typed( ptr );
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.free_size() >= free_before - 128 );
+    Mgr::deallocate_typed( ptr );
+    PMM_TEST( Mgr::is_initialized() );
+    PMM_TEST( Mgr::free_size() >= free_before - 128 );
 
-    pmm.destroy();
+    Mgr::destroy();
     return true;
 }
 
 static bool test_deallocate_interleaved()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 512 * 1024 ) );
+    PMM_TEST( Mgr::create( 512 * 1024 ) );
 
     Mgr::pptr<std::uint8_t> prev;
     for ( int i = 0; i < 50; i++ )
     {
-        Mgr::pptr<std::uint8_t> ptr = pmm.allocate_typed<std::uint8_t>( static_cast<std::size_t>( 64 + i * 32 ) );
+        Mgr::pptr<std::uint8_t> ptr = Mgr::allocate_typed<std::uint8_t>( static_cast<std::size_t>( 64 + i * 32 ) );
         PMM_TEST( !ptr.is_null() );
         if ( !prev.is_null() )
-            pmm.deallocate_typed( prev );
+            Mgr::deallocate_typed( prev );
         prev = ptr;
     }
     if ( !prev.is_null() )
-        pmm.deallocate_typed( prev );
-    PMM_TEST( pmm.is_initialized() );
+        Mgr::deallocate_typed( prev );
+    PMM_TEST( Mgr::is_initialized() );
 
-    pmm.destroy();
+    Mgr::destroy();
     return true;
 }
 
 static bool test_reallocate_grow()
 {
     // reallocate is no longer in AbstractPersistMemoryManager; implement manually
-    Mgr pmm;
-    PMM_TEST( pmm.create( 256 * 1024 ) );
+    PMM_TEST( Mgr::create( 256 * 1024 ) );
 
-    Mgr::pptr<std::uint8_t> p = pmm.allocate_typed<std::uint8_t>( 128 );
+    Mgr::pptr<std::uint8_t> p = Mgr::allocate_typed<std::uint8_t>( 128 );
     PMM_TEST( !p.is_null() );
-    std::memset( p.resolve( pmm ), 0xCC, 128 );
+    std::memset( p.resolve(), 0xCC, 128 );
 
     // Manual realloc: allocate new, copy, free old
-    Mgr::pptr<std::uint8_t> p2 = pmm.allocate_typed<std::uint8_t>( 512 );
+    Mgr::pptr<std::uint8_t> p2 = Mgr::allocate_typed<std::uint8_t>( 512 );
     PMM_TEST( !p2.is_null() );
-    std::memcpy( p2.resolve( pmm ), p.resolve( pmm ), 128 );
-    pmm.deallocate_typed( p );
+    std::memcpy( p2.resolve(), p.resolve(), 128 );
+    Mgr::deallocate_typed( p );
 
-    const std::uint8_t* raw = p2.resolve( pmm );
+    const std::uint8_t* raw = p2.resolve();
     for ( std::size_t i = 0; i < 128; i++ )
         PMM_TEST( raw[i] == 0xCC );
 
-    pmm.deallocate_typed( p2 );
-    pmm.destroy();
+    Mgr::deallocate_typed( p2 );
+    Mgr::destroy();
     return true;
 }
 
 static bool test_reallocate_from_null()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
 
     // Allocating from a fresh pointer is just allocate_typed
-    Mgr::pptr<std::uint8_t> ptr = pmm.allocate_typed<std::uint8_t>( 256 );
+    Mgr::pptr<std::uint8_t> ptr = Mgr::allocate_typed<std::uint8_t>( 256 );
     PMM_TEST( !ptr.is_null() );
 
-    pmm.deallocate_typed( ptr );
-    pmm.destroy();
+    Mgr::deallocate_typed( ptr );
+    Mgr::destroy();
     return true;
 }
 
 static bool test_block_data_size_bytes()
 {
-    Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
 
-    Mgr::pptr<std::uint8_t> ptr = pmm.allocate_typed<std::uint8_t>( 512 );
+    Mgr::pptr<std::uint8_t> ptr = Mgr::allocate_typed<std::uint8_t>( 512 );
     PMM_TEST( !ptr.is_null() );
 
     // Issue #59, #83: only kGranuleSize (16-byte) alignment is guaranteed
-    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr.resolve( pmm ) ) % pmm::kGranuleSize == 0 );
+    PMM_TEST( reinterpret_cast<std::uintptr_t>( ptr.resolve() ) % pmm::kGranuleSize == 0 );
 
-    pmm.deallocate_typed( ptr );
-    pmm.destroy();
+    Mgr::deallocate_typed( ptr );
+    Mgr::destroy();
     return true;
 }
 

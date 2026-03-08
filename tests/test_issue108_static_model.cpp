@@ -540,43 +540,41 @@ static bool test_p108_statistics()
 }
 
 // =============================================================================
-// P108-E: Совместимость — объектная модель не сломана
+// P108-E: Унифицированный API PersistMemoryManager (Issue #110)
 // =============================================================================
 
-/// @brief Существующий API AbstractPersistMemoryManager работает (объектная модель).
-static bool test_p108_object_model_still_works()
+/// @brief PersistMemoryManager статический API работает (Issue #110 — унификация).
+static bool test_p108_unified_static_api_works()
 {
-    using Mgr = pmm::presets::SingleThreadedHeap;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 80>;
 
-    Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
 
-    Mgr::pptr<int> p = pmm.allocate_typed<int>();
+    Mgr::pptr<int> p = Mgr::allocate_typed<int>();
     PMM_TEST( !p.is_null() );
 
-    // Объектная модель: resolve(mgr)
-    int* raw = p.resolve( pmm );
+    // Статическая модель: resolve() без аргументов
+    int* raw = p.resolve();
     PMM_TEST( raw != nullptr );
     *raw = 42;
-    PMM_TEST( *p.resolve( pmm ) == 42 );
+    PMM_TEST( *p.resolve() == 42 );
 
-    // Через менеджер
-    PMM_TEST( *pmm.resolve( p ) == 42 );
+    // Через статический метод менеджера
+    PMM_TEST( *Mgr::resolve<int>( p ) == 42 );
 
-    pmm.deallocate_typed( p );
-    pmm.destroy();
+    Mgr::deallocate_typed( p );
+    Mgr::destroy();
 
     return true;
 }
 
-/// @brief pptr::index_type для объектной модели — fallback на uint32_t.
-static bool test_p108_object_model_index_type()
+/// @brief pptr::index_type для PersistMemoryManager — из address_traits::index_type.
+static bool test_p108_unified_index_type()
 {
-    using Mgr = pmm::presets::SingleThreadedHeap;
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 81>;
 
-    // AbstractPersistMemoryManager не предоставляет index_type напрямую,
-    // поэтому pptr использует uint32_t
-    static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr with object manager must be 4 bytes" );
+    // PersistMemoryManager предоставляет address_traits::index_type (uint32_t)
+    static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr with PersistMemoryManager must be 4 bytes" );
     PMM_TEST( sizeof( Mgr::pptr<int> ) == 4 );
 
     return true;
@@ -637,9 +635,9 @@ int main()
     PMM_RUN( "P108-D2: destroy() неинициализированного менеджера", test_p108_destroy_uninitialized );
     PMM_RUN( "P108-D3: статистика корректна", test_p108_statistics );
 
-    std::cout << "\n--- P108-E: Совместимость с объектной моделью ---\n";
-    PMM_RUN( "P108-E1: AbstractPersistMemoryManager API работает", test_p108_object_model_still_works );
-    PMM_RUN( "P108-E2: pptr::index_type для объектной модели", test_p108_object_model_index_type );
+    std::cout << "\n--- P108-E: Унифицированный API PersistMemoryManager (Issue #110) ---\n";
+    PMM_RUN( "P108-E1: PersistMemoryManager статический API работает", test_p108_unified_static_api_works );
+    PMM_RUN( "P108-E2: pptr::index_type из address_traits", test_p108_unified_index_type );
     PMM_RUN( "P108-E3: сравнение pptr в статической модели", test_p108_pptr_comparison_static );
 
     std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
