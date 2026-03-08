@@ -90,17 +90,14 @@ static bool test_p9_all_states_same_size()
 /// @brief Проверка read-only accessors через cast_from_raw.
 static bool test_p9_accessors()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
-    // Создаём блок вручную через Block<A> layout
+    // Создаём блок через BlockStateBase::init_fields + static setters (Issue #120)
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    auto* blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->prev_offset = 10;
-    blk->next_offset = 20;
-    blk->weight      = 5;
-    blk->root_offset = 6;
+    BlockState::init_fields( buffer, 10u, 20u, 0, 5u, 6u );
 
     // Интерпретируем как BlockStateBase
     auto* state = reinterpret_cast<pmm::BlockStateBase<A>*>( buffer );
@@ -116,21 +113,21 @@ static bool test_p9_accessors()
 /// @brief Проверка is_free() и is_allocated().
 static bool test_p9_is_free_is_allocated()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[32];
 
     // Свободный блок: weight=0, root_offset=0
     std::memset( buffer, 0, sizeof( buffer ) );
-    auto* state = reinterpret_cast<pmm::BlockStateBase<A>*>( buffer );
+    auto* state = reinterpret_cast<BlockState*>( buffer );
     PMM_TEST( state->is_free() == true );
     PMM_TEST( state->is_allocated( 0 ) == false );
     PMM_TEST( state->is_allocated( 6 ) == false );
 
-    // Занятый блок: weight>0, root_offset=idx
-    auto* blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->weight      = 5;
-    blk->root_offset = 6; // idx=6
+    // Занятый блок: weight>0, root_offset=idx (via static setters, Issue #120)
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 6u ); // idx=6
     PMM_TEST( state->is_free() == false );
     PMM_TEST( state->is_allocated( 6 ) == true );
     PMM_TEST( state->is_allocated( 7 ) == false ); // Другой idx
@@ -143,7 +140,8 @@ static bool test_p9_is_free_is_allocated()
 /// @brief FreeBlock::cast_from_raw и verify_invariants.
 static bool test_p9_free_block_cast_and_verify()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
@@ -152,9 +150,8 @@ static bool test_p9_free_block_cast_and_verify()
     PMM_TEST( fb != nullptr );
     PMM_TEST( fb->verify_invariants() == true );
 
-    // Портим инварианты
-    auto* blk   = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->weight = 5; // Не 0
+    // Портим инварианты (via static setter, Issue #120)
+    BlockState::set_weight_of( buffer, 5u ); // Не 0
     PMM_TEST( fb->verify_invariants() == false );
 
     return true;
@@ -242,22 +239,21 @@ static bool test_p9_removed_avl_insert_to_avl()
 /// @brief SplittingBlock::initialize_new_block + link_new_block + finalize_split.
 static bool test_p9_splitting_full_flow()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     // Два блока: текущий и новый (результат split)
     alignas( 16 ) std::uint8_t buffer_curr[32];
     alignas( 16 ) std::uint8_t buffer_new[32];
     alignas( 16 ) std::uint8_t buffer_old_next[32];
 
-    // Инициализация текущего блока
+    // Инициализация текущего блока (via BlockStateBase static API, Issue #120)
     std::memset( buffer_curr, 0, sizeof( buffer_curr ) );
-    auto* curr_blk        = reinterpret_cast<pmm::Block<A>*>( buffer_curr );
-    curr_blk->next_offset = 100; // Указывает на старый следующий
+    BlockState::set_next_offset_of( buffer_curr, 100u ); // Указывает на старый следующий
 
-    // Инициализация старого следующего блока
+    // Инициализация старого следующего блока (via BlockStateBase static API, Issue #120)
     std::memset( buffer_old_next, 0, sizeof( buffer_old_next ) );
-    auto* old_next_blk        = reinterpret_cast<pmm::Block<A>*>( buffer_old_next );
-    old_next_blk->prev_offset = 6; // Указывает на текущий (idx=6)
+    BlockState::set_prev_offset_of( buffer_old_next, 6u ); // Указывает на текущий (idx=6)
 
     // Начинаем splitting
     auto* splitting = pmm::SplittingBlock<A>::cast_from_raw( buffer_curr );
@@ -274,8 +270,8 @@ static bool test_p9_splitting_full_flow()
     // 2. Связываем новый блок
     splitting->link_new_block( buffer_old_next, 8 );
 
-    PMM_TEST( splitting->next_offset() == 8 );  // Текущий → новый
-    PMM_TEST( old_next_blk->prev_offset == 8 ); // Старый следующий ← новый
+    PMM_TEST( splitting->next_offset() == 8 );                       // Текущий → новый
+    PMM_TEST( BlockState::get_prev_offset( buffer_old_next ) == 8 ); // Старый следующий ← новый
 
     // 3. Финализируем split
     auto* alloc = splitting->finalize_split( 5, 6 );
@@ -292,14 +288,15 @@ static bool test_p9_splitting_full_flow()
 /// @brief AllocatedBlock::cast_from_raw, verify_invariants, user_ptr.
 static bool test_p9_allocated_block_cast_and_verify()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[64]; // 32 header + 32 data
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    auto* blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->weight      = 2; // 2 гранулы данных
-    blk->root_offset = 0; // idx=0
+    // Initialize via BlockStateBase static API (Issue #120)
+    BlockState::set_weight_of( buffer, 2u );      // 2 гранулы данных
+    BlockState::set_root_offset_of( buffer, 0u ); // idx=0
 
     auto* alloc = pmm::AllocatedBlock<A>::cast_from_raw( buffer );
     PMM_TEST( alloc != nullptr );
@@ -316,15 +313,15 @@ static bool test_p9_allocated_block_cast_and_verify()
 /// @brief AllocatedBlock::mark_as_free() → FreeBlockNotInAVL.
 static bool test_p9_allocated_mark_as_free()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    // Создаём занятый блок
-    auto* blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->weight      = 5;
-    blk->root_offset = 6;
+    // Создаём занятый блок (via BlockStateBase static API, Issue #120)
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 6u );
 
     auto* alloc   = pmm::AllocatedBlock<A>::cast_from_raw( buffer );
     auto* not_avl = alloc->mark_as_free();
@@ -377,28 +374,26 @@ static bool test_p9_not_avl_begin_coalescing()
 /// @brief CoalescingBlock::coalesce_with_next — слияние с правым соседом.
 static bool test_p9_coalesce_with_next()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     // Три блока: текущий (idx=6), следующий (idx=10), следующий следующего (idx=20)
     alignas( 16 ) std::uint8_t buffer_curr[32];
     alignas( 16 ) std::uint8_t buffer_next[32];
     alignas( 16 ) std::uint8_t buffer_nxt_nxt[32];
 
-    // Инициализация текущего блока
+    // Инициализация текущего блока (via BlockStateBase static API, Issue #120)
     std::memset( buffer_curr, 0, sizeof( buffer_curr ) );
-    auto* curr_blk        = reinterpret_cast<pmm::Block<A>*>( buffer_curr );
-    curr_blk->next_offset = 10; // → следующий
+    BlockState::set_next_offset_of( buffer_curr, 10u ); // → следующий
 
     // Инициализация следующего блока (будет поглощён)
     std::memset( buffer_next, 0, sizeof( buffer_next ) );
-    auto* next_blk        = reinterpret_cast<pmm::Block<A>*>( buffer_next );
-    next_blk->prev_offset = 6;  // ← текущий
-    next_blk->next_offset = 20; // → следующий следующего
+    BlockState::set_prev_offset_of( buffer_next, 6u );  // ← текущий
+    BlockState::set_next_offset_of( buffer_next, 20u ); // → следующий следующего
 
     // Инициализация следующего следующего
     std::memset( buffer_nxt_nxt, 0, sizeof( buffer_nxt_nxt ) );
-    auto* nxt_nxt_blk        = reinterpret_cast<pmm::Block<A>*>( buffer_nxt_nxt );
-    nxt_nxt_blk->prev_offset = 10; // ← следующий
+    BlockState::set_prev_offset_of( buffer_nxt_nxt, 10u ); // ← следующий
 
     // Выполняем слияние
     auto* coalescing = pmm::CoalescingBlock<A>::cast_from_raw( buffer_curr );
@@ -406,7 +401,7 @@ static bool test_p9_coalesce_with_next()
 
     // Проверяем результат
     PMM_TEST( coalescing->next_offset() == 20 ); // Текущий → следующий следующего
-    PMM_TEST( nxt_nxt_blk->prev_offset == 6 );   // Следующий следующего ← текущий
+    PMM_TEST( BlockState::get_prev_offset( buffer_nxt_nxt ) == 6 ); // Следующий следующего ← текущий
 
     // Следующий блок должен быть обнулён
     for ( size_t i = 0; i < sizeof( buffer_next ); ++i )
@@ -420,28 +415,26 @@ static bool test_p9_coalesce_with_next()
 /// @brief CoalescingBlock::coalesce_with_prev — слияние с левым соседом.
 static bool test_p9_coalesce_with_prev()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     // Три блока: предыдущий (idx=4), текущий (idx=10), следующий (idx=20)
     alignas( 16 ) std::uint8_t buffer_prev[32];
     alignas( 16 ) std::uint8_t buffer_curr[32];
     alignas( 16 ) std::uint8_t buffer_next[32];
 
-    // Инициализация предыдущего блока
+    // Инициализация предыдущего блока (via BlockStateBase static API, Issue #120)
     std::memset( buffer_prev, 0, sizeof( buffer_prev ) );
-    auto* prev_blk        = reinterpret_cast<pmm::Block<A>*>( buffer_prev );
-    prev_blk->next_offset = 10; // → текущий
+    BlockState::set_next_offset_of( buffer_prev, 10u ); // → текущий
 
     // Инициализация текущего блока (будет поглощён)
     std::memset( buffer_curr, 0, sizeof( buffer_curr ) );
-    auto* curr_blk        = reinterpret_cast<pmm::Block<A>*>( buffer_curr );
-    curr_blk->prev_offset = 4;  // ← предыдущий
-    curr_blk->next_offset = 20; // → следующий
+    BlockState::set_prev_offset_of( buffer_curr, 4u );  // ← предыдущий
+    BlockState::set_next_offset_of( buffer_curr, 20u ); // → следующий
 
     // Инициализация следующего блока
     std::memset( buffer_next, 0, sizeof( buffer_next ) );
-    auto* next_blk        = reinterpret_cast<pmm::Block<A>*>( buffer_next );
-    next_blk->prev_offset = 10; // ← текущий
+    BlockState::set_prev_offset_of( buffer_next, 10u ); // ← текущий
 
     // Выполняем слияние
     auto* coalescing = pmm::CoalescingBlock<A>::cast_from_raw( buffer_curr );
@@ -449,8 +442,8 @@ static bool test_p9_coalesce_with_prev()
 
     // Результат — предыдущий блок
     PMM_TEST( reinterpret_cast<void*>( result ) == reinterpret_cast<void*>( buffer_prev ) );
-    PMM_TEST( result->next_offset() == 20 ); // Предыдущий → следующий
-    PMM_TEST( next_blk->prev_offset == 4 );  // Следующий ← предыдущий
+    PMM_TEST( result->next_offset() == 20 );                     // Предыдущий → следующий
+    PMM_TEST( BlockState::get_prev_offset( buffer_next ) == 4 ); // Следующий ← предыдущий
 
     // Текущий блок должен быть обнулён
     for ( size_t i = 0; i < sizeof( buffer_curr ); ++i )
@@ -484,7 +477,8 @@ static bool test_p9_coalesce_finalize()
 /// @brief detect_block_state — определение состояния блока.
 static bool test_p9_detect_block_state()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[32];
 
@@ -492,16 +486,15 @@ static bool test_p9_detect_block_state()
     std::memset( buffer, 0, sizeof( buffer ) );
     PMM_TEST( pmm::detect_block_state<A>( buffer, 6 ) == 0 ); // FreeBlock
 
-    // Занятый блок (idx=6)
-    auto* blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->weight      = 5;
-    blk->root_offset = 6;
+    // Занятый блок (idx=6) (via BlockStateBase static API, Issue #120)
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 6u );
     PMM_TEST( pmm::detect_block_state<A>( buffer, 6 ) == 1 );  // AllocatedBlock
     PMM_TEST( pmm::detect_block_state<A>( buffer, 7 ) == -1 ); // Неопределённое (неверный idx)
 
     // Некорректное состояние: weight=0, но root_offset != 0
-    blk->weight      = 0;
-    blk->root_offset = 6;
+    BlockState::set_weight_of( buffer, 0u );
+    BlockState::set_root_offset_of( buffer, 6u );
     PMM_TEST( pmm::detect_block_state<A>( buffer, 6 ) == -1 ); // Неопределённое
 
     return true;
@@ -510,33 +503,33 @@ static bool test_p9_detect_block_state()
 /// @brief recover_block_state — восстановление состояния блока.
 static bool test_p9_recover_block_state()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[32];
 
-    // Случай 1: weight>0, но root_offset неверен
+    // Случай 1: weight>0, но root_offset неверен (via BlockStateBase static API, Issue #120)
     std::memset( buffer, 0, sizeof( buffer ) );
-    auto* blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->weight      = 5;
-    blk->root_offset = 10; // Должен быть 6
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 10u ); // Должен быть 6
 
     pmm::recover_block_state<A>( buffer, 6 );
-    PMM_TEST( blk->root_offset == 6 ); // Исправлено
+    PMM_TEST( BlockState::get_root_offset( buffer ) == 6 ); // Исправлено
 
     // Случай 2: weight==0, но root_offset != 0
-    blk->weight      = 0;
-    blk->root_offset = 6;
+    BlockState::set_weight_of( buffer, 0u );
+    BlockState::set_root_offset_of( buffer, 6u );
 
     pmm::recover_block_state<A>( buffer, 6 );
-    PMM_TEST( blk->root_offset == 0 ); // Исправлено
+    PMM_TEST( BlockState::get_root_offset( buffer ) == 0 ); // Исправлено
 
     // Случай 3: корректное состояние — без изменений
-    blk->weight      = 5;
-    blk->root_offset = 6;
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 6u );
 
     pmm::recover_block_state<A>( buffer, 6 );
-    PMM_TEST( blk->weight == 5 );
-    PMM_TEST( blk->root_offset == 6 ); // Без изменений
+    PMM_TEST( BlockState::get_weight( buffer ) == 5 );
+    PMM_TEST( BlockState::get_root_offset( buffer ) == 6 ); // Без изменений
 
     return true;
 }
@@ -571,15 +564,15 @@ static bool test_p9_allocate_flow_no_split()
 /// @brief Симуляция полного цикла deallocate без coalesce.
 static bool test_p9_deallocate_flow_no_coalesce()
 {
-    using A = pmm::DefaultAddressTraits;
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    // 1. Создаём занятый блок
-    auto* blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->weight      = 5;
-    blk->root_offset = 6;
+    // 1. Создаём занятый блок (via BlockStateBase static API, Issue #120)
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 6u );
 
     auto* alloc = pmm::AllocatedBlock<A>::cast_from_raw( buffer );
     PMM_TEST( alloc->verify_invariants( 6 ) == true );

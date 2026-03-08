@@ -79,6 +79,8 @@ static std::uint32_t blk_idx_of( Mgr& pmm, pmm::Block<A>* blk )
 /// @brief After allocation, the block has weight > 0 and root_offset == own_idx (AllocatedBlock invariant).
 static bool test_i106_allocated_block_uses_weight()
 {
+    using BlockState = pmm::BlockStateBase<A>;
+
     Mgr pmm;
     PMM_TEST( pmm.create( 64 * 1024 ) );
 
@@ -89,11 +91,11 @@ static bool test_i106_allocated_block_uses_weight()
     pmm::Block<A>* blk = block_of( pmm, raw );
     std::uint32_t  idx = blk_idx_of( pmm, blk );
 
-    // I106-A1: weight > 0 (allocated block)
-    PMM_TEST( blk->weight > 0 );
+    // I106-A1: weight > 0 (allocated block) (via BlockStateBase API, Issue #120)
+    PMM_TEST( BlockState::get_weight( blk ) > 0 );
 
     // I106-A2: root_offset == own_idx (AllocatedBlock invariant)
-    PMM_TEST( blk->root_offset == idx );
+    PMM_TEST( BlockState::get_root_offset( blk ) == idx );
 
     // I106-A3: detect_block_state confirms AllocatedBlock
     PMM_TEST( pmm::detect_block_state<A>( blk, idx ) == 1 );
@@ -106,6 +108,8 @@ static bool test_i106_allocated_block_uses_weight()
 /// @brief After deallocation, the block has weight == 0 and root_offset == 0 (FreeBlock invariant).
 static bool test_i106_freed_block_has_zero_weight()
 {
+    using BlockState = pmm::BlockStateBase<A>;
+
     Mgr pmm;
     PMM_TEST( pmm.create( 64 * 1024 ) );
 
@@ -116,8 +120,8 @@ static bool test_i106_freed_block_has_zero_weight()
 
     pmm.deallocate( raw );
 
-    // I106-A4: weight == 0 (free block after deallocate)
-    PMM_TEST( blk->weight == 0 );
+    // I106-A4: weight == 0 (free block after deallocate) (via BlockStateBase API, Issue #120)
+    PMM_TEST( BlockState::get_weight( blk ) == 0 );
 
     // I106-A5: root_offset == 0 (free block invariant)
     // Note: after coalesce_with_prev, this block may be zeroed (absorbed into prev).
@@ -174,16 +178,18 @@ static bool test_i106_deallocate_uses_mark_as_free()
     pmm::Block<A>* blk1 = block_of( pmm, raw1 );
     std::uint32_t  idx1 = blk_idx_of( pmm, blk1 );
 
-    // Verify blk1 is allocated
-    PMM_TEST( blk1->weight > 0 );
-    PMM_TEST( blk1->root_offset == idx1 );
+    using BlockState = pmm::BlockStateBase<A>;
+
+    // Verify blk1 is allocated (via BlockStateBase API, Issue #120)
+    PMM_TEST( BlockState::get_weight( blk1 ) > 0 );
+    PMM_TEST( BlockState::get_root_offset( blk1 ) == idx1 );
 
     // Deallocate blk1 — this calls AllocatedBlock::mark_as_free()
     pmm.deallocate( raw1 );
 
     // After deallocation: blk1 should be free (weight == 0, root_offset == 0)
-    PMM_TEST( blk1->weight == 0 );
-    PMM_TEST( blk1->root_offset == 0 );
+    PMM_TEST( BlockState::get_weight( blk1 ) == 0 );
+    PMM_TEST( BlockState::get_root_offset( blk1 ) == 0 );
 
     pmm.deallocate( raw2 );
     pmm.destroy();
@@ -257,27 +263,27 @@ static bool test_i106_coalesce_bidirectional()
 /// Simulate a block with inconsistent state (weight>0 but root_offset wrong).
 static bool test_i106_recover_block_state_on_load()
 {
-    using A = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
     // Create block with inconsistent state: weight>0 but wrong root_offset
-    auto* blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
-    blk->weight      = 5;
-    blk->root_offset = 99; // Should be own_idx (e.g. 6), but corrupted
+    // (via BlockStateBase static API, Issue #120)
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 99u ); // Should be own_idx (e.g. 6), but corrupted
 
     // recover_block_state should fix it
     std::uint32_t own_idx = 6;
     pmm::recover_block_state<A>( buffer, own_idx );
-    PMM_TEST( blk->root_offset == own_idx ); // Fixed
+    PMM_TEST( BlockState::get_root_offset( buffer ) == own_idx ); // Fixed
 
     // Scenario 2: weight==0 but root_offset!=0 (inconsistent free block)
-    blk->weight      = 0;
-    blk->root_offset = 6; // Should be 0
+    BlockState::set_weight_of( buffer, 0u );
+    BlockState::set_root_offset_of( buffer, 6u ); // Should be 0
 
     pmm::recover_block_state<A>( buffer, own_idx );
-    PMM_TEST( blk->root_offset == 0 ); // Fixed
+    PMM_TEST( BlockState::get_root_offset( buffer ) == 0 ); // Fixed
 
     return true;
 }
@@ -287,31 +293,29 @@ static bool test_i106_recover_block_state_on_load()
 /// @brief detect_block_state() returns 0 for free, 1 for allocated, -1 for invalid.
 static bool test_i106_detect_block_state()
 {
-    using A = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
 
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    auto* blk = reinterpret_cast<pmm::Block<A>*>( buffer );
-
-    // FreeBlock: weight=0, root_offset=0
-    blk->weight      = 0;
-    blk->root_offset = 0;
+    // FreeBlock: weight=0, root_offset=0 (via BlockStateBase API, Issue #120)
+    BlockState::set_weight_of( buffer, 0u );
+    BlockState::set_root_offset_of( buffer, 0u );
     PMM_TEST( pmm::detect_block_state<A>( buffer, 6 ) == 0 );
 
     // AllocatedBlock: weight>0, root_offset==own_idx
-    blk->weight      = 5;
-    blk->root_offset = 6;
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 6u );
     PMM_TEST( pmm::detect_block_state<A>( buffer, 6 ) == 1 );
 
     // Invalid: weight>0 but root_offset != own_idx
-    blk->weight      = 5;
-    blk->root_offset = 99; // Wrong
+    BlockState::set_weight_of( buffer, 5u );
+    BlockState::set_root_offset_of( buffer, 99u ); // Wrong
     PMM_TEST( pmm::detect_block_state<A>( buffer, 6 ) == -1 );
 
     // Invalid: weight==0 but root_offset != 0
-    blk->weight      = 0;
-    blk->root_offset = 6; // Should be 0 for free
+    BlockState::set_weight_of( buffer, 0u );
+    BlockState::set_root_offset_of( buffer, 6u ); // Should be 0 for free
     PMM_TEST( pmm::detect_block_state<A>( buffer, 6 ) == -1 );
 
     return true;
@@ -374,19 +378,21 @@ static bool test_i106_split_creates_valid_free_remainder()
     pmm::Block<A>* blk = block_of( pmm, raw );
     std::uint32_t  idx = blk_idx_of( pmm, blk );
 
-    // Allocated block is in AllocatedBlock state
+    using BlockState = pmm::BlockStateBase<A>;
+
+    // Allocated block is in AllocatedBlock state (via BlockStateBase API, Issue #120)
     PMM_TEST( pmm::detect_block_state<A>( blk, idx ) == 1 );
-    PMM_TEST( blk->weight > 0 );
-    PMM_TEST( blk->root_offset == idx );
+    PMM_TEST( BlockState::get_weight( blk ) > 0 );
+    PMM_TEST( BlockState::get_root_offset( blk ) == idx );
 
     // The next block (remainder) should be a valid FreeBlock
-    if ( blk->next_offset != pmm::detail::kNoBlock )
+    if ( BlockState::get_next_offset( blk ) != pmm::detail::kNoBlock )
     {
         std::uint8_t*  base = pmm.backend().base_ptr();
-        pmm::Block<A>* rem =
-            reinterpret_cast<pmm::Block<A>*>( base + pmm::detail::idx_to_byte_off( blk->next_offset ) );
-        PMM_TEST( rem->weight == 0 );      // FreeBlock: weight == 0
-        PMM_TEST( rem->root_offset == 0 ); // FreeBlock: root_offset == 0
+        pmm::Block<A>* rem  = reinterpret_cast<pmm::Block<A>*>(
+            base + pmm::detail::idx_to_byte_off( BlockState::get_next_offset( blk ) ) );
+        PMM_TEST( BlockState::get_weight( rem ) == 0 );      // FreeBlock: weight == 0
+        PMM_TEST( BlockState::get_root_offset( rem ) == 0 ); // FreeBlock: root_offset == 0
     }
 
     pmm.deallocate( raw );
@@ -418,14 +424,16 @@ static bool test_i106_acceptance_criteria()
     pmm::Block<A>* blk = block_of( pmm, raw );
     std::uint32_t  idx = blk_idx_of( pmm, blk );
 
+    using BlockState = pmm::BlockStateBase<A>;
+
     // Allocated block: detected as AllocatedBlock
     PMM_TEST( pmm::detect_block_state<A>( blk, idx ) == 1 );
 
     pmm.deallocate( raw );
 
-    // After deallocate: weight==0, root_offset==0 (FreeBlock or merged)
-    PMM_TEST( blk->weight == 0 );
-    PMM_TEST( blk->root_offset == 0 );
+    // After deallocate: weight==0, root_offset==0 (FreeBlock or merged) (via BlockStateBase API, Issue #120)
+    PMM_TEST( BlockState::get_weight( blk ) == 0 );
+    PMM_TEST( BlockState::get_root_offset( blk ) == 0 );
 
     pmm.destroy();
     return true;
@@ -451,9 +459,10 @@ static bool test_i106_various_sizes()
         pmm::Block<A>* blk = block_of( pmm, ptrs[i] );
         std::uint32_t  idx = blk_idx_of( pmm, blk );
 
-        // All allocated blocks must satisfy AllocatedBlock invariants
-        PMM_TEST( blk->weight > 0 );
-        PMM_TEST( blk->root_offset == idx );
+        using BlockState = pmm::BlockStateBase<A>;
+        // All allocated blocks must satisfy AllocatedBlock invariants (via BlockStateBase API, Issue #120)
+        PMM_TEST( BlockState::get_weight( blk ) > 0 );
+        PMM_TEST( BlockState::get_root_offset( blk ) == idx );
         PMM_TEST( pmm::detect_block_state<A>( blk, idx ) == 1 );
     }
 
