@@ -76,7 +76,7 @@ jobs:
       - name: Commit version bump, changelog and single-header presets
         if: steps.check.outputs.should_release == 'true'
         run: |
-          git add CMakeLists.txt CHANGELOG.md changelog.d/ include/pmm_*.h
+          git add CMakeLists.txt CHANGELOG.md changelog.d/ single_include/pmm/*.h
           git commit -m "chore: release v${{ steps.release.outputs.new_version }}"
           git push
 
@@ -141,7 +141,7 @@ jobs:
 
       - name: Commit version bump, changelog and single-header presets
         run: |
-          git add CMakeLists.txt CHANGELOG.md changelog.d/ include/pmm_*.h
+          git add CMakeLists.txt CHANGELOG.md changelog.d/ single_include/pmm/*.h
           git commit -m "chore: release v${{ steps.release.outputs.new_version }}"
           git push
 
