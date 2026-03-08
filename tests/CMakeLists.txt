@@ -100,3 +100,6 @@ add_test(NAME test_issue100 COMMAND test_issue100)
 
 # ─── Интеграционные тесты BlockState machine (Issue #106) ─────────────────────
 pmm_add_test(test_issue106_block_state_integration test_issue106_block_state_integration.cpp)
+
+# ─── Тесты статической модели менеджера (Issue #108) ─────────────────────────
+pmm_add_test(test_issue108_static_model test_issue108_static_model.cpp)
