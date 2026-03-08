@@ -85,12 +85,14 @@ static bool test_i144_free_block_invalid_weight()
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    // weight > 0 violates FreeBlock invariant
+    // weight > 0 violates FreeBlock invariant.
+    // Use reinterpret_cast directly instead of cast_from_raw, because
+    // cast_from_raw asserts is_free() in debug builds — the assert would fire
+    // and abort the process when we intentionally set up an invalid state.
+    // verify_invariants() is the reliable API-level check in all builds.
     BlockState::set_weight_of( buffer, 3u );
 
-    auto* fb = pmm::FreeBlock<A>::cast_from_raw( reinterpret_cast<void*>( buffer ) );
-    // In non-debug builds cast_from_raw is allowed without assertion;
-    // verify_invariants() is the reliable check in all builds.
+    auto* fb = reinterpret_cast<pmm::FreeBlock<A>*>( buffer );
     PMM_TEST( fb->verify_invariants() == false );
 
     return true;
@@ -105,10 +107,12 @@ static bool test_i144_free_block_invalid_root_offset()
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    // root_offset != 0 violates FreeBlock invariant
+    // root_offset != 0 violates FreeBlock invariant.
+    // Use reinterpret_cast directly instead of cast_from_raw for the same
+    // reason as above: cast_from_raw asserts is_free() in debug builds.
     BlockState::set_root_offset_of( buffer, 5u );
 
-    auto* fb = pmm::FreeBlock<A>::cast_from_raw( reinterpret_cast<void*>( buffer ) );
+    auto* fb = reinterpret_cast<pmm::FreeBlock<A>*>( buffer );
     PMM_TEST( fb->verify_invariants() == false );
 
     return true;
