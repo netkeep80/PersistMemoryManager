@@ -345,6 +345,232 @@ static bool test_pptr_deallocate_null()
     return true;
 }
 
+/**
+ * @brief Тест методов работы с узлом AVL-дерева через pptr (Issue #125).
+ *
+ * Проверяет начальное состояние (нет связей), установку и чтение
+ * левого/правого/родительского потомков дерева.
+ */
+static bool test_pptr_tree_node_links()
+{
+    const std::size_t size = 64 * 1024;
+
+    Mgr pmm;
+    PMM_TEST( pmm.create( size ) );
+
+    Mgr::pptr<int> node1 = pmm.allocate_typed<int>();
+    Mgr::pptr<int> node2 = pmm.allocate_typed<int>();
+    Mgr::pptr<int> node3 = pmm.allocate_typed<int>();
+
+    PMM_TEST( !node1.is_null() );
+    PMM_TEST( !node2.is_null() );
+    PMM_TEST( !node3.is_null() );
+
+    // Начальное состояние: нет связей
+    PMM_TEST( node1.get_tree_left().is_null() );
+    PMM_TEST( node1.get_tree_right().is_null() );
+    PMM_TEST( node1.get_tree_parent().is_null() );
+    PMM_TEST( node2.get_tree_left().is_null() );
+    PMM_TEST( node2.get_tree_right().is_null() );
+    PMM_TEST( node2.get_tree_parent().is_null() );
+
+    // Построить дерево: node1 — корень, node2 — левый, node3 — правый
+    node1.set_tree_left( node2 );
+    node1.set_tree_right( node3 );
+    node2.set_tree_parent( node1 );
+    node3.set_tree_parent( node1 );
+
+    // Проверить связи
+    PMM_TEST( node1.get_tree_left() == node2 );
+    PMM_TEST( node1.get_tree_right() == node3 );
+    PMM_TEST( node2.get_tree_parent() == node1 );
+    PMM_TEST( node3.get_tree_parent() == node1 );
+
+    // Потомки node2 и node3 по-прежнему null
+    PMM_TEST( node2.get_tree_left().is_null() );
+    PMM_TEST( node2.get_tree_right().is_null() );
+    PMM_TEST( node3.get_tree_left().is_null() );
+    PMM_TEST( node3.get_tree_right().is_null() );
+
+    pmm.deallocate_typed( node1 );
+    pmm.deallocate_typed( node2 );
+    pmm.deallocate_typed( node3 );
+    pmm.destroy();
+    return true;
+}
+
+/**
+ * @brief Тест высоты AVL-узла через pptr (Issue #125).
+ */
+static bool test_pptr_tree_node_height()
+{
+    const std::size_t size = 64 * 1024;
+
+    Mgr pmm;
+    PMM_TEST( pmm.create( size ) );
+
+    Mgr::pptr<int> node1 = pmm.allocate_typed<int>();
+    Mgr::pptr<int> node2 = pmm.allocate_typed<int>();
+
+    PMM_TEST( !node1.is_null() );
+    PMM_TEST( !node2.is_null() );
+
+    // Начальная высота = 0 (узел не в дереве после выделения)
+    PMM_TEST( node1.get_tree_height() == 0 );
+    PMM_TEST( node2.get_tree_height() == 0 );
+
+    // Установить высоту
+    node1.set_tree_height( 2 );
+    node2.set_tree_height( 1 );
+
+    PMM_TEST( node1.get_tree_height() == 2 );
+    PMM_TEST( node2.get_tree_height() == 1 );
+
+    pmm.deallocate_typed( node1 );
+    pmm.deallocate_typed( node2 );
+    pmm.destroy();
+    return true;
+}
+
+/**
+ * @brief Тест методов дерева для null pptr (Issue #125).
+ *
+ * Для null pptr все геттеры должны возвращать null pptr (или 0).
+ */
+static bool test_pptr_tree_node_null_safety()
+{
+    Mgr::pptr<int> null_p;
+
+    // Геттеры для null pptr должны возвращать null pptr
+    PMM_TEST( null_p.get_tree_left().is_null() );
+    PMM_TEST( null_p.get_tree_right().is_null() );
+    PMM_TEST( null_p.get_tree_parent().is_null() );
+    PMM_TEST( null_p.get_tree_height() == 0 );
+    PMM_TEST( null_p.get_tree_weight() == 0 );
+
+    return true;
+}
+
+/**
+ * @brief Тест методов дерева — получение веса блока (Issue #125).
+ */
+static bool test_pptr_tree_node_weight()
+{
+    const std::size_t size = 64 * 1024;
+
+    Mgr pmm;
+    PMM_TEST( pmm.create( size ) );
+
+    Mgr::pptr<int> p = pmm.allocate_typed<int>();
+    PMM_TEST( !p.is_null() );
+
+    // Для выделенного блока вес > 0 (размер данных в гранулах)
+    PMM_TEST( p.get_tree_weight() > 0 );
+
+    pmm.deallocate_typed( p );
+    pmm.destroy();
+    return true;
+}
+
+/**
+ * @brief Тест использования pptr для пользовательского AVL-дерева (Issue #125).
+ *
+ * Строит простое бинарное дерево поиска из 5 узлов через методы pptr,
+ * проверяет корректность связей и высот.
+ */
+static bool test_pptr_user_avl_tree()
+{
+    using LocalMgr         = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 203>;
+    const std::size_t size = 128 * 1024;
+
+    PMM_TEST( LocalMgr::create( size ) );
+
+    // Выделить 5 узлов для дерева
+    LocalMgr::pptr<int> n1 = LocalMgr::allocate_typed<int>();
+    LocalMgr::pptr<int> n2 = LocalMgr::allocate_typed<int>();
+    LocalMgr::pptr<int> n3 = LocalMgr::allocate_typed<int>();
+    LocalMgr::pptr<int> n4 = LocalMgr::allocate_typed<int>();
+    LocalMgr::pptr<int> n5 = LocalMgr::allocate_typed<int>();
+
+    PMM_TEST( !n1.is_null() );
+    PMM_TEST( !n2.is_null() );
+    PMM_TEST( !n3.is_null() );
+    PMM_TEST( !n4.is_null() );
+    PMM_TEST( !n5.is_null() );
+
+    // Записать данные в узлы
+    *n1 = 30;
+    *n2 = 20;
+    *n3 = 40;
+    *n4 = 10;
+    *n5 = 25;
+
+    // Построить AVL-дерево вручную:
+    //       n1(30)
+    //      L       R
+    //   n2(20)   n3(40)
+    //   L    R
+    // n4(10) n5(25)
+
+    LocalMgr::pptr<int> null_p;
+
+    n1.set_tree_left( n2 );
+    n1.set_tree_right( n3 );
+    n1.set_tree_parent( null_p );
+    n1.set_tree_height( 3 );
+
+    n2.set_tree_left( n4 );
+    n2.set_tree_right( n5 );
+    n2.set_tree_parent( n1 );
+    n2.set_tree_height( 2 );
+
+    n3.set_tree_left( null_p );
+    n3.set_tree_right( null_p );
+    n3.set_tree_parent( n1 );
+    n3.set_tree_height( 1 );
+
+    n4.set_tree_left( null_p );
+    n4.set_tree_right( null_p );
+    n4.set_tree_parent( n2 );
+    n4.set_tree_height( 1 );
+
+    n5.set_tree_left( null_p );
+    n5.set_tree_right( null_p );
+    n5.set_tree_parent( n2 );
+    n5.set_tree_height( 1 );
+
+    // Проверить структуру дерева
+    PMM_TEST( n1.get_tree_left() == n2 );
+    PMM_TEST( n1.get_tree_right() == n3 );
+    PMM_TEST( n1.get_tree_parent().is_null() );
+    PMM_TEST( n1.get_tree_height() == 3 );
+
+    PMM_TEST( n2.get_tree_left() == n4 );
+    PMM_TEST( n2.get_tree_right() == n5 );
+    PMM_TEST( n2.get_tree_parent() == n1 );
+    PMM_TEST( n2.get_tree_height() == 2 );
+
+    PMM_TEST( n3.get_tree_left().is_null() );
+    PMM_TEST( n3.get_tree_right().is_null() );
+    PMM_TEST( n3.get_tree_parent() == n1 );
+    PMM_TEST( n3.get_tree_height() == 1 );
+
+    // Проверить данные в узлах (не затронуты операциями дерева)
+    PMM_TEST( *n1 == 30 );
+    PMM_TEST( *n2 == 20 );
+    PMM_TEST( *n3 == 40 );
+    PMM_TEST( *n4 == 10 );
+    PMM_TEST( *n5 == 25 );
+
+    LocalMgr::deallocate_typed( n1 );
+    LocalMgr::deallocate_typed( n2 );
+    LocalMgr::deallocate_typed( n3 );
+    LocalMgr::deallocate_typed( n4 );
+    LocalMgr::deallocate_typed( n5 );
+    LocalMgr::destroy();
+    return true;
+}
+
 int main()
 {
     std::cout << "=== test_pptr ===\n";
@@ -364,6 +590,11 @@ int main()
     PMM_RUN( "pptr_multiple_types", test_pptr_multiple_types );
     PMM_RUN( "pptr_allocate_auto_expand", test_pptr_allocate_auto_expand );
     PMM_RUN( "pptr_deallocate_null", test_pptr_deallocate_null );
+    PMM_RUN( "pptr_tree_node_links", test_pptr_tree_node_links );
+    PMM_RUN( "pptr_tree_node_height", test_pptr_tree_node_height );
+    PMM_RUN( "pptr_tree_node_null_safety", test_pptr_tree_node_null_safety );
+    PMM_RUN( "pptr_tree_node_weight", test_pptr_tree_node_weight );
+    PMM_RUN( "pptr_user_avl_tree", test_pptr_user_avl_tree );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;

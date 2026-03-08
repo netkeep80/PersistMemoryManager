@@ -403,6 +403,203 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
     }
 
+    // ─── Методы доступа к полям AVL-узла блока (Issue #125) ─────────────────
+
+    /**
+     * @brief Получить смещение левого дочернего узла AVL-дерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель на блок.
+     * @return index_type — гранульный индекс левого дочернего узла
+     *                      или 0 (null pptr) если нет.
+     */
+    template <typename T> static index_type get_tree_left_offset( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return 0;
+        const std::uint8_t* base    = _backend.base_ptr();
+        const void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        index_type          left    = BlockStateBase<address_traits>::get_left_offset( blk_raw );
+        return ( left == address_traits::no_block ) ? static_cast<index_type>( 0 ) : left;
+    }
+
+    /**
+     * @brief Получить смещение правого дочернего узла AVL-дерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель на блок.
+     * @return index_type — гранульный индекс правого дочернего узла
+     *                      или 0 (null pptr) если нет.
+     */
+    template <typename T> static index_type get_tree_right_offset( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return 0;
+        const std::uint8_t* base    = _backend.base_ptr();
+        const void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        index_type          right   = BlockStateBase<address_traits>::get_right_offset( blk_raw );
+        return ( right == address_traits::no_block ) ? static_cast<index_type>( 0 ) : right;
+    }
+
+    /**
+     * @brief Получить смещение родительского узла AVL-дерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель на блок.
+     * @return index_type — гранульный индекс родительского узла
+     *                      или 0 (null pptr) если нет.
+     */
+    template <typename T> static index_type get_tree_parent_offset( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return 0;
+        const std::uint8_t* base    = _backend.base_ptr();
+        const void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        index_type          parent  = BlockStateBase<address_traits>::get_parent_offset( blk_raw );
+        return ( parent == address_traits::no_block ) ? static_cast<index_type>( 0 ) : parent;
+    }
+
+    /**
+     * @brief Установить левый дочерний узел AVL-дерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * Принимает только pptr того же менеджера (ManagerT).
+     *
+     * @tparam T Тип данных.
+     * @param p    Персистентный указатель на блок.
+     * @param left Гранульный индекс нового левого дочернего узла (0 = null).
+     */
+    template <typename T> static void set_tree_left_offset( pptr<T> p, index_type left ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base    = _backend.base_ptr();
+        void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        index_type    v       = ( left == 0 ) ? address_traits::no_block : left;
+        BlockStateBase<address_traits>::set_left_offset_of( blk_raw, v );
+    }
+
+    /**
+     * @brief Установить правый дочерний узел AVL-дерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * Принимает только pptr того же менеджера (ManagerT).
+     *
+     * @tparam T Тип данных.
+     * @param p     Персистентный указатель на блок.
+     * @param right Гранульный индекс нового правого дочернего узла (0 = null).
+     */
+    template <typename T> static void set_tree_right_offset( pptr<T> p, index_type right ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base    = _backend.base_ptr();
+        void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        index_type    v       = ( right == 0 ) ? address_traits::no_block : right;
+        BlockStateBase<address_traits>::set_right_offset_of( blk_raw, v );
+    }
+
+    /**
+     * @brief Установить родительский узел AVL-дерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * Принимает только pptr того же менеджера (ManagerT).
+     *
+     * @tparam T Тип данных.
+     * @param p      Персистентный указатель на блок.
+     * @param parent Гранульный индекс нового родительского узла (0 = null).
+     */
+    template <typename T> static void set_tree_parent_offset( pptr<T> p, index_type parent ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base    = _backend.base_ptr();
+        void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        index_type    v       = ( parent == 0 ) ? address_traits::no_block : parent;
+        BlockStateBase<address_traits>::set_parent_offset_of( blk_raw, v );
+    }
+
+    /**
+     * @brief Получить вес (ключ балансировки) узла AVL-дерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * Для выделенных блоков поле weight хранит размер данных в гранулах.
+     * Пользовательский ключ балансировки следует хранить в отдельном поле
+     * пользовательских данных.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель на блок.
+     * @return index_type — текущий вес узла.
+     */
+    template <typename T> static index_type get_tree_weight( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return 0;
+        const std::uint8_t* base    = _backend.base_ptr();
+        const void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        return BlockStateBase<address_traits>::get_weight( blk_raw );
+    }
+
+    /**
+     * @brief Установить вес (ключ балансировки) узла AVL-дерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * Принимает только pptr того же менеджера (ManagerT).
+     *
+     * @warning Используйте только для блоков, заблокированных навечно через
+     *          lock_block_permanent(). Изменение веса обычного выделенного блока
+     *          может нарушить инварианты менеджера памяти.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель на блок.
+     * @param w Новый вес узла.
+     */
+    template <typename T> static void set_tree_weight( pptr<T> p, index_type w ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base    = _backend.base_ptr();
+        void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        BlockStateBase<address_traits>::set_weight_of( blk_raw, w );
+    }
+
+    /**
+     * @brief Получить высоту AVL-поддерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель на блок.
+     * @return std::int16_t — высота поддерева (0 = узел не в дереве).
+     */
+    template <typename T> static std::int16_t get_tree_height( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return 0;
+        const std::uint8_t* base    = _backend.base_ptr();
+        const void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        return BlockStateBase<address_traits>::get_avl_height( blk_raw );
+    }
+
+    /**
+     * @brief Установить высоту AVL-поддерева для блока,
+     *        на который указывает данный pptr.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель на блок.
+     * @param h Новая высота поддерева.
+     */
+    template <typename T> static void set_tree_height( pptr<T> p, std::int16_t h ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base    = _backend.base_ptr();
+        void*         blk_raw = base + detail::idx_to_byte_off( p.offset() ) - sizeof( Block<address_traits> );
+        BlockStateBase<address_traits>::set_avl_height_of( blk_raw, h );
+    }
+
     // ─── Статистика ────────────────────────────────────────────────────────────
 
     static std::size_t total_size() noexcept { return _initialized ? _backend.total_size() : 0; }

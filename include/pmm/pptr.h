@@ -153,6 +153,97 @@ template <class T, class ManagerT> class pptr
      * @return T* — указатель на данные.
      */
     T* operator->() const noexcept { return resolve(); }
+
+    // ─── Методы работы с узлом AVL-дерева (Issue #125) ────────────────────────
+
+    /**
+     * @brief Получить левый дочерний узел AVL-дерева для данного блока.
+     *
+     * Позволяет использовать pptr как узел пользовательского AVL-дерева.
+     * Возвращает pptr того же типа, что и данный указатель.
+     * Доступно только для ненулевых указателей (поведение неопределено для null).
+     *
+     * @return pptr<T, ManagerT> — левый дочерний узел или null pptr если нет.
+     */
+    pptr get_tree_left() const noexcept { return pptr( ManagerT::get_tree_left_offset( *this ) ); }
+
+    /**
+     * @brief Получить правый дочерний узел AVL-дерева для данного блока.
+     *
+     * @return pptr<T, ManagerT> — правый дочерний узел или null pptr если нет.
+     */
+    pptr get_tree_right() const noexcept { return pptr( ManagerT::get_tree_right_offset( *this ) ); }
+
+    /**
+     * @brief Получить родительский узел AVL-дерева для данного блока.
+     *
+     * @return pptr<T, ManagerT> — родительский узел или null pptr если нет.
+     */
+    pptr get_tree_parent() const noexcept { return pptr( ManagerT::get_tree_parent_offset( *this ) ); }
+
+    /**
+     * @brief Установить левый дочерний узел AVL-дерева.
+     *
+     * Принимает только pptr того же типа менеджера (ManagerT).
+     *
+     * @param left pptr<T, ManagerT> — новый левый дочерний узел (может быть null).
+     */
+    void set_tree_left( pptr left ) noexcept { ManagerT::set_tree_left_offset( *this, left.offset() ); }
+
+    /**
+     * @brief Установить правый дочерний узел AVL-дерева.
+     *
+     * Принимает только pptr того же типа менеджера (ManagerT).
+     *
+     * @param right pptr<T, ManagerT> — новый правый дочерний узел (может быть null).
+     */
+    void set_tree_right( pptr right ) noexcept { ManagerT::set_tree_right_offset( *this, right.offset() ); }
+
+    /**
+     * @brief Установить родительский узел AVL-дерева.
+     *
+     * Принимает только pptr того же типа менеджера (ManagerT).
+     *
+     * @param parent pptr<T, ManagerT> — новый родительский узел (может быть null).
+     */
+    void set_tree_parent( pptr parent ) noexcept { ManagerT::set_tree_parent_offset( *this, parent.offset() ); }
+
+    /**
+     * @brief Получить вес (ключ балансировки) узла AVL-дерева.
+     *
+     * Для выделенных блоков возвращает размер пользовательских данных в гранулах.
+     * Это значение используется менеджером для управления памятью.
+     *
+     * @return index_type — текущий вес узла (размер данных в гранулах).
+     */
+    index_type get_tree_weight() const noexcept { return ManagerT::get_tree_weight( *this ); }
+
+    /**
+     * @brief Установить вес (ключ балансировки) узла AVL-дерева.
+     *
+     * Принимает только pptr того же типа менеджера (ManagerT).
+     *
+     * @warning Этот метод следует использовать только для блоков, заблокированных
+     *          навечно через lock_block_permanent(), так как изменение веса
+     *          может нарушить инварианты менеджера памяти.
+     *
+     * @param w Новый вес узла.
+     */
+    void set_tree_weight( index_type w ) noexcept { ManagerT::set_tree_weight( *this, w ); }
+
+    /**
+     * @brief Получить высоту AVL-поддерева для данного узла.
+     *
+     * @return std::int16_t — высота поддерева (0 = узел не в дереве).
+     */
+    std::int16_t get_tree_height() const noexcept { return ManagerT::get_tree_height( *this ); }
+
+    /**
+     * @brief Установить высоту AVL-поддерева для данного узла.
+     *
+     * @param h Новая высота поддерева.
+     */
+    void set_tree_height( std::int16_t h ) noexcept { ManagerT::set_tree_height( *this, h ); }
 };
 
 // pptr<T, ManagerT> хранит только гранульный индекс — ManagerT не хранится.
