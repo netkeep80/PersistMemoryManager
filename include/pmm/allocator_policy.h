@@ -110,14 +110,16 @@ class AllocatorPolicy
     {
         // State: FreeBlock → FreeBlockRemovedAVL [remove_from_avl]
         FreeBlockTreeT::remove( base, hdr, blk_idx );
-        FreeBlock<AddressTraitsT>*           fb = FreeBlock<AddressTraitsT>::cast_from_raw( blk_at( base, blk_idx ) );
+        FreeBlock<AddressTraitsT>* fb =
+            FreeBlock<AddressTraitsT>::cast_from_raw( detail::block_at<AddressTraitsT>( base, blk_idx ) );
         FreeBlockRemovedAVL<AddressTraitsT>* removed = fb->remove_from_avl();
 
-        std::uint32_t blk_total_gran = detail::block_total_granules( base, hdr, blk_at( base, blk_idx ) );
-        std::uint32_t data_gran      = detail::bytes_to_granules( user_size );
-        std::uint32_t needed_gran    = detail::kBlockHeaderGranules + data_gran;
-        std::uint32_t min_rem_gran   = detail::kBlockHeaderGranules + 1;
-        bool          can_split      = ( blk_total_gran >= needed_gran + min_rem_gran );
+        std::uint32_t blk_total_gran =
+            detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, blk_idx ) );
+        std::uint32_t data_gran    = detail::bytes_to_granules( user_size );
+        std::uint32_t needed_gran  = detail::kBlockHeaderGranules + data_gran;
+        std::uint32_t min_rem_gran = detail::kBlockHeaderGranules + 1;
+        bool          can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {
@@ -125,11 +127,12 @@ class AllocatorPolicy
             SplittingBlock<AddressTraitsT>* splitting = removed->begin_splitting();
 
             std::uint32_t new_idx     = blk_idx + needed_gran;
-            void*         new_blk_ptr = blk_at( base, new_idx );
+            void*         new_blk_ptr = detail::block_at<AddressTraitsT>( base, new_idx );
 
             // Capture old_next before initialize_new_block modifies splitting->next_offset()
             index_type curr_next = splitting->next_offset();
-            BlockT*    old_next  = ( curr_next != detail::kNoBlock ) ? blk_at( base, curr_next ) : nullptr;
+            BlockT*    old_next =
+                ( curr_next != detail::kNoBlock ) ? detail::block_at<AddressTraitsT>( base, curr_next ) : nullptr;
 
             // SplittingBlock::initialize_new_block — инициализировать новый (remainder) блок
             splitting->initialize_new_block( new_blk_ptr, new_idx, blk_idx );
@@ -159,8 +162,8 @@ class AllocatorPolicy
         hdr->free_count--;
         hdr->used_size += data_gran;
 
-        // Return user data pointer (after block header)
-        return reinterpret_cast<std::uint8_t*>( blk_at( base, blk_idx ) ) + sizeof( BlockT );
+        // Return user data pointer (after block header) via canonical detail::user_ptr (Issue #141)
+        return detail::user_ptr<AddressTraitsT>( detail::block_at<AddressTraitsT>( base, blk_idx ) );
     }
 
     // ─── Освобождение и слияние ────────────────────────────────────────────────
@@ -185,7 +188,7 @@ class AllocatorPolicy
     {
         // State: FreeBlockNotInAVL → CoalescingBlock [begin_coalescing]
         FreeBlockNotInAVL<AddressTraitsT>* not_avl =
-            FreeBlockNotInAVL<AddressTraitsT>::cast_from_raw( blk_at( base, blk_idx ) );
+            FreeBlockNotInAVL<AddressTraitsT>::cast_from_raw( detail::block_at<AddressTraitsT>( base, blk_idx ) );
         CoalescingBlock<AddressTraitsT>* coalescing = not_avl->begin_coalescing();
 
         std::uint32_t b_idx = blk_idx;
@@ -195,18 +198,19 @@ class AllocatorPolicy
         index_type curr_next = coalescing->next_offset();
         if ( curr_next != detail::kNoBlock )
         {
-            const BlockStateBase<AddressTraitsT>* nxt_state =
-                reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( blk_at( base, curr_next ) );
+            const BlockStateBase<AddressTraitsT>* nxt_state = reinterpret_cast<const BlockStateBase<AddressTraitsT>*>(
+                detail::block_at<AddressTraitsT>( base, curr_next ) );
             if ( nxt_state->weight() == 0 ) // free block
             {
-                std::uint32_t nxt_idx     = curr_next;
-                index_type    nxt_next    = nxt_state->next_offset();
-                BlockT*       nxt_nxt_blk = ( nxt_next != detail::kNoBlock ) ? blk_at( base, nxt_next ) : nullptr;
+                std::uint32_t nxt_idx  = curr_next;
+                index_type    nxt_next = nxt_state->next_offset();
+                BlockT*       nxt_nxt_blk =
+                    ( nxt_next != detail::kNoBlock ) ? detail::block_at<AddressTraitsT>( base, nxt_next ) : nullptr;
 
                 FreeBlockTreeT::remove( base, hdr, nxt_idx );
 
                 // CoalescingBlock::coalesce_with_next (also updates nxt_nxt_blk->prev_offset internally)
-                coalescing->coalesce_with_next( blk_at( base, nxt_idx ), nxt_nxt_blk, b_idx );
+                coalescing->coalesce_with_next( detail::block_at<AddressTraitsT>( base, nxt_idx ), nxt_nxt_blk, b_idx );
 
                 if ( nxt_nxt_blk == nullptr )
                     hdr->last_block_offset = b_idx;
@@ -223,19 +227,20 @@ class AllocatorPolicy
         index_type curr_prev = coalescing->prev_offset();
         if ( curr_prev != detail::kNoBlock )
         {
-            const BlockStateBase<AddressTraitsT>* prv_state =
-                reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( blk_at( base, curr_prev ) );
+            const BlockStateBase<AddressTraitsT>* prv_state = reinterpret_cast<const BlockStateBase<AddressTraitsT>*>(
+                detail::block_at<AddressTraitsT>( base, curr_prev ) );
             if ( prv_state->weight() == 0 ) // free block
             {
                 std::uint32_t prv_idx  = curr_prev;
                 index_type    blk_next = coalescing->next_offset();
-                BlockT*       next_blk = ( blk_next != detail::kNoBlock ) ? blk_at( base, blk_next ) : nullptr;
+                BlockT*       next_blk =
+                    ( blk_next != detail::kNoBlock ) ? detail::block_at<AddressTraitsT>( base, blk_next ) : nullptr;
 
                 FreeBlockTreeT::remove( base, hdr, prv_idx );
 
                 // CoalescingBlock::coalesce_with_prev — current block (blk) is absorbed into prv
-                CoalescingBlock<AddressTraitsT>* result_coalescing =
-                    coalescing->coalesce_with_prev( blk_at( base, prv_idx ), next_blk, prv_idx );
+                CoalescingBlock<AddressTraitsT>* result_coalescing = coalescing->coalesce_with_prev(
+                    detail::block_at<AddressTraitsT>( base, prv_idx ), next_blk, prv_idx );
 
                 if ( next_blk == nullptr )
                     hdr->last_block_offset = prv_idx;
@@ -278,7 +283,7 @@ class AllocatorPolicy
         std::uint32_t idx      = hdr->first_block_offset;
         while ( idx != detail::kNoBlock )
         {
-            void* blk_ptr = blk_at( base, idx );
+            void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
 
             // Reset AVL fields via state machine utility (Issue #114)
             reset_block_avl_fields<AddressTraitsT>( blk_ptr );
@@ -312,7 +317,7 @@ class AllocatorPolicy
         {
             if ( detail::idx_to_byte_off( idx ) + sizeof( BlockT ) > hdr->total_size )
                 break;
-            void* blk_ptr = blk_at( base, idx );
+            void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             repair_block_prev_offset<AddressTraitsT>( blk_ptr, prev ); // Issue #114
             prev                   = idx;
             index_type next_offset = read_block_next_offset<AddressTraitsT>( blk_ptr );
@@ -339,7 +344,7 @@ class AllocatorPolicy
         {
             if ( detail::idx_to_byte_off( idx ) + sizeof( BlockT ) > hdr->total_size )
                 break;
-            const void* blk_ptr = blk_at( base, idx );
+            const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             block_count++;
             used_gran += detail::kBlockHeaderGranules;
             index_type w = read_block_weight<AddressTraitsT>( blk_ptr ); // Issue #114
@@ -358,14 +363,6 @@ class AllocatorPolicy
         hdr->free_count  = free_count;
         hdr->alloc_count = alloc_count;
         hdr->used_size   = used_gran;
-    }
-
-  private:
-    /// @brief Get Block<A>* by granule index.
-    static BlockT* blk_at( std::uint8_t* base, std::uint32_t idx )
-    {
-        assert( idx != detail::kNoBlock );
-        return reinterpret_cast<BlockT*>( base + detail::idx_to_byte_off( idx ) );
     }
 };
 

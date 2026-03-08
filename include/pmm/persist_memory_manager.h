@@ -404,6 +404,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     // ─── Методы доступа к полям AVL-узла блока (Issue #125) ─────────────────
+    //
+    // Note (Issue #141): These 12 get_tree_*/set_tree_* methods are intentional
+    // safe-wrappers over BlockStateBase<address_traits>::get_*/set_* utilities.
+    // They add manager-level guards (null-check, _initialized-check) and translate
+    // between the public pptr<T> API and the raw void* block interface used internally.
+    // The delegation is not duplication — it is the adapter layer between the public
+    // persistent-pointer API and the internal block-state machine.
 
     /**
      * @brief Получить смещение левого дочернего узла AVL-дерева для блока,
