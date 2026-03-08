@@ -1,88 +1,122 @@
-# Справочник по API PersistMemoryManager
+# PersistMemoryManager API Reference
 
-## Обзор
+## Overview
 
-`PersistMemoryManager` — single-header C++17 библиотека управления персистентной кучей памяти.
-Все метаданные хранятся внутри управляемой области, что позволяет сохранять и загружать образ
-памяти из файла или shared memory. Взаимодействие с данными в управляемой памяти осуществляется
-через персистные типизированные указатели `pptr<T>`.
+`PersistMemoryManager` is a header-only C++20 library for persistent heap memory management.
+All metadata is stored inside the managed region, which allows saving and loading a memory
+image from a file or shared memory. Interaction with data in managed memory is done through
+persistent typed pointers `pptr<T>`.
 
-**Issue #61:** Менеджер реализован как полностью статический класс — нет экземпляров, нет `PersistMemoryManager*` в пользовательском коде. Весь API доступен через статические методы.
+The manager is a fully static class template — there are no instances, no raw pointers in
+user code. All API is accessible through static methods. Multiple independent manager
+instances of the same configuration can coexist through the `InstanceId` template parameter
+(multiton pattern).
 
-Реализация находится в двух файлах:
-- `include/persist_memory_manager.h` — менеджер памяти и `pptr<T>`
-- `include/persist_memory_io.h` — утилиты файлового ввода/вывода (`save` / `load_from_file`)
+### Include structure
 
-Пространство имён: `pmm`
-
----
-
-## Подключение
-
+**Modular headers** (include individually as needed):
 ```cpp
-#include "persist_memory_manager.h"
-#include "persist_memory_io.h"  // для save() / load_from_file()
+#include "pmm/persist_memory_manager.h"  // core manager
+#include "pmm/manager_configs.h"         // predefined configurations
+#include "pmm/pmm_presets.h"             // named preset aliases
+#include "pmm/io.h"                      // file save / load utilities
 ```
 
-Никаких `.cpp` файлов, никакой линковки — только включите заголовки.
+**Single-header presets** (include one file, get a ready-to-use manager type):
+```cpp
+#include "pmm_single_threaded_heap.h"    // SingleThreadedHeap preset
+#include "pmm_multi_threaded_heap.h"     // MultiThreadedHeap preset
+#include "pmm_embedded_heap.h"           // EmbeddedHeap preset
+#include "pmm_industrial_db_heap.h"      // IndustrialDBHeap preset
+```
+
+Namespace: `pmm`
 
 ---
 
-## Класс `PersistMemoryManager`
+## Class `PersistMemoryManager<ConfigT, InstanceId>`
 
 ```cpp
 namespace pmm {
+    template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0>
     class PersistMemoryManager;
 }
 ```
 
-Полностью статический класс. Одновременно может существовать только один активный менеджер (синглтон). Прямой вызов конструктора/деструктора не предусмотрен.
+A fully static class template. All state (storage backend, mutex, initialization flag) is
+stored in `static inline` members. No instances need to be created. Each unique combination
+of `ConfigT` and `InstanceId` is an independent manager with its own separate storage.
 
-### Создание и уничтожение
+**Template parameters:**
+- `ConfigT` — configuration struct that provides:
+  - `address_traits` — address space type (index size, granule size)
+  - `storage_backend` — storage backend type (`HeapStorage`, `StaticStorage`, `MMapStorage`)
+  - `free_block_tree` — free block search policy (`AvlFreeTree`)
+  - `lock_policy` — thread safety policy (`NoLock`, `SharedMutexLock`)
+  - `granule_size` — granule size in bytes
+  - `grow_numerator` / `grow_denominator` — growth ratio
+- `InstanceId` — instance identifier (default `0`). Allows multiple independent managers
+  with the same configuration.
+
+**Nested type alias:**
+```cpp
+template <typename T>
+using pptr = pmm::pptr<T, PersistMemoryManager>;
+```
+
+### Lifecycle
+
+#### `create(initial_size)`
+
+```cpp
+static bool create(std::size_t initial_size) noexcept;
+```
+
+Initializes the manager with the given initial size. Allocates the storage backend and
+sets up the memory layout.
+
+**Parameters:**
+- `initial_size` — initial size in bytes. Must be `>= kMinMemorySize` (4096).
+
+**Returns:** `true` on success, `false` on error.
+
+**Example:**
+```cpp
+using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+bool ok = MyMgr::create(1024 * 1024); // 1 MiB
+```
+
+---
 
 #### `create()`
 
 ```cpp
-static bool create(void* memory, std::size_t size);
+static bool create() noexcept;
 ```
 
-Создаёт новый менеджер памяти в переданном буфере и устанавливает синглтон.
+Initializes the manager over an already-allocated backend buffer. Use this when the
+storage backend has been set up externally (e.g., `MMapStorage` or `StaticStorage`).
 
-**Параметры:**
-- `memory` — указатель на буфер. Не должен быть `nullptr`. Должен быть выровнен по `kGranuleSize` (16 байт).
-- `size` — размер буфера в байтах. Должен быть ≥ `kMinMemorySize` (4096) и кратен `kGranuleSize`.
-
-**Возвращает:** `true` при успехе, `false` при ошибке.
-
-**Важно:** Переданный буфер (`memory`) НЕ освобождается при `destroy()`. Вызывающий код ответственен за его освобождение.
-
-**Пример:**
-```cpp
-void* mem = std::malloc(1024 * 1024);
-bool ok = pmm::PersistMemoryManager::create(mem, 1024 * 1024);
-// ok == true при успехе
-```
+**Returns:** `true` on success, `false` if the backend is not ready.
 
 ---
 
 #### `load()`
 
 ```cpp
-static bool load(void* memory, std::size_t size);
+static bool load() noexcept;
 ```
 
-Загружает менеджер из существующего образа в памяти. Проверяет магическое число и размер. Устанавливает синглтон.
+Loads an existing manager state from the backend buffer. Validates the magic number,
+total size, and granule size. Rebuilds the free block AVL tree, repairs the linked list,
+and recomputes counters.
 
-**Параметры:**
-- `memory` — буфер с ранее сохранённым образом.
-- `size` — размер образа (должен совпадать с `total_size` из заголовка).
+**Returns:** `true` on success, `false` if the image is invalid.
 
-**Возвращает:** `true` при успехе, `false` если образ некорректен.
-
-**Пример:**
+**Example:**
 ```cpp
-// После fread(memory, 1, file_size, f):
-bool ok = pmm::PersistMemoryManager::load(memory, file_size);
+// After filling the backend buffer with a saved image:
+bool ok = MyMgr::load();
 ```
 
 ---
@@ -90,158 +124,16 @@ bool ok = pmm::PersistMemoryManager::load(memory, file_size);
 #### `destroy()`
 
 ```cpp
-static void destroy();
+static void destroy() noexcept;
 ```
 
-Уничтожает синглтон: обнуляет метаданные, освобождает все буферы, выделенные через авто-расширение (`expand()`), сбрасывает `instance()` в `nullptr`.
+Resets the manager state. Clears the initialization flag. Does **not** free the backend
+buffer. Required for test isolation and before re-initialization.
 
-**Важно:** Буфер, переданный в `create()` или `load()` (внешняя память), НЕ освобождается. Вызывающий код должен освободить его самостоятельно.
-
-**Пример:**
+**Example:**
 ```cpp
-pmm::PersistMemoryManager::destroy();
-std::free(mem); // Освобождаем внешний буфер самостоятельно
+MyMgr::destroy();
 ```
-
----
-
-### Типизированное выделение памяти (основной API)
-
-#### `allocate_typed<T>()`
-
-```cpp
-template <class T>
-static pptr<T> allocate_typed();
-
-template <class T>
-static pptr<T> allocate_typed(std::size_t count);
-```
-
-Выделяет `sizeof(T)` байт (или `sizeof(T) * count` для массива) с выравниванием `alignof(T)`.
-
-**Возвращает:** `pptr<T>` на выделенный объект/массив. Нулевой `pptr` при ошибке (не null означает 0 гранульный индекс).
-
-**Особенность:** при нехватке памяти менеджер автоматически расширяет управляемую область на 25%.
-
-**Пример:**
-```cpp
-pmm::pptr<int>    p1 = pmm::PersistMemoryManager::allocate_typed<int>();
-pmm::pptr<double> p2 = pmm::PersistMemoryManager::allocate_typed<double>(10);  // массив из 10 double
-*p1 = 42;
-p2[0] = 3.14;
-```
-
----
-
-#### `deallocate_typed<T>()`
-
-```cpp
-template <class T>
-static void deallocate_typed(pptr<T> p);
-```
-
-Освобождает блок памяти, на который указывает `p`. Нулевой `pptr` игнорируется.
-
-**Пример:**
-```cpp
-pmm::PersistMemoryManager::deallocate_typed(p1);
-```
-
----
-
-#### `reallocate_typed<T>()`
-
-```cpp
-template <class T>
-static pptr<T> reallocate_typed(pptr<T> p, std::size_t new_count);
-```
-
-Изменяет размер блока до `sizeof(T) * new_count` байт. Данные из старого блока копируются в новый (до минимума из старого и нового размера). Если `p` нулевой — работает как `allocate_typed<T>(new_count)`.
-
-**Возвращает:** `pptr<T>` на новый блок, нулевой `pptr` при ошибке.
-
-**Пример:**
-```cpp
-pmm::pptr<uint8_t> p = pmm::PersistMemoryManager::allocate_typed<uint8_t>(128);
-p = pmm::PersistMemoryManager::reallocate_typed(p, 512); // увеличить до 512 байт
-```
-
----
-
-### Метрики
-
-Все методы метрик — статические, потокобезопасные (shared_lock).
-
-#### `total_size()`
-
-```cpp
-static std::size_t total_size() noexcept;
-```
-
-Полный размер управляемой области в байтах.
-
----
-
-#### `used_size()`
-
-```cpp
-static std::size_t used_size() noexcept;
-```
-
-Объём занятой памяти: метаданные (заголовки) плюс пользовательские данные.
-
----
-
-#### `free_size()`
-
-```cpp
-static std::size_t free_size() noexcept;
-```
-
-Объём доступной свободной памяти внутри управляемой области.
-
-**Инвариант:** `used_size() + free_size() <= total_size()`.
-
----
-
-#### `fragmentation()`
-
-```cpp
-static std::size_t fragmentation() noexcept;
-```
-
-Количество лишних свободных фрагментов (число свободных блоков минус один).
-
-`0` — нет фрагментации, `> 0` — есть несмежные свободные регионы.
-
----
-
-### Диагностика
-
-#### `validate()`
-
-```cpp
-static bool validate();
-```
-
-Выполняет полную проверку целостности структур данных:
-- Проверяет магические числа `ManagerHeader` и каждого `BlockHeader`.
-- Проверяет связность двусвязного списка блоков.
-- Проверяет счётчики блоков.
-
-**Возвращает:** `true`, если все структуры корректны.
-
-**Примечание:** O(n) — линейный обход всех блоков. Используется для отладки.
-
----
-
-#### `dump_stats()`
-
-```cpp
-static void dump_stats();
-```
-
-Выводит в `std::cout` диагностическую информацию: размеры, счётчики блоков, фрагментацию.
 
 ---
 
@@ -251,285 +143,587 @@ static void dump_stats();
 static bool is_initialized() noexcept;
 ```
 
-Возвращает `true`, если менеджер создан (синглтон не `nullptr`).
+Returns `true` if the manager has been initialized via `create()` or `load()`.
 
 ---
 
-#### `block_data_size_bytes()`
+### Typed allocation (primary API)
+
+#### `allocate_typed<T>()`
 
 ```cpp
-static std::size_t block_data_size_bytes(uint32_t granule_idx) noexcept;
+template <typename T>
+static pptr<T> allocate_typed() noexcept;
+
+template <typename T>
+static pptr<T> allocate_typed(std::size_t count) noexcept;
 ```
 
-Возвращает размер пользовательских данных блока по гранульному индексу (в байтах, округлено до кратного `kGranuleSize`).
+Allocates `sizeof(T)` bytes (or `sizeof(T) * count` for arrays) aligned to the granule
+size. If memory is insufficient, the manager automatically expands the storage backend.
+
+**Returns:** `pptr<T>` pointing to the allocated block, or a null `pptr<T>()` on error.
+
+**Example:**
+```cpp
+using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+MyMgr::create(1024 * 1024);
+
+MyMgr::pptr<int>    p1 = MyMgr::allocate_typed<int>();
+MyMgr::pptr<double> p2 = MyMgr::allocate_typed<double>(10); // array of 10 doubles
+*p1 = 42;
+p2[1] = 3.14;
+```
 
 ---
 
-#### `offset_to_ptr()`
+#### `deallocate_typed<T>()`
 
 ```cpp
-static void* offset_to_ptr(uint32_t granule_idx) noexcept;
+template <typename T>
+static void deallocate_typed(pptr<T> p) noexcept;
 ```
 
-Преобразует гранульный индекс в абсолютный указатель. `0` → `nullptr`.
+Frees the block pointed to by `p`. A null `pptr` is a no-op. Permanently locked blocks
+(see `lock_block_permanent`) cannot be freed.
+
+**Example:**
+```cpp
+MyMgr::deallocate_typed(p1);
+```
 
 ---
 
-#### `instance()`
+#### `reallocate_typed<T>()`
+
+There is no `reallocate_typed` method in the current API. To resize, allocate a new block,
+copy data manually, and deallocate the old block.
+
+---
+
+### Raw allocation
+
+#### `allocate()`
 
 ```cpp
-static PersistMemoryManager* instance() noexcept;
+static void* allocate(std::size_t user_size) noexcept;
 ```
 
-Возвращает указатель на текущий экземпляр менеджера (для внутреннего использования в IO-утилитах и демо). `nullptr`, если менеджер не создан.
+Allocates `user_size` bytes and returns a raw pointer. Lower-level than `allocate_typed`.
+
+**Returns:** pointer to user data, or `nullptr` on error.
 
 ---
 
-## Класс `pptr<T>`
+#### `deallocate()`
+
+```cpp
+static void deallocate(void* ptr) noexcept;
+```
+
+Frees the block at `ptr`. Null pointer is a no-op.
+
+---
+
+### Block locking (permanent)
+
+#### `lock_block_permanent()`
+
+```cpp
+static bool lock_block_permanent(void* ptr) noexcept;
+```
+
+Permanently locks a block, making it impossible to free via `deallocate()`. Intended for
+blocks containing permanent data (e.g., a persistent string dictionary). The block's
+`node_type` is set to `kNodeReadOnly`.
+
+**Returns:** `true` if the block was successfully locked, `false` if not found or already free.
+
+---
+
+#### `is_permanently_locked()`
+
+```cpp
+static bool is_permanently_locked(const void* ptr) noexcept;
+```
+
+Returns `true` if the block at `ptr` is permanently locked (`node_type == kNodeReadOnly`).
+
+---
+
+### Pointer resolution
+
+#### `resolve<T>()`
+
+```cpp
+template <typename T>
+static T* resolve(pptr<T> p) noexcept;
+```
+
+Converts a persistent pointer to a raw pointer. Called internally by `pptr<T>::resolve()`,
+`operator*`, and `operator->`.
+
+**Returns:** `T*` pointer to user data, or `nullptr` for a null or uninitialized manager.
+
+---
+
+#### `resolve_at<T>()`
+
+```cpp
+template <typename T>
+static T* resolve_at(pptr<T> p, std::size_t i) noexcept;
+```
+
+Returns a pointer to the `i`-th element of the array pointed to by `p`.
+
+---
+
+### Statistics
+
+All statistics methods are static and thread-safe (use `shared_lock`).
+
+#### `total_size()`
+
+```cpp
+static std::size_t total_size() noexcept;
+```
+
+Total size of the managed region in bytes. Returns `0` if not initialized.
+
+---
+
+#### `used_size()`
+
+```cpp
+static std::size_t used_size() noexcept;
+```
+
+Amount of used memory: block headers plus user data, in bytes.
+
+---
+
+#### `free_size()`
+
+```cpp
+static std::size_t free_size() noexcept;
+```
+
+Amount of available free memory in bytes.
+
+**Invariant:** `used_size() + free_size() <= total_size()`.
+
+---
+
+#### `block_count()`
+
+```cpp
+static std::size_t block_count() noexcept;
+```
+
+Total number of blocks (both allocated and free).
+
+---
+
+#### `free_block_count()`
+
+```cpp
+static std::size_t free_block_count() noexcept;
+```
+
+Number of free blocks.
+
+---
+
+#### `alloc_block_count()`
+
+```cpp
+static std::size_t alloc_block_count() noexcept;
+```
+
+Number of allocated blocks.
+
+---
+
+### Iteration
+
+#### `for_each_block()`
+
+```cpp
+template <typename Callback>
+static bool for_each_block(Callback&& callback) noexcept;
+// Callback: void(const pmm::BlockView&)
+```
+
+Iterates all blocks in address order (from smallest to largest offset) and calls
+`callback` for each. Thread-safe (`shared_lock`).
+
+**Returns:** `false` if not initialized, `true` otherwise.
+
+**Note:** Do not call `allocate` or `deallocate` from the callback — this will cause a deadlock.
+
+---
+
+#### `for_each_free_block()`
+
+```cpp
+template <typename Callback>
+static bool for_each_free_block(Callback&& callback) noexcept;
+// Callback: void(const pmm::FreeBlockView&)
+```
+
+Iterates free blocks in the AVL tree in-order (by ascending block size) and calls
+`callback` for each.
+
+**Returns:** `false` if not initialized, `true` otherwise.
+
+---
+
+### AVL tree node access (advanced)
+
+These methods allow reading and writing AVL tree metadata for a block pointed to by a `pptr`.
+They are intended for advanced use cases, such as implementing persistent data structures
+(e.g., a persistent AVL tree using PMM blocks as nodes).
+
+> **Warning:** Modifying AVL tree fields on regular allocated blocks can corrupt the free
+> block tree. Only use these methods on blocks that are permanently locked via
+> `lock_block_permanent()`.
+
+| Method | Description |
+|--------|-------------|
+| `get_tree_left_offset<T>(p)` | Get granule index of left child |
+| `get_tree_right_offset<T>(p)` | Get granule index of right child |
+| `get_tree_parent_offset<T>(p)` | Get granule index of parent node |
+| `set_tree_left_offset<T>(p, idx)` | Set left child granule index |
+| `set_tree_right_offset<T>(p, idx)` | Set right child granule index |
+| `set_tree_parent_offset<T>(p, idx)` | Set parent node granule index |
+| `get_tree_weight<T>(p)` | Get node weight (data size in granules) |
+| `set_tree_weight<T>(p, w)` | Set node weight |
+| `get_tree_height<T>(p)` | Get AVL subtree height |
+| `set_tree_height<T>(p, h)` | Set AVL subtree height |
+
+---
+
+### Backend access
+
+#### `backend()`
+
+```cpp
+static storage_backend& backend() noexcept;
+```
+
+Returns a reference to the static storage backend. For advanced scenarios (e.g., accessing
+`MMapStorage` to get `base_ptr()` before calling `load()`).
+
+---
+
+## Class `pptr<T, ManagerT>`
 
 ```cpp
 namespace pmm {
-    template <class T>
+    template <class T, class ManagerT>
+        requires (!std::is_void_v<ManagerT>)
     class pptr;
 }
 ```
 
-Персистный типизированный указатель. Хранит 32-битный гранульный индекс (16 байт/гранула) вместо абсолютного адреса, что обеспечивает корректную работу после загрузки образа по другому базовому адресу.
+A persistent typed pointer. Stores a granule index (offset-based, not address-based),
+which makes it address-independent: it remains valid after loading the image at a different
+base address.
 
-**Требование:** `sizeof(pptr<T>) == 4`.
+**Requirement:** `sizeof(pptr<T, ManagerT>) == sizeof(index_type)` (typically 4 bytes).
 
-### Конструкторы
-
+The preferred way to obtain a `pptr` is through the nested alias in the manager:
 ```cpp
-pptr();                               // нулевой указатель (индекс 0)
-explicit pptr(std::uint32_t offset);  // из гранульного индекса
-pptr(const pptr<T>&) = default;
+using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+MyMgr::pptr<int> p = MyMgr::allocate_typed<int>();
 ```
 
-### Проверка на null
+### Member types
+
+```cpp
+using element_type = T;
+using manager_type = ManagerT;
+using index_type   = typename ManagerT::address_traits::index_type; // typically uint32_t
+```
+
+### Constructors
+
+```cpp
+constexpr pptr() noexcept;                              // null pointer (index 0)
+explicit constexpr pptr(index_type idx) noexcept;       // from granule index
+pptr(const pptr&) = default;
+pptr& operator=(const pptr&) = default;
+```
+
+### Null check
 
 ```cpp
 bool is_null() const noexcept;
-explicit operator bool() const noexcept;
+explicit operator bool() const noexcept;  // true if not null
 ```
 
-### Получение гранульного индекса
+### Granule index access
 
 ```cpp
-std::uint32_t offset() const noexcept;
+index_type offset() const noexcept;  // granule index of user data
 ```
 
-### Разыменование через синглтон
+### Dereference (static manager model)
 
 ```cpp
-T*  get() const noexcept;          // указатель на объект
-T&  operator*() const noexcept;    // разыменование
-T*  operator->() const noexcept;   // доступ к членам
-T&  operator[](std::size_t i) const noexcept; // элемент массива (с проверкой границ)
+T*  resolve() const noexcept;              // raw pointer to object
+T&  operator*() const noexcept;            // dereference
+T*  operator->() const noexcept;           // member access
+T&  operator[](std::size_t i) const noexcept; // array element access
 ```
 
-Используют `PersistMemoryManager::instance()` автоматически.
+All dereference operations call `ManagerT::resolve(p)` internally.
 
-### Операторы сравнения
+### Comparison operators
 
 ```cpp
-bool operator==(const pptr<T>& other) const noexcept;
-bool operator!=(const pptr<T>& other) const noexcept;
+bool operator==(const pptr<T, ManagerT>& other) const noexcept;
+bool operator!=(const pptr<T, ManagerT>& other) const noexcept;
 ```
 
-### Пример использования
+### Example
 
 ```cpp
-// Создать менеджер
-void* mem = std::malloc(1 << 20);
-pmm::PersistMemoryManager::create(mem, 1 << 20);
+using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+MyMgr::create(1 << 20);
 
-// Выделить и использовать типизированный указатель
-pmm::pptr<int> p = pmm::PersistMemoryManager::allocate_typed<int>();
+// Allocate and use
+MyMgr::pptr<int> p = MyMgr::allocate_typed<int>();
 *p = 123;
 
-// Сохранить гранульный индекс для восстановления после перезагрузки
-uint32_t saved = p.offset();
+// Save granule index for later recovery
+uint32_t saved_idx = p.offset();
 
-// Сохранить образ в файл
-pmm::save("heap.dat");
-pmm::PersistMemoryManager::destroy();
-std::free(mem);
+// Save image to file
+pmm::save_manager<MyMgr>("heap.dat");
+MyMgr::destroy();
 
-// Загрузить образ
-void* mem2 = std::malloc(1 << 20);
-pmm::load_from_file("heap.dat", mem2, 1 << 20);
-pmm::pptr<int> p2(saved);
+// Restore from file
+MyMgr::create(1 << 20);
+pmm::load_manager_from_file<MyMgr>("heap.dat");
+
+MyMgr::pptr<int> p2(saved_idx);
 assert(*p2 == 123);
-pmm::PersistMemoryManager::destroy();
-std::free(mem2);
+
+MyMgr::destroy();
 ```
 
 ---
 
-## Свободные функции
+## Free functions (from `pmm/io.h`)
 
-### `save()`
+### `save_manager<MgrT>()`
 
 ```cpp
 namespace pmm {
-    bool save(const char* filename);
+    template <typename MgrT>
+    bool save_manager(const char* filename);
 }
 ```
 
-Сохраняет образ управляемой области памяти в двоичный файл. Использует синглтон внутри.
+Saves the entire managed memory image to a binary file. Since all metadata uses offsets
+from the buffer start, the image can be loaded at any base address.
 
-**Параметры:**
-- `filename` — путь к выходному файлу. Не должен быть `nullptr`.
+**Parameters:**
+- `filename` — path to output file. Must not be `nullptr`.
 
-**Возвращает:** `true` при успешной записи, `false` при ошибке.
+**Precondition:** `MgrT::is_initialized() == true`.
 
-**Пример:**
+**Returns:** `true` on success, `false` on I/O error or if not initialized.
+
+**Example:**
 ```cpp
-#include "persist_memory_io.h"
+#include "pmm/io.h"
 
-if (!pmm::save("heap.dat")) {
-    // ошибка записи
+if (!pmm::save_manager<MyMgr>("heap.dat")) {
+    // write error
 }
 ```
 
 ---
 
-### `load_from_file()`
+### `load_manager_from_file<MgrT>()`
 
 ```cpp
 namespace pmm {
-    bool load_from_file(
-        const char* filename,
-        void*       memory,
-        std::size_t size
-    );
+    template <typename MgrT>
+    bool load_manager_from_file(const char* filename);
 }
 ```
 
-Загружает образ менеджера из файла в существующий буфер и устанавливает синглтон.
+Loads a manager image from a file into the backend buffer, then calls `MgrT::load()` to
+validate the header and restore state.
 
-**Параметры:**
-- `filename` — путь к файлу с образом.
-- `memory` — буфер для загрузки. Размер должен быть ≥ размера файла.
-- `size` — размер буфера в байтах.
+**Precondition:** The backend must have an allocated buffer of sufficient size. For
+`HeapStorage`, call `MgrT::create(size)` before calling this function.
 
-**Возвращает:** `true` при успехе, `false` при ошибке.
+**Parameters:**
+- `filename` — path to the image file.
 
-**Пример:**
+**Returns:** `true` on success, `false` on error.
+
+**Example:**
 ```cpp
-#include "persist_memory_io.h"
+#include "pmm/io.h"
 
-void* buf = std::malloc(1024 * 1024);
-bool ok = pmm::load_from_file("heap.dat", buf, 1024 * 1024);
-if (ok && pmm::PersistMemoryManager::validate()) {
-    // образ корректно загружен
+MyMgr::create(1024 * 1024);  // allocate buffer
+bool ok = pmm::load_manager_from_file<MyMgr>("heap.dat");
+if (ok) {
+    // manager restored from file
 }
 ```
 
 ---
 
-### `get_stats()`
+## Preset types (from `pmm/pmm_presets.h`)
 
+Ready-to-use type aliases in namespace `pmm::presets`:
+
+| Type | Lock policy | Growth | Use case |
+|------|-------------|--------|----------|
+| `SingleThreadedHeap` | `NoLock` | 25% | Single-threaded caches, tools |
+| `MultiThreadedHeap` | `SharedMutexLock` | 25% | Concurrent services |
+| `EmbeddedHeap` | `NoLock` | 50% | Memory-constrained devices |
+| `IndustrialDBHeap` | `SharedMutexLock` | 100% | High-throughput databases |
+
+All presets use 32-bit addressing, 16-byte granules, and `HeapStorage`.
+
+**Example using a preset:**
 ```cpp
-namespace pmm {
-    MemoryStats get_stats();
-}
+#include "pmm/pmm_presets.h"
+
+using Heap = pmm::presets::SingleThreadedHeap;
+
+Heap::create(64 * 1024);  // 64 KiB
+Heap::pptr<int> p = Heap::allocate_typed<int>();
+*p = 99;
+Heap::deallocate_typed(p);
+Heap::destroy();
 ```
 
-Возвращает структуру со статистикой состояния менеджера. Использует синглтон внутри.
+**Or using single-header preset files:**
+```cpp
+#include "pmm_single_threaded_heap.h"
+
+pmm::presets::SingleThreadedHeap::create(64 * 1024);
+```
 
 ---
 
-### `get_manager_info()`
+## Data structures
+
+### `BlockView`
+
+Describes a block when iterating via `for_each_block()`:
 
 ```cpp
-namespace pmm {
-    ManagerInfo get_manager_info();
-}
+struct BlockView {
+    std::uint32_t index;       // granule index of the block header
+    std::ptrdiff_t offset;     // byte offset from buffer start
+    std::size_t total_size;    // total block size in bytes (header + data)
+    std::size_t header_size;   // block header size in bytes (sizeof(Block<A>))
+    std::size_t user_size;     // user data size in bytes (0 if free)
+    std::size_t alignment;     // granule size (alignment)
+    bool used;                 // true if allocated, false if free
+};
 ```
 
-Возвращает снимок полей заголовка менеджера. Использует синглтон внутри.
+### `FreeBlockView`
 
----
-
-### `for_each_block()`
+Describes a free block when iterating via `for_each_free_block()`:
 
 ```cpp
-namespace pmm {
-    template <typename Callback>
-    void for_each_block(Callback&& callback);
-    // Callback: void(const pmm::BlockView&)
-}
-```
-
-Вызывает `callback` для каждого блока памяти. Использует синглтон внутри. Потокобезопасно (shared_lock).
-
----
-
-## Структуры данных
-
-### `MemoryStats`
-
-```cpp
-struct MemoryStats {
-    std::size_t total_blocks;        // Общее количество блоков
-    std::size_t free_blocks;         // Количество свободных блоков
-    std::size_t allocated_blocks;    // Количество занятых блоков
-    std::size_t largest_free;        // Размер наибольшего свободного блока (байт)
-    std::size_t smallest_free;       // Размер наименьшего свободного блока (байт)
-    std::size_t total_fragmentation; // Суммарная фрагментация (байт)
+struct FreeBlockView {
+    std::ptrdiff_t offset;        // byte offset from buffer start
+    std::size_t total_size;       // total block size in bytes
+    std::size_t free_size;        // available user data size in bytes
+    std::ptrdiff_t left_offset;   // left child byte offset (-1 if none)
+    std::ptrdiff_t right_offset;  // right child byte offset (-1 if none)
+    std::ptrdiff_t parent_offset; // parent byte offset (-1 if none)
+    std::int16_t avl_height;      // AVL subtree height
+    int avl_depth;                // depth from root (0 = root)
 };
 ```
 
 ---
 
-## Константы
+## Predefined configurations (from `pmm/manager_configs.h`)
 
-| Константа | Значение | Описание |
-|-----------|----------|----------|
-| `kGranuleSize` | 16 | Размер гранулы в байтах (единица адресации) |
-| `kMinAlignment` | 16 | Минимальное выравнивание (байт) |
-| `kMinMemorySize` | 4096 | Минимальный размер буфера (байт) |
-| `kMinBlockSize` | 16 | Минимальный размер блока данных (байт) |
-| `kGrowNumerator` | 5 | Числитель коэффициента расширения (5/4 = 25%) |
-| `kGrowDenominator` | 4 | Знаменатель коэффициента расширения |
+| Config struct | Lock | Growth | Storage | Use case |
+|---------------|------|--------|---------|----------|
+| `CacheManagerConfig` | `NoLock` | 25% | `HeapStorage` | Single-threaded cache |
+| `PersistentDataConfig` | `SharedMutexLock` | 25% | `HeapStorage` | Multi-threaded persistent storage |
+| `EmbeddedManagerConfig` | `NoLock` | 50% | `HeapStorage` | Embedded systems |
+| `IndustrialDBConfig` | `SharedMutexLock` | 100% | `HeapStorage` | Industrial databases |
 
 ---
 
-## Поведение граничных условий
+## Constants
 
-| Условие | Возвращаемое значение |
-|---------|----------------------|
-| `create(nullptr, size)` | `false` |
-| `create(mem, < 4096)` | `false` |
-| `allocate_typed<T>()` при нехватке памяти | автоматическое расширение на 25% |
-| `deallocate_typed(null pptr)` | нет операции |
-| `save(nullptr)` | `false` |
-| `load_from_file(nullptr, ...)` | `false` |
-| `load_from_file(file, nullptr, ...)` | `false` |
-| `load_from_file(несуществующий файл, ...)` | `false` |
-| `load_from_file(файл > size, ...)` | `false` |
-| `load(повреждённый образ, ...)` | `false` |
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `kGranuleSize` | 16 | Granule size in bytes (addressing unit) |
+| `kMinAlignment` | 16 | Minimum alignment in bytes |
+| `kMinMemorySize` | 4096 | Minimum buffer size in bytes |
+| `kMinBlockSize` | 16 | Minimum user data block size in bytes |
+| `config::kDefaultGrowNumerator` | 5 | Growth ratio numerator (5/4 = 25%) |
+| `config::kDefaultGrowDenominator` | 4 | Growth ratio denominator |
 
 ---
 
-## Потокобезопасность
+## Edge case behavior
 
-Все публичные методы потокобезопасны. Используется `std::shared_mutex`:
-- методы чтения (`total_size`, `used_size`, `free_size`, `fragmentation`, `validate`, `dump_stats`, `get_stats`, `get_manager_info`, `for_each_block`) захватывают разделённую блокировку (`shared_lock`) и могут выполняться параллельно;
-- методы записи (`create`, `load`, `destroy`, `allocate_typed`, `deallocate_typed`, `reallocate_typed`) захватывают эксклюзивную блокировку (`unique_lock`).
+| Condition | Behavior |
+|-----------|----------|
+| `create(size < 4096)` | Returns `false` |
+| `create()` with no backend buffer | Returns `false` |
+| `load()` with invalid magic | Returns `false` |
+| `load()` with mismatched total size | Returns `false` |
+| `allocate_typed<T>()` when out of memory | Auto-expands by growth ratio |
+| `allocate_typed<T>(0)` | Returns null `pptr` |
+| `deallocate_typed(null pptr)` | No-op |
+| `deallocate` on permanently locked block | No-op |
+| `save_manager(nullptr)` | Returns `false` |
+| `load_manager_from_file(nullptr)` | Returns `false` |
+| `load_manager_from_file(nonexistent file)` | Returns `false` |
+| `load_manager_from_file(file > buffer size)` | Returns `false` |
 
 ---
 
-## Ограничения
+## Thread safety
 
-- Файловый ввод/вывод: только `stdio` (`fopen`/`fread`/`fwrite`/`fclose`). Нет поддержки `mmap`.
-- Алгоритм поиска свободного блока: best-fit через AVL-дерево свободных блоков (O(log n)).
-- Нет сжатия или шифрования образа.
-- Одновременно может существовать только один экземпляр менеджера (синглтон).
-- Максимальный адресуемый объём: 64 ГБ (2^32 × 16 байт/гранула).
+Thread safety depends on the `lock_policy` in the configuration:
+
+- **`SharedMutexLock`**: All public methods are thread-safe using `std::shared_mutex`.
+  Read operations (`total_size`, `used_size`, `free_size`, `block_count`,
+  `free_block_count`, `alloc_block_count`, `for_each_block`, `for_each_free_block`,
+  `is_initialized`, `resolve`, `get_tree_*`, `is_permanently_locked`) acquire a
+  `shared_lock` and can run concurrently. Write operations (`create`, `load`, `destroy`,
+  `allocate`, `deallocate`, `allocate_typed`, `deallocate_typed`, `lock_block_permanent`,
+  `set_tree_*`) acquire a `unique_lock`.
+
+- **`NoLock`**: No synchronization is performed. All operations are safe only in
+  single-threaded contexts.
+
+> Do **not** call allocate or deallocate from inside `for_each_block` or `for_each_free_block`
+> callbacks — this will deadlock under `SharedMutexLock`.
 
 ---
 
-*Версия документа 6.0. Соответствует версии библиотеки 6.0.0 (Issue #75: PAP-гомогенизация — `ManagerHeader` внутри `BlockHeader_0`).*
+## Constraints
+
+- I/O uses stdio only (`fopen` / `fread` / `fwrite` / `fclose`).
+- Free block search: best-fit via AVL tree — O(log n).
+- No image compression or encryption.
+- Only one active instance per `(ConfigT, InstanceId)` specialization at a time.
+- Maximum addressable memory: 64 GB (2³² × 16 bytes/granule with 32-bit index).
+- Requires C++20 compiler (GCC 10+, Clang 10+, MSVC 2019 16.3+).
+
+---
+
+*Document version 0.6.0. Reflects the library API as of v0.6.0.*

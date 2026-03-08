@@ -1,124 +1,100 @@
-# Атомизация записи и модернизация блока (Issue #69, Issue #75, Issue #106)
+# Atomic Writes and Block State Machine
 
-## Обзор
+## Overview
 
-Данный документ описывает алгоритмы модификации блоков в образе персистентного пространства адресов (ПАП/PAP), анализ критичности каждой операции записи, а также алгоритмы верификации и восстановления образа при незавершённой операции.
+This document describes the algorithms for modifying blocks in the persistent address
+space (PAS), the criticality analysis of each write operation, and the algorithms for
+verifying and recovering the image after an interrupted operation.
 
-Цель: обеспечить математически строгую гарантию того, что если менеджер был прерван на любом этапе записи блока, образ можно проверить, определить стадию прерывания и завершить (или откатить) операцию.
-
----
-
-## Структуры данных
-
-### ManagerHeader (64 байта, 4 гранулы)
-
-```
-Байты 0-7:   magic           — магическое число менеджера ("PMM_V060")
-Байты 8-15:  total_size      — полный размер управляемой области в байтах
-Байты 16-19: used_size       — занятый размер в гранулах
-Байты 20-23: block_count     — общее число блоков
-Байты 24-27: free_count      — число свободных блоков
-Байты 28-31: alloc_count     — число занятых блоков
-Байты 32-35: first_block_offset — первый блок (гранульный индекс)
-Байты 36-39: last_block_offset  — последний блок (гранульный индекс)
-Байты 40-43: free_tree_root  — корень AVL-дерева свободных блоков
-Байты 44:    owns_memory     — runtime-only (не персистентно)
-Байты 45:    prev_owns_memory — runtime-only (не персистентно)
-Байты 46-47: granule_size    — размер гранулы при создании
-Байты 48-55: prev_total_size — runtime-only (не персистентно)
-Байты 56-63: prev_base_ptr   — runtime-only (не персистентно)
-```
-
-### Block<A> (32 байта = 2 гранулы, Issue #106, #126)
-
-**Issue #106:** Внутренний формат блоков изменён с `BlockHeader` на `Block<AddressTraitsT>` (= `LinkedListNode<A>` + `TreeNode<A>`). Все внутренние операции (allocator_policy.h, free_block_tree.h, abstract_pmm.h) теперь используют `Block<A>` layout.
-
-**Issue #126:** Поля `TreeNode<A>` переупорядочены: `weight` перемещён в первое поле (ускорение доступа), `avl_height` и `node_type` (бывший `_pad`) перемещены в конец.
-
-```
-Block<A> layout (при DefaultAddressTraits):
-  [LinkedListNode<A>]
-    Байты 0-3:   prev_offset   — предыдущий блок (гранульный индекс)
-    Байты 4-7:   next_offset   — следующий блок (гранульный индекс)
-  [TreeNode<A>]
-    Байты 8-11:  weight        — занятый размер в гранулах (0 = свободный блок) [Issue #126: первое поле]
-    Байты 12-15: left_offset   — левый дочерний узел AVL-дерева (гранульный индекс)
-    Байты 16-19: right_offset  — правый дочерний узел AVL-дерева (гранульный индекс)
-    Байты 20-23: parent_offset — родительский узел AVL-дерева (гранульный индекс)
-    Байты 24-27: root_offset   — 0 = свободный; own_idx = занятый (Issue #75)
-    Байты 28-29: avl_height    — высота AVL-поддерева (0 = не в дереве) [Issue #126: перемещено в конец]
-    Байты 30-31: node_type     — тип узла: 0 = kNodeReadWrite, 1 = kNodeReadOnly [Issue #126: бывший _pad]
-```
-
-**Отличие от legacy BlockHeader**: `weight` (byte 8) вместо `size` (byte 0); `prev_offset` на byte 0 (раньше `size` был на byte 0, `prev_offset` на byte 4).
-
-### BlockHeader (32 байта, legacy — только для совместимости)
-
-```
-Байты 0-3:   size          — [legacy] занятый размер в гранулах (0 = свободный блок)
-Байты 4-7:   prev_offset   — [legacy] предыдущий блок (гранульный индекс)
-Байты 8-11:  next_offset   — [legacy] следующий блок
-Байты 12-15: left_offset   — [legacy] левый дочерний узел AVL
-Байты 16-19: right_offset  — [legacy] правый дочерний узел AVL
-Байты 20-23: parent_offset — [legacy] родительский узел AVL
-Байты 24-25: avl_height    — высота AVL-поддерева (0 = не в дереве)
-Байты 26-27: _pad          — зарезервировано
-Байты 28-31: root_offset   — 0 = свободный; own_idx = занятый (Issue #75)
-```
-
-Структура `BlockHeader` сохраняется в `types.h` для обратной совместимости, но внутренние алгоритмы теперь используют исключительно `Block<A>`.
-
-**Issue #69:** поле `magic` удалено из `BlockHeader`. Валидность блока теперь определяется структурными инвариантами (см. раздел "Верификация блока").
-
-**Issue #75 (v5.0):** поля переименованы: `used_size` → `size`, `_reserved` → `root_offset`. Семантика `root_offset`: значение `0` означает принадлежность дереву свободных блоков; значение равное собственному гранульному индексу означает, что блок является корнем своего AVL-дерева.
-
-**Issue #75 (v6.0):** PAP-гомогенизация — `ManagerHeader` перемещён внутрь `BlockHeader_0`. Теперь `BlockHeader_0` находится по смещению 0 (гранула 0), а `ManagerHeader` начинается по смещению `sizeof(BlockHeader) = 32 байта`. Пользовательские блоки начинаются с гранулы 6 (96 байт от начала). Все образы PMM_V050 несовместимы с PMM_V060.
-
-**Issue #106 (v0.4):** Внутренний layout сменён на `Block<A>`. Поле `size` заменено на `weight` в позиции byte 24. Вся логика allocate/deallocate/coalesce теперь идёт через BlockState machine (block_state.h).
+**Goal:** provide a mathematically rigorous guarantee that if the manager was interrupted
+at any stage of a write, the image can be verified, the interruption point identified, and
+the operation completed (or rolled back).
 
 ---
 
-## Инварианты валидности блока (заменяют magic)
+## Data structures
 
-Блок считается валидным, если **все** следующие условия выполнены:
+### ManagerHeader (64 bytes, 4 granules)
 
-1. **`size < total_granules`**: `size` строго меньше числа гранул до следующего блока (вычисляемого через `next_offset`).
-2. **`prev_offset < this_idx < next_offset`**: гранульный индекс данного блока строго между `prev_offset` и `next_offset` (если они не равны `kNoBlock`).
-3. **`avl_height < 32`**: высота AVL-поддерева не превышает 32 (разумный предел для дерева, которое может содержать до 2^32 узлов).
-4. **AVL-указатели**: либо все из `left_offset`, `right_offset`, `parent_offset` равны `kNoBlock` (блок не в дереве), либо ни один не совпадает с другим (они все разные).
+```
+Bytes 0–7:   magic           — manager magic number ("PMM_V083")
+Bytes 8–15:  total_size      — total managed region size in bytes
+Bytes 16–19: used_size       — used size in granules
+Bytes 20–23: block_count     — total block count
+Bytes 24–27: free_count      — free block count
+Bytes 28–31: alloc_count     — allocated block count
+Bytes 32–35: first_block_offset — first block (granule index)
+Bytes 36–39: last_block_offset  — last block (granule index)
+Bytes 40–43: free_tree_root  — AVL free block tree root (granule index)
+Bytes 44:    owns_memory     — runtime-only (not persistent)
+Bytes 45:    prev_owns_memory — runtime-only (not persistent)
+Bytes 46–47: granule_size    — granule size at creation time
+Bytes 48–55: prev_total_size — runtime-only (not persistent)
+Bytes 56–63: prev_base_ptr   — runtime-only (not persistent)
+```
 
-### Псевдокод `is_valid_block`
+### Block\<A\> (32 bytes = 2 granules)
 
-**Issue #106:** Функция использует `Block<A>` layout (`weight` вместо `size`).
+`Block<A>` = `LinkedListNode<A>` + `TreeNode<A>`:
+
+```
+[LinkedListNode<A>]
+  Bytes 0–3:   prev_offset   — previous block (granule index)
+  Bytes 4–7:   next_offset   — next block (granule index)
+[TreeNode<A>]
+  Bytes 8–11:  weight        — user data size in granules (0 = free block)
+  Bytes 12–15: left_offset   — left AVL child (granule index)
+  Bytes 16–19: right_offset  — right AVL child (granule index)
+  Bytes 20–23: parent_offset — parent AVL node (granule index)
+  Bytes 24–27: root_offset   — 0 = free block; own_idx = allocated block
+  Bytes 28–29: avl_height    — AVL subtree height (0 = not in tree)
+  Bytes 30–31: node_type     — 0 = kNodeReadWrite, 1 = kNodeReadOnly (permanently locked)
+```
+
+---
+
+## Block validity invariants
+
+A block is considered **valid** if **all** of the following conditions hold:
+
+1. **`weight < total_granules`**: `weight` is strictly less than the total number of
+   granules up to the next block (computed via `next_offset`).
+2. **`prev_offset < own_idx < next_offset`**: the block's granule index is strictly
+   between `prev_offset` and `next_offset` (when they are not `kNoBlock`).
+3. **`avl_height < 32`**: the AVL subtree height does not exceed 32 (a reasonable
+   upper bound for a tree with up to 2³² nodes).
+4. **AVL pointers**: either all of `left_offset`, `right_offset`, `parent_offset` equal
+   `kNoBlock` (block not in the tree), or all three are distinct.
+
+### Pseudocode: `is_valid_block`
 
 ```cpp
 bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx) {
     if (idx == kNoBlock) return false;
     if (idx_to_byte_off(idx) + sizeof(Block<A>) > hdr->total_size) return false;
 
-    // Block<A> layout: prev_offset[0], next_offset[4], ..., weight[24], root_offset[28]
-    const auto* blk = reinterpret_cast<const Block<DefaultAddressTraits>*>(base + idx_to_byte_off(idx));
+    const auto* blk = reinterpret_cast<const Block<DefaultAddressTraits>*>(
+                          base + idx_to_byte_off(idx));
 
-    // 1. Проверка weight vs total_granules
+    // 1. weight vs total_granules
     uint32_t total_gran = block_total_granules(base, hdr, blk);
-    if (blk->weight >= total_gran) return false;  // weight должен быть СТРОГО меньше
+    if (blk->weight >= total_gran) return false;
 
-    // 2. Проверка prev_offset < this_idx < next_offset
+    // 2. prev_offset < own_idx < next_offset
     if (blk->prev_offset != kNoBlock && blk->prev_offset >= idx) return false;
     if (blk->next_offset != kNoBlock && blk->next_offset <= idx) return false;
 
-    // 3. Проверка avl_height < 32
+    // 3. avl_height < 32
     if (blk->avl_height >= 32) return false;
 
-    // 4. Проверка уникальности AVL-ссылок
-    bool l_valid = (blk->left_offset   != kNoBlock);
-    bool r_valid = (blk->right_offset  != kNoBlock);
-    bool p_valid = (blk->parent_offset != kNoBlock);
-    if (l_valid || r_valid || p_valid) {
-        // Не все kNoBlock — проверяем, что все три разные
-        if (l_valid && r_valid && blk->left_offset == blk->right_offset)   return false;
-        if (l_valid && p_valid && blk->left_offset == blk->parent_offset)  return false;
-        if (r_valid && p_valid && blk->right_offset == blk->parent_offset) return false;
+    // 4. AVL pointer uniqueness
+    bool l = (blk->left_offset   != kNoBlock);
+    bool r = (blk->right_offset  != kNoBlock);
+    bool p = (blk->parent_offset != kNoBlock);
+    if (l || r || p) {
+        if (l && r && blk->left_offset == blk->right_offset)   return false;
+        if (l && p && blk->left_offset == blk->parent_offset)  return false;
+        if (r && p && blk->right_offset == blk->parent_offset) return false;
     }
 
     return true;
@@ -127,225 +103,178 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
 
 ---
 
-## Критические операции
+## Critical operations
 
-Обозначения:
-- **W(addr, val)** — запись значения `val` по адресу `addr`
-- **КРИТИЧНО** — если прерывание после этого шага приводит к несогласованному образу
-- **НЕ КРИТИЧНО** — прерывание безопасно, образ остаётся согласованным
-
----
-
-## Алгоритм 1: Добавление нового блока (allocate_from_block + splitting)
-
-При выделении памяти, если найденный свободный блок можно разбить (splitting):
-
-### Этапы записи
-
-| # | Операция | КРИТИЧНО? | Обоснование |
-|---|----------|-----------|-------------|
-| 1 | `avl_remove(blk_idx)` — удалить блок из AVL | НЕ КРИТИЧНО | Блок ещё существует в линейном списке. AVL-дерево перестраивается при `load()`. |
-| 2 | `W(new_blk, 0)` — `memset` нового заголовка split-блока | НЕ КРИТИЧНО | Блок ещё не включён в линейный список. |
-| 3 | `W(new_blk->next_offset, blk->next_offset)` | КРИТИЧНО | Если прервать здесь — `new_blk->next_offset` ещё не задан. |
-| 4 | `W(new_blk->prev_offset, blk_idx)` | КРИТИЧНО | Обратная ссылка на разбиваемый блок. |
-| 5 | `W(old_next->prev_offset, new_idx)` (если next != kNoBlock) | КРИТИЧНО | Прямая ссылка на новый блок из следующего блока. |
-| 6 | `W(blk->next_offset, new_idx)` | КРИТИЧНО | Прямая ссылка на новый блок из разбиваемого блока. |
-| 7 | `W(hdr->last_block_offset, new_idx)` (если это последний блок) | НЕ КРИТИЧНО | Оптимизация. Перестраивается при `load()`. |
-| 8 | `W(hdr->block_count, hdr->block_count + 1)` | НЕ КРИТИЧНО | Счётчик перестраивается при `load()`. |
-| 9 | `W(hdr->free_count, hdr->free_count + 1)` | НЕ КРИТИЧНО | Счётчик перестраивается при `load()`. |
-| 10 | `W(hdr->used_size, hdr->used_size + kBlockHeaderGranules)` | НЕ КРИТИЧНО | Вычисляется при `load()`. |
-| 11 | `avl_insert(new_idx)` — вставить новый свободный блок в AVL | НЕ КРИТИЧНО | AVL перестраивается при `load()`. |
-| 12 | `W(blk->size, data_gran)` + `W(blk->root_offset, blk_idx)` | КРИТИЧНО | Это маркирует блок как занятый и устанавливает его корень (Issue #75). |
-| 13 | `W(blk->avl_height, 0)` + обнуление AVL-ссылок blk | НЕ КРИТИЧНО | AVL перестраивается при `load()`. |
-| 14 | `W(hdr->alloc_count, hdr->alloc_count + 1)` | НЕ КРИТИЧНО | Перестраивается при `load()`. |
-| 15 | `W(hdr->free_count, hdr->free_count - 1)` | НЕ КРИТИЧНО | Перестраивается при `load()`. |
-| 16 | `W(hdr->used_size, hdr->used_size + data_gran)` | НЕ КРИТИЧНО | Вычисляется при `load()`. |
-
-### Анализ критических точек прерывания
-
-**Прерывание между шагами 2 и 3** (после memset нового блока, до установки next_offset):
-- Состояние: `blk->next_offset` ещё указывает на старый следующий блок, `new_blk` инициализирован нулями/kNoBlock.
-- Восстановление при load(): новый блок не может быть найден через линейный список (blk->next_offset ≠ new_idx), поэтому он невидим. Образ согласован.
-
-**Прерывание между шагами 5 и 6** (old_next->prev_offset обновлён, но blk->next_offset ещё не):
-- Состояние: `old_next->prev_offset = new_idx`, но `blk->next_offset = old_next_idx`.
-- Recovery: двойной список несогласован (forward != backward). Обнаруживается при traverse.
-
-**Прерывание после шага 6, до шага 12** (новый блок включён, но разбиваемый ещё помечен как свободный):
-- Состояние: линейный список согласован, блок `blk` в AVL-дереве (точнее, был удалён в шаге 1, но ещё не переинсертирован как занятый).
-- Восстановление: при load() rebuild_free_tree() видит блок со старым `size=0` и вставляет его в AVL как свободный. Это корректно, но означает "утечку" — блок был выдан пользователю, но после recovery снова свободен. Данные пользователя потеряны (допустимо при crash recovery).
+**Notation:**
+- **W(addr, val)** — write value `val` to address `addr`
+- **CRITICAL** — interruption after this step leaves the image in an inconsistent state
+- **NON-CRITICAL** — safe to interrupt; image remains consistent
 
 ---
 
-## Алгоритм 2: Удаление свободного блока (deallocate_raw + coalesce)
+## Algorithm 1: Block allocation with splitting
 
-### Этапы записи
+When allocating memory, if the found free block can be split:
 
-| # | Операция | КРИТИЧНО? | Обоснование |
-|---|----------|-----------|-------------|
-| 1 | `W(blk->size, 0)` + `W(blk->root_offset, 0)` | КРИТИЧНО | Маркирует блок как свободный и сбрасывает корень (Issue #75). |
-| 2 | `W(hdr->alloc_count, -1)` | НЕ КРИТИЧНО | Счётчик, перестраивается при load(). |
-| 3 | `W(hdr->free_count, +1)` | НЕ КРИТИЧНО | Счётчик, перестраивается при load(). |
-| 4 | `W(hdr->used_size, -= freed)` | НЕ КРИТИЧНО | Вычисляется при load(). |
-| 5 | **Слияние со следующим (coalesce next):** | | |
-| 5a | `avl_remove(nxt_idx)` — удалить следующий свободный блок из AVL | НЕ КРИТИЧНО | AVL перестраивается при load(). |
-| 5b | `W(blk->next_offset, nxt->next_offset)` | КРИТИЧНО | Изменяет линейный список. |
-| 5c | `W(nxt->next->prev_offset, b_idx)` (если есть) | КРИТИЧНО | Обратная ссылка. |
-| 5d | `W(hdr->last_block_offset, b_idx)` (если nxt был последним) | НЕ КРИТИЧНО | Оптимизация, перестраивается при load(). |
-| 5e | `W(nxt->magic, 0)` / zeroing nxt header | КРИТИЧНО | Уничтожение заголовка слитого блока. |
-| 5f | `W(hdr->block_count, -1)` | НЕ КРИТИЧНО | Перестраивается при load(). |
-| 5g | `W(hdr->free_count, -1)` | НЕ КРИТИЧНО | Перестраивается при load(). |
-| 6 | **Слияние с предыдущим (coalesce prev):** | | |
-| 6a | `avl_remove(prv_idx)` | НЕ КРИТИЧНО | AVL перестраивается при load(). |
-| 6b | `W(prv->next_offset, blk->next_offset)` | КРИТИЧНО | Изменяет линейный список. |
-| 6c | `W(blk->next->prev_offset, prv_idx)` (если есть) | КРИТИЧНО | Обратная ссылка. |
-| 6d | `W(hdr->last_block_offset, prv_idx)` (если blk был последним) | НЕ КРИТИЧНО | Оптимизация. |
-| 6e | `W(blk->magic, 0)` / zeroing blk header | КРИТИЧНО | Уничтожение заголовка слитого блока. |
-| 6f | `W(hdr->block_count, -1)` | НЕ КРИТИЧНО | Перестраивается при load(). |
-| 6g | `W(hdr->free_count, -1)` | НЕ КРИТИЧНО | Перестраивается при load(). |
-| 7 | `avl_insert(result_blk_idx)` | НЕ КРИТИЧНО | AVL перестраивается при load(). |
+### Write steps
 
-### Анализ критических точек прерывания (coalesce)
+| # | Operation | Critical? | Reason |
+|---|-----------|-----------|--------|
+| 1 | `avl_remove(blk_idx)` — remove block from AVL | NON-CRITICAL | Block still in linked list; AVL is rebuilt on `load()` |
+| 2 | `memset(new_blk, 0)` — zero new split-block header | NON-CRITICAL | New block not yet in linked list |
+| 3 | `W(new_blk->next_offset, blk->next_offset)` | **CRITICAL** | `new_blk->next_offset` not yet set |
+| 4 | `W(new_blk->prev_offset, blk_idx)` | **CRITICAL** | Back-link to the block being split |
+| 5 | `W(old_next->prev_offset, new_idx)` (if next exists) | **CRITICAL** | Forward-link from the next block |
+| 6 | `W(blk->next_offset, new_idx)` | **CRITICAL** | Forward-link from split block to new block |
+| 7 | `W(hdr->last_block_offset, new_idx)` (if last) | NON-CRITICAL | Optimization; rebuilt on `load()` |
+| 8 | `W(hdr->block_count, +1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 9 | `W(hdr->free_count, +1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 10 | `W(hdr->used_size, += kBlockHeaderGranules)` | NON-CRITICAL | Recomputed on `load()` |
+| 11 | `avl_insert(new_idx)` — insert new free block into AVL | NON-CRITICAL | AVL rebuilt on `load()` |
+| 12 | `W(blk->weight, data_gran)` + `W(blk->root_offset, blk_idx)` | **CRITICAL** | Marks block as allocated |
+| 13 | Clear AVL fields of `blk` | NON-CRITICAL | AVL rebuilt on `load()` |
+| 14 | `W(hdr->alloc_count, +1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 15 | `W(hdr->free_count, -1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 16 | `W(hdr->used_size, += data_gran)` | NON-CRITICAL | Recomputed on `load()` |
 
-**Прерывание между 5b и 5c** (blk->next_offset обновлён, но nxt->next->prev_offset нет):
-- Состояние: линейный список несогласован. `traverse_forward` и `traverse_backward` дадут разные результаты.
-- Обнаружение: при load() traverse видит `blk->next_offset = new_next`, но `new_next->prev_offset = nxt_idx` (старый). Несоответствие обнаруживается.
+### Interruption analysis
 
-**Прерывание между 5c и 5e** (ссылки обновлены, но nxt header не обнулён):
-- Состояние: `nxt` недостижим из линейного списка (блок пропущен), но его заголовок всё ещё выглядит как валидный блок.
-- Обнаружение: при traversal через линейный список `nxt` не будет найден (т.к. `blk->next_offset` уже указывает на `nxt->next`). Однако при проверке границ блоков будет видно, что `blk` занимает область, включающую байты `nxt`.
+**Interruption between steps 2 and 3** (new block zeroed, `next_offset` not yet set):
+- `blk->next_offset` still points to the old next block; `new_blk` is invisible.
+- **Recovery:** `new_blk` is not reachable via the linked list — image is consistent.
 
----
+**Interruption between steps 5 and 6** (`old_next->prev_offset` updated, `blk->next_offset` not):
+- Linked list is inconsistent (forward ≠ backward).
+- **Recovery:** `repair_linked_list()` detects and corrects the mismatch.
 
-## Алгоритм 3: Перевыделение (reallocate_typed) — не критично
-
-Алгоритм `reallocate_typed` состоит из:
-1. `allocate_typed` (Алгоритм 1) — выделить новый блок.
-2. `memcpy` — скопировать данные.
-3. `deallocate_typed` (Алгоритм 2) — освободить старый блок.
-
-Если прерывание происходит:
-- После `allocate_typed`, до `deallocate_typed`: оба блока существуют, данные дублируются. Пользователь теряет результат reallocate (новый указатель не был возвращён), но старые данные в исходном блоке сохраняются.
-- После `deallocate_typed`: старый блок освобождён, новый блок содержит копию данных. Пользователь не получил новый указатель, но данные не потеряны в ОЗУ (только как «утечка» нового блока).
+**Interruption between steps 6 and 12** (new block linked, but original block not marked allocated):
+- `blk` is seen as free by `rebuild_free_tree()` and re-inserted into AVL.
+- **Recovery:** block is returned to free list (user data lost — acceptable for crash recovery).
 
 ---
 
-## Алгоритм 4: Балансировка AVL-дерева — не критично
+## Algorithm 2: Block deallocation with coalescing
 
-Балансировка AVL-дерева свободных блоков происходит как часть `avl_insert` и `avl_remove`. Операции AVL (повороты, обновление высот) не критичны, потому что:
+### Write steps
 
-1. **При load()** вызывается `rebuild_free_tree()`, которая полностью перестраивает AVL-дерево из нуля, проходя по линейному списку всех блоков.
-2. Блоки доступны через линейный список (`first_block_offset` → `next_offset`), который не зависит от AVL-структуры.
+| # | Operation | Critical? | Reason |
+|---|-----------|-----------|--------|
+| 1 | `W(blk->weight, 0)` + `W(blk->root_offset, 0)` | **CRITICAL** | Marks block as free |
+| 2 | `W(hdr->alloc_count, -1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 3 | `W(hdr->free_count, +1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 4 | `W(hdr->used_size, -= freed)` | NON-CRITICAL | Recomputed on `load()` |
+| **5** | **Coalesce with next block:** | | |
+| 5a | `avl_remove(nxt_idx)` — remove next free block from AVL | NON-CRITICAL | AVL rebuilt on `load()` |
+| 5b | `W(blk->next_offset, nxt->next_offset)` | **CRITICAL** | Modifies linked list |
+| 5c | `W(nxt->next->prev_offset, blk_idx)` (if exists) | **CRITICAL** | Back-link update |
+| 5d | `W(hdr->last_block_offset, blk_idx)` (if `nxt` was last) | NON-CRITICAL | Optimization |
+| 5e | `memset(nxt, 0)` — zero merged block header | **CRITICAL** | Destroys merged block header |
+| 5f | `W(hdr->block_count, -1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 5g | `W(hdr->free_count, -1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| **6** | **Coalesce with previous block:** | | |
+| 6a | `avl_remove(prv_idx)` | NON-CRITICAL | AVL rebuilt on `load()` |
+| 6b | `W(prv->next_offset, blk->next_offset)` | **CRITICAL** | Modifies linked list |
+| 6c | `W(blk->next->prev_offset, prv_idx)` (if exists) | **CRITICAL** | Back-link update |
+| 6d | `W(hdr->last_block_offset, prv_idx)` (if `blk` was last) | NON-CRITICAL | Optimization |
+| 6e | `memset(blk, 0)` — zero current block header | **CRITICAL** | Destroys current block header |
+| 6f | `W(hdr->block_count, -1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 6g | `W(hdr->free_count, -1)` | NON-CRITICAL | Counter rebuilt on `load()` |
+| 7 | `avl_insert(result_blk_idx)` — insert merged block | NON-CRITICAL | AVL rebuilt on `load()` |
 
-Таким образом, любое прерывание во время AVL-операций не влияет на корректность образа после load()+rebuild().
+### Interruption analysis (coalesce)
+
+**Interruption between 5b and 5c** (`blk->next_offset` updated, `new_next->prev_offset` not):
+- Linked list inconsistent: forward and backward traversals diverge.
+- **Recovery:** `repair_linked_list()` corrects `new_next->prev_offset = blk_idx`.
+
+**Interruption between 5c and 5e** (links updated, but `nxt` header not yet zeroed):
+- `nxt` is unreachable via linked list but its header still looks valid.
+- **Recovery:** `nxt` is not reachable during linear list traversal; the region is covered
+  by the merged block.
 
 ---
 
-## Алгоритм верификации и восстановления при загрузке
+## Algorithm 3: Reallocation (not critical)
 
-### Фаза 1: Верификация ManagerHeader
+`reallocate` is not a direct API; the pattern is:
+
+1. `allocate_typed` (Algorithm 1) — allocate new block.
+2. `memcpy` — copy data.
+3. `deallocate_typed` (Algorithm 2) — free old block.
+
+**Interruption after step 1, before step 3:** both blocks exist; data is duplicated.
+User loses the new pointer but the old data is intact.
+
+**Interruption after step 3:** old block freed, new block contains data copy.
+New pointer was not returned to user but data is preserved.
+
+---
+
+## Algorithm 4: AVL tree rebalancing (not critical)
+
+AVL rebalancing (rotations, height updates) is performed as part of `avl_insert` and
+`avl_remove`. These operations are **not critical** because:
+
+1. On `load()`, `rebuild_free_tree()` fully reconstructs the AVL tree from scratch by
+   traversing the linear linked list of all blocks.
+2. Blocks are always reachable via the linked list (`first_block_offset → next_offset`),
+   independently of the AVL structure.
+
+Therefore, any interruption during AVL operations does not affect image correctness
+after `load() + rebuild_free_tree()`.
+
+---
+
+## Verification and recovery on load
+
+### Phase 1: Validate ManagerHeader
 
 ```
-1. Проверить hdr->magic == kMagic ("PMM_V060")
-2. Проверить hdr->total_size == переданный size
-3. Если не прошло — ошибка загрузки, образ недействителен
+1. Check hdr->magic == kMagic ("PMM_V083")
+2. Check hdr->total_size == passed size argument
+3. Check hdr->granule_size == kGranuleSize
+4. If any check fails: return false (image invalid)
 ```
 
-### Фаза 2: Rebuild linear list — rebuild_free_tree()
-
-При загрузке всегда вызывается `rebuild_free_tree()`, которая:
+### Phase 2: Reset runtime fields
 
 ```
-1. Сбросить hdr->free_tree_root = kNoBlock
-2. Сбросить hdr->last_block_offset = kNoBlock
-3. Сбросить все AVL-ссылки (left/right/parent/height) каждого блока в 0/kNoBlock
-4. Проходить по линейному списку (first_block_offset → next_offset):
-   - Для каждого свободного блока (size == 0): avl_insert
-   - Отслеживать last_block_offset
+hdr->owns_memory      = false;
+hdr->prev_owns_memory = false;
+hdr->prev_total_size  = 0;
+hdr->prev_base_ptr    = nullptr;
 ```
 
-### Фаза 3: Обнаружение частично завершённых операций
-
-Обнаружение происходит через проверку инвариантов двусвязного списка:
-
-```
-for each block B at index idx (traversing forward):
-    if B.next_offset != kNoBlock:
-        next_block = block_at(B.next_offset)
-        assert(next_block.prev_offset == idx)  // forward/backward consistency
-    if B.prev_offset != kNoBlock:
-        prev_block = block_at(B.prev_offset)
-        assert(prev_block.next_offset == idx)  // backward/forward consistency
-```
-
-Если нарушение обнаружено — классифицируем состояние:
-
-**Случай A: `blk->next_offset = new_idx`, но `new_next->prev_offset = old_idx`**
-- Диагноз: Алгоритм 2, прерывание между шагами 5b и 5c (или 6b и 6c).
-- Восстановление: Установить `new_next->prev_offset = b_idx`.
-
-**Случай B: Блок `nxt` существует в границах `blk`, но не включён в список**
-- Диагноз: Алгоритм 2, прерывание на шаге 5e (или 6e) — заголовок не обнулён.
-- Восстановление: Обнулить (`memset`) недостижимый заголовок.
-
-**Случай C: `blk->size = 0`, но был предоставлен пользователю**
-- Диагноз: Алгоритм 1, прерывание между шагами 1 и 12 (блок удалён из AVL, но ещё не помечен как занятый).
-- Восстановление: Блок считается свободным (данные пользователя потеряны). Корректное поведение crash recovery.
-
-### Полный алгоритм load() с recovery
+### Phase 3: Repair linked list (`repair_linked_list`)
 
 ```cpp
-bool load_with_recovery(void* memory, size_t size) {
-    // Фаза 1: Проверить ManagerHeader (находится в BlockHeader_0, смещение sizeof(BlockHeader))
-    auto* hdr = reinterpret_cast<ManagerHeader*>((uint8_t*)memory + sizeof(BlockHeader));
-    if (hdr->magic != kMagic || hdr->total_size != size)
-        return false;  // Образ недействителен
-
-    // Фаза 2: Сбросить runtime-поля
-    hdr->owns_memory = hdr->prev_owns_memory = false;
-    hdr->prev_total_size = 0;
-    hdr->prev_base_ptr = nullptr;
-
-    // Фаза 3: Проверить и исправить двусвязный список
-    repair_linked_list(memory, hdr);
-
-    // Фаза 4: Пересчитать счётчики и перестроить AVL
-    rebuild_free_tree();  // Перестраивает AVL, last_block_offset, сбрасывает AVL-ссылки блоков
-    recompute_counters(); // Пересчитать block_count, free_count, alloc_count, used_size
-
-    s_instance = (PersistMemoryManager*)memory;
-    return true;
-}
-
 void repair_linked_list(uint8_t* base, ManagerHeader* hdr) {
     uint32_t idx = hdr->first_block_offset;
     while (idx != kNoBlock) {
-        BlockHeader* blk = block_at(base, idx);
-
-        // Проверить консистентность forward/backward
+        Block<A>* blk = block_at(base, idx);
         if (blk->next_offset != kNoBlock) {
-            BlockHeader* nxt = block_at(base, blk->next_offset);
+            Block<A>* nxt = block_at(base, blk->next_offset);
             if (nxt->prev_offset != idx) {
-                // Исправить несоответствие
+                // Fix forward/backward inconsistency
                 nxt->prev_offset = idx;
             }
         }
         idx = blk->next_offset;
     }
 }
+```
 
+### Phase 4: Recompute counters (`recompute_counters`)
+
+```cpp
 void recompute_counters(uint8_t* base, ManagerHeader* hdr) {
-    uint32_t block_count = 0, free_count = 0, alloc_count = 0;
-    uint32_t used_gran = 0;  // Все заголовки учтены в блоках
-
+    uint32_t block_count = 0, free_count = 0, alloc_count = 0, used_gran = 0;
     uint32_t idx = hdr->first_block_offset;
     while (idx != kNoBlock) {
-        // Issue #106: Block<A> layout — weight instead of size
-        Block<A>* blk = block_at_block(base, idx);
+        Block<A>* blk = block_at(base, idx);
         block_count++;
-        used_gran += kBlockHeaderGranules;  // Overhead заголовка
-
-        if (blk->weight > 0) {  // Issue #106: weight (byte 24) instead of size (byte 0)
+        used_gran += kBlockHeaderGranules;
+        if (blk->weight > 0) {
             alloc_count++;
             used_gran += blk->weight;
         } else {
@@ -353,7 +282,6 @@ void recompute_counters(uint8_t* base, ManagerHeader* hdr) {
         }
         idx = blk->next_offset;
     }
-
     hdr->block_count = block_count;
     hdr->free_count  = free_count;
     hdr->alloc_count = alloc_count;
@@ -361,238 +289,195 @@ void recompute_counters(uint8_t* base, ManagerHeader* hdr) {
 }
 ```
 
----
+### Phase 5: Rebuild AVL tree (`rebuild_free_tree`)
 
-## Итоги и требования
+```
+1. Reset hdr->free_tree_root = kNoBlock
+2. Reset hdr->last_block_offset = kNoBlock
+3. Clear all AVL fields (left/right/parent/height) in each block
+4. Traverse linked list (first_block_offset → next_offset):
+   - For each free block (weight == 0): avl_insert
+   - Track last_block_offset
+```
 
-### Требования к реализации
+### Full `load()` with recovery
 
-1. **BlockHeader без magic**: Удалить поле `magic` из `BlockHeader`. Освободившиеся 4 байта могут быть использованы в будущем для интеграции строкового словаря в ПАП.
+```cpp
+bool load_with_recovery(void* memory, size_t size) {
+    auto* hdr = reinterpret_cast<ManagerHeader*>((uint8_t*)memory + sizeof(Block<A>));
+    if (hdr->magic != kMagic || hdr->total_size != size || hdr->granule_size != kGranuleSize)
+        return false;
 
-2. **Структурная валидация блока**: Функция `is_valid_block()` должна проверять все 4 инварианта (см. выше) вместо проверки magic.
+    hdr->owns_memory = hdr->prev_owns_memory = false;
+    hdr->prev_total_size = 0;
+    hdr->prev_base_ptr   = nullptr;
 
-3. **`header_from_ptr()` без magic**: Использовать `is_valid_block()` и `blk->size > 0` вместо `blk->magic == kBlockMagic`.
+    repair_linked_list(memory, hdr);
+    recompute_counters(memory, hdr);
+    rebuild_free_tree(memory, hdr);
 
-4. **`validate()` без magic**: Использовать `is_valid_block()` при проходе по списку.
-
-5. **`rebuild_free_tree()` + `repair_linked_list()`**: Вызывать при load() для восстановления AVL-дерева и исправления несоответствий в двусвязном списке.
-
-6. **`recompute_counters()`**: Вызывать при load() для пересчёта счётчиков (block_count, free_count, alloc_count, used_size) из актуального состояния блоков.
-
-7. **Обновить magic менеджера**: Изменить `kMagic` на `"PMM_V060"` для отказа от несовместимых старых образов (Issue #75: PAP-гомогенизация — `ManagerHeader` внутри `BlockHeader_0`).
-
-### Гарантии корректности при crash recovery
-
-| Сценарий прерывания | Результат после load() |
-|---------------------|------------------------|
-| До любой записи | Образ неизменён, корректен |
-| Во время AVL-операций | AVL перестраивается, образ корректен |
-| Во время splitting (до записи blk->next_offset) | Новый блок невидим, корректен |
-| Во время splitting (после записи blk->next_offset) | Список исправляется при repair_linked_list() |
-| После splitting, до маркировки occupied | Блок возвращается в свободные (данные потеряны) |
-| Во время coalesce (ссылки частично обновлены) | Список исправляется при repair_linked_list() |
-| После coalesce (старый заголовок не обнулён) | Заголовок недостижим, область занята слитым блоком |
-
-### Важное замечание о гарантиях
-
-Данный алгоритм обеспечивает **crash consistency** (согласованность после сбоя) в смысле: образ после восстановления будет структурно валидным, и менеджер сможет продолжить работу. Однако **полная атомарность операций выделения/освобождения** (т.е. гарантия того, что операция либо полностью применена, либо полностью откатится) требует журналирования (write-ahead log, WAL), что выходит за рамки данного issue.
-
-В рамках данного issue достигается: **структурная корректность образа после load() при любом сбое**, при этом частично выполненные операции выделения трактуются как "не выполненные" (блоки возвращаются в свободные).
+    _initialized = true;
+    return true;
+}
+```
 
 ---
 
-## Граф состояний блока (Issue #93: BlockState machine)
+## Block state machine
 
-### Обзор состояний
+### State diagram
 
-Блок памяти может находиться в одном из двух **корректных** состояний и одном из нескольких **переходных** состояний. Переходные состояния являются временными и возникают во время атомарных операций.
+Blocks transition between two **correct states** and several **transient states**.
+Transient states arise only during atomic operations and cannot appear in a saved image.
 
-### Корректные состояния
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         КОРРЕКТНЫЕ СОСТОЯНИЯ                                │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│   ┌─────────────────────┐                    ┌─────────────────────┐        │
-│   │     FreeBlock       │                    │   AllocatedBlock    │        │
-│   │  ───────────────    │                    │  ───────────────    │        │
-│   │  weight == 0        │ ──── allocate ──►  │  weight > 0         │        │
-│   │  root_offset == 0   │                    │  root_offset == idx │        │
-│   │  в AVL-дереве       │ ◄── deallocate ─── │  не в AVL-дереве    │        │
-│   └─────────────────────┘                    └─────────────────────┘        │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Диаграмма переходов состояний (allocate)
+#### Correct states
 
 ```
-┌─────────────┐
-│  FreeBlock  │  Корректное состояние: weight=0, root_offset=0, в AVL-дереве
-└──────┬──────┘
-       │
-       │ (1) avl_remove(blk_idx)   [FreeBlockTreeT::remove]
-       ▼
-┌──────────────────────┐
-│ FreeBlockRemovedAVL  │  Переходное: weight=0, root_offset=0, не в AVL
-└──────┬───────────────┘
-       │
-       │ (2) [если split] begin_splitting() → SplittingBlock
-       │ (3) [если split] initialize_new_block(new_blk_ptr, new_idx, blk_idx)
-       │ (4) [если split] link new block into linked list
-       │ (5) [если split] avl_insert(new_idx)
-       │ (6) [если split] finalize_split(data_gran, blk_idx) → AllocatedBlock
-       ▼
-┌─────────────────┐
-│ AllocatedBlock  │  Корректное состояние: weight>0, root_offset=idx
-└─────────────────┘
-
-Issue #106: Все шаги выполняются через методы BlockState machine (block_state.h).
+┌─────────────────────────┐                    ┌─────────────────────────┐
+│      FreeBlock          │                    │    AllocatedBlock       │
+│  weight == 0            │ ── allocate ──►   │  weight > 0             │
+│  root_offset == 0       │                    │  root_offset == own_idx │
+│  in AVL tree            │ ◄── deallocate ── │  not in AVL tree        │
+└─────────────────────────┘                    └─────────────────────────┘
 ```
 
-### Диаграмма переходов состояний (deallocate)
+#### Allocation state transitions
 
 ```
-┌─────────────────┐
-│ AllocatedBlock  │  Корректное состояние: weight>0, root_offset=idx, не в AVL
-└──────┬──────────┘
-       │
-       │ (1) AllocatedBlock::mark_as_free()   [Issue #106: state machine]
-       │     → blk->weight = 0
-       │     → blk->root_offset = 0
-       ▼
-┌─────────────────────────┐
-│ FreeBlockNotInAVL       │  Переходное: weight=0, root_offset=0, не в AVL
-└──────┬──────────────────┘
-       │
-       │ begin_coalescing() → CoalescingBlock
-       │
-       │ [если coalesce с right]
-       │ (3) avl_remove(nxt_idx)                  [FreeBlockTreeT::remove]
-       │ (4) coalesce_with_next(nxt, nxt_nxt, b_idx)  [Issue #106: state machine]
-       │     → blk->next_offset = nxt->next_offset
-       │     → nxt->next->prev_offset = b_idx
-       │     → memset(nxt, 0)
-       │
-       │ [если coalesce с left]
-       │ (5) avl_remove(prv_idx)                  [FreeBlockTreeT::remove]
-       │ (6) coalesce_with_prev(prv, next, prv_idx)   [Issue #106: state machine]
-       │     → prv->next_offset = blk->next_offset
-       │     → next->prev_offset = prv_idx
-       │     → memset(blk, 0)
-       │     → result = prv (CoalescingBlock)
-       ▼
-┌──────────────────────────────┐
-│ CoalescingBlock              │  Переходное: слияние завершено
-└──────┬───────────────────────┘
-       │
-       │ finalize_coalesce() → FreeBlock   [Issue #106: state machine]
-       │ avl_insert(result_blk_idx)        [FreeBlockTreeT::insert]
-       ▼
-┌─────────────┐
-│  FreeBlock  │  Корректное состояние: weight=0, root_offset=0, в AVL
-└─────────────┘
+FreeBlock
+  │  (1) avl_remove(blk_idx)
+  ▼
+FreeBlockRemovedAVL          ← transient: weight=0, root_offset=0, not in AVL
+  │  (2) [if split] begin_splitting()
+  │  (3) [if split] initialize new block
+  │  (4) [if split] link new block into linked list
+  │  (5) [if split] avl_insert(new_idx)
+  │  (6) mark_as_allocated(data_gran, blk_idx)
+  ▼
+AllocatedBlock               ← correct: weight>0, root_offset=own_idx
 ```
 
-### Допустимые и запрещённые состояния
+#### Deallocation state transitions
 
-| Состояние | weight (byte 24) | root_offset (byte 28) | AVL | Допустимо? | Комментарий |
-|-----------|--------|-------------|-----|------------|-------------|
-| FreeBlock | 0 | 0 | Да | ✅ | Корректное — свободный блок |
-| AllocatedBlock | >0 | idx | Нет | ✅ | Корректное — занятый блок |
-| FreeBlockRemovedAVL | 0 | 0 | Нет | ⚠️ | Переходное — допустимо только во время allocate |
-| FreeBlockNotInAVL | 0 | 0 | Нет | ⚠️ | Переходное — допустимо только во время deallocate |
-| SplittingBlock | 0 | 0 | Нет | ⚠️ | Переходное — во время split в allocate |
-| CoalescingBlock | 0 | 0 | Нет | ⚠️ | Переходное — во время coalesce в deallocate |
-| InvalidState | 0 | idx | — | ❌ | Запрещённое — противоречие |
-| InvalidState | >0 | 0 | — | ❌ | Запрещённое — противоречие |
-| InvalidState | >0 | idx | Да | ❌ | Запрещённое — занятый в AVL |
+```
+AllocatedBlock
+  │  (1) mark_as_free()
+  │       → weight = 0, root_offset = 0
+  ▼
+FreeBlockNotInAVL            ← transient: weight=0, root_offset=0, not in AVL
+  │  [if coalesce with next]
+  │  (2) avl_remove(nxt_idx)
+  │  (3) coalesce_with_next(nxt, nxt_nxt, own_idx)
+  │       → blk->next_offset = nxt->next_offset
+  │       → nxt->next->prev_offset = blk_idx
+  │       → memset(nxt, 0)
+  │  [if coalesce with prev]
+  │  (4) avl_remove(prv_idx)
+  │  (5) coalesce_with_prev(prv, next, prv_idx)
+  │       → prv->next_offset = blk->next_offset
+  │       → next->prev_offset = prv_idx
+  │       → memset(blk, 0)
+  ▼
+CoalescingBlock              ← transient: coalescing complete, not yet in AVL
+  │  finalize_coalesce()
+  │  avl_insert(result_idx)
+  ▼
+FreeBlock                    ← correct: weight=0, root_offset=0, in AVL
+```
 
-**Issue #106:** `weight` — поле в `TreeNode<A>`. **Issue #126:** `weight` перемещено в первое поле TreeNode, теперь по смещению **8 байт** от начала `Block<A>` (смещение 0 байт внутри `TreeNode<A>`). Заменяет поле `size` из legacy `BlockHeader`, которое было по смещению 0 байт.
+### Block state table
+
+| State | `weight` | `root_offset` | In AVL | Valid? | Notes |
+|-------|----------|---------------|--------|--------|-------|
+| `FreeBlock` | 0 | 0 | Yes | ✅ | Correct — free block |
+| `AllocatedBlock` | >0 | own idx | No | ✅ | Correct — allocated block |
+| `FreeBlockRemovedAVL` | 0 | 0 | No | ⚠️ | Transient — only during allocate |
+| `FreeBlockNotInAVL` | 0 | 0 | No | ⚠️ | Transient — only during deallocate |
+| `SplittingBlock` | 0 | 0 | No | ⚠️ | Transient — during split in allocate |
+| `CoalescingBlock` | 0 | 0 | No | ⚠️ | Transient — during coalesce in deallocate |
+| — | 0 | ≠0 | — | ❌ | Invalid — contradiction |
+| — | >0 | 0 | — | ❌ | Invalid — contradiction |
+| — | >0 | own idx | Yes | ❌ | Invalid — allocated block in AVL |
 
 ### State machine API
 
-Реализация state machine через наследование Block<A> обеспечивает типобезопасность на уровне компиляции.
-
-**Важно:** State machine использует `Block<AddressTraitsT>` как базовый класс, а не `BlockHeader`.
-Поля `weight` и `root_offset` находятся в `TreeNode<A>` (смещения 24 и 28 байт соответственно).
+The state machine is implemented via typed wrappers over `Block<A>` that allow only
+methods valid for the current state:
 
 ```cpp
-// Базовый класс — наследует Block<A> (LinkedListNode<A> + TreeNode<A>)
-template <typename AddressTraitsT>
-class BlockStateBase : private Block<AddressTraitsT> {
-private:
-    using LLNode = LinkedListNode<AddressTraitsT>;
-    using TNode  = TreeNode<AddressTraitsT>;
-public:
-    using index_type = typename AddressTraitsT::index_type;
-
-    // Только read-only доступ к полям
-    index_type weight() const noexcept { return TNode::weight; }
-    index_type prev_offset() const noexcept { return LLNode::prev_offset; }
-    index_type next_offset() const noexcept { return LLNode::next_offset; }
-    index_type root_offset() const noexcept { return TNode::root_offset; }
-    // ... другие поля доступны только через методы
-};
-
-// FreeBlock — свободный блок (корректное состояние)
+// FreeBlock — correct state
 template <typename A> class FreeBlock : public BlockStateBase<A> {
 public:
     static FreeBlock* cast_from_raw(void* raw) noexcept;
-    bool verify_invariants() const noexcept { return weight()==0 && root_offset()==0; }
-    FreeBlockRemovedAVL<A>* remove_from_avl() noexcept;  // → переходное
+    bool verify_invariants() const noexcept;
+    FreeBlockRemovedAVL<A>* remove_from_avl() noexcept; // → transient
 };
 
-// FreeBlockRemovedAVL — свободный блок, удалённый из AVL (переходное)
+// FreeBlockRemovedAVL — transient state
 template <typename A> class FreeBlockRemovedAVL : public BlockStateBase<A> {
 public:
     AllocatedBlock<A>* mark_as_allocated(index_type data_granules, index_type own_idx);
-    SplittingBlock<A>* begin_splitting();  // → если нужен split
-    FreeBlock<A>* insert_to_avl();  // → откат
+    SplittingBlock<A>* begin_splitting();
+    FreeBlock<A>* insert_to_avl(); // rollback
 };
 
-// AllocatedBlock — занятый блок (корректное состояние)
+// AllocatedBlock — correct state
 template <typename A> class AllocatedBlock : public BlockStateBase<A> {
 public:
     bool verify_invariants(index_type own_idx) const noexcept;
     void* user_ptr() noexcept;
-    FreeBlockNotInAVL<A>* mark_as_free() noexcept;  // → переходное
+    FreeBlockNotInAVL<A>* mark_as_free() noexcept; // → transient
 };
 
-// FreeBlockNotInAVL — только что освобождённый блок (переходное)
+// FreeBlockNotInAVL — transient state
 template <typename A> class FreeBlockNotInAVL : public BlockStateBase<A> {
 public:
-    FreeBlock<A>* insert_to_avl() noexcept;  // → корректное
-    CoalescingBlock<A>* begin_coalescing() noexcept;  // → если coalesce
+    FreeBlock<A>* insert_to_avl() noexcept;        // → correct
+    CoalescingBlock<A>* begin_coalescing() noexcept;
 };
 
-// CoalescingBlock — блок в процессе слияния (переходное)
+// CoalescingBlock — transient state
 template <typename A> class CoalescingBlock : public BlockStateBase<A> {
 public:
-    void coalesce_with_next(void* next_blk, void* next_next_blk, index_type own_idx);
-    CoalescingBlock* coalesce_with_prev(void* prev_blk, void* next_blk, index_type prev_idx);
-    FreeBlock<A>* finalize_coalesce() noexcept;  // → корректное
+    void coalesce_with_next(void* next, void* next_next, index_type own_idx);
+    CoalescingBlock* coalesce_with_prev(void* prev, void* next, index_type prev_idx);
+    FreeBlock<A>* finalize_coalesce() noexcept; // → correct
 };
 ```
 
-**Реализация:** см. `include/pmm/block_state.h`
+**Implementation:** `include/pmm/block_state.h`
 
-### Гарантии state machine
+---
 
-1. **Типобезопасность**: Компилятор запрещает вызов методов, недоступных в текущем состоянии
-2. **Восстановимость**: Все переходные состояния детектируются и восстанавливаются при load()
-3. **Атомарность**: Каждый метод выполняет один атомарный шаг; прерывание безопасно
-4. **Завершаемость**: Любая цепочка вызовов завершается в корректном состоянии или детектируется как незавершённая
+## Recovery guarantees
 
-### Детекция и восстановление переходных состояний
+### Detection and recovery of transient states on `load()`
 
-При `load()` после сбоя, система определяет переходные состояния:
+| Transient state | Detection | Recovery |
+|-----------------|-----------|----------|
+| `FreeBlockRemovedAVL` | `weight=0`, `root_offset=0`, not reachable in AVL after rebuild | `avl_insert(idx)` |
+| `FreeBlockNotInAVL` | Same as above | `avl_insert(idx)` |
+| Partial coalesce | Forward/backward inconsistency in linked list | `repair_linked_list()` |
 
-| Переходное состояние | Признаки | Восстановление |
-|----------------------|----------|----------------|
-| FreeBlock_RemovedAVL | size=0, root_offset=0, не в AVL-дереве (после traverse) | `avl_insert(idx)` |
-| FreeBlock_NotInAVL | size=0, root_offset=0, не в AVL-дереве | `avl_insert(idx)` |
-| Частичный coalesce | Несоответствие forward/backward в linked list | `repair_linked_list()` |
+### Crash recovery guarantees by interruption scenario
 
-Это реализовано в `rebuild_free_tree()` и `repair_linked_list()` (см. раздел «Алгоритм верификации и восстановления при загрузке»).
+| Interruption scenario | Result after `load()` |
+|-----------------------|----------------------|
+| Before any write | Image unchanged, consistent |
+| During AVL operations | AVL rebuilt; image consistent |
+| During splitting (before writing `blk->next_offset`) | New block invisible; consistent |
+| During splitting (after writing `blk->next_offset`) | List repaired by `repair_linked_list()` |
+| After splitting, before marking allocated | Block returned to free list (user data lost) |
+| During coalesce (links partially updated) | List repaired by `repair_linked_list()` |
+| After coalesce (old header not zeroed) | Old header unreachable; area covered by merged block |
+
+### Important note on guarantees
+
+This algorithm provides **crash consistency** in the sense that the image after recovery
+is structurally valid and the manager can continue operating. However, **full atomicity**
+(guaranteeing that an operation is either fully applied or fully rolled back) requires
+write-ahead logging (WAL), which is outside the scope of this implementation.
+
+What is guaranteed: **structural correctness of the image after `load()` for any failure
+point**, where partially completed allocation operations are treated as "not performed"
+(blocks are returned to the free list).
