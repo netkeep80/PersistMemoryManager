@@ -1,9 +1,10 @@
 /**
  * @file test_mem_map_view.cpp
- * @brief Headless tests for MemMapView::update_snapshot() (migrated to static API, Issue #112).
+ * @brief Headless tests for MemMapView::update_snapshot() (Issue #116).
  *
- * The new MemMapView shows a usage bar based on total/used/free_size from the
- * PersistMemoryManager static API. Block-level pixel colouring is not available.
+ * MemMapView now uses DemoMgr::for_each_block() to build a per-byte PixelKind
+ * array for block-level pixel colouring. A logarithmic bytes-per-pixel slider
+ * controls the zoom level.
  *
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
  * g_pmm is a boolean flag: true when the manager is active.
@@ -19,6 +20,8 @@
 
 #include "demo_globals.h"
 #include "mem_map_view.h"
+
+#include "pmm/types.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -168,6 +171,45 @@ static bool test_highlighted_block_preserved()
     return true;
 }
 
+/**
+ * @brief Block-level pixel map: for_each_block() returns blocks covering total_size bytes.
+ *
+ * After update_snapshot(), the internal pixel map must cover all managed bytes.
+ * We verify indirectly by checking that for_each_block() completes without crash
+ * and that total_bytes() equals the PMM size.
+ */
+static bool test_block_pixel_map_covers_total()
+{
+    constexpr std::size_t kPmmSize = 256 * 1024;
+    make_pmm( kPmmSize );
+    PMM_TEST( demo::g_pmm.load() );
+
+    // Allocate a few blocks to create a mixed used/free layout.
+    std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
+    for ( int i = 0; i < 4; ++i )
+    {
+        demo::DemoMgr::pptr<std::uint8_t> p = demo::DemoMgr::allocate_typed<std::uint8_t>( 4 * 1024 );
+        if ( !p.is_null() )
+            ptrs.push_back( p );
+    }
+
+    demo::MemMapView view;
+    view.update_snapshot();
+
+    // After snapshot, total_bytes() must be the full PMM size.
+    PMM_TEST( view.total_bytes() == demo::DemoMgr::total_size() );
+
+    // Verify for_each_block() iterates at least the number of blocks we created (+1 header, +1 free).
+    std::size_t block_count = 0;
+    demo::DemoMgr::for_each_block( [&]( const pmm::BlockView& ) { ++block_count; } );
+    PMM_TEST( block_count >= ptrs.size() + 2 ); // header block + allocated blocks + at least 1 free
+
+    for ( auto& p : ptrs )
+        demo::DemoMgr::deallocate_typed( p );
+    destroy_pmm();
+    return true;
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 int main()
@@ -179,6 +221,7 @@ int main()
     PMM_RUN( "snapshot_after_alloc", test_snapshot_after_alloc );
     PMM_RUN( "snapshot_inactive_mgr", test_snapshot_inactive_mgr );
     PMM_RUN( "highlighted_block_preserved", test_highlighted_block_preserved );
+    PMM_RUN( "block_pixel_map_covers_total", test_block_pixel_map_covers_total );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;

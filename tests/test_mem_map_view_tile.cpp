@@ -1,10 +1,10 @@
 /**
  * @file test_mem_map_view_tile.cpp
- * @brief Headless tests for MemMapView (migrated to static API, Issue #112).
+ * @brief Headless tests for MemMapView block-level pixel map (Issue #116).
  *
- * The new MemMapView no longer exposes tile_snapshot() or ByteInfo::Type
- * (block-level iteration is not available). These tests verify that basic
- * snapshot functionality works with the simplified view.
+ * MemMapView now uses DemoMgr::for_each_block() to build a per-byte PixelKind
+ * array for block-level pixel colouring. These tests verify snapshot
+ * correctness for varying PMM sizes and allocation states.
  *
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
  * g_pmm is a boolean flag: true when the manager is active.

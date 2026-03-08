@@ -1,10 +1,9 @@
 /**
  * @file test_avl_tree_view.cpp
- * @brief Headless tests for AvlTreeView (migrated to static API, Issue #112).
+ * @brief Headless tests for AvlTreeView AVL free-block iteration (Issue #116).
  *
- * The new AvlTreeView no longer exposes a per-node snapshot (block-level
- * iteration is not available in PersistMemoryManager). These tests
- * verify the aggregate statistics reported by the view.
+ * AvlTreeView now uses DemoMgr::for_each_free_block() (in-order traversal) to
+ * display all free blocks with offset, size, AVL height, and depth.
  *
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
  * g_pmm is a boolean flag: true when the manager is active.
@@ -20,6 +19,8 @@
 
 #include "avl_tree_view.h"
 #include "demo_globals.h"
+
+#include "pmm/types.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -167,6 +168,47 @@ static bool test_dealloc_recovers_free_size()
     return true;
 }
 
+/**
+ * @brief for_each_free_block() iterates exactly free_block_count() free blocks.
+ *
+ * Verifies that the in-order AVL traversal yields the correct number of free blocks.
+ */
+static bool test_for_each_free_block_count()
+{
+    make_pmm( 256 * 1024 );
+    PMM_TEST( demo::g_pmm.load() );
+
+    // Allocate some blocks to fragment the heap.
+    std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
+    for ( int i = 0; i < 6; ++i )
+    {
+        demo::DemoMgr::pptr<std::uint8_t> p = demo::DemoMgr::allocate_typed<std::uint8_t>( 512 );
+        if ( !p.is_null() )
+            ptrs.push_back( p );
+    }
+    // Free every other allocation to create multiple free blocks.
+    for ( std::size_t i = 0; i < ptrs.size(); i += 2 )
+        demo::DemoMgr::deallocate_typed( ptrs[i] );
+
+    demo::AvlTreeView view;
+    view.update_snapshot();
+
+    // Count free blocks via for_each_free_block().
+    std::size_t iterated = 0;
+    demo::DemoMgr::for_each_free_block( [&]( const pmm::FreeBlockView& ) { ++iterated; } );
+
+    // Must match the manager's free_block_count().
+    PMM_TEST( iterated == demo::DemoMgr::free_block_count() );
+    PMM_TEST( iterated > 0 );
+
+    // Free remaining allocations.
+    for ( std::size_t i = 1; i < ptrs.size(); i += 2 )
+        demo::DemoMgr::deallocate_typed( ptrs[i] );
+
+    destroy_pmm();
+    return true;
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 int main()
@@ -178,6 +220,7 @@ int main()
     PMM_RUN( "inactive_mgr_no_crash", test_inactive_mgr_no_crash );
     PMM_RUN( "alloc_increases_used_size", test_alloc_increases_used_size );
     PMM_RUN( "dealloc_recovers_free_size", test_dealloc_recovers_free_size );
+    PMM_RUN( "for_each_free_block_count", test_for_each_free_block_count );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;

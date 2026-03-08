@@ -384,6 +384,79 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return _initialized ? get_header_c( _backend.base_ptr() )->alloc_count : 0;
     }
 
+    // ─── Итерация по блокам ────────────────────────────────────────────────────
+
+    /**
+     * @brief Обойти все блоки в управляемой области и вызвать callback для каждого.
+     *
+     * Callback принимает `BlockView` — описание блока (смещение, размеры, занятость).
+     * Блоки итерируются в порядке адресного пространства (от меньшего к большему).
+     *
+     * @tparam Callback  Тип callable: `void(const pmm::BlockView&)`.
+     * @param callback   Функция, вызываемая для каждого блока.
+     * @return false если менеджер не инициализирован, true иначе.
+     *
+     * @note Метод выполняется под блокировкой — не вызывайте allocate/deallocate
+     *       из callback во избежание дедлока.
+     */
+    template <typename Callback> static bool for_each_block( Callback&& callback ) noexcept
+    {
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized )
+            return false;
+        const std::uint8_t*          base = _backend.base_ptr();
+        const detail::ManagerHeader* hdr  = get_header_c( base );
+        std::uint32_t                idx  = hdr->first_block_offset;
+        while ( idx != detail::kNoBlock )
+        {
+            if ( detail::idx_to_byte_off( idx ) + sizeof( Block<address_traits> ) > hdr->total_size )
+                break;
+            const Block<address_traits>* blk =
+                reinterpret_cast<const Block<address_traits>*>( base + detail::idx_to_byte_off( idx ) );
+            std::uint32_t total_gran = detail::block_total_granules( base, hdr, blk );
+            bool          is_used    = ( blk->weight > 0 );
+            std::size_t   hdr_bytes  = sizeof( Block<address_traits> );
+            std::size_t   data_bytes = is_used ? detail::granules_to_bytes( blk->weight ) : 0;
+
+            BlockView view;
+            view.index       = idx;
+            view.offset      = static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( idx ) );
+            view.total_size  = detail::granules_to_bytes( total_gran );
+            view.header_size = hdr_bytes;
+            view.user_size   = data_bytes;
+            view.alignment   = kGranuleSize;
+            view.used        = is_used;
+            callback( view );
+            idx = blk->next_offset;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Обойти только свободные блоки в AVL-дереве и вызвать callback для каждого.
+     *
+     * Callback принимает `FreeBlockView` — описание свободного блока
+     * (смещение, размер, AVL-ссылки, высота).
+     * Итерация выполняется in-order (по возрастанию размера блока).
+     *
+     * @tparam Callback  Тип callable: `void(const pmm::FreeBlockView&)`.
+     * @param callback   Функция, вызываемая для каждого свободного блока.
+     * @return false если менеджер не инициализирован, true иначе.
+     *
+     * @note Метод выполняется под блокировкой — не вызывайте allocate/deallocate
+     *       из callback во избежание дедлока.
+     */
+    template <typename Callback> static bool for_each_free_block( Callback&& callback ) noexcept
+    {
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized )
+            return false;
+        const std::uint8_t*          base = _backend.base_ptr();
+        const detail::ManagerHeader* hdr  = get_header_c( base );
+        for_each_free_block_inorder( base, hdr, hdr->free_tree_root, 0, callback );
+        return true;
+    }
+
     /// @brief Доступ к статическому бэкенду (для продвинутых сценариев).
     static storage_backend& backend() noexcept { return _backend; }
 
@@ -400,6 +473,44 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static inline typename thread_policy::mutex_type _mutex{};
 
     // ─── Вспомогательные методы ────────────────────────────────────────────────
+
+    /// @brief Recursive in-order traversal of the AVL free block tree.
+    template <typename Callback>
+    static void for_each_free_block_inorder( const std::uint8_t* base, const detail::ManagerHeader* hdr,
+                                             std::uint32_t node_idx, int depth, Callback&& callback ) noexcept
+    {
+        if ( node_idx == detail::kNoBlock )
+            return;
+        if ( detail::idx_to_byte_off( node_idx ) + sizeof( Block<address_traits> ) > hdr->total_size )
+            return;
+        const Block<address_traits>* blk =
+            reinterpret_cast<const Block<address_traits>*>( base + detail::idx_to_byte_off( node_idx ) );
+
+        // Visit left subtree first (smaller blocks)
+        for_each_free_block_inorder( base, hdr, blk->left_offset, depth + 1, callback );
+
+        // Visit current node
+        std::uint32_t total_gran = detail::block_total_granules( base, hdr, blk );
+        FreeBlockView view;
+        view.offset        = static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( node_idx ) );
+        view.total_size    = detail::granules_to_bytes( total_gran );
+        view.free_size     = detail::granules_to_bytes( total_gran - detail::kBlockHeaderGranules );
+        view.left_offset   = ( blk->left_offset != detail::kNoBlock )
+                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->left_offset ) )
+                                 : -1;
+        view.right_offset  = ( blk->right_offset != detail::kNoBlock )
+                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->right_offset ) )
+                                 : -1;
+        view.parent_offset = ( blk->parent_offset != detail::kNoBlock )
+                                 ? static_cast<std::ptrdiff_t>( detail::idx_to_byte_off( blk->parent_offset ) )
+                                 : -1;
+        view.avl_height    = blk->avl_height;
+        view.avl_depth     = depth;
+        callback( view );
+
+        // Visit right subtree (larger blocks)
+        for_each_free_block_inorder( base, hdr, blk->right_offset, depth + 1, callback );
+    }
 
     static detail::ManagerHeader* get_header( std::uint8_t* base ) noexcept
     {

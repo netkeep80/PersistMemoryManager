@@ -182,9 +182,10 @@ void DemoApp::render_help_window()
 
     ImGui::TextUnformatted( "How to use:" );
     ImGui::BulletText( "Press > next to a scenario to start it." );
-    ImGui::BulletText( "Click on a block in Struct Tree to highlight it on the map." );
+    ImGui::BulletText( "Click on a block in Struct Tree to highlight it on the memory map." );
+    ImGui::BulletText( "Use the Bytes/pixel slider in Memory Map to zoom in or out." );
     ImGui::BulletText( "Use Settings to change PMM size or theme." );
-    ImGui::BulletText( "AVL Free Tree: shows free block count (block iteration not available in new API)." );
+    ImGui::BulletText( "AVL Free Tree: shows all free blocks with AVL height and depth." );
     ImGui::BulletText( "Manual Alloc: use Alloc / Free buttons for step-by-step testing." );
 
     ImGui::End();
