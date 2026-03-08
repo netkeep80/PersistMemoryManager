@@ -62,7 +62,7 @@ template <typename AddressTraitsT> struct TreeNode
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
 
-protected:
+  protected:
     /// Гранульный индекс левого дочернего узла AVL-дерева (или no_block).
     index_type left_offset;
     /// Гранульный индекс правого дочернего узла AVL-дерева (или no_block).

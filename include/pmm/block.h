@@ -53,11 +53,28 @@ namespace pmm
  *
  * При AddressTraitsT = DefaultAddressTraits (uint32_t, 16):
  *   sizeof(Block<DefaultAddressTraits>) == 32 байта
+ *
+ * Issue #118: re-expose protected fields from base classes as public so that
+ * external code (PersistMemoryManager, utility functions in block_state.h, etc.)
+ * can access them through a Block<A>* pointer.  The fields remain protected in
+ * LinkedListNode / TreeNode — only Block<A> promotes them to public.
  */
 template <typename AddressTraitsT> struct Block : LinkedListNode<AddressTraitsT>, TreeNode<AddressTraitsT>
 {
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
+
+    // Re-publish protected fields from LinkedListNode<A> as public.
+    using LinkedListNode<AddressTraitsT>::prev_offset;
+    using LinkedListNode<AddressTraitsT>::next_offset;
+
+    // Re-publish protected fields from TreeNode<A> as public.
+    using TreeNode<AddressTraitsT>::left_offset;
+    using TreeNode<AddressTraitsT>::right_offset;
+    using TreeNode<AddressTraitsT>::parent_offset;
+    using TreeNode<AddressTraitsT>::avl_height;
+    using TreeNode<AddressTraitsT>::weight;
+    using TreeNode<AddressTraitsT>::root_offset;
 };
 
 } // namespace pmm

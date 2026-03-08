@@ -37,7 +37,7 @@ template <typename AddressTraitsT> struct LinkedListNode
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
 
-protected:
+  protected:
     /// Гранульный индекс предыдущего блока (или no_block).
     index_type prev_offset;
     /// Гранульный индекс следующего блока (или no_block).
