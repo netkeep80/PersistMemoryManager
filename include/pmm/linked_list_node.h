@@ -24,7 +24,7 @@ namespace pmm
 {
 
 /**
- * @brief Узел двухсвязного списка для адресного пространства ПАП.
+ * @brief Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование.
  *
  * @tparam AddressTraitsT  Traits адресного пространства (из address_traits.h).
  *                         Определяет тип индексных полей `prev_offset` / `next_offset`.
@@ -37,6 +37,7 @@ template <typename AddressTraitsT> struct LinkedListNode
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
 
+protected:
     /// Гранульный индекс предыдущего блока (или no_block).
     index_type prev_offset;
     /// Гранульный индекс следующего блока (или no_block).
