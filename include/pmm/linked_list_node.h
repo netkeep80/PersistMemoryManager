@@ -18,7 +18,9 @@
 
 #include "pmm/address_traits.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 namespace pmm
 {
@@ -37,11 +39,16 @@ template <typename AddressTraitsT> struct LinkedListNode
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
 
-protected:
+  protected:
     /// Гранульный индекс предыдущего блока (или no_block).
     index_type prev_offset;
     /// Гранульный индекс следующего блока (или no_block).
     index_type next_offset;
 };
+
+// Layout: LinkedListNode is a standard-layout struct with exactly 2 index_type fields.
+// prev_offset at byte 0, next_offset at byte sizeof(index_type).
+static_assert( std::is_standard_layout<pmm::LinkedListNode<pmm::DefaultAddressTraits>>::value,
+               "LinkedListNode must be standard-layout (Issue #87)" );
 
 } // namespace pmm

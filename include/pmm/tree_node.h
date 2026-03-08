@@ -31,7 +31,9 @@
 
 #include "pmm/address_traits.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 namespace pmm
 {
@@ -62,7 +64,7 @@ template <typename AddressTraitsT> struct TreeNode
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
 
-protected:
+  protected:
     /// Гранульный индекс левого дочернего узла AVL-дерева (или no_block).
     index_type left_offset;
     /// Гранульный индекс правого дочернего узла AVL-дерева (или no_block).
@@ -82,5 +84,9 @@ protected:
     /// own_idx = узел занят; значение равно гранульному индексу самого блока.
     index_type root_offset;
 };
+
+// Layout: TreeNode is a standard-layout struct.
+static_assert( std::is_standard_layout<pmm::TreeNode<pmm::DefaultAddressTraits>>::value,
+               "TreeNode must be standard-layout (Issue #87)" );
 
 } // namespace pmm

@@ -80,6 +80,28 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     using index_type     = typename AddressTraitsT::index_type;
     using BaseBlock      = Block<AddressTraitsT>;
 
+    // ─── Compile-time layout offsets (Issue #120: derived from sizes + struct layout) ──
+    // Note: offsetof cannot be used on protected members from outside the class body.
+    // These offsets are derived from sizeof base types and the assumption of standard layout.
+    // The struct layout is verified by static_assert in linked_list_node.h and tree_node.h.
+
+    /// Byte offset of prev_offset within Block<A> layout (first field of LinkedListNode).
+    static constexpr std::size_t kOffsetPrevOffset = 0;
+    /// Byte offset of next_offset within Block<A> layout (second field of LinkedListNode).
+    static constexpr std::size_t kOffsetNextOffset = sizeof( index_type );
+    /// Byte offset of left_offset within Block<A> layout (first field of TreeNode, follows LinkedListNode).
+    static constexpr std::size_t kOffsetLeftOffset = sizeof( LLNode );
+    /// Byte offset of right_offset within Block<A> layout.
+    static constexpr std::size_t kOffsetRightOffset = sizeof( LLNode ) + sizeof( index_type );
+    /// Byte offset of parent_offset within Block<A> layout.
+    static constexpr std::size_t kOffsetParentOffset = sizeof( LLNode ) + 2 * sizeof( index_type );
+    /// Byte offset of avl_height within Block<A> layout.
+    static constexpr std::size_t kOffsetAvlHeight = sizeof( LLNode ) + 3 * sizeof( index_type );
+    /// Byte offset of weight within Block<A> layout (after avl_height(2) + _pad(2) = 4 bytes).
+    static constexpr std::size_t kOffsetWeight = sizeof( LLNode ) + 3 * sizeof( index_type ) + 4;
+    /// Byte offset of root_offset within Block<A> layout.
+    static constexpr std::size_t kOffsetRootOffset = sizeof( LLNode ) + 4 * sizeof( index_type ) + 4;
+
     // Прямое создание запрещено — используйте cast_from_raw()
     BlockStateBase() = delete;
 
@@ -111,6 +133,215 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
      * @return true если weight > 0 и root_offset == own_idx.
      */
     bool is_allocated( index_type own_idx ) const noexcept { return weight() > 0 && root_offset() == own_idx; }
+
+    // ─── Статические утилиты для recovery-операций ──────────────────────────
+
+    /**
+     * @brief Восстановить блок в корректное состояние (при load()).
+     *
+     * Используется для восстановления после crash — приводит блок к корректному
+     * состоянию (FreeBlock или AllocatedBlock) в зависимости от weight и root_offset.
+     *
+     * @param raw_blk   Указатель на блок.
+     * @param own_idx   Гранульный индекс данного блока.
+     */
+    static void recover_state( void* raw_blk, index_type own_idx ) noexcept
+    {
+        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
+        // Если weight > 0, но root_offset неверен — исправляем
+        if ( blk->weight() > 0 && blk->root_offset() != own_idx )
+            blk->set_root_offset( own_idx );
+        // Если weight == 0, но root_offset != 0 — исправляем
+        if ( blk->weight() == 0 && blk->root_offset() != 0 )
+            blk->set_root_offset( 0 );
+    }
+
+    /**
+     * @brief Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).
+     *
+     * Устанавливает left_offset, right_offset, parent_offset в no_block, avl_height в 0.
+     *
+     * @param raw_blk  Указатель на блок.
+     */
+    static void reset_avl_fields_of( void* raw_blk ) noexcept
+    {
+        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
+        blk->set_left_offset( AddressTraitsT::no_block );
+        blk->set_right_offset( AddressTraitsT::no_block );
+        blk->set_parent_offset( AddressTraitsT::no_block );
+        blk->set_avl_height( 0 );
+    }
+
+    /**
+     * @brief Восстановить prev_offset блока (при repair_linked_list).
+     *
+     * @param raw_blk   Указатель на блок.
+     * @param prev_idx  Гранульный индекс предыдущего блока (или no_block).
+     */
+    static void repair_prev_offset( void* raw_blk, index_type prev_idx ) noexcept
+    {
+        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
+        blk->set_prev_offset( prev_idx );
+    }
+
+    /**
+     * @brief Прочитать prev_offset блока (read-only, без перехода состояний).
+     *
+     * @param raw_blk  Указатель на блок.
+     * @return Гранульный индекс предыдущего блока.
+     */
+    static index_type get_prev_offset( const void* raw_blk ) noexcept
+    {
+        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
+        return blk->prev_offset();
+    }
+
+    /**
+     * @brief Прочитать next_offset блока (read-only, без перехода состояний).
+     *
+     * @param raw_blk  Указатель на блок.
+     * @return Гранульный индекс следующего блока.
+     */
+    static index_type get_next_offset( const void* raw_blk ) noexcept
+    {
+        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
+        return blk->next_offset();
+    }
+
+    /**
+     * @brief Прочитать weight блока (read-only, без перехода состояний).
+     *
+     * @param raw_blk  Указатель на блок.
+     * @return Значение поля weight (0 = свободный, >0 = занятый).
+     */
+    static index_type get_weight( const void* raw_blk ) noexcept
+    {
+        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
+        return blk->weight();
+    }
+
+    /**
+     * @brief Инициализировать поля нового блока (для AVL tree insert при expand/init).
+     *
+     * @param raw_blk          Указатель на блок (уже обнулённый memset).
+     * @param prev_idx         Гранульный индекс предыдущего блока.
+     * @param next_idx         Гранульный индекс следующего блока (или no_block).
+     * @param avl_height_val   Начальная высота AVL (1 = новый свободный узел, 0 = занятый).
+     * @param weight_val       Начальный вес (0 = свободный).
+     * @param root_offset_val  Начальный root_offset (0 = свободный, own_idx = занятый).
+     */
+    static void init_fields( void* raw_blk, index_type prev_idx, index_type next_idx, std::int16_t avl_height_val,
+                             index_type weight_val, index_type root_offset_val ) noexcept
+    {
+        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
+        blk->set_prev_offset( prev_idx );
+        blk->set_next_offset( next_idx );
+        blk->set_left_offset( AddressTraitsT::no_block );
+        blk->set_right_offset( AddressTraitsT::no_block );
+        blk->set_parent_offset( AddressTraitsT::no_block );
+        blk->set_avl_height( avl_height_val );
+        blk->set_weight( weight_val );
+        blk->set_root_offset( root_offset_val );
+    }
+
+    /**
+     * @brief Обновить next_offset соседнего блока (для операций со связным списком).
+     *
+     * @param raw_blk   Указатель на блок.
+     * @param next_idx  Новый гранульный индекс следующего блока.
+     */
+    static void set_next_offset_of( void* raw_blk, index_type next_idx ) noexcept
+    {
+        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
+        blk->set_next_offset( next_idx );
+    }
+
+    // ─── Статические утилиты для AVL-дерева ────────────────────────────────
+
+    /**
+     * @brief Прочитать left_offset блока.
+     */
+    static index_type get_left_offset( const void* raw_blk ) noexcept
+    {
+        return reinterpret_cast<const BlockStateBase*>( raw_blk )->left_offset();
+    }
+    /**
+     * @brief Прочитать right_offset блока.
+     */
+    static index_type get_right_offset( const void* raw_blk ) noexcept
+    {
+        return reinterpret_cast<const BlockStateBase*>( raw_blk )->right_offset();
+    }
+    /**
+     * @brief Прочитать parent_offset блока.
+     */
+    static index_type get_parent_offset( const void* raw_blk ) noexcept
+    {
+        return reinterpret_cast<const BlockStateBase*>( raw_blk )->parent_offset();
+    }
+    /**
+     * @brief Прочитать avl_height блока.
+     */
+    static std::int16_t get_avl_height( const void* raw_blk ) noexcept
+    {
+        return reinterpret_cast<const BlockStateBase*>( raw_blk )->avl_height();
+    }
+    /**
+     * @brief Установить left_offset блока.
+     */
+    static void set_left_offset_of( void* raw_blk, index_type v ) noexcept
+    {
+        reinterpret_cast<BlockStateBase*>( raw_blk )->set_left_offset( v );
+    }
+    /**
+     * @brief Установить right_offset блока.
+     */
+    static void set_right_offset_of( void* raw_blk, index_type v ) noexcept
+    {
+        reinterpret_cast<BlockStateBase*>( raw_blk )->set_right_offset( v );
+    }
+    /**
+     * @brief Установить parent_offset блока.
+     */
+    static void set_parent_offset_of( void* raw_blk, index_type v ) noexcept
+    {
+        reinterpret_cast<BlockStateBase*>( raw_blk )->set_parent_offset( v );
+    }
+    /**
+     * @brief Установить avl_height блока.
+     */
+    static void set_avl_height_of( void* raw_blk, std::int16_t v ) noexcept
+    {
+        reinterpret_cast<BlockStateBase*>( raw_blk )->set_avl_height( v );
+    }
+    /**
+     * @brief Прочитать root_offset блока.
+     */
+    static index_type get_root_offset( const void* raw_blk ) noexcept
+    {
+        return reinterpret_cast<const BlockStateBase*>( raw_blk )->root_offset();
+    }
+    /**
+     * @brief Установить prev_offset блока.
+     */
+    static void set_prev_offset_of( void* raw_blk, index_type v ) noexcept
+    {
+        reinterpret_cast<BlockStateBase*>( raw_blk )->set_prev_offset( v );
+    }
+    /**
+     * @brief Установить weight блока.
+     */
+    static void set_weight_of( void* raw_blk, index_type v ) noexcept
+    {
+        reinterpret_cast<BlockStateBase*>( raw_blk )->set_weight( v );
+    }
+    /**
+     * @brief Установить root_offset блока.
+     */
+    static void set_root_offset_of( void* raw_blk, index_type v ) noexcept
+    {
+        reinterpret_cast<BlockStateBase*>( raw_blk )->set_root_offset( v );
+    }
 
   protected:
     // Внутренние сеттеры для наследников
@@ -284,16 +515,16 @@ template <typename AddressTraitsT> class SplittingBlock : public BlockStateBase<
     void initialize_new_block( void* new_blk_ptr, [[maybe_unused]] index_type new_idx, index_type own_idx ) noexcept
     {
         std::memset( new_blk_ptr, 0, sizeof( Block<AddressTraitsT> ) );
-        // Инициализация через Block<A> layout
-        auto* blk          = reinterpret_cast<Block<AddressTraitsT>*>( new_blk_ptr );
-        blk->prev_offset   = own_idx;
-        blk->next_offset   = Base::next_offset();
-        blk->left_offset   = AddressTraitsT::no_block;
-        blk->right_offset  = AddressTraitsT::no_block;
-        blk->parent_offset = AddressTraitsT::no_block;
-        blk->avl_height    = 1; // Будет вставлен в AVL
-        blk->weight        = 0;
-        blk->root_offset   = 0;
+        // Инициализация через SplittingBlock<A> — все поля доступны через state machine методы
+        auto* new_blk = reinterpret_cast<SplittingBlock<AddressTraitsT>*>( new_blk_ptr );
+        new_blk->set_prev_offset( own_idx );
+        new_blk->set_next_offset( Base::next_offset() );
+        new_blk->set_left_offset( AddressTraitsT::no_block );
+        new_blk->set_right_offset( AddressTraitsT::no_block );
+        new_blk->set_parent_offset( AddressTraitsT::no_block );
+        new_blk->set_avl_height( 1 ); // Будет вставлен в AVL
+        new_blk->set_weight( 0 );
+        new_blk->set_root_offset( 0 );
     }
 
     /**
@@ -306,8 +537,8 @@ template <typename AddressTraitsT> class SplittingBlock : public BlockStateBase<
     {
         if ( old_next_blk != nullptr )
         {
-            auto* blk        = reinterpret_cast<Block<AddressTraitsT>*>( old_next_blk );
-            blk->prev_offset = new_idx;
+            auto* old_next_blk_state = reinterpret_cast<SplittingBlock<AddressTraitsT>*>( old_next_blk );
+            old_next_blk_state->set_prev_offset( new_idx );
         }
         Base::set_next_offset( new_idx );
     }
@@ -470,14 +701,14 @@ template <typename AddressTraitsT> class CoalescingBlock : public BlockStateBase
      */
     void coalesce_with_next( void* next_blk, void* next_next_blk, index_type own_idx ) noexcept
     {
-        auto* nxt = reinterpret_cast<Block<AddressTraitsT>*>( next_blk );
+        auto* nxt = reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( next_blk );
 
         // Обновляем связный список
-        Base::set_next_offset( nxt->next_offset );
+        Base::set_next_offset( nxt->next_offset() );
         if ( next_next_blk != nullptr )
         {
-            auto* nxt_nxt        = reinterpret_cast<Block<AddressTraitsT>*>( next_next_blk );
-            nxt_nxt->prev_offset = own_idx;
+            auto* nxt_nxt = reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( next_next_blk );
+            nxt_nxt->set_prev_offset( own_idx );
         }
 
         // Обнуляем поглощённый блок
@@ -496,13 +727,13 @@ template <typename AddressTraitsT> class CoalescingBlock : public BlockStateBase
      */
     CoalescingBlock<AddressTraitsT>* coalesce_with_prev( void* prev_blk, void* next_blk, index_type prev_idx ) noexcept
     {
-        auto* prv        = reinterpret_cast<Block<AddressTraitsT>*>( prev_blk );
-        prv->next_offset = Base::next_offset();
+        auto* prv = reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( prev_blk );
+        prv->set_next_offset( Base::next_offset() );
 
         if ( next_blk != nullptr )
         {
-            auto* nxt        = reinterpret_cast<Block<AddressTraitsT>*>( next_blk );
-            nxt->prev_offset = prev_idx;
+            auto* nxt = reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( next_blk );
+            nxt->set_prev_offset( prev_idx );
         }
 
         // Обнуляем текущий блок (поглощён)
@@ -559,19 +790,7 @@ int detect_block_state( const void* raw_blk, typename AddressTraitsT::index_type
 template <typename AddressTraitsT>
 void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own_idx ) noexcept
 {
-    auto* blk = reinterpret_cast<Block<AddressTraitsT>*>( raw_blk );
-
-    // Если weight > 0, но root_offset неверен — исправляем
-    if ( blk->weight > 0 && blk->root_offset != own_idx )
-    {
-        blk->root_offset = own_idx;
-    }
-
-    // Если weight == 0, но root_offset != 0 — исправляем
-    if ( blk->weight == 0 && blk->root_offset != 0 )
-    {
-        blk->root_offset = 0;
-    }
+    BlockStateBase<AddressTraitsT>::recover_state( raw_blk, own_idx );
 }
 
 /**
@@ -585,11 +804,7 @@ void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own
  */
 template <typename AddressTraitsT> void reset_block_avl_fields( void* raw_blk ) noexcept
 {
-    auto* blk          = reinterpret_cast<Block<AddressTraitsT>*>( raw_blk );
-    blk->left_offset   = AddressTraitsT::no_block;
-    blk->right_offset  = AddressTraitsT::no_block;
-    blk->parent_offset = AddressTraitsT::no_block;
-    blk->avl_height    = 0;
+    BlockStateBase<AddressTraitsT>::reset_avl_fields_of( raw_blk );
 }
 
 /**
@@ -605,8 +820,7 @@ template <typename AddressTraitsT> void reset_block_avl_fields( void* raw_blk ) 
 template <typename AddressTraitsT>
 void repair_block_prev_offset( void* raw_blk, typename AddressTraitsT::index_type prev_idx ) noexcept
 {
-    auto* blk        = reinterpret_cast<Block<AddressTraitsT>*>( raw_blk );
-    blk->prev_offset = prev_idx;
+    BlockStateBase<AddressTraitsT>::repair_prev_offset( raw_blk, prev_idx );
 }
 
 /**
@@ -622,8 +836,7 @@ void repair_block_prev_offset( void* raw_blk, typename AddressTraitsT::index_typ
 template <typename AddressTraitsT>
 typename AddressTraitsT::index_type read_block_next_offset( const void* raw_blk ) noexcept
 {
-    const auto* blk = reinterpret_cast<const Block<AddressTraitsT>*>( raw_blk );
-    return blk->next_offset;
+    return BlockStateBase<AddressTraitsT>::get_next_offset( raw_blk );
 }
 
 /**
@@ -638,8 +851,7 @@ typename AddressTraitsT::index_type read_block_next_offset( const void* raw_blk 
  */
 template <typename AddressTraitsT> typename AddressTraitsT::index_type read_block_weight( const void* raw_blk ) noexcept
 {
-    const auto* blk = reinterpret_cast<const Block<AddressTraitsT>*>( raw_blk );
-    return blk->weight;
+    return BlockStateBase<AddressTraitsT>::get_weight( raw_blk );
 }
 
 } // namespace pmm

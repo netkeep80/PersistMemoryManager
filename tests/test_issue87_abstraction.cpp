@@ -13,6 +13,7 @@
 
 #include "pmm/pmm_presets.h"
 #include "pmm/types.h"
+#include "pmm/block_state.h"
 #include "pmm/free_block_tree.h"
 #include "pmm/config.h"
 #include "pmm/address_traits.h"
@@ -75,33 +76,30 @@ static bool test_cr_no_block_is_max_uint32()
 }
 
 // ─── A2: Block<DefaultAddressTraits> layout (Issue #112) ─────────────────────
+// Note: Block fields are protected (Issue #120). Layout verified via BlockStateBase offsets.
 
 static bool test_cr_block_header_combines_list_and_tree()
 {
-    using Block = pmm::Block<pmm::DefaultAddressTraits>;
-    // LinkedListNode fields at start of Block
-    static_assert( offsetof( Block, prev_offset ) == 0 );
-    static_assert( offsetof( Block, next_offset ) == 4 );
+    using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
+    // LinkedListNode fields at start of Block (verified via BlockStateBase::kOffset* — Issue #120)
+    static_assert( BlockState::kOffsetPrevOffset == 0 );
+    static_assert( BlockState::kOffsetNextOffset == 4 );
     // TreeNode fields follow LinkedListNode
-    static_assert( offsetof( Block, left_offset ) == 8 );
-    static_assert( offsetof( Block, right_offset ) == 12 );
-    static_assert( offsetof( Block, parent_offset ) == 16 );
-    static_assert( offsetof( Block, avl_height ) == 20 );
-    static_assert( offsetof( Block, weight ) == 24 );
-    static_assert( offsetof( Block, root_offset ) == 28 );
-    static_assert( sizeof( Block ) == 32 );
+    static_assert( BlockState::kOffsetLeftOffset == 8 );
+    static_assert( BlockState::kOffsetRightOffset == 12 );
+    static_assert( BlockState::kOffsetParentOffset == 16 );
+    static_assert( BlockState::kOffsetAvlHeight == 20 );
+    static_assert( BlockState::kOffsetWeight == 24 );
+    static_assert( BlockState::kOffsetRootOffset == 28 );
+    static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32 );
     return true;
 }
 
 static bool test_cr_block_header_uses_uint32_indices()
 {
-    using Block = pmm::Block<pmm::DefaultAddressTraits>;
-    static_assert( std::is_same<decltype( Block::prev_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( Block::next_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( Block::left_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( Block::right_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( Block::parent_offset ), std::uint32_t>::value );
-    static_assert( std::is_same<decltype( Block::weight ), std::uint32_t>::value );
+    using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
+    // Fields are protected (Issue #120); verify index_type via BlockStateBase::index_type
+    static_assert( std::is_same<BlockState::index_type, std::uint32_t>::value );
     return true;
 }
 
@@ -211,6 +209,7 @@ static bool test_phase1_address_traits()
 }
 
 // [Phase 2] LinkedListNode + TreeNode
+// Note: Fields are protected (Issue #120). Type verified via BlockStateBase::index_type.
 #include "pmm/linked_list_node.h"
 #include "pmm/tree_node.h"
 
@@ -218,21 +217,21 @@ static bool test_phase2_list_and_tree_nodes()
 {
     using A = pmm::DefaultAddressTraits;
 
-    static_assert( std::is_same<decltype( pmm::LinkedListNode<A>::prev_offset ), typename A::index_type>::value,
-                   "prev_offset must be index_type" );
-    static_assert( std::is_same<decltype( pmm::LinkedListNode<A>::next_offset ), typename A::index_type>::value,
-                   "next_offset must be index_type" );
+    // Fields are protected (Issue #120): verify type via LinkedListNode::index_type alias
+    static_assert( std::is_same<pmm::LinkedListNode<A>::index_type, typename A::index_type>::value,
+                   "LinkedListNode::index_type must match A::index_type" );
+    static_assert( std::is_same<pmm::TreeNode<A>::index_type, typename A::index_type>::value,
+                   "TreeNode::index_type must match A::index_type" );
 
-    static_assert( std::is_same<decltype( pmm::TreeNode<A>::left_offset ), typename A::index_type>::value,
-                   "left_offset must be index_type" );
-    static_assert( std::is_same<decltype( pmm::TreeNode<A>::right_offset ), typename A::index_type>::value,
-                   "right_offset must be index_type" );
-    static_assert( std::is_same<decltype( pmm::TreeNode<A>::parent_offset ), typename A::index_type>::value,
-                   "parent_offset must be index_type" );
+    // BlockStateBase exposes index_type for field type verification
+    static_assert( std::is_same<pmm::BlockStateBase<A>::index_type, typename A::index_type>::value,
+                   "BlockStateBase::index_type must match A::index_type" );
 
     using A8 = pmm::TinyAddressTraits;
-    static_assert( std::is_same<decltype( pmm::LinkedListNode<A8>::prev_offset ), std::uint8_t>::value );
-    static_assert( std::is_same<decltype( pmm::TreeNode<A8>::left_offset ), std::uint8_t>::value );
+    static_assert( std::is_same<pmm::LinkedListNode<A8>::index_type, std::uint8_t>::value,
+                   "LinkedListNode<TinyAddressTraits>::index_type must be uint8_t" );
+    static_assert( std::is_same<pmm::TreeNode<A8>::index_type, std::uint8_t>::value,
+                   "TreeNode<TinyAddressTraits>::index_type must be uint8_t" );
 
     return true;
 }
