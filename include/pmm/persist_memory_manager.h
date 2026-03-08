@@ -236,6 +236,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     /**
      * @brief Освободить блок по указателю на пользовательские данные.
+     *
+     * @note Если блок заблокирован навечно (lock_block_permanent), освобождение не выполняется.
      */
     static void deallocate( void* ptr ) noexcept
     {
@@ -252,6 +254,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( freed == 0 )
             return;
 
+        // Issue #126: Permanently locked blocks cannot be freed.
+        if ( BlockStateBase<address_traits>::get_node_type( blk ) == pmm::kNodeReadOnly )
+            return;
+
         std::uint32_t blk_idx = detail::block_idx( base, blk );
 
         AllocatedBlock<address_traits>* alloc = AllocatedBlock<address_traits>::cast_from_raw( blk );
@@ -262,6 +268,54 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( hdr->used_size >= freed )
             hdr->used_size -= freed;
         allocator::coalesce( base, hdr, blk_idx );
+    }
+
+    /**
+     * @brief Заблокировать блок навечно — сделать его невозможным для освобождения (Issue #126).
+     *
+     * После вызова этого метода блок не может быть освобождён через deallocate().
+     * Предназначено для блоков, содержащих постоянные данные (например, словарь stringview).
+     *
+     * @param ptr Указатель на пользовательские данные (тот же, что возвращает allocate()).
+     * @return true если блок успешно заблокирован, false если блок не найден или уже свободен.
+     */
+    static bool lock_block_permanent( void* ptr ) noexcept
+    {
+        typename thread_policy::unique_lock_type lock( _mutex );
+        if ( !_initialized || ptr == nullptr )
+            return false;
+        std::uint8_t*               base = _backend.base_ptr();
+        detail::ManagerHeader*      hdr  = get_header( base );
+        pmm::Block<address_traits>* blk =
+            detail::header_from_ptr( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
+        if ( blk == nullptr )
+            return false;
+        std::uint32_t w = BlockStateBase<address_traits>::get_weight( blk );
+        if ( w == 0 )
+            return false; // Свободный блок нельзя блокировать
+        BlockStateBase<address_traits>::set_node_type_of( blk, pmm::kNodeReadOnly );
+        return true;
+    }
+
+    /**
+     * @brief Проверить, заблокирован ли блок навечно (Issue #126).
+     *
+     * @param ptr Указатель на пользовательские данные.
+     * @return true если блок заблокирован навечно (node_type == kNodeReadOnly).
+     */
+    static bool is_permanently_locked( const void* ptr ) noexcept
+    {
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized || ptr == nullptr )
+            return false;
+        const std::uint8_t*               base = _backend.base_ptr();
+        const detail::ManagerHeader*      hdr  = get_header_c( base );
+        const pmm::Block<address_traits>* blk  = detail::header_from_ptr(
+            const_cast<std::uint8_t*>( base ), const_cast<void*>( ptr ),
+            static_cast<std::size_t>( hdr->total_size ) );
+        if ( blk == nullptr )
+            return false;
+        return BlockStateBase<address_traits>::get_node_type( blk ) == pmm::kNodeReadOnly;
     }
 
     // ─── Статический типизированный API с pptr<T> ─────────────────────────────

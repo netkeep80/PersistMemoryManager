@@ -24,14 +24,16 @@
 Байты 40-43: free_tree_root  — корень AVL-дерева свободных блоков
 Байты 44:    owns_memory     — runtime-only (не персистентно)
 Байты 45:    prev_owns_memory — runtime-only (не персистентно)
-Байты 46-47: _pad
+Байты 46-47: granule_size    — размер гранулы при создании
 Байты 48-55: prev_total_size — runtime-only (не персистентно)
 Байты 56-63: prev_base_ptr   — runtime-only (не персистентно)
 ```
 
-### Block<A> (32 байта = 2 гранулы, Issue #106)
+### Block<A> (32 байта = 2 гранулы, Issue #106, #126)
 
 **Issue #106:** Внутренний формат блоков изменён с `BlockHeader` на `Block<AddressTraitsT>` (= `LinkedListNode<A>` + `TreeNode<A>`). Все внутренние операции (allocator_policy.h, free_block_tree.h, abstract_pmm.h) теперь используют `Block<A>` layout.
+
+**Issue #126:** Поля `TreeNode<A>` переупорядочены: `weight` перемещён в первое поле (ускорение доступа), `avl_height` и `node_type` (бывший `_pad`) перемещены в конец.
 
 ```
 Block<A> layout (при DefaultAddressTraits):
@@ -39,16 +41,16 @@ Block<A> layout (при DefaultAddressTraits):
     Байты 0-3:   prev_offset   — предыдущий блок (гранульный индекс)
     Байты 4-7:   next_offset   — следующий блок (гранульный индекс)
   [TreeNode<A>]
-    Байты 8-11:  left_offset   — левый дочерний узел AVL-дерева (гранульный индекс)
-    Байты 12-15: right_offset  — правый дочерний узел AVL-дерева (гранульный индекс)
-    Байты 16-19: parent_offset — родительский узел AVL-дерева (гранульный индекс)
-    Байты 20-21: avl_height    — высота AVL-поддерева (0 = не в дереве)
-    Байты 22-23: _pad          — зарезервировано
-    Байты 24-27: weight        — занятый размер в гранулах (0 = свободный блок)
-    Байты 28-31: root_offset   — 0 = свободный; own_idx = занятый (Issue #75)
+    Байты 8-11:  weight        — занятый размер в гранулах (0 = свободный блок) [Issue #126: первое поле]
+    Байты 12-15: left_offset   — левый дочерний узел AVL-дерева (гранульный индекс)
+    Байты 16-19: right_offset  — правый дочерний узел AVL-дерева (гранульный индекс)
+    Байты 20-23: parent_offset — родительский узел AVL-дерева (гранульный индекс)
+    Байты 24-27: root_offset   — 0 = свободный; own_idx = занятый (Issue #75)
+    Байты 28-29: avl_height    — высота AVL-поддерева (0 = не в дереве) [Issue #126: перемещено в конец]
+    Байты 30-31: node_type     — тип узла: 0 = kNodeReadWrite, 1 = kNodeReadOnly [Issue #126: бывший _pad]
 ```
 
-**Отличие от legacy BlockHeader**: `weight` (byte 24) вместо `size` (byte 0); `prev_offset` на byte 0 (раньше `size` был на byte 0, `prev_offset` на byte 4).
+**Отличие от legacy BlockHeader**: `weight` (byte 8) вместо `size` (byte 0); `prev_offset` на byte 0 (раньше `size` был на byte 0, `prev_offset` на byte 4).
 
 ### BlockHeader (32 байта, legacy — только для совместимости)
 
@@ -507,7 +509,7 @@ Issue #106: Все шаги выполняются через методы Block
 | InvalidState | >0 | 0 | — | ❌ | Запрещённое — противоречие |
 | InvalidState | >0 | idx | Да | ❌ | Запрещённое — занятый в AVL |
 
-**Issue #106:** `weight` — поле в `TreeNode<A>` по смещению **24 байта** от начала `Block<A>` (смещение 16 байт внутри `TreeNode<A>`). Заменяет поле `size` из legacy `BlockHeader`, которое было по смещению 0 байт.
+**Issue #106:** `weight` — поле в `TreeNode<A>`. **Issue #126:** `weight` перемещено в первое поле TreeNode, теперь по смещению **8 байт** от начала `Block<A>` (смещение 0 байт внутри `TreeNode<A>`). Заменяет поле `size` из legacy `BlockHeader`, которое было по смещению 0 байт.
 
 ### State machine API
 
