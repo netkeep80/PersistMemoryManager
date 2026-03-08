@@ -731,7 +731,8 @@ int main()
     PMM_RUN( "P108-E3: сравнение pptr в статической модели", test_p108_pptr_comparison_static );
 
     std::cout << "\n--- P108-F: Issue #126 — lock_block_permanent и node_type ---\n";
-    PMM_RUN( "P108-F1: lock_block_permanent блокирует навечно (нельзя освободить)", test_p126_lock_block_permanent_prevents_dealloc );
+    PMM_RUN( "P108-F1: lock_block_permanent блокирует навечно (нельзя освободить)",
+             test_p126_lock_block_permanent_prevents_dealloc );
     PMM_RUN( "P108-F2: lock_block_permanent граничные случаи (nullptr)", test_p126_lock_block_permanent_edge_cases );
     PMM_RUN( "P108-F3: незаблокированные блоки по-прежнему освобождаются", test_p126_non_locked_blocks_can_be_freed );
 

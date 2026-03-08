@@ -311,8 +311,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         const std::uint8_t*               base = _backend.base_ptr();
         const detail::ManagerHeader*      hdr  = get_header_c( base );
         const pmm::Block<address_traits>* blk  = detail::header_from_ptr(
-            const_cast<std::uint8_t*>( base ), const_cast<void*>( ptr ),
-            static_cast<std::size_t>( hdr->total_size ) );
+            const_cast<std::uint8_t*>( base ), const_cast<void*>( ptr ), static_cast<std::size_t>( hdr->total_size ) );
         if ( blk == nullptr )
             return false;
         return BlockStateBase<address_traits>::get_node_type( blk ) == pmm::kNodeReadOnly;

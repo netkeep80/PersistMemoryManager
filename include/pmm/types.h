@@ -117,8 +117,7 @@ static_assert( sizeof( pmm::LinkedListNode<pmm::DefaultAddressTraits> ) == 2 * s
                "LinkedListNode<DefaultAddressTraits> must be 8 bytes (Issue #87)" );
 // TreeNode<DefaultAddressTraits>: weight + left/right/parent + root_offset + avl_height/node_type (24 bytes).
 // Issue #126: weight moved to first field, avl_height/node_type (renamed from _pad) moved to end.
-static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) ==
-                   5 * sizeof( std::uint32_t ) + 4,
+static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 5 * sizeof( std::uint32_t ) + 4,
                "TreeNode<DefaultAddressTraits> must be 24 bytes (Issue #87, #126)" );
 
 /// @brief Number of granules per block header (2 granules = 32 bytes, Issue #112)
