@@ -84,13 +84,14 @@ static bool test_cr_block_header_combines_list_and_tree()
     // LinkedListNode fields at start of Block (verified via BlockStateBase::kOffset* — Issue #120)
     static_assert( BlockState::kOffsetPrevOffset == 0 );
     static_assert( BlockState::kOffsetNextOffset == 4 );
-    // TreeNode fields follow LinkedListNode
-    static_assert( BlockState::kOffsetLeftOffset == 8 );
-    static_assert( BlockState::kOffsetRightOffset == 12 );
-    static_assert( BlockState::kOffsetParentOffset == 16 );
-    static_assert( BlockState::kOffsetAvlHeight == 20 );
-    static_assert( BlockState::kOffsetWeight == 24 );
-    static_assert( BlockState::kOffsetRootOffset == 28 );
+    // TreeNode fields follow LinkedListNode (Issue #126: weight moved to first field)
+    static_assert( BlockState::kOffsetWeight == 8 );
+    static_assert( BlockState::kOffsetLeftOffset == 12 );
+    static_assert( BlockState::kOffsetRightOffset == 16 );
+    static_assert( BlockState::kOffsetParentOffset == 20 );
+    static_assert( BlockState::kOffsetRootOffset == 24 );
+    static_assert( BlockState::kOffsetAvlHeight == 28 );
+    static_assert( BlockState::kOffsetNodeType == 30 );
     static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32 );
     return true;
 }

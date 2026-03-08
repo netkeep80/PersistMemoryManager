@@ -207,7 +207,7 @@ static bool test_p2_tree_node_various_traits()
 }
 
 /// @brief Смещения полей TreeNode<DefaultAddressTraits>.
-/// Phase 2 v0.2: включает смещения weight (16) и root_offset (20).
+/// Issue #126: новый порядок полей — weight первым, avl_height/node_type в конце.
 /// Issue #120: поля protected, смещения через BlockStateBase::kOffset*.
 static bool test_p2_tree_node_offsets()
 {
@@ -218,18 +218,22 @@ static bool test_p2_tree_node_offsets()
     constexpr std::size_t tree_base = sizeof( pmm::LinkedListNode<pmm::DefaultAddressTraits> );
     static_assert( tree_base == 8 );
 
-    static_assert( BlockState::kOffsetLeftOffset == tree_base + 0, "left_offset must be at offset 8" );
-    static_assert( BlockState::kOffsetRightOffset == tree_base + sizeof( std::uint32_t ),
-                   "right_offset must be at offset 12" );
-    static_assert( BlockState::kOffsetParentOffset == tree_base + 2 * sizeof( std::uint32_t ),
-                   "parent_offset must be at offset 16" );
-    static_assert( BlockState::kOffsetAvlHeight == tree_base + 3 * sizeof( std::uint32_t ),
-                   "avl_height must be at offset 20" );
-    // weight follows avl_height(2) + _pad(2) at +4
-    static_assert( BlockState::kOffsetWeight == tree_base + 3 * sizeof( std::uint32_t ) + 4,
-                   "weight must be at offset 24" );
-    static_assert( BlockState::kOffsetRootOffset == tree_base + 4 * sizeof( std::uint32_t ) + 4,
-                   "root_offset must be at offset 28" );
+    // Issue #126: weight — первое поле TreeNode (offset 8 в Block)
+    static_assert( BlockState::kOffsetWeight == tree_base + 0, "weight must be at offset 8" );
+    static_assert( BlockState::kOffsetLeftOffset == tree_base + sizeof( std::uint32_t ),
+                   "left_offset must be at offset 12" );
+    static_assert( BlockState::kOffsetRightOffset == tree_base + 2 * sizeof( std::uint32_t ),
+                   "right_offset must be at offset 16" );
+    static_assert( BlockState::kOffsetParentOffset == tree_base + 3 * sizeof( std::uint32_t ),
+                   "parent_offset must be at offset 20" );
+    static_assert( BlockState::kOffsetRootOffset == tree_base + 4 * sizeof( std::uint32_t ),
+                   "root_offset must be at offset 24" );
+    // Issue #126: avl_height follows weight+left+right+parent+root (5 x uint32_t = 20 bytes)
+    static_assert( BlockState::kOffsetAvlHeight == tree_base + 5 * sizeof( std::uint32_t ),
+                   "avl_height must be at offset 28" );
+    // Issue #126: node_type (renamed from _pad) follows avl_height (2 bytes)
+    static_assert( BlockState::kOffsetNodeType == tree_base + 5 * sizeof( std::uint32_t ) + 2,
+                   "node_type must be at offset 30" );
 
     // Also verify TreeNode size
     static_assert( sizeof( Node ) == 24, "TreeNode<Default> must be 24 bytes" );
@@ -239,6 +243,7 @@ static bool test_p2_tree_node_offsets()
 
 /// @brief Layout TreeNode<DefaultAddressTraits> в составе Block<A> (Issue #112).
 /// Issue #120: поля protected, layout через BlockStateBase::kOffset*.
+/// Issue #126: новый порядок полей — weight первым, avl_height/node_type в конце.
 static bool test_p2_tree_node_blockheader_compat()
 {
     using A          = pmm::DefaultAddressTraits;
@@ -250,20 +255,22 @@ static bool test_p2_tree_node_blockheader_compat()
 
     // В Block<A> TreeNode следует после LinkedListNode (8 байт),
     // поэтому смещения в Block = 8 + смещения в TreeNode.
-    // Проверяем через BlockStateBase::kOffset*:
+    // Проверяем через BlockStateBase::kOffset* (Issue #126: новый порядок):
     constexpr std::size_t tree_base = sizeof( pmm::LinkedListNode<A> ); // = 8
     static_assert( tree_base == 8 );
-    static_assert( BlockState::kOffsetLeftOffset == tree_base + 0, "left_offset position in Block" );
-    static_assert( BlockState::kOffsetRightOffset == tree_base + sizeof( std::uint32_t ),
+    static_assert( BlockState::kOffsetWeight == tree_base + 0, "weight position in Block" );
+    static_assert( BlockState::kOffsetLeftOffset == tree_base + sizeof( std::uint32_t ),
+                   "left_offset position in Block" );
+    static_assert( BlockState::kOffsetRightOffset == tree_base + 2 * sizeof( std::uint32_t ),
                    "right_offset position in Block" );
-    static_assert( BlockState::kOffsetParentOffset == tree_base + 2 * sizeof( std::uint32_t ),
+    static_assert( BlockState::kOffsetParentOffset == tree_base + 3 * sizeof( std::uint32_t ),
                    "parent_offset position in Block" );
-    static_assert( BlockState::kOffsetAvlHeight == tree_base + 3 * sizeof( std::uint32_t ),
-                   "avl_height position in Block" );
-    static_assert( BlockState::kOffsetWeight == tree_base + 3 * sizeof( std::uint32_t ) + 4,
-                   "weight position in Block" );
-    static_assert( BlockState::kOffsetRootOffset == tree_base + 4 * sizeof( std::uint32_t ) + 4,
+    static_assert( BlockState::kOffsetRootOffset == tree_base + 4 * sizeof( std::uint32_t ),
                    "root_offset position in Block" );
+    static_assert( BlockState::kOffsetAvlHeight == tree_base + 5 * sizeof( std::uint32_t ),
+                   "avl_height position in Block" );
+    static_assert( BlockState::kOffsetNodeType == tree_base + 5 * sizeof( std::uint32_t ) + 2,
+                   "node_type position in Block" );
 
     return true;
 }

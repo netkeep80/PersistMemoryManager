@@ -64,8 +64,9 @@ template <typename AddressTraitsT> class CoalescingBlock;
  *
  * Layout Block<A> (32 bytes при DefaultAddressTraits):
  *   [0..7]   LinkedListNode<A>: prev_offset (4), next_offset (4)
- *   [8..31]  TreeNode<A>:       left_offset (4), right_offset (4), parent_offset (4),
- *                               avl_height (2), _pad (2), weight (4), root_offset (4)
+ *   [8..31]  TreeNode<A>:       weight (4), left_offset (4), right_offset (4),
+ *                               parent_offset (4), root_offset (4),
+ *                               avl_height (2), node_type (2)
  *
  * @tparam AddressTraitsT  Traits адресного пространства.
  */
@@ -89,18 +90,20 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     static constexpr std::size_t kOffsetPrevOffset = 0;
     /// Byte offset of next_offset within Block<A> layout (second field of LinkedListNode).
     static constexpr std::size_t kOffsetNextOffset = sizeof( index_type );
-    /// Byte offset of left_offset within Block<A> layout (first field of TreeNode, follows LinkedListNode).
-    static constexpr std::size_t kOffsetLeftOffset = sizeof( LLNode );
+    /// Byte offset of weight within Block<A> layout (first field of TreeNode, Issue #126).
+    static constexpr std::size_t kOffsetWeight = sizeof( LLNode );
+    /// Byte offset of left_offset within Block<A> layout (second field of TreeNode, follows weight).
+    static constexpr std::size_t kOffsetLeftOffset = sizeof( LLNode ) + sizeof( index_type );
     /// Byte offset of right_offset within Block<A> layout.
-    static constexpr std::size_t kOffsetRightOffset = sizeof( LLNode ) + sizeof( index_type );
+    static constexpr std::size_t kOffsetRightOffset = sizeof( LLNode ) + 2 * sizeof( index_type );
     /// Byte offset of parent_offset within Block<A> layout.
-    static constexpr std::size_t kOffsetParentOffset = sizeof( LLNode ) + 2 * sizeof( index_type );
-    /// Byte offset of avl_height within Block<A> layout.
-    static constexpr std::size_t kOffsetAvlHeight = sizeof( LLNode ) + 3 * sizeof( index_type );
-    /// Byte offset of weight within Block<A> layout (after avl_height(2) + _pad(2) = 4 bytes).
-    static constexpr std::size_t kOffsetWeight = sizeof( LLNode ) + 3 * sizeof( index_type ) + 4;
+    static constexpr std::size_t kOffsetParentOffset = sizeof( LLNode ) + 3 * sizeof( index_type );
     /// Byte offset of root_offset within Block<A> layout.
-    static constexpr std::size_t kOffsetRootOffset = sizeof( LLNode ) + 4 * sizeof( index_type ) + 4;
+    static constexpr std::size_t kOffsetRootOffset = sizeof( LLNode ) + 4 * sizeof( index_type );
+    /// Byte offset of avl_height within Block<A> layout (after weight+left+right+parent+root = 5 index_type fields).
+    static constexpr std::size_t kOffsetAvlHeight = sizeof( LLNode ) + 5 * sizeof( index_type );
+    /// Byte offset of node_type within Block<A> layout (after avl_height(2) = 2 bytes, Issue #126).
+    static constexpr std::size_t kOffsetNodeType = sizeof( LLNode ) + 5 * sizeof( index_type ) + 2;
 
     // Прямое создание запрещено — используйте cast_from_raw()
     BlockStateBase() = delete;
@@ -121,6 +124,9 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     // Read-only доступ к root_offset (определяет состояние)
     index_type root_offset() const noexcept { return TNode::root_offset; }
 
+    // Read-only доступ к node_type (Issue #126: тип узла)
+    std::uint16_t node_type() const noexcept { return TNode::node_type; }
+
     /**
      * @brief Определить, является ли блок свободным (по структурным признакам).
      * @return true если weight == 0 и root_offset == 0.
@@ -133,6 +139,12 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
      * @return true если weight > 0 и root_offset == own_idx.
      */
     bool is_allocated( index_type own_idx ) const noexcept { return weight() > 0 && root_offset() == own_idx; }
+
+    /**
+     * @brief Определить, заблокирован ли блок навечно (Issue #126).
+     * @return true если node_type == kNodeReadOnly.
+     */
+    bool is_permanently_locked() const noexcept { return node_type() == pmm::kNodeReadOnly; }
 
     // ─── Статические утилиты для recovery-операций ──────────────────────────
 
@@ -342,6 +354,20 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     {
         reinterpret_cast<BlockStateBase*>( raw_blk )->set_root_offset( v );
     }
+    /**
+     * @brief Прочитать node_type блока (Issue #126).
+     */
+    static std::uint16_t get_node_type( const void* raw_blk ) noexcept
+    {
+        return reinterpret_cast<const BlockStateBase*>( raw_blk )->node_type();
+    }
+    /**
+     * @brief Установить node_type блока (Issue #126).
+     */
+    static void set_node_type_of( void* raw_blk, std::uint16_t v ) noexcept
+    {
+        reinterpret_cast<BlockStateBase*>( raw_blk )->set_node_type( v );
+    }
 
   protected:
     // Внутренние сеттеры для наследников
@@ -353,6 +379,7 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     void set_parent_offset( index_type v ) noexcept { TNode::parent_offset = v; }
     void set_avl_height( std::int16_t v ) noexcept { TNode::avl_height = v; }
     void set_root_offset( index_type v ) noexcept { TNode::root_offset = v; }
+    void set_node_type( std::uint16_t v ) noexcept { TNode::node_type = v; }
 
     // Reset AVL fields to "not in tree" state
     void reset_avl_fields() noexcept

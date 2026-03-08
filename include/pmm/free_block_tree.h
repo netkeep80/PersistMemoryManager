@@ -102,8 +102,9 @@ inline constexpr bool is_free_block_tree_policy_v =
  * Best-fit search runs in O(log n).
  *
  * Issue #106/#112: Uses Block<AddressTraitsT> layout (BlockHeader struct removed).
- * Fields: prev_offset(0), next_offset(4), left_offset(8), right_offset(12),
- *         parent_offset(16), avl_height(20), _pad(22), weight(24), root_offset(28).
+ * Issue #126: Fields reordered — weight moved to first TreeNode field.
+ * Fields: prev_offset(0), next_offset(4), weight(8), left_offset(12), right_offset(16),
+ *         parent_offset(20), root_offset(24), avl_height(28), node_type(30).
  *
  * @tparam AddressTraitsT  Address space traits (compatible with DefaultAddressTraits).
  */

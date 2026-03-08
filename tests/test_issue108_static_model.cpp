@@ -604,6 +604,95 @@ static bool test_p108_pptr_comparison_static()
 }
 
 // =============================================================================
+// PART F: Issue #126 — lock_block_permanent and node_type
+// =============================================================================
+
+/// @brief Блок, заблокированный навечно, не может быть освобождён (Issue #126).
+static bool test_p126_lock_block_permanent_prevents_dealloc()
+{
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 126>;
+
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
+
+    void* p = Mgr::allocate( 64 );
+    PMM_TEST( p != nullptr );
+
+    // До блокировки: блок должен быть не заблокирован
+    PMM_TEST( !Mgr::is_permanently_locked( p ) );
+
+    // Заблокировать навечно
+    PMM_TEST( Mgr::lock_block_permanent( p ) == true );
+
+    // После блокировки: блок должен быть заблокирован
+    PMM_TEST( Mgr::is_permanently_locked( p ) );
+
+    std::size_t alloc_count_before = Mgr::alloc_block_count();
+
+    // Попытка освободить — должна быть проигнорирована
+    Mgr::deallocate( p );
+
+    // alloc_count не должен измениться
+    PMM_TEST( Mgr::alloc_block_count() == alloc_count_before );
+
+    Mgr::destroy();
+    return true;
+}
+
+/// @brief lock_block_permanent возвращает false для nullptr и свободных блоков (Issue #126).
+static bool test_p126_lock_block_permanent_edge_cases()
+{
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 127>;
+
+    // nullptr
+    PMM_TEST( Mgr::lock_block_permanent( nullptr ) == false );
+
+    // Неинициализированный менеджер
+    PMM_TEST( Mgr::is_permanently_locked( nullptr ) == false );
+
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
+
+    // Обычный аллоцированный блок: кратковременно блокируем и разблокируем нельзя, но lock должен сработать
+    void* p = Mgr::allocate( 32 );
+    PMM_TEST( p != nullptr );
+    PMM_TEST( !Mgr::is_permanently_locked( p ) );
+    PMM_TEST( Mgr::lock_block_permanent( p ) == true );
+    PMM_TEST( Mgr::is_permanently_locked( p ) );
+
+    Mgr::destroy();
+    return true;
+}
+
+/// @brief Обычные блоки (не заблокированные) всё ещё могут быть освобождены (Issue #126).
+static bool test_p126_non_locked_blocks_can_be_freed()
+{
+    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 128>;
+
+    PMM_TEST( Mgr::create( 64 * 1024 ) );
+
+    void* p1 = Mgr::allocate( 32 );
+    void* p2 = Mgr::allocate( 32 );
+    PMM_TEST( p1 != nullptr && p2 != nullptr );
+
+    // Блокируем p1 навечно
+    PMM_TEST( Mgr::lock_block_permanent( p1 ) );
+
+    std::size_t alloc_before = Mgr::alloc_block_count();
+    PMM_TEST( alloc_before >= 2 );
+
+    // Освобождаем p2 (не заблокированный) — должно сработать (alloc_count уменьшится)
+    Mgr::deallocate( p2 );
+    PMM_TEST( Mgr::alloc_block_count() == alloc_before - 1 );
+
+    // Освобождаем p1 (заблокированный) — не должно освободиться (alloc_count не изменится)
+    std::size_t alloc_after_p2 = Mgr::alloc_block_count();
+    Mgr::deallocate( p1 );
+    PMM_TEST( Mgr::alloc_block_count() == alloc_after_p2 );
+
+    Mgr::destroy();
+    return true;
+}
+
+// =============================================================================
 // main
 // =============================================================================
 
@@ -640,6 +729,12 @@ int main()
     PMM_RUN( "P108-E1: PersistMemoryManager статический API работает", test_p108_unified_static_api_works );
     PMM_RUN( "P108-E2: pptr::index_type из address_traits", test_p108_unified_index_type );
     PMM_RUN( "P108-E3: сравнение pptr в статической модели", test_p108_pptr_comparison_static );
+
+    std::cout << "\n--- P108-F: Issue #126 — lock_block_permanent и node_type ---\n";
+    PMM_RUN( "P108-F1: lock_block_permanent блокирует навечно (нельзя освободить)",
+             test_p126_lock_block_permanent_prevents_dealloc );
+    PMM_RUN( "P108-F2: lock_block_permanent граничные случаи (nullptr)", test_p126_lock_block_permanent_edge_cases );
+    PMM_RUN( "P108-F3: незаблокированные блоки по-прежнему освобождаются", test_p126_non_locked_blocks_can_be_freed );
 
     std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
     return all_passed ? 0 : 1;

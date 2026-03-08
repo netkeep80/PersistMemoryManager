@@ -294,15 +294,18 @@ static bool test_p3_block_layout_offsets()
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
 
-    // Verify layout: LinkedListNode fields at start, TreeNode fields follow
+    // Verify layout: LinkedListNode fields at start, TreeNode fields follow (Issue #126: new order)
     static_assert( BlockState::kOffsetPrevOffset == 0 );
     static_assert( BlockState::kOffsetNextOffset == 4 );
-    static_assert( BlockState::kOffsetLeftOffset == 8 );
-    static_assert( BlockState::kOffsetRightOffset == 12 );
-    static_assert( BlockState::kOffsetParentOffset == 16 );
-    static_assert( BlockState::kOffsetAvlHeight == 20 );
-    static_assert( BlockState::kOffsetWeight == 24 );
-    static_assert( BlockState::kOffsetRootOffset == 28 );
+    // Issue #126: weight moved to first field of TreeNode
+    static_assert( BlockState::kOffsetWeight == 8 );
+    static_assert( BlockState::kOffsetLeftOffset == 12 );
+    static_assert( BlockState::kOffsetRightOffset == 16 );
+    static_assert( BlockState::kOffsetParentOffset == 20 );
+    static_assert( BlockState::kOffsetRootOffset == 24 );
+    // Issue #126: avl_height and node_type (renamed from _pad) moved to end
+    static_assert( BlockState::kOffsetAvlHeight == 28 );
+    static_assert( BlockState::kOffsetNodeType == 30 );
 
     return true;
 }
