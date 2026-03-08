@@ -1,10 +1,10 @@
 var searchData=
 [
-  ['magic_0',['magic',['../structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9',1,'pmm::ManagerInfo::magic'],['../structpmm_1_1detail_1_1ManagerHeader.html#a917ab780875d490249654a77dbeac617',1,'pmm::detail::ManagerHeader::magic']]],
+  ['magic_0',['magic',['../structpmm_1_1detail_1_1ManagerHeader.html#a917ab780875d490249654a77dbeac617',1,'pmm::detail::ManagerHeader::magic'],['../structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9',1,'pmm::ManagerInfo::magic']]],
   ['manager_5fconcept_2eh_1',['manager_concept.h',['../manager__concept_8h.html',1,'']]],
   ['manager_5fconfigs_2eh_2',['manager_configs.h',['../manager__configs_8h.html',1,'']]],
   ['manager_5fheader_5fsize_3',['manager_header_size',['../structpmm_1_1ManagerInfo.html#a1a91c550f4030d535209fed061b903e4',1,'pmm::ManagerInfo']]],
-  ['manager_5ftype_4',['manager_type',['../classpmm_1_1StaticMemoryManager.html#a71b5166c1c4ac245f7fd350db2adaac7',1,'pmm::StaticMemoryManager::manager_type'],['../classpmm_1_1StaticPersistMemoryManager.html#a37e44f81b539159b331bd5587cb9fb7c',1,'pmm::StaticPersistMemoryManager::manager_type'],['../classpmm_1_1pptr.html#a4491c6edb582bd512b49e3747d0e9421',1,'pmm::pptr::manager_type'],['../classpmm_1_1PersistMemoryManager.html#ab7dc5f5527fcfc1ebe29528020635d87',1,'pmm::PersistMemoryManager::manager_type'],['../classpmm_1_1AbstractPersistMemoryManager.html#aadad548ef57259988c7c887b00edca1a',1,'pmm::AbstractPersistMemoryManager::manager_type']]],
+  ['manager_5ftype_4',['manager_type',['../classpmm_1_1pptr.html#a4491c6edb582bd512b49e3747d0e9421',1,'pmm::pptr::manager_type'],['../classpmm_1_1PersistMemoryManager.html#ab7dc5f5527fcfc1ebe29528020635d87',1,'pmm::PersistMemoryManager::manager_type']]],
   ['managerheader_5',['ManagerHeader',['../structpmm_1_1detail_1_1ManagerHeader.html',1,'pmm::detail']]],
   ['managerinfo_6',['ManagerInfo',['../structpmm_1_1ManagerInfo.html',1,'pmm']]],
   ['mark_5fas_5fallocated_7',['mark_as_allocated',['../classpmm_1_1FreeBlockRemovedAVL.html#a4eeee6090df0f5333ee5f2aee8496204',1,'pmm::FreeBlockRemovedAVL']]],

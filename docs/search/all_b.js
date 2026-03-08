@@ -7,7 +7,7 @@ var searchData=
   ['link_5fnew_5fblock_4',['link_new_block',['../classpmm_1_1SplittingBlock.html#a640bcb82c72762def18f292bfa4201a6',1,'pmm::SplittingBlock']]],
   ['linked_5flist_5fnode_2eh_5',['linked_list_node.h',['../linked__list__node_8h.html',1,'']]],
   ['linkedlistnode_6',['LinkedListNode',['../structpmm_1_1LinkedListNode.html',1,'pmm']]],
-  ['load_7',['load',['../classpmm_1_1PersistMemoryManager.html#a1a06f87ac39f15a244522178c3576b22',1,'pmm::PersistMemoryManager::load()'],['../classpmm_1_1StaticMemoryManager.html#ab32dd9b86ad8f83920b5f30c4666f7d4',1,'pmm::StaticMemoryManager::load()'],['../classpmm_1_1AbstractPersistMemoryManager.html#a16baa0061aad6ea622043e342e36b384',1,'pmm::AbstractPersistMemoryManager::load()']]],
+  ['load_7',['load',['../classpmm_1_1PersistMemoryManager.html#a1a06f87ac39f15a244522178c3576b22',1,'pmm::PersistMemoryManager']]],
   ['load_5fmanager_5ffrom_5ffile_8',['load_manager_from_file',['../namespacepmm.html#a3d63117e7feeaea782f0f3f420830b1a',1,'pmm']]],
   ['lock_9',['lock',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html#a666bbb9033e98e055b1a00dc1289df2d',1,'pmm::config::NoLock::mutex_type']]],
   ['lock_5fpolicy_10',['lock_policy',['../structpmm_1_1CacheManagerConfig.html#a4804c5a323804b12bf2dce19e7314557',1,'pmm::CacheManagerConfig::lock_policy'],['../structpmm_1_1PersistentDataConfig.html#ad327da8df417749d4278f8262d9db78e',1,'pmm::PersistentDataConfig::lock_policy'],['../structpmm_1_1EmbeddedManagerConfig.html#abb32fac882c8c62f8077a1cf75bb4264',1,'pmm::EmbeddedManagerConfig::lock_policy'],['../structpmm_1_1IndustrialDBConfig.html#a2c960a604480d47f0feafaabb6fa49fa',1,'pmm::IndustrialDBConfig::lock_policy']]],

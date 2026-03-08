@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['largeaddresstraits_0',['LargeAddressTraits',['../namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8',1,'pmm']]],
-  ['lock_5fpolicy_1',['lock_policy',['../structpmm_1_1CacheManagerConfig.html#a4804c5a323804b12bf2dce19e7314557',1,'pmm::CacheManagerConfig::lock_policy'],['../structpmm_1_1PersistentDataConfig.html#ad327da8df417749d4278f8262d9db78e',1,'pmm::PersistentDataConfig::lock_policy'],['../structpmm_1_1EmbeddedManagerConfig.html#abb32fac882c8c62f8077a1cf75bb4264',1,'pmm::EmbeddedManagerConfig::lock_policy'],['../structpmm_1_1IndustrialDBConfig.html#a2c960a604480d47f0feafaabb6fa49fa',1,'pmm::IndustrialDBConfig::lock_policy']]]
+  ['manager_5ftype_0',['manager_type',['../classpmm_1_1PersistMemoryManager.html#ab7dc5f5527fcfc1ebe29528020635d87',1,'pmm::PersistMemoryManager::manager_type'],['../classpmm_1_1pptr.html#a4491c6edb582bd512b49e3747d0e9421',1,'pmm::pptr::manager_type']]],
+  ['multithreadedheap_1',['MultiThreadedHeap',['../namespacepmm_1_1presets.html#a11b19ac031d0a909931c0daed9b24a69',1,'pmm::presets']]],
+  ['mutex_5ftype_2',['mutex_type',['../structpmm_1_1config_1_1SharedMutexLock.html#ade9f918c8245c291bed83a84623bfa9c',1,'pmm::config::SharedMutexLock']]]
 ];

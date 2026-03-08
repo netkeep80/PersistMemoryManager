@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['config_0',['config',['../classpmm_1_1StaticPersistMemoryManager.html#ab072c5b6e3439fa9f7c462c2be1d02ac',1,'pmm::StaticPersistMemoryManager']]]
+  ['defaultaddresstraits_0',['DefaultAddressTraits',['../namespacepmm.html#a9ca69087900283384dda68352be048bb',1,'pmm']]],
+  ['defaultallocatorpolicy_1',['DefaultAllocatorPolicy',['../namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7',1,'pmm']]]
 ];

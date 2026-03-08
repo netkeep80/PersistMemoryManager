@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['defaultmanagertag_0',['DefaultManagerTag',['../structpmm_1_1DefaultManagerTag.html',1,'pmm']]]
+  ['embeddedmanagerconfig_0',['EmbeddedManagerConfig',['../structpmm_1_1EmbeddedManagerConfig.html',1,'pmm']]]
 ];
