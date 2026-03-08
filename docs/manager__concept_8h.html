@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>PersistMemoryManagerConcept — концепция для проверки типов менеджеров ПАП (Issue #100).  
+<p>PersistMemoryManagerConcept — концепция для проверки типов менеджеров ПАП (Issue #100, #110).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
@@ -112,40 +112,38 @@ Variables</h2></td></tr>
 <tr class="separator:a7a70401630d11010442cb6026f2a5654"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>PersistMemoryManagerConcept — концепция для проверки типов менеджеров ПАП (Issue #100). </p>
-<p>Определяет концепцию <code>PersistMemoryManagerConcept</code> и вспомогательные type traits, позволяющие проверить во время компиляции, является ли тип корректным менеджером персистентной памяти (удовлетворяет ли интерфейсу AbstractPersistMemoryManager).</p>
-<p>Требования к типу менеджера:</p><ul>
+<div class="textblock"><p>PersistMemoryManagerConcept — концепция для проверки типов менеджеров ПАП (Issue #100, #110). </p>
+<p>Определяет концепцию <code>PersistMemoryManagerConcept</code> и вспомогательные type traits, позволяющие проверить во время компиляции, является ли тип корректным менеджером персистентной памяти (удовлетворяет ли статическому интерфейсу PersistMemoryManager).</p>
+<p>Требования к типу менеджера (Issue #110 — статический интерфейс):</p><ul>
 <li><code>manager_type</code> — typedef на собственный тип (self-type)</li>
 <li><code>address_traits</code> — тип адресных traits</li>
 <li><code>storage_backend</code> — тип бэкенда хранилища</li>
 <li><code>free_block_tree</code> — тип политики дерева свободных блоков</li>
 <li><code>thread_policy</code> — тип политики многопоточности</li>
-<li><code>create()</code> / <code>create(size_t)</code> — инициализация</li>
-<li><code>load()</code> — загрузка состояния</li>
-<li><code>destroy()</code> — сброс состояния</li>
-<li><code>is_initialized()</code> — проверка инициализации</li>
-<li><code>allocate(size_t)</code> → void* — выделение сырой памяти</li>
-<li><code>deallocate(void*)</code> — освобождение сырой памяти</li>
-<li><code>allocate_typed&lt;T&gt;()</code> → pptr&lt;T, manager_type&gt; — типизированное выделение</li>
-<li><code>deallocate_typed(pptr&lt;T&gt;)</code> — типизированное освобождение</li>
-<li><code>resolve&lt;T&gt;(pptr&lt;T&gt;)</code> → T* — разыменование</li>
-<li><code>total_size()</code>, <code>used_size()</code>, <code>free_size()</code> — статистика</li>
+<li>статический <code>create(size_t)</code> — инициализация</li>
+<li>статический <code>load()</code> — загрузка состояния</li>
+<li>статический <code>destroy()</code> — сброс состояния</li>
+<li>статический <code>is_initialized()</code> — проверка инициализации</li>
+<li>статический <code>allocate(size_t)</code> → void* — выделение сырой памяти</li>
+<li>статический <code>deallocate(void*)</code> — освобождение сырой памяти</li>
+<li>статический <code>total_size()</code> → size_t — статистика</li>
 </ul>
 <p>Использование: </p><div class="fragment"><div class="line"><span class="comment">// Проверка во время компиляции</span></div>
-<div class="line"><span class="keyword">static_assert</span>(<a class="code hl_variable" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">pmm::is_persist_memory_manager_v&lt;pmm::presets::SingleThreadedHeap&gt;</a>,</div>
-<div class="line">              <span class="stringliteral">&quot;SingleThreadedHeap must be a valid PersistMemoryManager&quot;</span>);</div>
+<div class="line"><span class="keyword">static_assert</span>(<a class="code hl_variable" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">pmm::is_persist_memory_manager_v&lt;pmm::PersistMemoryManager&lt;pmm::CacheManagerConfig&gt;</a>&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;PersistMemoryManager&lt;CacheManagerConfig&gt; must be a valid PersistMemoryManager&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Ограничение шаблонного параметра</span></div>
 <div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> MgrT&gt;</div>
-<div class="line"><span class="keywordtype">void</span> process(MgrT&amp; mgr) {</div>
+<div class="line"><span class="keywordtype">void</span> process() {</div>
 <div class="line">    <span class="keyword">static_assert</span>(<a class="code hl_variable" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">pmm::is_persist_memory_manager_v&lt;MgrT&gt;</a>);</div>
-<div class="line">    <span class="comment">// ... работа с менеджером</span></div>
+<div class="line">    MgrT::create(64 * 1024);</div>
+<div class="line">    <span class="comment">// ...</span></div>
 <div class="line">}</div>
 <div class="ttc" id="anamespacepmm_html_a921bde594db4955b918196479bbbff7b"><div class="ttname"><a href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">pmm::is_storage_backend_v</a></div><div class="ttdeci">constexpr bool is_storage_backend_v</div><div class="ttdoc">Проверка, соответствует ли Backend концепту StorageBackend.</div><div class="ttdef"><b>Definition</b> <a href="storage__backend_8h_source.html#l00082">storage_backend.h:82</a></div></div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="abstract__pmm_8h.html" title="AbstractPersistMemoryManager — единственный публичный API менеджера ПАП (Issue #102).">abstract_pmm.h</a> — AbstractPersistMemoryManager (реализация) </dd>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — унифицированный статический менеджер ПАП (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (Issue #110) </dd>
 <dd>
 <a class="el" href="pptr_8h.html" title="pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102).">pptr.h</a> — pptr&lt;T, ManagerT&gt; </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.1 (Issue #100 — Phase 1: Infrastructure Preparation) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.2 (Issue #110 — обновлено для статического интерфейса PersistMemoryManager) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="manager__concept_8h_source.html">manager_concept.h</a>.</p>
 </div></div><!-- contents -->

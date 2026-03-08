@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['save_5fmanager_0',['save_manager',['../namespacepmm.html#a9fa1263f2319fc8f81364729e8df013c',1,'pmm']]],
+  ['save_5fmanager_0',['save_manager',['../namespacepmm.html#aa84c31a0bacf0828dc85574f21ab8e3f',1,'pmm']]],
   ['set_5favl_5fheight_1',['set_avl_height',['../classpmm_1_1BlockStateBase.html#a7f13c1493ae895a229ff41cf8e46ca32',1,'pmm::BlockStateBase']]],
   ['set_5fleft_5foffset_2',['set_left_offset',['../classpmm_1_1BlockStateBase.html#a5a88eead9ef9cb2b03eb2c857b83d4aa',1,'pmm::BlockStateBase']]],
   ['set_5fnext_5foffset_3',['set_next_offset',['../classpmm_1_1BlockStateBase.html#a5f40a7bcc19ea2d5f47f1eca6a7e2aee',1,'pmm::BlockStateBase']]],
@@ -12,7 +12,7 @@ var searchData=
   ['shared_5flock_5ftype_9',['shared_lock_type',['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html',1,'pmm::config::NoLock::shared_lock_type'],['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html#ab3272189682b98943a4eb3acea887ce6',1,'pmm::config::NoLock::shared_lock_type::shared_lock_type()'],['../structpmm_1_1config_1_1SharedMutexLock.html#a20ea6e87c15bb6d14898d8c4e5c236f7',1,'pmm::config::SharedMutexLock::shared_lock_type']]],
   ['sharedmutexlock_10',['SharedMutexLock',['../structpmm_1_1config_1_1SharedMutexLock.html',1,'pmm::config']]],
   ['singlethreadedabstractpmm_11',['SingleThreadedAbstractPMM',['../namespacepmm.html#a1767a35705cb64eb271d6bf3a52b513e',1,'pmm']]],
-  ['singlethreadedheap_12',['SingleThreadedHeap',['../namespacepmm_1_1presets.html#a5da31a1eb45ed4fbe1ef818796ade5d0',1,'pmm::presets']]],
+  ['singlethreadedheap_12',['SingleThreadedHeap',['../namespacepmm_1_1presets.html#a26c22130e79e20183d2df7c4bec45b00',1,'pmm::presets']]],
   ['size_13',['size',['../structpmm_1_1detail_1_1BlockHeader.html#a3aaacb0639cf012b2414cf9b39737c63',1,'pmm::detail::BlockHeader']]],
   ['smalladdresstraits_14',['SmallAddressTraits',['../namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2',1,'pmm']]],
   ['smallest_5ffree_15',['smallest_free',['../structpmm_1_1MemoryStats.html#a0ef3c7b4b7385778f7e7874f27444433',1,'pmm::MemoryStats']]],
@@ -23,6 +23,6 @@ var searchData=
   ['staticmemorymanager_20',['StaticMemoryManager',['../classpmm_1_1StaticMemoryManager.html',1,'pmm']]],
   ['staticpersistmemorymanager_21',['StaticPersistMemoryManager',['../classpmm_1_1StaticPersistMemoryManager.html',1,'pmm']]],
   ['staticstorage_22',['staticstorage',['../classpmm_1_1StaticStorage.html#a159d8a0b5b4b4cfb373ab243a3aaf946',1,'pmm::StaticStorage::StaticStorage() noexcept=default'],['../classpmm_1_1StaticStorage.html#abddd193aef5b482d840e2e591c4d4464',1,'pmm::StaticStorage::StaticStorage(const StaticStorage &amp;)=delete'],['../classpmm_1_1StaticStorage.html#ac49e4f5931e81a137c30ca0d3d79debf',1,'pmm::StaticStorage::StaticStorage(StaticStorage &amp;&amp;)=delete'],['../classpmm_1_1StaticStorage.html',1,'pmm::StaticStorage&lt; Size, AddressTraitsT &gt;']]],
-  ['storage_5fbackend_23',['storage_backend',['../classpmm_1_1AbstractPersistMemoryManager.html#a841bde53dc8ad110947ccf555ab8b802',1,'pmm::AbstractPersistMemoryManager::storage_backend'],['../classpmm_1_1StaticMemoryManager.html#a7886a6c7ac2126e71b6d9cb985b0a8bd',1,'pmm::StaticMemoryManager::storage_backend']]],
+  ['storage_5fbackend_23',['storage_backend',['../classpmm_1_1AbstractPersistMemoryManager.html#a841bde53dc8ad110947ccf555ab8b802',1,'pmm::AbstractPersistMemoryManager::storage_backend'],['../structpmm_1_1CacheManagerConfig.html#ad6190fce1486972d19ab71f279110f6f',1,'pmm::CacheManagerConfig::storage_backend'],['../structpmm_1_1PersistentDataConfig.html#a026784d4d1b2a07509edfc167fbda277',1,'pmm::PersistentDataConfig::storage_backend'],['../structpmm_1_1EmbeddedManagerConfig.html#a0335d7e113632d4cbe8d012c50834965',1,'pmm::EmbeddedManagerConfig::storage_backend'],['../structpmm_1_1IndustrialDBConfig.html#a47cd891493e3922481748d926c417e91',1,'pmm::IndustrialDBConfig::storage_backend'],['../classpmm_1_1PersistMemoryManager.html#a21a29f95d2f488d380f006c4187af55f',1,'pmm::PersistMemoryManager::storage_backend'],['../classpmm_1_1StaticMemoryManager.html#a7886a6c7ac2126e71b6d9cb985b0a8bd',1,'pmm::StaticMemoryManager::storage_backend']]],
   ['storage_5fbackend_2eh_24',['storage_backend.h',['../storage__backend_8h.html',1,'']]]
 ];

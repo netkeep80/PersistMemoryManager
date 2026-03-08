@@ -89,6 +89,12 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
+<tr class="memitem:a94c16ddeec6a8331fdd75352d1207658" id="r_a94c16ddeec6a8331fdd75352d1207658"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1CacheManagerConfig.html#a94c16ddeec6a8331fdd75352d1207658">address_traits</a> = <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a></td></tr>
+<tr class="separator:a94c16ddeec6a8331fdd75352d1207658"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6190fce1486972d19ab71f279110f6f" id="r_ad6190fce1486972d19ab71f279110f6f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1CacheManagerConfig.html#ad6190fce1486972d19ab71f279110f6f">storage_backend</a> = <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
+<tr class="separator:ad6190fce1486972d19ab71f279110f6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1a5ef4f8f774a09a56c2f65206acbbb" id="r_ae1a5ef4f8f774a09a56c2f65206acbbb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1CacheManagerConfig.html#ae1a5ef4f8f774a09a56c2f65206acbbb">free_block_tree</a> = <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
+<tr class="separator:ae1a5ef4f8f774a09a56c2f65206acbbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4804c5a323804b12bf2dce19e7314557" id="r_a4804c5a323804b12bf2dce19e7314557"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1CacheManagerConfig.html#a4804c5a323804b12bf2dce19e7314557">lock_policy</a> = <a class="el" href="structpmm_1_1config_1_1NoLock.html">config::NoLock</a></td></tr>
 <tr class="separator:a4804c5a323804b12bf2dce19e7314557"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -107,13 +113,46 @@ Static Public Attributes</h2></td></tr>
 <div class="textblock"><p>Конфигурация кеш-менеджера. </p>
 <p>Оптимизирован для временного кеша с однопоточным доступом:</p><ul>
 <li>Нет блокировок (NoLock) — максимальная производительность</li>
-<li>16-байтная гранула, поддержка до 64 ГБ</li>
+<li>16-байтная гранула (DefaultAddressTraits), поддержка до 64 ГБ</li>
+<li><a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> — динамическая память</li>
 <li>Коэффициент роста 5/4 (25%)</li>
 </ul>
 <p>Типичный сценарий: кеш вычислений, временные буферы в однопоточном коде. </p>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00050">50</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00062">62</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
+<a id="a94c16ddeec6a8331fdd75352d1207658" name="a94c16ddeec6a8331fdd75352d1207658"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94c16ddeec6a8331fdd75352d1207658">&#9670;&#160;</a></span>address_traits</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="structpmm_1_1CacheManagerConfig.html#a94c16ddeec6a8331fdd75352d1207658">pmm::CacheManagerConfig::address_traits</a> =  <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00064">64</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+
+</div>
+</div>
+<a id="ae1a5ef4f8f774a09a56c2f65206acbbb" name="ae1a5ef4f8f774a09a56c2f65206acbbb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1a5ef4f8f774a09a56c2f65206acbbb">&#9670;&#160;</a></span>free_block_tree</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="structpmm_1_1CacheManagerConfig.html#ae1a5ef4f8f774a09a56c2f65206acbbb">pmm::CacheManagerConfig::free_block_tree</a> =  <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00066">66</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+
+</div>
+</div>
 <a id="a4804c5a323804b12bf2dce19e7314557" name="a4804c5a323804b12bf2dce19e7314557"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4804c5a323804b12bf2dce19e7314557">&#9670;&#160;</a></span>lock_policy</h2>
 
@@ -126,7 +165,23 @@ Static Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00052">52</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00067">67</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+
+</div>
+</div>
+<a id="ad6190fce1486972d19ab71f279110f6f" name="ad6190fce1486972d19ab71f279110f6f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6190fce1486972d19ab71f279110f6f">&#9670;&#160;</a></span>storage_backend</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="structpmm_1_1CacheManagerConfig.html#ad6190fce1486972d19ab71f279110f6f">pmm::CacheManagerConfig::storage_backend</a> =  <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00065">65</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -151,7 +206,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00053">53</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00068">68</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -175,7 +230,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00056">56</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00071">71</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -199,7 +254,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00055">55</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00070">70</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -223,7 +278,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00054">54</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00069">69</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

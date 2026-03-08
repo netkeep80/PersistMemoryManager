@@ -91,15 +91,15 @@ Inheritance diagram for pmm::is_persist_memory_manager&lt; T &gt;:</div>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>&gt;<br />
 struct pmm::is_persist_memory_manager&lt; T &gt;</div><p>Проверить, является ли T корректным типом менеджера персистентной памяти. </p>
-<p>Тип считается менеджером ПАП, если он предоставляет:</p><ul>
+<p>Тип считается менеджером ПАП, если он предоставляет (Issue #110 — статический интерфейс):</p><ul>
 <li>typedef <code>manager_type</code></li>
 <li>typedef <code>address_traits</code></li>
 <li>typedef <code>storage_backend</code></li>
-<li>метод <code>is_initialized() const → bool</code></li>
-<li>метод <code>allocate(size_t) → void*</code></li>
-<li>метод <code>deallocate(void*)</code></li>
-<li>метод <code>total_size() const → size_t</code></li>
-<li>метод <code>destroy()</code></li>
+<li>статический метод <code>is_initialized() → bool</code></li>
+<li>статический метод <code>allocate(size_t) → void*</code></li>
+<li>статический метод <code>deallocate(void*)</code></li>
+<li>статический метод <code>total_size() → size_t</code></li>
+<li>статический метод <code>destroy()</code></li>
 </ul>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
@@ -108,7 +108,7 @@ struct pmm::is_persist_memory_manager&lt; T &gt;</div><p>Проверить, я�
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="manager__concept_8h_source.html#l00145">145</a> of file <a class="el" href="manager__concept_8h_source.html">manager_concept.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__concept_8h_source.html#l00141">141</a> of file <a class="el" href="manager__concept_8h_source.html">manager_concept.h</a>.</p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/pmm/<a class="el" href="manager__concept_8h_source.html">manager_concept.h</a></li>
 </ul>
