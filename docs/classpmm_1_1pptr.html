@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Персистентный типизированный указатель (4 байта, гранульный индекс).  
+<p>Персистентный типизированный указатель (гранульный индекс).  
  <a href="classpmm_1_1pptr.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pptr_8h_source.html">pptr.h</a>&gt;</code></p>
@@ -95,13 +95,16 @@ Public Types</h2></td></tr>
 <tr class="memitem:a4491c6edb582bd512b49e3747d0e9421" id="r_a4491c6edb582bd512b49e3747d0e9421"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a4491c6edb582bd512b49e3747d0e9421">manager_type</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a></td></tr>
 <tr class="memdesc:a4491c6edb582bd512b49e3747d0e9421"><td class="mdescLeft">&#160;</td><td class="mdescRight">Тип менеджера, к которому привязан pptr.  <br /></td></tr>
 <tr class="separator:a4491c6edb582bd512b49e3747d0e9421"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9de2a4a2790554362f50d842c94782b5" id="r_a9de2a4a2790554362f50d842c94782b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a9de2a4a2790554362f50d842c94782b5">index_type</a> = <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> detail::manager_index_type&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">::type</a></td></tr>
+<tr class="memdesc:a9de2a4a2790554362f50d842c94782b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Тип гранульного индекса (берётся из ManagerT::index_type, иначе uint32_t).  <br /></td></tr>
+<tr class="separator:a9de2a4a2790554362f50d842c94782b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a1ab91add33a9ad65c34852f74c392907" id="r_a1ab91add33a9ad65c34852f74c392907"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a1ab91add33a9ad65c34852f74c392907">pptr</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
 <tr class="separator:a1ab91add33a9ad65c34852f74c392907"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f48b173325fadc4390cb72ecf7b4990" id="r_a9f48b173325fadc4390cb72ecf7b4990"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a9f48b173325fadc4390cb72ecf7b4990">pptr</a> (std::uint32_t <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">idx</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
-<tr class="separator:a9f48b173325fadc4390cb72ecf7b4990"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35e3db741baf51802d94c81ae1775572" id="r_a35e3db741baf51802d94c81ae1775572"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a35e3db741baf51802d94c81ae1775572">pptr</a> (<a class="el" href="classpmm_1_1pptr.html#a9de2a4a2790554362f50d842c94782b5">index_type</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">idx</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
+<tr class="separator:a35e3db741baf51802d94c81ae1775572"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8519630774e174fac16a6b29c980de96" id="r_a8519630774e174fac16a6b29c980de96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a8519630774e174fac16a6b29c980de96">pptr</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a>=<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">default</a></td></tr>
 <tr class="separator:a8519630774e174fac16a6b29c980de96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d25d4f093b62019d90539bceeddcce3" id="r_a8d25d4f093b62019d90539bceeddcce3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a8d25d4f093b62019d90539bceeddcce3">operator=</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a>=<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">default</a></td></tr>
@@ -122,22 +125,32 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4e776a5e64e6e6eb33f5e91a931e96d8" id="r_a4e776a5e64e6e6eb33f5e91a931e96d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a4e776a5e64e6e6eb33f5e91a931e96d8">operator bool</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
 <tr class="memdesc:a4e776a5e64e6e6eb33f5e91a931e96d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Явное преобразование в bool: true если не null.  <br /></td></tr>
 <tr class="separator:a4e776a5e64e6e6eb33f5e91a931e96d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f76c4e8ab39613a6d8ff49220869d40" id="r_a6f76c4e8ab39613a6d8ff49220869d40"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a6f76c4e8ab39613a6d8ff49220869d40">offset</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
-<tr class="memdesc:a6f76c4e8ab39613a6d8ff49220869d40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить гранульный индекс (для сохранения/восстановления).  <br /></td></tr>
-<tr class="separator:a6f76c4e8ab39613a6d8ff49220869d40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a537df6e8ba0bf2831199d3b12bb1a838" id="r_a537df6e8ba0bf2831199d3b12bb1a838"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="classpmm_1_1pptr.html#a9de2a4a2790554362f50d842c94782b5">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a537df6e8ba0bf2831199d3b12bb1a838">offset</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
+<tr class="memdesc:a537df6e8ba0bf2831199d3b12bb1a838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить гранульный индекс (для сохранения/восстановления).  <br /></td></tr>
+<tr class="separator:a537df6e8ba0bf2831199d3b12bb1a838"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ed0ce34d7c191c07f5eebb3cc54bae9" id="r_a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a0ed0ce34d7c191c07f5eebb3cc54bae9">operator==</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">other</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
 <tr class="memdesc:a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сравнение персистентных указателей одного типа.  <br /></td></tr>
 <tr class="separator:a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d32271a6705486f1e690ec4ac24339a" id="r_a0d32271a6705486f1e690ec4ac24339a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a0d32271a6705486f1e690ec4ac24339a">operator!=</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">other</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
 <tr class="separator:a0d32271a6705486f1e690ec4ac24339a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c25e690548247c25cb7a7683a1dd460" id="r_a2c25e690548247c25cb7a7683a1dd460"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a2c25e690548247c25cb7a7683a1dd460">resolve</a> (<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &amp;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">mgr</a>) <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
-<tr class="memdesc:a2c25e690548247c25cb7a7683a1dd460"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать через экземпляр менеджера.  <br /></td></tr>
+<tr class="memdesc:a2c25e690548247c25cb7a7683a1dd460"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать через экземпляр менеджера (объектная модель).  <br /></td></tr>
 <tr class="separator:a2c25e690548247c25cb7a7683a1dd460"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada7fb7a391b0d6fdf1cbace8f4a6622c" id="r_ada7fb7a391b0d6fdf1cbace8f4a6622c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#ada7fb7a391b0d6fdf1cbace8f4a6622c">resolve</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
+<tr class="memdesc:ada7fb7a391b0d6fdf1cbace8f4a6622c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать через статический метод менеджера (статическая модель).  <br /></td></tr>
+<tr class="separator:ada7fb7a391b0d6fdf1cbace8f4a6622c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cb94453f12e106b13c75d39f5771c0e" id="r_a6cb94453f12e106b13c75d39f5771c0e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a6cb94453f12e106b13c75d39f5771c0e">operator*</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
+<tr class="memdesc:a6cb94453f12e106b13c75d39f5771c0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменование указателя (статическая модель).  <br /></td></tr>
+<tr class="separator:a6cb94453f12e106b13c75d39f5771c0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaa0ac45b0f5634573e69298082e87d1" id="r_adaa0ac45b0f5634573e69298082e87d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#adaa0ac45b0f5634573e69298082e87d1">operator-&gt;</a> () <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">const</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">noexcept</a></td></tr>
+<tr class="memdesc:adaa0ac45b0f5634573e69298082e87d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Доступ к членам через персистентный указатель (статическая модель).  <br /></td></tr>
+<tr class="separator:adaa0ac45b0f5634573e69298082e87d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a>&gt;<br />
-class pmm::pptr&lt; T, ManagerT &gt;</div><p>Персистентный типизированный указатель (4 байта, гранульный индекс). </p>
+class pmm::pptr&lt; T, ManagerT &gt;</div><p>Персистентный типизированный указатель (гранульный индекс). </p>
 <p>Хранит гранульный индекс пользовательских данных, а не адрес. Адресно-независим: корректно загружается из файла по другому базовому адресу.</p>
+<p>Тип индекса определяется через <code>ManagerT::index_type</code> (если менеджер его предоставляет), иначе используется <code>uint32_t</code> (Issue #108).</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип данных, на который указывает pptr. </td></tr>
@@ -145,11 +158,12 @@ class pmm::pptr&lt; T, ManagerT &gt;</div><p>Персистентный типи
   </table>
   </dd>
 </dl>
-<p>Для разыменования требуется базовый указатель менеджера:</p><ul>
-<li><code>mgr.resolve&lt;T&gt;(p)</code> или <code>p.resolve(mgr)</code> — для <a class="el" href="classpmm_1_1AbstractPersistMemoryManager.html" title="Параметрический ПАП-менеджер.">AbstractPersistMemoryManager</a> </li>
+<p>Поддерживаются два режима разыменования:</p><ul>
+<li>Объектная модель: <code>p.resolve(mgr)</code> или <code>mgr.resolve&lt;T&gt;(p)</code></li>
+<li>Статическая модель: <code>p.resolve()</code>, <code>*p</code>, <code>p-&gt;field</code> (если ManagerT имеет статический resolve) </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00060">60</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00098">98</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a2011f31a800c4ca766683e66aaed2b7d" name="a2011f31a800c4ca766683e66aaed2b7d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2011f31a800c4ca766683e66aaed2b7d">&#9670;&#160;</a></span>element_type</h2>
@@ -167,7 +181,27 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Тип данных, на который ссылается pptr. </p>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00070">70</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00106">106</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+
+</div>
+</div>
+<a id="a9de2a4a2790554362f50d842c94782b5" name="a9de2a4a2790554362f50d842c94782b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9de2a4a2790554362f50d842c94782b5">&#9670;&#160;</a></span>index_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> , <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">using</a> <a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt;::index_type =  <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">typename</a> detail::manager_index_type&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a>&gt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">::type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Тип гранульного индекса (берётся из ManagerT::index_type, иначе uint32_t). </p>
+
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00112">112</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -187,7 +221,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Тип менеджера, к которому привязан pptr. </p>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00073">73</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00109">109</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -217,12 +251,12 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00075">75</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00118">118</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
-<a id="a9f48b173325fadc4390cb72ecf7b4990" name="a9f48b173325fadc4390cb72ecf7b4990"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f48b173325fadc4390cb72ecf7b4990">&#9670;&#160;</a></span>pptr() <span class="overload">[2/3]</span></h2>
+<a id="a35e3db741baf51802d94c81ae1775572" name="a35e3db741baf51802d94c81ae1775572"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35e3db741baf51802d94c81ae1775572">&#9670;&#160;</a></span>pptr() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -235,7 +269,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
         <tr>
           <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt;::pptr </td>
           <td>(</td>
-          <td class="paramtype">std::uint32_t&#160;</td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1pptr.html#a9de2a4a2790554362f50d842c94782b5">index_type</a>&#160;</td>
           <td class="paramname"><em>idx</em></td><td>)</td>
           <td></td>
         </tr>
@@ -247,7 +281,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00076">76</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00119">119</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -334,12 +368,12 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Проверить, является ли указатель нулевым. </p>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00088">88</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00131">131</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
-<a id="a6f76c4e8ab39613a6d8ff49220869d40" name="a6f76c4e8ab39613a6d8ff49220869d40"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6f76c4e8ab39613a6d8ff49220869d40">&#9670;&#160;</a></span>offset()</h2>
+<a id="a537df6e8ba0bf2831199d3b12bb1a838" name="a537df6e8ba0bf2831199d3b12bb1a838"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a537df6e8ba0bf2831199d3b12bb1a838">&#9670;&#160;</a></span>offset()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -350,7 +384,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> std::uint32_t <a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt;::offset </td>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">constexpr</a> <a class="el" href="classpmm_1_1pptr.html#a9de2a4a2790554362f50d842c94782b5">index_type</a> <a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt;::offset </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -365,7 +399,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Получить гранульный индекс (для сохранения/восстановления). </p>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00094">94</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00137">137</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -396,7 +430,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Явное преобразование в bool: true если не null. </p>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00091">91</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00134">134</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -426,7 +460,40 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00098">98</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00141">141</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+
+</div>
+</div>
+<a id="a6cb94453f12e106b13c75d39f5771c0e" name="a6cb94453f12e106b13c75d39f5771c0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6cb94453f12e106b13c75d39f5771c0e">&#9670;&#160;</a></span>operator*()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> , <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> &amp; <a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">::operator</a>* </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Разыменование указателя (статическая модель). </p>
+<p>Эквивалентно <code>*resolve()</code>. Доступно только для менеджеров со статическим API.</p>
+<dl class="section return"><dt>Returns</dt><dd>T&amp; — ссылка на данные. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00175">175</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -540,6 +607,39 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 </div>
 </div>
+<a id="adaa0ac45b0f5634573e69298082e87d1" name="adaa0ac45b0f5634573e69298082e87d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adaa0ac45b0f5634573e69298082e87d1">&#9670;&#160;</a></span>operator-&gt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> , <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> * <a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">::operator</a>-&gt; </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Доступ к членам через персистентный указатель (статическая модель). </p>
+<p>Эквивалентно <code><a class="el" href="classpmm_1_1pptr.html#ada7fb7a391b0d6fdf1cbace8f4a6622c" title="Разыменовать через статический метод менеджера (статическая модель).">resolve()</a></code>. Доступно только для менеджеров со статическим API.</p>
+<dl class="section return"><dt>Returns</dt><dd>T* — указатель на данные. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00185">185</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+
+</div>
+</div>
 <a id="a8d25d4f093b62019d90539bceeddcce3" name="a8d25d4f093b62019d90539bceeddcce3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8d25d4f093b62019d90539bceeddcce3">&#9670;&#160;</a></span>operator=()</h2>
 
@@ -596,12 +696,45 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 
 <p>Сравнение персистентных указателей одного типа. </p>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00097">97</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00140">140</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+
+</div>
+</div>
+<a id="ada7fb7a391b0d6fdf1cbace8f4a6622c" name="ada7fb7a391b0d6fdf1cbace8f4a6622c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada7fb7a391b0d6fdf1cbace8f4a6622c">&#9670;&#160;</a></span>resolve() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> , <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">class</a> <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a> * <a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">T</a>, <a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbff7b">ManagerT</a> &gt;::resolve </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Разыменовать через статический метод менеджера (статическая модель). </p>
+<p>Вызывает <code>ManagerT::resolve&lt;T&gt;(*this)</code> без аргументов. Доступно только для менеджеров со статическим API (например, <a class="el" href="classpmm_1_1StaticMemoryManager.html" title="Статический менеджер персистентной памяти (Issue #108).">StaticMemoryManager</a>).</p>
+<dl class="section return"><dt>Returns</dt><dd>T* — указатель на данные или nullptr если <a class="el" href="classpmm_1_1pptr.html#a2cb78c12fac91ef44774308b0a7fc952" title="Проверить, является ли указатель нулевым.">is_null()</a>. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00165">165</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
 <a id="a2c25e690548247c25cb7a7683a1dd460" name="a2c25e690548247c25cb7a7683a1dd460"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c25e690548247c25cb7a7683a1dd460">&#9670;&#160;</a></span>resolve()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c25e690548247c25cb7a7683a1dd460">&#9670;&#160;</a></span>resolve() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -626,7 +759,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </table>
 </div><div class="memdoc">
 
-<p>Разыменовать через экземпляр менеджера. </p>
+<p>Разыменовать через экземпляр менеджера (объектная модель). </p>
 <p>Эквивалентно mgr.resolve&lt;T&gt;(*this).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -636,7 +769,7 @@ template&lt;<a class="el" href="namespacepmm.html#a921bde594db4955b918196479bbbf
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на данные или nullptr если <a class="el" href="classpmm_1_1pptr.html#a2cb78c12fac91ef44774308b0a7fc952" title="Проверить, является ли указатель нулевым.">is_null()</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00110">110</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00153">153</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>

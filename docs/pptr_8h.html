@@ -92,34 +92,33 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html">pmm::pptr&lt; T, ManagerT &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Персистентный типизированный указатель (4 байта, гранульный индекс).  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Персистентный типизированный указатель (гранульный индекс).  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm" id="r_namespacepmm"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html">pmm</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacepmm_1_1detail" id="r_namespacepmm_1_1detail"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html">pmm::detail</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102). </p>
 <p>Выделен из legacy_manager.h для использования с AbstractPersistMemoryManager.</p>
-<p>pptr&lt;T, ManagerT&gt; хранит гранульный индекс (4 байта, uint32_t) вместо адреса, что делает его адресно-независимым и пригодным для персистентных хранилищ:</p><ul>
-<li>4 байта вместо 8 (для 64-bit)</li>
+<p>pptr&lt;T, ManagerT&gt; хранит гранульный индекс вместо адреса, что делает его адресно-независимым и пригодным для персистентных хранилищ:</p><ul>
+<li>Хранит индекс типа ManagerT::address_traits::index_type (обычно uint32_t = 4 байта)</li>
 <li>Нет смещения при повторной загрузке по другому адресу</li>
 <li>Запрет адресной арифметики (pptr++ запрещён)</li>
 <li>Index 0 означает null</li>
 </ul>
-<p>Единственный поддерживаемый режим (Issue #102):</p><ul>
-<li><code>pptr&lt;T, ManagerT&gt;</code> — привязан к типу менеджера, разыменование через p.resolve(mgr)</li>
+<p>Поддерживаемые режимы разыменования (Issue #102, #108):</p><ul>
+<li>Объектная модель: <code>p.resolve(mgr)</code> или <code>mgr.resolve&lt;T&gt;(p)</code> — через экземпляр менеджера</li>
+<li>Статическая модель: <code>p.resolve()</code>, <code>*p</code>, <code>p-&gt;field</code> — через статический метод менеджера (только для менеджеров с статическим API, например StaticMemoryManager)</li>
 </ul>
-<p>Разыменование:</p><ul>
-<li>Для AbstractPersistMemoryManager (рекомендуется): mgr.resolve&lt;T&gt;(p) или p.resolve(mgr)</li>
-</ul>
-<p>Пример использования с AbstractPersistMemoryManager: </p><div class="fragment"><div class="line"><span class="keyword">using </span>MyMgr = <a class="code hl_typedef" href="namespacepmm_1_1presets.html#a5da31a1eb45ed4fbe1ef818796ade5d0">pmm::presets::SingleThreadedHeap</a>;</div>
+<p>Пример использования с AbstractPersistMemoryManager (объектная модель): </p><div class="fragment"><div class="line"><span class="keyword">using </span>MyMgr = <a class="code hl_typedef" href="namespacepmm_1_1presets.html#a5da31a1eb45ed4fbe1ef818796ade5d0">pmm::presets::SingleThreadedHeap</a>;</div>
 <div class="line">MyMgr <a class="code hl_namespace" href="namespacepmm.html">pmm</a>;</div>
 <div class="line"><a class="code hl_namespace" href="namespacepmm.html">pmm</a>.create(64 * 1024);</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// pptr привязан к типу менеджера через nested alias Manager::pptr&lt;T&gt;</span></div>
 <div class="line">MyMgr::pptr&lt;int&gt; p = <a class="code hl_namespace" href="namespacepmm.html">pmm</a>.allocate_typed&lt;<span class="keywordtype">int</span>&gt;();</div>
 <div class="line"><span class="keywordflow">if</span> (p) {</div>
 <div class="line">    *p.resolve(<a class="code hl_namespace" href="namespacepmm.html">pmm</a>) = 42;  <span class="comment">// разыменование через экземпляр менеджера</span></div>
@@ -127,10 +126,22 @@ Namespaces</h2></td></tr>
 <div class="line"><a class="code hl_namespace" href="namespacepmm.html">pmm</a>.deallocate_typed(p);</div>
 <div class="ttc" id="anamespacepmm_1_1presets_html_a5da31a1eb45ed4fbe1ef818796ade5d0"><div class="ttname"><a href="namespacepmm_1_1presets.html#a5da31a1eb45ed4fbe1ef818796ade5d0">pmm::presets::SingleThreadedHeap</a></div><div class="ttdeci">AbstractPersistMemoryManager&lt; DefaultAddressTraits, HeapStorage&lt; DefaultAddressTraits &gt;, AvlFreeTree&lt; DefaultAddressTraits &gt;, config::NoLock &gt; SingleThreadedHeap</div><div class="ttdoc">Стандартный однопоточный динамический менеджер.</div><div class="ttdef"><b>Definition</b> <a href="pmm__presets_8h_source.html#l00073">pmm_presets.h:74</a></div></div>
 <div class="ttc" id="anamespacepmm_html"><div class="ttname"><a href="namespacepmm.html">pmm</a></div><div class="ttdef"><b>Definition</b> <a href="abstract__pmm_8h_source.html#l00062">abstract_pmm.h:63</a></div></div>
+</div><!-- fragment --><p>Пример использования с StaticMemoryManager (статическая модель): </p><div class="fragment"><div class="line"><span class="keyword">using </span>MyMgr = <a class="code hl_class" href="classpmm_1_1StaticMemoryManager.html">pmm::StaticMemoryManager&lt;pmm::CacheManagerConfig&gt;</a>;</div>
+<div class="line">MyMgr::create(64 * 1024);</div>
+<div class="line"> </div>
+<div class="line">MyMgr::pptr&lt;int&gt; p = MyMgr::allocate_typed&lt;int&gt;();</div>
+<div class="line"><span class="keywordflow">if</span> (p) {</div>
+<div class="line">    *p = 42;        <span class="comment">// operator* — разыменование без аргументов</span></div>
+<div class="line">    p-&gt;some_field;  <span class="comment">// operator-&gt; — доступ к полям</span></div>
+<div class="line">    <span class="keywordtype">int</span>* raw = p.resolve();  <span class="comment">// явный вызов resolve() без аргументов</span></div>
+<div class="line">}</div>
+<div class="line">MyMgr::deallocate_typed(p);</div>
+<div class="line">MyMgr::destroy();</div>
+<div class="ttc" id="aclasspmm_1_1StaticMemoryManager_html"><div class="ttname"><a href="classpmm_1_1StaticMemoryManager.html">pmm::StaticMemoryManager</a></div><div class="ttdoc">Статический менеджер персистентной памяти (Issue #108).</div><div class="ttdef"><b>Definition</b> <a href="static__memory__manager_8h_source.html#l00081">static_memory_manager.h:82</a></div></div>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="abstract__pmm_8h.html" title="AbstractPersistMemoryManager — единственный публичный API менеджера ПАП (Issue #102).">abstract_pmm.h</a> — AbstractPersistMemoryManager::allocate_typed() </dd>
 <dd>
-<a class="el" href="abstract__pmm_8h.html" title="AbstractPersistMemoryManager — единственный публичный API менеджера ПАП (Issue #102).">abstract_pmm.h</a> — AbstractPersistMemoryManager::resolve() </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.3 (Issue #102 — ManagerT mandatory, legacy void support removed) </dd></dl>
+<a class="el" href="static__memory__manager_8h.html" title="StaticMemoryManager — статическая модель менеджера ПАП (Issue #108).">static_memory_manager.h</a> — StaticMemoryManager (статическая модель) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.4 (Issue #108 — добавлен беззаргументный resolve(), operator*, operator-&gt;) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 </div></div><!-- contents -->
