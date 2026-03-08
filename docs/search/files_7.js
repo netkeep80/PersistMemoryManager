@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['manager_5fconcept_2eh_0',['manager_concept.h',['../manager__concept_8h.html',1,'']]],
-  ['manager_5fconfigs_2eh_1',['manager_configs.h',['../manager__configs_8h.html',1,'']]],
-  ['mmap_5fstorage_2eh_2',['mmap_storage.h',['../mmap__storage_8h.html',1,'']]]
+  ['persist_5fmemory_5fmanager_2eh_0',['persist_memory_manager.h',['../persist__memory__manager_8h.html',1,'']]],
+  ['pmm_5fpresets_2eh_1',['pmm_presets.h',['../pmm__presets_8h.html',1,'']]],
+  ['pptr_2eh_2',['pptr.h',['../pptr_8h.html',1,'']]]
 ];

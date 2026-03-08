@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>TreeNode&lt;AddressTraits&gt; — узел AVL-дерева для ПАП (Issue #87 Phase 2).  
+<p>TreeNode&lt;AddressTraits&gt; — узел AVL-дерева для ПАП (Issue #87 Phase 2, #138).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="address__traits_8h_source.html">pmm/address_traits.h</a>&quot;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
@@ -103,24 +103,24 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a030e138f0333b3e992a6141a013961b2" id="r_a030e138f0333b3e992a6141a013961b2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: std::uint16_t { <a class="el" href="namespacepmm.html#afd436853768cfe1c235c404ef62c15c8aea37ad7320831070b04aa35c657b717d">pmm::kNodeReadWrite</a> = 0
-, <a class="el" href="namespacepmm.html#afd436853768cfe1c235c404ef62c15c8adc03c602e94d1a6578bbca0a9517e303">pmm::kNodeReadOnly</a> = 1
+<tr class="memitem:a030e138f0333b3e992a6141a013961b2" id="r_a030e138f0333b3e992a6141a013961b2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: std::uint16_t { <a class="el" href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2a7c460dc24ac944e43569e234270eff0a">pmm::kNodeReadWrite</a> = 0
+, <a class="el" href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2ac11052e6ba72efb94e8f459ba6fb39b6">pmm::kNodeReadOnly</a> = 1
  }</td></tr>
 <tr class="memdesc:a030e138f0333b3e992a6141a013961b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.  <a href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2">More...</a><br /></td></tr>
 <tr class="separator:a030e138f0333b3e992a6141a013961b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>TreeNode&lt;AddressTraits&gt; — узел AVL-дерева для ПАП (Issue #87 Phase 2). </p>
+<div class="textblock"><p>TreeNode&lt;AddressTraits&gt; — узел AVL-дерева для ПАП (Issue #87 Phase 2, #138). </p>
 <p>Параметрический узел AVL-дерева, где тип индексных полей определяется через <code>AddressTraits::index_type</code>.</p>
 <p>ПАП-менеджер организует блоки памяти как лес AVL-деревьев. Каждый узел принадлежит ровно одному дереву и может мигрировать из одного дерева в другое (например, из дерева свободных блоков в пользовательское дерево).</p>
 <p>Поля <code>weight</code> и <code>root_offset</code> хранятся внутри узла дерева, поскольку они являются атрибутами именно узла дерева:</p><ul>
 <li><code>weight</code> — ключ балансировки; семантика определяется деревом-владельцем (для дерева свободных блоков — количество свободных гранул за этим узлом; для других деревьев — произвольный вес).</li>
 <li><code>root_offset</code> — идентификатор дерева-владельца: 0 = узел принадлежит дереву свободных блоков (ПАП); own_index = узел занят и является корнем своего дерева.</li>
 </ul>
-<p>Поля (Issue #126 — новый порядок): <code>weight</code>, <code>left_offset</code>, <code>right_offset</code>, <code>parent_offset</code>, <code>root_offset</code>, <code>avl_height</code>, <code>node_type</code> соответствуют полям Block&lt;DefaultAddressTraits&gt; после LinkedListNode. Layout подтверждён через <code>static_assert</code> в <code><a class="el" href="types_8h.html" title="Core types and constants for PersistMemoryManager (Issue #95 refactoring).">types.h</a></code>.</p>
-<p>Issue #126: Поле <code>weight</code> перемещено в начало для ускорения доступа. Поля <code>avl_height</code> и <code>node_type</code> (бывший <code>_pad</code>) перемещены в конец. Два типа узлов: kNodeReadWrite (0) и kNodeReadOnly (1).</p>
+<p>Поля (Issue #126 — новый порядок): <code>weight</code>, <code>left_offset</code>, <code>right_offset</code>, <code>parent_offset</code>, <code>root_offset</code>, <code>avl_height</code>, <code>node_type</code>. Layout подтверждён через <code>static_assert</code> в <code><a class="el" href="types_8h.html" title="Core types and constants for PersistMemoryManager (Issue #95 refactoring).">types.h</a></code>.</p>
+<p>Issue #126: Поле <code>weight</code> перемещено в начало для ускорения доступа. Поля <code>avl_height</code> и <code>node_type</code> (бывший <code>_pad</code>) перемещены в конец. Два типа узлов: kNodeReadWrite (0) и kNodeReadOnly (1). Issue #138: Добавлены публичные методы доступа к полям TreeNode, чтобы операции над узлом дерева можно было выполнять через ссылку, полученную из pptr.</p>
 <dl class="section see"><dt>See also</dt><dd>plan_issue87.md §5 «Фаза 2: LinkedListNode и TreeNode» </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.3 (Issue #126 — reordered fields, renamed _pad to node_type) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.4 (Issue #138 — public accessors added for use via pptr::tree_node()) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
 </div></div><!-- contents -->
