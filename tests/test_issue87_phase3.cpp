@@ -324,7 +324,8 @@ int main()
     bool all_passed = true;
 
     std::cout << "--- P3-A: Block — inheritance and aliases ---\n";
-    PMM_RUN( "P3-A1: Block<Default> inherits TreeNode, has prev/next fields (Issue #138)", test_p3_block_inherits_nodes );
+    PMM_RUN( "P3-A1: Block<Default> inherits TreeNode, has prev/next fields (Issue #138)",
+             test_p3_block_inherits_nodes );
     PMM_RUN( "P3-A2: Block<Default> index_type is uint32_t (Issue #120)", test_p3_block_treenode_field_types );
 
     std::cout << "\n--- P3-B: Block — sizes ---\n";

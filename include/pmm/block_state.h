@@ -72,7 +72,7 @@ template <typename AddressTraitsT> class CoalescingBlock;
 template <typename AddressTraitsT> class BlockStateBase : private Block<AddressTraitsT>
 {
   private:
-    using TNode  = TreeNode<AddressTraitsT>;
+    using TNode = TreeNode<AddressTraitsT>;
 
   public:
     using address_traits = AddressTraitsT;

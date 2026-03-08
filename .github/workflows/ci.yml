@@ -28,6 +28,7 @@ jobs:
           find . \( -name '*.cpp' -o -name '*.h' \) \
             ! -path './third_party/*' \
             ! -path './include/pmm_*.h' \
+            ! -path './single_include/*' \
             -print0 \
             | xargs -0 clang-format --dry-run --Werror
 
@@ -74,6 +75,7 @@ jobs:
           done < <(find . \( -name '*.cpp' -o -name '*.h' \) \
             ! -path './third_party/*' \
             ! -path './include/pmm_*.h' \
+            ! -path './single_include/*' \
             -print0)
           exit $FAILED
 
@@ -179,7 +181,7 @@ jobs:
           FAILED=0
           for preset in pmm_single_threaded_heap pmm_multi_threaded_heap \
                         pmm_embedded_heap pmm_industrial_db_heap; do
-            committed="include/${preset}.h"
+            committed="single_include/pmm/${preset}.h"
             generated="/tmp/generated/${preset}.h"
             if ! diff -q "$committed" "$generated" > /dev/null 2>&1; then
               echo "FAIL: $committed is out of date — run scripts/generate-single-headers.sh"

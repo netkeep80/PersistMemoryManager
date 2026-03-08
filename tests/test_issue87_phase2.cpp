@@ -69,7 +69,7 @@
 /// Note (Issue #120): Поля protected, тип проверяется через index_type.
 static bool test_p2_list_node_default_types()
 {
-    using A    = pmm::DefaultAddressTraits;
+    using A     = pmm::DefaultAddressTraits;
     using Block = pmm::Block<A>;
 
     // address_traits и index_type алиасы
@@ -119,7 +119,8 @@ static bool test_p2_list_node_offsets()
 
     // Issue #138: TreeNode fields come first (TreeNode is base class)
     // prev_offset comes after TreeNode (sizeof(TreeNode<Default>) = 24)
-    static_assert( BlockState::kOffsetPrevOffset == 24, "prev_offset must be at offset 24 (after TreeNode, Issue #138)" );
+    static_assert( BlockState::kOffsetPrevOffset == 24,
+                   "prev_offset must be at offset 24 (after TreeNode, Issue #138)" );
     // next_offset follows prev_offset
     static_assert( BlockState::kOffsetNextOffset == 28, "next_offset must be at offset 28 (Issue #138)" );
 
@@ -361,8 +362,10 @@ int main()
 
     std::cout << "--- P2-A: Block prev/next fields (Issue #138: LinkedListNode merged into Block) ---\n";
     PMM_RUN( "P2-A1: Block<Default> prev/next field types and size (Issue #138)", test_p2_list_node_default_types );
-    PMM_RUN( "P2-A2: Block prev/next with various AddressTraits (8/16/32/64-bit, Issue #138)", test_p2_list_node_various_traits );
-    PMM_RUN( "P2-A3: Block<Default> prev/next offsets (via BlockStateBase::kOffset*, Issue #138)", test_p2_list_node_offsets );
+    PMM_RUN( "P2-A2: Block prev/next with various AddressTraits (8/16/32/64-bit, Issue #138)",
+             test_p2_list_node_various_traits );
+    PMM_RUN( "P2-A3: Block<Default> prev/next offsets (via BlockStateBase::kOffset*, Issue #138)",
+             test_p2_list_node_offsets );
     PMM_RUN( "P2-A4: Block<Default> prev/next layout (Issue #112, #138)", test_p2_list_node_blockheader_compat );
 
     std::cout << "\n--- P2-B: TreeNode ---\n";

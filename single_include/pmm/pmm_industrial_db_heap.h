@@ -614,7 +614,7 @@ template <typename AddressTraitsT> class CoalescingBlock;
 template <typename AddressTraitsT> class BlockStateBase : private Block<AddressTraitsT>
 {
   private:
-    using TNode  = TreeNode<AddressTraitsT>;
+    using TNode = TreeNode<AddressTraitsT>;
 
   public:
     using address_traits = AddressTraitsT;
@@ -1462,7 +1462,8 @@ static_assert( ( kGranuleSize & ( kGranuleSize - 1 ) ) == 0, "kGranuleSize must 
 static_assert( kGranuleSize == pmm::DefaultAddressTraits::granule_size,
                "kGranuleSize must match DefaultAddressTraits::granule_size (Issue #87)" );
 
-inline constexpr std::uint64_t kMagic = 0x504D4D5F56303938ULL; ///< "PMM_V098" (Issue #138: block layout changed — prev/next now after TreeNode fields)
+inline constexpr std::uint64_t kMagic =
+    0x504D4D5F56303938ULL; ///< "PMM_V098" (Issue #138: block layout changed — prev/next now after TreeNode fields)
 
 // ─── Public data structures ────────────────────────────────────────────────────
 
