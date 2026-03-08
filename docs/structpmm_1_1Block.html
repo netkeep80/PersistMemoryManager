@@ -91,15 +91,171 @@ Inheritance diagram for pmm::Block&lt; AddressTraitsT &gt;:</div>
  <div class="center">
   <img src="structpmm_1_1Block.png" usemap="#pmm::Block_3C_20AddressTraitsT_20_3E_map" alt=""/>
   <map id="pmm::Block_3C_20AddressTraitsT_20_3E_map" name="pmm::Block_3C_20AddressTraitsT_20_3E_map">
-<area href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование." alt="pmm::LinkedListNode&lt; AddressTraitsT &gt;" shape="rect" coords="594,0,881,24"/>
-<area href="structpmm_1_1TreeNode.html" alt="pmm::TreeNode&lt; AddressTraitsT &gt;" shape="rect" coords="891,0,1178,24"/>
-<area href="classpmm_1_1BlockStateBase.html" title="Базовый класс блока для state machine." alt="pmm::BlockStateBase&lt; AddressTraitsT &gt;" shape="rect" coords="742,112,1029,136"/>
-<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="0,168,287,192"/>
-<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,168,584,192"/>
-<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="594,168,881,192"/>
-<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,168,1178,192"/>
-<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1188,168,1475,192"/>
-<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,168,1772,192"/>
+<area href="structpmm_1_1TreeNode.html" alt="pmm::TreeNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,504,1772,528"/>
+<area href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование." alt="pmm::LinkedListNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,448,1772,472"/>
+<area href="structpmm_1_1TreeNode.html" alt="pmm::TreeNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,392,1772,416"/>
+<area href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование." alt="pmm::LinkedListNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,336,1772,360"/>
+<area href="structpmm_1_1TreeNode.html" alt="pmm::TreeNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,280,1772,304"/>
+<area href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование." alt="pmm::LinkedListNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,224,1772,248"/>
+<area href="structpmm_1_1TreeNode.html" alt="pmm::TreeNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,168,1772,192"/>
+<area href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование." alt="pmm::LinkedListNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,112,1772,136"/>
+<area href="structpmm_1_1TreeNode.html" alt="pmm::TreeNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,56,1772,80"/>
+<area href="structpmm_1_1LinkedListNode.html" title="Узел двухсвязного списка для адресного пространства ПАП, использование только через наследование." alt="pmm::LinkedListNode&lt; AddressTraitsT &gt;" shape="rect" coords="1485,0,1772,24"/>
+<area href="classpmm_1_1BlockStateBase.html" title="Базовый класс блока для state machine." alt="pmm::BlockStateBase&lt; AddressTraitsT &gt;" shape="rect" coords="0,616,287,640"/>
+<area href="classpmm_1_1BlockStateBase.html" title="Базовый класс блока для state machine." alt="pmm::BlockStateBase&lt; AddressTraitsT &gt;" shape="rect" coords="594,616,881,640"/>
+<area href="classpmm_1_1BlockStateBase.html" title="Базовый класс блока для state machine." alt="pmm::BlockStateBase&lt; AddressTraitsT &gt;" shape="rect" coords="1188,616,1475,640"/>
+<area href="classpmm_1_1BlockStateBase.html" title="Базовый класс блока для state machine." alt="pmm::BlockStateBase&lt; AddressTraitsT &gt;" shape="rect" coords="1782,616,2069,640"/>
+<area href="classpmm_1_1BlockStateBase.html" title="Базовый класс блока для state machine." alt="pmm::BlockStateBase&lt; AddressTraitsT &gt;" shape="rect" coords="2376,616,2663,640"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,672,584,696"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,728,584,752"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,784,584,808"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,840,584,864"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,896,584,920"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,952,584,976"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1008,584,1032"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1064,584,1088"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1120,584,1144"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1176,584,1200"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1232,584,1256"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1288,584,1312"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1344,584,1368"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1400,584,1424"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,1456,584,1480"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1512,584,1536"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1568,584,1592"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1624,584,1648"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1680,584,1704"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1736,584,1760"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1792,584,1816"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1848,584,1872"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1904,584,1928"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,1960,584,1984"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="297,2016,584,2040"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,2072,584,2096"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,2128,584,2152"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,2184,584,2208"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,2240,584,2264"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="297,2296,584,2320"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,672,1178,696"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,728,1178,752"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,784,1178,808"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,840,1178,864"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,896,1178,920"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,952,1178,976"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1008,1178,1032"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1064,1178,1088"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1120,1178,1144"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1176,1178,1200"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1232,1178,1256"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1288,1178,1312"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1344,1178,1368"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1400,1178,1424"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,1456,1178,1480"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1512,1178,1536"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1568,1178,1592"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1624,1178,1648"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1680,1178,1704"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1736,1178,1760"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1792,1178,1816"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1848,1178,1872"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1904,1178,1928"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,1960,1178,1984"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="891,2016,1178,2040"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,2072,1178,2096"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,2128,1178,2152"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,2184,1178,2208"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,2240,1178,2264"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="891,2296,1178,2320"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,672,1772,696"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,728,1772,752"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,784,1772,808"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,840,1772,864"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,896,1772,920"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,952,1772,976"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1008,1772,1032"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1064,1772,1088"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1120,1772,1144"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1176,1772,1200"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1232,1772,1256"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1288,1772,1312"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1344,1772,1368"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1400,1772,1424"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1456,1772,1480"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1512,1772,1536"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1568,1772,1592"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1624,1772,1648"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1680,1772,1704"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1736,1772,1760"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1792,1772,1816"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1848,1772,1872"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1904,1772,1928"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,1960,1772,1984"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="1485,2016,1772,2040"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,2072,1772,2096"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,2128,1772,2152"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,2184,1772,2208"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,2240,1772,2264"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="1485,2296,1772,2320"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,672,2366,696"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,728,2366,752"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,784,2366,808"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,840,2366,864"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,896,2366,920"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,952,2366,976"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1008,2366,1032"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1064,2366,1088"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1120,2366,1144"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1176,2366,1200"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1232,2366,1256"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1288,2366,1312"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1344,2366,1368"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1400,2366,1424"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1456,2366,1480"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1512,2366,1536"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1568,2366,1592"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1624,2366,1648"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1680,2366,1704"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1736,2366,1760"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1792,2366,1816"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1848,2366,1872"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1904,2366,1928"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,1960,2366,1984"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2079,2016,2366,2040"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,2072,2366,2096"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,2128,2366,2152"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,2184,2366,2208"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,2240,2366,2264"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2079,2296,2366,2320"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,672,2960,696"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,728,2960,752"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,784,2960,808"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,840,2960,864"/>
+<area href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии." alt="pmm::AllocatedBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,896,2960,920"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,952,2960,976"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1008,2960,1032"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1064,2960,1088"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1120,2960,1144"/>
+<area href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями." alt="pmm::CoalescingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1176,2960,1200"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1232,2960,1256"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1288,2960,1312"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1344,2960,1368"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1400,2960,1424"/>
+<area href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии." alt="pmm::FreeBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1456,2960,1480"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1512,2960,1536"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1568,2960,1592"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1624,2960,1648"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1680,2960,1704"/>
+<area href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL." alt="pmm::FreeBlockNotInAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1736,2960,1760"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1792,2960,1816"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1848,2960,1872"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1904,2960,1928"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,1960,2960,1984"/>
+<area href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева." alt="pmm::FreeBlockRemovedAVL&lt; AddressTraitsT &gt;" shape="rect" coords="2673,2016,2960,2040"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,2072,2960,2096"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,2128,2960,2152"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,2184,2960,2208"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,2240,2960,2264"/>
+<area href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два." alt="pmm::SplittingBlock&lt; AddressTraitsT &gt;" shape="rect" coords="2673,2296,2960,2320"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -109,12 +265,60 @@ Public Types</h2></td></tr>
 <tr class="separator:a5367137d23399bb1a28ec849cabab928"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1851fbdd5746ffc9529e1e3554650ad6" id="r_a1851fbdd5746ffc9529e1e3554650ad6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a1851fbdd5746ffc9529e1e3554650ad6">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
 <tr class="separator:a1851fbdd5746ffc9529e1e3554650ad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5367137d23399bb1a28ec849cabab928" id="r_a5367137d23399bb1a28ec849cabab928"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a5367137d23399bb1a28ec849cabab928">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:a5367137d23399bb1a28ec849cabab928"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1851fbdd5746ffc9529e1e3554650ad6" id="r_a1851fbdd5746ffc9529e1e3554650ad6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a1851fbdd5746ffc9529e1e3554650ad6">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:a1851fbdd5746ffc9529e1e3554650ad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5367137d23399bb1a28ec849cabab928" id="r_a5367137d23399bb1a28ec849cabab928"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a5367137d23399bb1a28ec849cabab928">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:a5367137d23399bb1a28ec849cabab928"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1851fbdd5746ffc9529e1e3554650ad6" id="r_a1851fbdd5746ffc9529e1e3554650ad6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a1851fbdd5746ffc9529e1e3554650ad6">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:a1851fbdd5746ffc9529e1e3554650ad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5367137d23399bb1a28ec849cabab928" id="r_a5367137d23399bb1a28ec849cabab928"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a5367137d23399bb1a28ec849cabab928">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:a5367137d23399bb1a28ec849cabab928"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1851fbdd5746ffc9529e1e3554650ad6" id="r_a1851fbdd5746ffc9529e1e3554650ad6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a1851fbdd5746ffc9529e1e3554650ad6">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:a1851fbdd5746ffc9529e1e3554650ad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5367137d23399bb1a28ec849cabab928" id="r_a5367137d23399bb1a28ec849cabab928"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a5367137d23399bb1a28ec849cabab928">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:a5367137d23399bb1a28ec849cabab928"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1851fbdd5746ffc9529e1e3554650ad6" id="r_a1851fbdd5746ffc9529e1e3554650ad6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1Block.html#a1851fbdd5746ffc9529e1e3554650ad6">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:a1851fbdd5746ffc9529e1e3554650ad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_types_structpmm_1_1LinkedListNode"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structpmm_1_1LinkedListNode')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structpmm_1_1LinkedListNode.html">pmm::LinkedListNode&lt; AddressTraitsT &gt;</a></td></tr>
 <tr class="memitem:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode" id="r_aa3be563ecb743de91b17a999277d8a2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#aa3be563ecb743de91b17a999277d8a2f">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
 <tr class="separator:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode" id="r_ad992656a6ee557cc61ffb1da6f2c292c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#ad992656a6ee557cc61ffb1da6f2c292c">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
 <tr class="separator:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode" id="r_aa3be563ecb743de91b17a999277d8a2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#aa3be563ecb743de91b17a999277d8a2f">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode" id="r_ad992656a6ee557cc61ffb1da6f2c292c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#ad992656a6ee557cc61ffb1da6f2c292c">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode" id="r_aa3be563ecb743de91b17a999277d8a2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#aa3be563ecb743de91b17a999277d8a2f">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode" id="r_ad992656a6ee557cc61ffb1da6f2c292c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#ad992656a6ee557cc61ffb1da6f2c292c">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode" id="r_aa3be563ecb743de91b17a999277d8a2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#aa3be563ecb743de91b17a999277d8a2f">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode" id="r_ad992656a6ee557cc61ffb1da6f2c292c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#ad992656a6ee557cc61ffb1da6f2c292c">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode" id="r_aa3be563ecb743de91b17a999277d8a2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#aa3be563ecb743de91b17a999277d8a2f">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:aa3be563ecb743de91b17a999277d8a2f inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode" id="r_ad992656a6ee557cc61ffb1da6f2c292c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LinkedListNode.html#ad992656a6ee557cc61ffb1da6f2c292c">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:ad992656a6ee557cc61ffb1da6f2c292c inherit pub_types_structpmm_1_1LinkedListNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_types_structpmm_1_1TreeNode"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structpmm_1_1TreeNode')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structpmm_1_1TreeNode.html">pmm::TreeNode&lt; AddressTraitsT &gt;</a></td></tr>
+<tr class="memitem:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode" id="r_a1ed02b385bf2cedb5c7b4e352b7f5158"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a1ed02b385bf2cedb5c7b4e352b7f5158">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode" id="r_a828250a3962d90b3fbc97194d752beef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode" id="r_a1ed02b385bf2cedb5c7b4e352b7f5158"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a1ed02b385bf2cedb5c7b4e352b7f5158">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode" id="r_a828250a3962d90b3fbc97194d752beef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode" id="r_a1ed02b385bf2cedb5c7b4e352b7f5158"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a1ed02b385bf2cedb5c7b4e352b7f5158">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode" id="r_a828250a3962d90b3fbc97194d752beef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode" id="r_a1ed02b385bf2cedb5c7b4e352b7f5158"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a1ed02b385bf2cedb5c7b4e352b7f5158">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
+<tr class="separator:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode" id="r_a828250a3962d90b3fbc97194d752beef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode" id="r_a1ed02b385bf2cedb5c7b4e352b7f5158"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a1ed02b385bf2cedb5c7b4e352b7f5158">address_traits</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td></tr>
 <tr class="separator:a1ed02b385bf2cedb5c7b4e352b7f5158 inherit pub_types_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a828250a3962d90b3fbc97194d752beef inherit pub_types_structpmm_1_1TreeNode" id="r_a828250a3962d90b3fbc97194d752beef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef">index_type</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td></tr>
@@ -169,7 +373,7 @@ struct pmm::Block&lt; AddressTraitsT &gt;</div><p>Блок памяти ПАП �
 <p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00061">61</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a5367137d23399bb1a28ec849cabab928" name="a5367137d23399bb1a28ec849cabab928"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5367137d23399bb1a28ec849cabab928">&#9670;&#160;</a></span>address_traits</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5367137d23399bb1a28ec849cabab928">&#9670;&#160;</a></span>address_traits <span class="overload">[1/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -186,8 +390,80 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 </div>
 </div>
+<a id="a5367137d23399bb1a28ec849cabab928" name="a5367137d23399bb1a28ec849cabab928"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5367137d23399bb1a28ec849cabab928">&#9670;&#160;</a></span>address_traits <span class="overload">[2/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::address_traits =  <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__embedded__heap_8h_source.html#l00513">513</a> of file <a class="el" href="pmm__embedded__heap_8h_source.html">pmm_embedded_heap.h</a>.</p>
+
+</div>
+</div>
+<a id="a5367137d23399bb1a28ec849cabab928" name="a5367137d23399bb1a28ec849cabab928"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5367137d23399bb1a28ec849cabab928">&#9670;&#160;</a></span>address_traits <span class="overload">[3/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::address_traits =  <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__industrial__db__heap_8h_source.html#l00513">513</a> of file <a class="el" href="pmm__industrial__db__heap_8h_source.html">pmm_industrial_db_heap.h</a>.</p>
+
+</div>
+</div>
+<a id="a5367137d23399bb1a28ec849cabab928" name="a5367137d23399bb1a28ec849cabab928"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5367137d23399bb1a28ec849cabab928">&#9670;&#160;</a></span>address_traits <span class="overload">[4/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::address_traits =  <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__multi__threaded__heap_8h_source.html#l00513">513</a> of file <a class="el" href="pmm__multi__threaded__heap_8h_source.html">pmm_multi_threaded_heap.h</a>.</p>
+
+</div>
+</div>
+<a id="a5367137d23399bb1a28ec849cabab928" name="a5367137d23399bb1a28ec849cabab928"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5367137d23399bb1a28ec849cabab928">&#9670;&#160;</a></span>address_traits <span class="overload">[5/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::address_traits =  <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__single__threaded__heap_8h_source.html#l00513">513</a> of file <a class="el" href="pmm__single__threaded__heap_8h_source.html">pmm_single_threaded_heap.h</a>.</p>
+
+</div>
+</div>
 <a id="a1851fbdd5746ffc9529e1e3554650ad6" name="a1851fbdd5746ffc9529e1e3554650ad6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1851fbdd5746ffc9529e1e3554650ad6">&#9670;&#160;</a></span>index_type</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a1851fbdd5746ffc9529e1e3554650ad6">&#9670;&#160;</a></span>index_type <span class="overload">[1/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -204,8 +480,84 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 </div>
 </div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a id="a1851fbdd5746ffc9529e1e3554650ad6" name="a1851fbdd5746ffc9529e1e3554650ad6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1851fbdd5746ffc9529e1e3554650ad6">&#9670;&#160;</a></span>index_type <span class="overload">[2/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::index_type =  <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__embedded__heap_8h_source.html#l00514">514</a> of file <a class="el" href="pmm__embedded__heap_8h_source.html">pmm_embedded_heap.h</a>.</p>
+
+</div>
+</div>
+<a id="a1851fbdd5746ffc9529e1e3554650ad6" name="a1851fbdd5746ffc9529e1e3554650ad6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1851fbdd5746ffc9529e1e3554650ad6">&#9670;&#160;</a></span>index_type <span class="overload">[3/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::index_type =  <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__industrial__db__heap_8h_source.html#l00514">514</a> of file <a class="el" href="pmm__industrial__db__heap_8h_source.html">pmm_industrial_db_heap.h</a>.</p>
+
+</div>
+</div>
+<a id="a1851fbdd5746ffc9529e1e3554650ad6" name="a1851fbdd5746ffc9529e1e3554650ad6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1851fbdd5746ffc9529e1e3554650ad6">&#9670;&#160;</a></span>index_type <span class="overload">[4/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::index_type =  <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__multi__threaded__heap_8h_source.html#l00514">514</a> of file <a class="el" href="pmm__multi__threaded__heap_8h_source.html">pmm_multi_threaded_heap.h</a>.</p>
+
+</div>
+</div>
+<a id="a1851fbdd5746ffc9529e1e3554650ad6" name="a1851fbdd5746ffc9529e1e3554650ad6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1851fbdd5746ffc9529e1e3554650ad6">&#9670;&#160;</a></span>index_type <span class="overload">[5/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt;::index_type =  <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="pmm__single__threaded__heap_8h_source.html#l00514">514</a> of file <a class="el" href="pmm__single__threaded__heap_8h_source.html">pmm_single_threaded_heap.h</a>.</p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following files:<ul>
 <li>include/pmm/<a class="el" href="block_8h_source.html">block.h</a></li>
+<li>include/<a class="el" href="pmm__embedded__heap_8h_source.html">pmm_embedded_heap.h</a></li>
+<li>include/<a class="el" href="pmm__industrial__db__heap_8h_source.html">pmm_industrial_db_heap.h</a></li>
+<li>include/<a class="el" href="pmm__multi__threaded__heap_8h_source.html">pmm_multi_threaded_heap.h</a></li>
+<li>include/<a class="el" href="pmm__single__threaded__heap_8h_source.html">pmm_single_threaded_heap.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
