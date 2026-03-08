@@ -5,10 +5,12 @@ on:
     branches: ["**"]
     paths-ignore:
       - "**/*.md"
+      - ".gitkeep"
   pull_request:
     branches: ["**"]
     paths-ignore:
       - "**/*.md"
+      - ".gitkeep"
 
 jobs:
   # ─── Code formatting check ───────────────────────────────────────────────────
