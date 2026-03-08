@@ -5,6 +5,7 @@
  * Issue #65: Add AVL tree display to the visual demo.
  * Issue #116: Uses DemoMgr::for_each_free_block() to iterate over free blocks
  * in-order (by size) and display their offset, size, AVL height, and depth.
+ * Issue #118: Renders the AVL tree as a visual tree (not a flat table).
  */
 
 #pragma once
@@ -14,6 +15,8 @@
 #include "pmm/types.h"
 
 #include <cstddef>
+#include <cstdint>
+#include <unordered_map>
 #include <vector>
 
 namespace demo
@@ -23,7 +26,11 @@ namespace demo
  * @brief ImGui panel showing the PMM AVL free-block tree.
  *
  * Iterates over free blocks via DemoMgr::for_each_free_block() (in-order by
- * size) and renders each node with offset, free bytes, AVL height, and depth.
+ * size) and renders the tree structure using ImGui TreeNode/TreePop, starting
+ * from the root (the node with parent_offset == -1) and recursively rendering
+ * left and right children.
+ *
+ * Issue #118: Visual tree rendering replaces the flat table view.
  */
 class AvlTreeView
 {
@@ -46,6 +53,12 @@ class AvlTreeView
     std::size_t free_size_        = 0;
 
     std::vector<pmm::FreeBlockView> free_blocks_; ///< In-order snapshot of free blocks.
+
+    /// Map from byte offset to index in free_blocks_ (for O(1) child lookup).
+    std::unordered_map<std::ptrdiff_t, std::size_t> offset_to_idx_;
+
+    /// Recursively render one AVL tree node and its children.
+    void render_node( std::ptrdiff_t offset, int depth );
 };
 
 } // namespace demo

@@ -1,10 +1,13 @@
 /**
  * @file test_mem_map_view.cpp
- * @brief Headless tests for MemMapView::update_snapshot() (Issue #116).
+ * @brief Headless tests for MemMapView::update_snapshot() (Issue #116, #118).
  *
  * MemMapView now uses DemoMgr::for_each_block() to build a per-byte PixelKind
  * array for block-level pixel colouring. A logarithmic bytes-per-pixel slider
  * controls the zoom level.
+ *
+ * Issue #118: The pixel map is rendered as a 2D texture — pixels wrap into
+ * multiple rows so that the map fills the available panel width automatically.
  *
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
  * g_pmm is a boolean flag: true when the manager is active.
@@ -14,6 +17,7 @@
  *  2. update_snapshot() reflects allocations (used_bytes increases).
  *  3. When g_pmm is false (inactive), total_bytes() returns 0 after snapshot.
  *  4. highlighted_block field survives snapshot updates.
+ *  5. 2D layout: num_pixels > pixels_per_row produces multiple rows.
  *
  * Built only when PMM_BUILD_DEMO=ON (requires demo sources + ImGui stubs).
  */
@@ -23,6 +27,7 @@
 
 #include "pmm/types.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
@@ -210,6 +215,46 @@ static bool test_block_pixel_map_covers_total()
     return true;
 }
 
+/**
+ * @brief Issue #118: 2D layout arithmetic is consistent.
+ *
+ * Verifies that after update_snapshot() the total_bytes() value allows the
+ * 2D pixel-map layout to produce more than one row when bytes_per_pixel == 1
+ * and a narrow panel width is used (simulated in arithmetic only).
+ *
+ * The rendering itself is ImGui-dependent, but we can validate the layout
+ * arithmetic: pixels_per_row = floor(map_width / px_size) and
+ * num_rows = ceil(total_pixels / pixels_per_row).
+ */
+static bool test_2d_layout_rows()
+{
+    constexpr std::size_t kPmmSize = 256 * 1024;
+    make_pmm( kPmmSize );
+    PMM_TEST( demo::g_pmm.load() );
+
+    demo::MemMapView view;
+    view.update_snapshot();
+
+    PMM_TEST( view.total_bytes() == kPmmSize );
+
+    // Simulate 2D layout arithmetic.
+    // With bytes_per_pixel = 1, num_pixels = total_bytes = 256 KiB.
+    // With a narrow panel width of 64 px and pixel_size = 4 px:
+    //   pixels_per_row = floor(64 / 4) = 16
+    //   num_rows = ceil(262144 / 16) = 16384 > 1
+    const std::size_t num_pixels     = view.total_bytes(); // bytes_per_pixel = 1
+    const float       map_width      = 64.0f;
+    const float       px_size        = 4.0f;
+    const std::size_t pixels_per_row = std::max<std::size_t>( 1, static_cast<std::size_t>( map_width / px_size ) );
+    const std::size_t num_rows       = ( num_pixels + pixels_per_row - 1 ) / pixels_per_row;
+
+    PMM_TEST( pixels_per_row == 16 );
+    PMM_TEST( num_rows > 1 );
+
+    destroy_pmm();
+    return true;
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 int main()
@@ -222,6 +267,7 @@ int main()
     PMM_RUN( "snapshot_inactive_mgr", test_snapshot_inactive_mgr );
     PMM_RUN( "highlighted_block_preserved", test_highlighted_block_preserved );
     PMM_RUN( "block_pixel_map_covers_total", test_block_pixel_map_covers_total );
+    PMM_RUN( "2d_layout_rows", test_2d_layout_rows );
 
     std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
     return all_passed ? 0 : 1;

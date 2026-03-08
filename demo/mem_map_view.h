@@ -80,6 +80,7 @@ class MemMapView
     float       bar_height_      = 24.0f; ///< Height of the simple usage bar
     int         bpp_log2_        = 0;     ///< log2(bytes_per_pixel), slider value
     std::size_t bytes_per_pixel_ = 1;     ///< Current bytes per pixel (2^bpp_log2_)
+    float       pixel_size_      = 4.0f;  ///< Issue #118: side length of one pixel square in screen pixels
 
     // ── Helpers ───────────────────────────────────────────────────────────────
     void rebuild_pixel_map();
