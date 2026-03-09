@@ -9,10 +9,13 @@
  *   - Read-only: символьные данные никогда не изменяются после создания.
  *   - Интернирование: одинаковые строки используют одно и то же хранилище.
  *     Два pstringview с одинаковым содержимым указывают на один chars_idx.
- *   - Блокировка блоков: блоки с символьными данными блокируются через
+ *   - Блокировка блоков: блоки с символьными данными и блоки pstringview блокируются через
  *     lock_block_permanent() — они не могут быть освобождены через deallocate().
- *   - Словарь: pstringview_table<ManagerT> растёт в течение жизни менеджера,
+ *   - Словарь: AVL-дерево pstringview-узлов растёт в течение жизни менеджера,
  *     экономя память за счёт дедупликации строковых констант.
+ *   - Встроенный AVL: каждый pstringview-блок использует встроенные поля TreeNode
+ *     (left_offset, right_offset, parent_offset, avl_height) из Block<AT> в качестве
+ *     AVL-ссылок. Это "лес AVL-деревьев" ПАП, встроенный в концепцию менеджера.
  *   - Персистентность: granule-индексы адресно-независимы и корректны
  *     при перезагрузке ПАП по другому базовому адресу.
  *
@@ -37,7 +40,8 @@
  *
  * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
- * @version 0.1 (Issue #151 — реализация pstringview)
+ * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока, Issue #87, #138)
+ * @version 0.2 (Issue #151 — pstringview через встроенный AVL-лес ПАП)
  */
 
 #pragma once
@@ -52,27 +56,7 @@ namespace pmm
 
 // Forward declarations
 template <typename ManagerT> struct pstringview;
-template <typename ManagerT> struct pstringview_table;
 template <typename ManagerT> struct pstringview_manager;
-
-// ─── pstringview_entry ──────────────────────────────────────────────────────
-
-/// @brief Одна запись в таблице интернирования строк.
-///
-/// Хранит FNV-1a хэш, granule-индекс символьных данных и длину строки.
-/// Пустая ячейка: chars_idx == 0.
-template <typename ManagerT> struct pstringview_entry
-{
-    using index_type = typename ManagerT::index_type;
-
-    std::uint64_t hash;      ///< FNV-1a хэш строки (0 = пустая ячейка)
-    index_type    chars_idx; ///< Granule-индекс массива char в ПАП; 0 = пустая ячейка
-    index_type psview_idx; ///< Granule-индекс объекта pstringview в ПАП; 0 если не создан
-    std::uint32_t length;  ///< Длина строки (без нулевого терминатора)
-};
-
-// Note: pstringview_entry<ManagerT> is trivially copyable for any valid ManagerT
-// (all fields are integral types). This is verified in tests.
 
 // ─── pstringview ─────────────────────────────────────────────────────────────
 
@@ -83,9 +67,13 @@ template <typename ManagerT> struct pstringview_entry
  * Объекты pstringview живут в ПАП и не могут быть созданы на стеке напрямую.
  * Создавайте через pstringview_manager<ManagerT>::intern(s).
  *
+ * AVL-дерево: каждый pstringview использует встроенные поля TreeNode своего блока
+ * (left_offset, right_offset, parent_offset, avl_height) как ссылки AVL-дерева
+ * словаря интернирования. Это является частью "леса AVL-деревьев" ПАП.
+ *
  * Инварианты:
  *   - chars_idx указывает на null-terminated char[], заблокированный навечно.
- *   - Два pstringview с одинаковым содержимым имеют одинаковый chars_idx.
+ *   - Два pstringview с одинаковым содержимым — это один объект (один granule-индекс).
  *
  * @tparam ManagerT Тип менеджера памяти (PersistMemoryManager<ConfigT, InstanceId>).
  */
@@ -143,357 +131,20 @@ template <typename ManagerT> struct pstringview
     template <typename M> friend struct pstringview_manager;
 };
 
-// ─── pstringview_table ───────────────────────────────────────────────────────
-
-/**
- * @brief Персистентная таблица интернирования строк (Issue #151).
- *
- * Хэш-таблица с открытой адресацией и линейным пробированием.
- * Ключ: FNV-1a хэш + granule-индекс символьных данных.
- * Строки НИКОГДА не удаляются — бессмертные записи.
- *
- * Load factor: < 0.5 (при превышении выполняется rehash × 2).
- *
- * @tparam ManagerT Тип менеджера памяти.
- */
-template <typename ManagerT> struct pstringview_table
-{
-    using manager_type = ManagerT;
-    using index_type   = typename ManagerT::index_type;
-    using entry_type   = pstringview_entry<ManagerT>;
-    using entry_pptr   = typename ManagerT::template pptr<entry_type>;
-    using psview_type  = pstringview<ManagerT>;
-    using psview_pptr  = typename ManagerT::template pptr<psview_type>;
-    using char_pptr    = typename ManagerT::template pptr<char>;
-
-    std::uint32_t count_;    ///< Число занятых ячеек
-    std::uint32_t capacity_; ///< Ёмкость таблицы (число ячеек)
-    index_type buckets_idx;  ///< Granule-индекс массива ячеек в ПАП; 0 если не создан
-
-    /// @brief Вычислить FNV-1a хэш строки.
-    static std::uint64_t fnv1a( const char* s ) noexcept
-    {
-        std::uint64_t h = 14695981039346656037ULL;
-        while ( *s != '\0' )
-        {
-            h ^= static_cast<std::uint8_t>( *s++ );
-            h *= 1099511628211ULL;
-        }
-        return h;
-    }
-
-    /// @brief Результат интернирования: granule-индексы символьных данных и pstringview.
-    struct InternResult
-    {
-        index_type    chars_idx;  ///< Granule-индекс символьного массива
-        index_type    psview_idx; ///< Granule-индекс объекта pstringview
-        std::uint32_t length;     ///< Длина строки
-    };
-
-    /**
-     * @brief Интернировать строку s: вернуть granule-индексы для строки.
-     *
-     * Если строка уже есть — вернуть существующие индексы.
-     * Если нет — создать новый массив char в ПАП и новый pstringview,
-     *            заблокировать блоки навечно (lock_block_permanent).
-     *
-     * @param self_idx Granule-индекс самого объекта pstringview_table в ПАП.
-     * @param s C-строка для интернирования (nullptr обрабатывается как "").
-     * @return InternResult с заполненными chars_idx, psview_idx и length.
-     */
-    InternResult intern( index_type self_idx, const char* s ) noexcept
-    {
-        if ( s == nullptr )
-            s = "";
-
-        auto          len  = static_cast<std::uint32_t>( std::strlen( s ) );
-        std::uint64_t hash = fnv1a( s );
-
-        // Убеждаемся, что таблица инициализирована.
-        _ensure_initialized( self_idx );
-
-        // Перехэшируем, если load factor > 0.5.
-        {
-            pstringview_table* self = _resolve_self( self_idx );
-            if ( self != nullptr && self->count_ * 2 >= self->capacity_ )
-                self->_rehash( self_idx, self->capacity_ * 2 );
-        }
-
-        // Ищем ячейку.
-        pstringview_table* self = _resolve_self( self_idx );
-        if ( self == nullptr )
-        {
-            // Аварийный случай: не удалось инициализировать таблицу.
-            return { static_cast<index_type>( 0 ), static_cast<index_type>( 0 ), 0 };
-        }
-
-        std::uint32_t cap = self->capacity_;
-        if ( cap == 0 )
-            return { static_cast<index_type>( 0 ), static_cast<index_type>( 0 ), 0 };
-
-        auto idx = static_cast<std::uint32_t>( hash % cap );
-
-        for ( std::uint32_t probe = 0; probe < cap; probe++ )
-        {
-            // Переразрешаем self на каждой итерации (возможен realloc при расширении).
-            self = _resolve_self( self_idx );
-            if ( self == nullptr )
-                break;
-            cap           = self->capacity_;
-            entry_type* e = _get_entry( self, idx );
-            if ( e == nullptr )
-                break;
-
-            if ( e->chars_idx == 0 )
-            {
-                // Пустая ячейка — создаём новые данные.
-                index_type new_chars  = _create_chars( self_idx, s, len );
-                index_type new_psview = _create_psview( self_idx, new_chars, len );
-
-                // Переразрешаем после возможного realloc.
-                self = _resolve_self( self_idx );
-                if ( self == nullptr )
-                    return { new_chars, new_psview, len };
-                cap = self->capacity_;
-                // Пересчитываем idx после возможного rehash.
-                idx = static_cast<std::uint32_t>( hash % cap );
-
-                // Находим первую пустую ячейку для вставки.
-                for ( std::uint32_t p2 = 0; p2 < cap; p2++ )
-                {
-                    entry_type* c2 = _get_entry( self, idx );
-                    if ( c2 == nullptr )
-                        break;
-                    if ( c2->chars_idx == 0 )
-                    {
-                        c2->hash       = hash;
-                        c2->chars_idx  = new_chars;
-                        c2->psview_idx = new_psview;
-                        c2->length     = len;
-                        self->count_++;
-                        return { new_chars, new_psview, len };
-                    }
-                    idx = ( idx + 1 ) % cap;
-                }
-                // Не должно произойти при корректном load factor.
-                return { new_chars, new_psview, len };
-            }
-
-            // Занятая ячейка: сравниваем хэш, длину и содержимое.
-            if ( e->hash == hash && e->length == len )
-            {
-                char_pptr   cp( e->chars_idx );
-                const char* cs = ManagerT::template resolve<char>( cp );
-                if ( cs != nullptr && std::strcmp( cs, s ) == 0 )
-                    return { e->chars_idx, e->psview_idx, e->length };
-            }
-            idx = ( idx + 1 ) % cap;
-        }
-
-        // Таблица переполнена (не должно происходить при load factor < 0.5).
-        index_type new_chars  = _create_chars( self_idx, s, len );
-        index_type new_psview = _create_psview( self_idx, new_chars, len );
-        return { new_chars, new_psview, len };
-    }
-
-  private:
-    /// @brief Получить указатель на себя по granule-индексу (переразрешение).
-    static pstringview_table* _resolve_self( index_type self_idx ) noexcept
-    {
-        if ( self_idx == 0 )
-            return nullptr;
-        typename ManagerT::template pptr<pstringview_table> p( self_idx );
-        return ManagerT::template resolve<pstringview_table>( p );
-    }
-
-    /// @brief Получить указатель на ячейку таблицы по индексу.
-    static entry_type* _get_entry( pstringview_table* self, std::uint32_t idx ) noexcept
-    {
-        if ( self == nullptr || self->buckets_idx == 0 )
-            return nullptr;
-        entry_pptr  ep( self->buckets_idx );
-        entry_type* base_entry = ManagerT::template resolve<entry_type>( ep );
-        if ( base_entry == nullptr )
-            return nullptr;
-        return base_entry + idx;
-    }
-
-    /// @brief Инициализировать массив ячеек.
-    void _ensure_initialized( index_type self_idx ) noexcept
-    {
-        pstringview_table* self = _resolve_self( self_idx );
-        if ( self == nullptr || self->capacity_ > 0 )
-            return;
-        _init_buckets( self_idx, 16u );
-    }
-
-    /// @brief Инициализировать массив из initial_cap пустых ячеек.
-    static void _init_buckets( index_type self_idx, std::uint32_t initial_cap ) noexcept
-    {
-        if ( initial_cap == 0 )
-            return;
-
-        entry_pptr arr = ManagerT::template allocate_typed<entry_type>( static_cast<std::size_t>( initial_cap ) );
-        if ( arr.is_null() )
-            return;
-
-        // Инициализируем нулями (пустые ячейки: chars_idx == 0).
-        entry_type* raw = ManagerT::template resolve<entry_type>( arr );
-        if ( raw == nullptr )
-            return;
-        for ( std::uint32_t i = 0; i < initial_cap; i++ )
-        {
-            raw[i].hash       = 0;
-            raw[i].chars_idx  = static_cast<index_type>( 0 );
-            raw[i].psview_idx = static_cast<index_type>( 0 );
-            raw[i].length     = 0;
-        }
-
-        // Блокируем массив ячеек навечно (он никогда не должен освобождаться).
-        void* buckets_raw = ManagerT::template resolve<entry_type>( arr );
-        if ( buckets_raw != nullptr )
-            ManagerT::lock_block_permanent( buckets_raw );
-
-        pstringview_table* self = _resolve_self( self_idx );
-        if ( self == nullptr )
-            return;
-        self->buckets_idx = arr.offset();
-        self->capacity_   = initial_cap;
-        self->count_      = 0;
-    }
-
-    /// @brief Создать новый массив char в ПАП. Возвращает granule-индекс.
-    static index_type _create_chars( index_type /*self_idx*/, const char* s, std::uint32_t len ) noexcept
-    {
-        char_pptr arr = ManagerT::template allocate_typed<char>( static_cast<std::size_t>( len + 1 ) );
-        if ( arr.is_null() )
-            return static_cast<index_type>( 0 );
-
-        char* dst = ManagerT::template resolve<char>( arr );
-        if ( dst != nullptr )
-            std::memcpy( dst, s, static_cast<std::size_t>( len + 1 ) );
-
-        // Блокируем символьные данные навечно (Issue #151, Issue #126).
-        if ( dst != nullptr )
-            ManagerT::lock_block_permanent( dst );
-
-        return arr.offset();
-    }
-
-    /// @brief Создать объект pstringview в ПАП. Возвращает granule-индекс.
-    static index_type _create_psview( index_type self_idx, index_type chars_idx_val, std::uint32_t len ) noexcept
-    {
-        // Сохраняем self_idx перед возможным realloc.
-        (void)self_idx;
-
-        typename ManagerT::template pptr<psview_type> p = ManagerT::template allocate_typed<psview_type>();
-        if ( p.is_null() )
-            return static_cast<index_type>( 0 );
-
-        psview_type* obj = ManagerT::template resolve<psview_type>( p );
-        if ( obj != nullptr )
-        {
-            obj->chars_idx = chars_idx_val;
-            obj->length    = len;
-        }
-
-        // Блокируем объект pstringview навечно (Issue #151, Issue #126).
-        if ( obj != nullptr )
-            ManagerT::lock_block_permanent( obj );
-
-        return p.offset();
-    }
-
-    /// @brief Перехэшировать таблицу в новую ёмкость new_cap.
-    void _rehash( index_type self_idx, std::uint32_t new_cap ) noexcept
-    {
-        if ( new_cap == 0 )
-            return;
-
-        pstringview_table* self = _resolve_self( self_idx );
-        if ( self == nullptr )
-            return;
-        std::uint32_t old_cap     = self->capacity_;
-        index_type    old_bkt_idx = self->buckets_idx;
-
-        // Выделяем новый массив ячеек.
-        entry_pptr new_arr = ManagerT::template allocate_typed<entry_type>( static_cast<std::size_t>( new_cap ) );
-        if ( new_arr.is_null() )
-            return;
-
-        entry_type* new_raw = ManagerT::template resolve<entry_type>( new_arr );
-        if ( new_raw == nullptr )
-            return;
-        for ( std::uint32_t i = 0; i < new_cap; i++ )
-        {
-            new_raw[i].hash       = 0;
-            new_raw[i].chars_idx  = static_cast<index_type>( 0 );
-            new_raw[i].psview_idx = static_cast<index_type>( 0 );
-            new_raw[i].length     = 0;
-        }
-
-        // Переносим все существующие записи.
-        if ( old_bkt_idx != 0 )
-        {
-            entry_pptr  old_ep( old_bkt_idx );
-            entry_type* old_raw = ManagerT::template resolve<entry_type>( old_ep );
-            if ( old_raw != nullptr )
-            {
-                for ( std::uint32_t i = 0; i < old_cap; i++ )
-                {
-                    if ( old_raw[i].chars_idx == 0 )
-                        continue;
-                    std::uint64_t h   = old_raw[i].hash;
-                    auto          ins = static_cast<std::uint32_t>( h % new_cap );
-                    for ( std::uint32_t p = 0; p < new_cap; p++ )
-                    {
-                        // Переразрешаем после каждой итерации (перестраховка).
-                        new_raw = ManagerT::template resolve<entry_type>( new_arr );
-                        if ( new_raw == nullptr )
-                            break;
-                        if ( new_raw[ins].chars_idx == 0 )
-                        {
-                            new_raw[ins] = old_raw[i];
-                            break;
-                        }
-                        ins = ( ins + 1 ) % new_cap;
-                    }
-                    // Переразрешаем old_raw после новых аллокаций.
-                    old_raw = ManagerT::template resolve<entry_type>( old_ep );
-                    if ( old_raw == nullptr )
-                        break;
-                }
-            }
-        }
-
-        // Блокируем новый массив навечно.
-        void* new_buckets_raw = ManagerT::template resolve<entry_type>( new_arr );
-        if ( new_buckets_raw != nullptr )
-            ManagerT::lock_block_permanent( new_buckets_raw );
-
-        // Обновляем self.
-        self = _resolve_self( self_idx );
-        if ( self == nullptr )
-            return;
-        self->buckets_idx = new_arr.offset();
-        self->capacity_   = new_cap;
-        // count_ не изменяется (строки бессмертны, deleted-записей нет).
-    }
-
-    // Запрещаем создание на стеке.
-    pstringview_table() noexcept : count_( 0 ), capacity_( 0 ), buckets_idx( 0 ) {}
-    ~pstringview_table() = default;
-
-    template <typename M> friend struct pstringview_manager;
-};
-
 // ─── pstringview_manager ─────────────────────────────────────────────────────
 
 /**
- * @brief Синглтон менеджера таблицы интернирования для конкретного ManagerT (Issue #151).
+ * @brief Синглтон-менеджер словаря интернирования строк на основе встроенного AVL-дерева ПАП (Issue #151).
  *
- * Хранит granule-индекс pstringview_table в статической переменной.
- * При первом вызове intern() создаёт таблицу в ПАП.
+ * Использует встроенные поля TreeNode каждого pstringview-блока
+ * (left_offset, right_offset, parent_offset, avl_height, доступные через pptr::tree_node())
+ * в качестве ссылок AVL-дерева, упорядоченного лексикографически по содержимому строки.
+ *
+ * Это реализует концепцию "леса AVL-деревьев" ПАП для создания map<key, value>.
+ * Никаких дополнительных структур в ПАП не требуется — только указатель на корень дерева.
+ *
+ * Хранит только granule-индекс корня дерева в статической переменной (_root_idx).
+ * При первом вызове intern() корень равен 0 (пустое дерево).
  * При вызове reset() сбрасывает синглтон (для тестов).
  *
  * @tparam ManagerT Тип менеджера памяти.
@@ -502,13 +153,16 @@ template <typename ManagerT> struct pstringview_manager
 {
     using manager_type = ManagerT;
     using index_type   = typename ManagerT::index_type;
-    using table_type   = pstringview_table<ManagerT>;
     using psview_type  = pstringview<ManagerT>;
     using psview_pptr  = typename ManagerT::template pptr<psview_type>;
-    using table_pptr   = typename ManagerT::template pptr<table_type>;
+    using char_pptr    = typename ManagerT::template pptr<char>;
 
     /**
      * @brief Интернировать строку s: найти существующий pstringview или создать новый.
+     *
+     * Выполняет поиск в AVL-дереве по лексикографическому ключу. Если строка найдена —
+     * возвращает существующий pptr. Если нет — создаёт новый pstringview-блок, блокирует
+     * его навечно и вставляет в AVL-дерево.
      *
      * @param s C-строка для интернирования (nullptr обрабатывается как "").
      * @return pptr<pstringview<ManagerT>> — персистентный указатель на pstringview.
@@ -519,68 +173,314 @@ template <typename ManagerT> struct pstringview_manager
         if ( s == nullptr )
             s = "";
 
-        // Получаем или создаём таблицу.
-        index_type tbl_idx = _get_or_create_table();
-        if ( tbl_idx == 0 )
+        // Ищем в AVL-дереве.
+        psview_pptr found = _avl_find( s );
+        if ( !found.is_null() )
+            return found;
+
+        // Не найдено — создаём новый объект pstringview.
+        auto len = static_cast<std::uint32_t>( std::strlen( s ) );
+
+        // Создаём char[] в ПАП и блокируем навечно.
+        index_type new_chars = _create_chars( s, len );
+        if ( new_chars == static_cast<index_type>( 0 ) && len > 0 )
             return psview_pptr();
 
-        // Вызываем intern на таблице.
-        table_pptr  tp( tbl_idx );
-        table_type* tbl = ManagerT::template resolve<table_type>( tp );
-        if ( tbl == nullptr )
+        // Создаём объект pstringview в ПАП.
+        psview_pptr new_node = ManagerT::template allocate_typed<psview_type>();
+        if ( new_node.is_null() )
             return psview_pptr();
 
-        typename table_type::InternResult result = tbl->intern( tbl_idx, s );
-        return psview_pptr( result.psview_idx );
+        psview_type* obj = ManagerT::template resolve<psview_type>( new_node );
+        if ( obj == nullptr )
+            return psview_pptr();
+        obj->chars_idx = new_chars;
+        obj->length    = len;
+
+        // Инициализируем AVL-поля нового узла (пустые ссылки, высота 1).
+        auto& tn = new_node.tree_node();
+        tn.set_left( static_cast<index_type>( 0 ) );
+        tn.set_right( static_cast<index_type>( 0 ) );
+        tn.set_parent( static_cast<index_type>( 0 ) );
+        tn.set_height( static_cast<std::int16_t>( 1 ) );
+
+        // Блокируем блок pstringview навечно (Issue #151, Issue #126).
+        ManagerT::lock_block_permanent( obj );
+
+        // Вставляем в AVL-дерево.
+        _avl_insert( new_node );
+
+        return new_node;
     }
 
     /**
      * @brief Сбросить синглтон (для тестов).
      *
-     * Сбрасывает статическую переменную _table_idx, но не освобождает
+     * Сбрасывает статическую переменную _root_idx, но не освобождает
      * данные в ПАП (блоки заблокированы навечно).
      */
-    static void reset() noexcept { _table_idx = static_cast<index_type>( 0 ); }
+    static void reset() noexcept { _root_idx = static_cast<index_type>( 0 ); }
 
-    /// @brief Granule-индекс таблицы интернирования в ПАП; 0 = не инициализировано.
-    static inline index_type _table_idx = static_cast<index_type>( 0 );
+    /// @brief Granule-индекс корня AVL-дерева интернирования; 0 = пустое дерево.
+    static inline index_type _root_idx = static_cast<index_type>( 0 );
 
   private:
-    /**
-     * @brief Получить granule-индекс таблицы интернирования.
-     *
-     * При первом вызове создаёт таблицу в ПАП и блокирует её навечно.
-     *
-     * @return Granule-индекс pstringview_table, или 0 при ошибке.
-     */
-    static index_type _get_or_create_table() noexcept
+    // ─── Вспомогательные методы ────────────────────────────────────────────────
+
+    /// @brief Создать массив char в ПАП и заблокировать навечно.
+    static index_type _create_chars( const char* s, std::uint32_t len ) noexcept
     {
-        if ( _table_idx != 0 )
-            return _table_idx;
-
-        // Создаём таблицу в ПАП.
-        table_pptr tp = ManagerT::template allocate_typed<table_type>();
-        if ( tp.is_null() )
-            return static_cast<index_type>( 0 );
-
-        table_type* tbl = ManagerT::template resolve<table_type>( tp );
-        if ( tbl != nullptr )
+        if ( len == 0 )
         {
-            tbl->count_      = 0;
-            tbl->capacity_   = 0;
-            tbl->buckets_idx = static_cast<index_type>( 0 );
+            // Пустая строка: выделяем один байт для нулевого терминатора.
+            char_pptr arr = ManagerT::template allocate_typed<char>( 1 );
+            if ( arr.is_null() )
+                return static_cast<index_type>( 0 );
+            char* dst = ManagerT::template resolve<char>( arr );
+            if ( dst != nullptr )
+                dst[0] = '\0';
+            if ( dst != nullptr )
+                ManagerT::lock_block_permanent( dst );
+            return arr.offset();
         }
 
-        // Блокируем объект таблицы навечно (Issue #151, Issue #126).
-        if ( tbl != nullptr )
-            ManagerT::lock_block_permanent( tbl );
+        char_pptr arr = ManagerT::template allocate_typed<char>( static_cast<std::size_t>( len + 1 ) );
+        if ( arr.is_null() )
+            return static_cast<index_type>( 0 );
+        char* dst = ManagerT::template resolve<char>( arr );
+        if ( dst != nullptr )
+            std::memcpy( dst, s, static_cast<std::size_t>( len + 1 ) );
+        if ( dst != nullptr )
+            ManagerT::lock_block_permanent( dst );
+        return arr.offset();
+    }
 
-        _table_idx = tp.offset();
-        return _table_idx;
+    // ─── AVL-дерево (использует встроенные TreeNode-поля каждого pstringview-блока) ─
+
+    /// @brief Получить высоту узла (0 если null).
+    static std::int16_t _height( psview_pptr p ) noexcept
+    {
+        if ( p.is_null() )
+            return 0;
+        return p.get_tree_height();
+    }
+
+    /// @brief Обновить высоту узла по высотам его потомков.
+    static void _update_height( psview_pptr p ) noexcept
+    {
+        if ( p.is_null() )
+            return;
+        std::int16_t lh = _height( psview_pptr( p.get_tree_left().offset() ) );
+        std::int16_t rh = _height( psview_pptr( p.get_tree_right().offset() ) );
+        std::int16_t h  = static_cast<std::int16_t>( 1 + ( lh > rh ? lh : rh ) );
+        p.set_tree_height( h );
+    }
+
+    /// @brief Фактор баланса: height(left) - height(right).
+    static std::int16_t _balance_factor( psview_pptr p ) noexcept
+    {
+        if ( p.is_null() )
+            return 0;
+        std::int16_t lh = _height( psview_pptr( p.get_tree_left().offset() ) );
+        std::int16_t rh = _height( psview_pptr( p.get_tree_right().offset() ) );
+        return static_cast<std::int16_t>( lh - rh );
+    }
+
+    /// @brief Обновить ссылку child у parent (или корень дерева если parent == null).
+    static void _set_child( psview_pptr parent, psview_pptr old_child, psview_pptr new_child ) noexcept
+    {
+        if ( parent.is_null() )
+        {
+            _root_idx = new_child.offset();
+            return;
+        }
+        psview_pptr left_of_parent( parent.get_tree_left().offset() );
+        if ( left_of_parent == old_child )
+            parent.set_tree_left( new_child );
+        else
+            parent.set_tree_right( new_child );
+    }
+
+    /**
+     * @brief Правый поворот вокруг y; возвращает новый корень поддерева (x).
+     *
+     *     y            x
+     *    / \          / \
+     *   x   C  -->  A    y
+     *  / \               / \
+     * A   B             B   C
+     */
+    static psview_pptr _rotate_right( psview_pptr y ) noexcept
+    {
+        psview_pptr x      = psview_pptr( y.get_tree_left().offset() );
+        psview_pptr b      = psview_pptr( x.get_tree_right().offset() );
+        psview_pptr y_par  = psview_pptr( y.get_tree_parent().offset() );
+
+        // x.right = y; y.parent = x
+        x.set_tree_right( y );
+        y.set_tree_parent( x );
+
+        // y.left = B; B.parent = y (если B не null)
+        y.set_tree_left( b );
+        if ( !b.is_null() )
+            b.set_tree_parent( y );
+
+        // x.parent = y_par
+        x.set_tree_parent( y_par );
+
+        // Обновить ссылку у родителя
+        _set_child( y_par, y, x );
+
+        _update_height( y );
+        _update_height( x );
+        return x;
+    }
+
+    /**
+     * @brief Левый поворот вокруг x; возвращает новый корень поддерева (y).
+     *
+     *   x               y
+     *  / \             / \
+     * A   y   -->    x    C
+     *    / \        / \
+     *   B   C      A   B
+     */
+    static psview_pptr _rotate_left( psview_pptr x ) noexcept
+    {
+        psview_pptr y      = psview_pptr( x.get_tree_right().offset() );
+        psview_pptr b      = psview_pptr( y.get_tree_left().offset() );
+        psview_pptr x_par  = psview_pptr( x.get_tree_parent().offset() );
+
+        // y.left = x; x.parent = y
+        y.set_tree_left( x );
+        x.set_tree_parent( y );
+
+        // x.right = B; B.parent = x (если B не null)
+        x.set_tree_right( b );
+        if ( !b.is_null() )
+            b.set_tree_parent( x );
+
+        // y.parent = x_par
+        y.set_tree_parent( x_par );
+
+        // Обновить ссылку у родителя
+        _set_child( x_par, x, y );
+
+        _update_height( x );
+        _update_height( y );
+        return y;
+    }
+
+    /// @brief Ребалансировка начиная с узла p вверх до корня.
+    static void _rebalance_up( psview_pptr p ) noexcept
+    {
+        while ( !p.is_null() )
+        {
+            _update_height( p );
+            std::int16_t bf = _balance_factor( p );
+            if ( bf > 1 )
+            {
+                // Левое поддерево перевешивает.
+                psview_pptr left( p.get_tree_left().offset() );
+                if ( _balance_factor( left ) < 0 )
+                {
+                    // LR-случай: сначала левый поворот левого потомка.
+                    _rotate_left( left );
+                }
+                p = _rotate_right( p );
+            }
+            else if ( bf < -1 )
+            {
+                // Правое поддерево перевешивает.
+                psview_pptr right( p.get_tree_right().offset() );
+                if ( _balance_factor( right ) > 0 )
+                {
+                    // RL-случай: сначала правый поворот правого потомка.
+                    _rotate_right( right );
+                }
+                p = _rotate_left( p );
+            }
+            // Переходим к родителю.
+            p = psview_pptr( p.get_tree_parent().offset() );
+        }
+    }
+
+    /// @brief Найти узел AVL-дерева с заданной строкой. Возвращает null если не найден.
+    static psview_pptr _avl_find( const char* s ) noexcept
+    {
+        psview_pptr cur( _root_idx );
+        while ( !cur.is_null() )
+        {
+            psview_type* obj = ManagerT::template resolve<psview_type>( cur );
+            if ( obj == nullptr )
+                break;
+            int cmp = std::strcmp( s, obj->c_str() );
+            if ( cmp == 0 )
+                return cur;
+            else if ( cmp < 0 )
+                cur = psview_pptr( cur.get_tree_left().offset() );
+            else
+                cur = psview_pptr( cur.get_tree_right().offset() );
+        }
+        return psview_pptr(); // null
+    }
+
+    /// @brief Вставить новый узел в AVL-дерево. Предполагается, что строка ещё не в дереве.
+    static void _avl_insert( psview_pptr new_node ) noexcept
+    {
+        if ( new_node.is_null() )
+            return;
+
+        psview_type* new_obj = ManagerT::template resolve<psview_type>( new_node );
+        if ( new_obj == nullptr )
+            return;
+        const char* new_str = new_obj->c_str();
+
+        if ( _root_idx == static_cast<index_type>( 0 ) )
+        {
+            // Дерево пустое — новый узел становится корнем.
+            new_node.set_tree_left( psview_pptr() );
+            new_node.set_tree_right( psview_pptr() );
+            new_node.set_tree_parent( psview_pptr() );
+            new_node.set_tree_height( static_cast<std::int16_t>( 1 ) );
+            _root_idx = new_node.offset();
+            return;
+        }
+
+        // Ищем место для вставки.
+        psview_pptr cur( _root_idx );
+        psview_pptr parent;
+        bool        go_left = false;
+
+        while ( !cur.is_null() )
+        {
+            psview_type* obj = ManagerT::template resolve<psview_type>( cur );
+            if ( obj == nullptr )
+                break;
+            parent   = cur;
+            int cmp  = std::strcmp( new_str, obj->c_str() );
+            go_left  = ( cmp < 0 );
+            if ( go_left )
+                cur = psview_pptr( cur.get_tree_left().offset() );
+            else
+                cur = psview_pptr( cur.get_tree_right().offset() );
+        }
+
+        // Устанавливаем родителя нового узла.
+        new_node.set_tree_parent( parent );
+
+        // Прикрепляем новый узел к родителю.
+        if ( go_left )
+            parent.set_tree_left( new_node );
+        else
+            parent.set_tree_right( new_node );
+
+        // Ребалансировка вверх от родителя.
+        _rebalance_up( parent );
     }
 };
 
-// Определение статической переменной _table_idx (C++17 inline).
+// Определение статической переменной _root_idx (C++17 inline).
 // Объявлено как static inline в теле структуры — определение не требуется вне класса.
 
 } // namespace pmm
