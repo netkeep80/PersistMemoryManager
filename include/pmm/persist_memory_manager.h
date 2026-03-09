@@ -52,6 +52,7 @@
 #include "pmm/block.h"
 #include "pmm/block_state.h"
 #include "pmm/manager_configs.h"
+#include "pmm/pmap.h"
 #include "pmm/pptr.h"
 #include "pmm/pstringview.h"
 #include "pmm/types.h"
@@ -123,6 +124,22 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * вместо `Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");`
      */
     using pstringview = pmm::pstringview<manager_type>;
+
+    /**
+     * @brief Псевдоним для персистентного словаря (AVL-дерева), привязанного к данному менеджеру.
+     *
+     * Позволяет использовать краткий синтаксис:
+     * @code
+     *   Mgr::pmap<int, int> map;
+     *   map.insert(42, 100);
+     *   auto p = map.find(42);
+     * @endcode
+     * вместо `pmm::pmap<int, int, Mgr> map;`
+     *
+     * @tparam _K Тип ключа. Должен поддерживать operator< и operator==.
+     * @tparam _V Тип значения.
+     */
+    template <typename _K, typename _V> using pmap = pmm::pmap<_K, _V, manager_type>;
 
     // ─── Статические методы управления жизненным циклом ──────────────────────
 
