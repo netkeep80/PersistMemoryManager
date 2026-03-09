@@ -28,6 +28,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <string>
+#include <vector>
 
 // ─── Test macros ──────────────────────────────────────────────────────────────
 
@@ -490,6 +492,317 @@ static bool test_i151_layout()
 }
 
 // =============================================================================
+// I151-I: Tests using std::string
+// =============================================================================
+
+/// @brief intern() accepts std::string via .c_str() and returns correct pstringview.
+static bool test_i151_stdstring_basic()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+
+    std::string        s = "hello_stdstring";
+    TestMgr_pptr_psv   p = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+    PMM_TEST( !p.is_null() );
+
+    const TestPsv* psv = p.resolve();
+    PMM_TEST( psv != nullptr );
+    PMM_TEST( psv->size() == s.size() );
+    PMM_TEST( !psv->empty() );
+    // Compare pstringview content to std::string
+    PMM_TEST( std::string( psv->c_str() ) == s );
+    PMM_TEST( *psv == s.c_str() );
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief intern() deduplicates when called with equal std::string values.
+static bool test_i151_stdstring_deduplication()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+
+    std::string      s1 = "deduplicated";
+    std::string      s2 = "deduplicated"; // same value, different object
+    TestMgr_pptr_psv p1 = pmm::pstringview_manager<TestMgr>::intern( s1.c_str() );
+    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( s2.c_str() );
+
+    PMM_TEST( !p1.is_null() && !p2.is_null() );
+    PMM_TEST( p1 == p2 ); // Same pptr — deduplication works
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief intern() with empty std::string works correctly.
+static bool test_i151_stdstring_empty()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+
+    std::string      empty_str;
+    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( empty_str.c_str() );
+    PMM_TEST( !p.is_null() );
+
+    const TestPsv* psv = p.resolve();
+    PMM_TEST( psv != nullptr );
+    PMM_TEST( psv->empty() );
+    PMM_TEST( psv->size() == 0 );
+    PMM_TEST( std::string( psv->c_str() ) == empty_str );
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief intern() with std::string containing spaces and special characters.
+static bool test_i151_stdstring_special_chars()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+
+    std::string      s = "hello world! 123 @#$%";
+    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+    PMM_TEST( !p.is_null() );
+
+    const TestPsv* psv = p.resolve();
+    PMM_TEST( psv != nullptr );
+    PMM_TEST( psv->size() == s.size() );
+    PMM_TEST( std::string( psv->c_str() ) == s );
+
+    // Same value again → same pptr
+    std::string      s2 = "hello world! 123 @#$%";
+    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( s2.c_str() );
+    PMM_TEST( p == p2 );
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief intern() with a long std::string (> 255 characters).
+static bool test_i151_stdstring_long()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+
+    // Build a string longer than 255 characters
+    std::string long_str( 512, 'x' );
+    long_str[0]   = 'S';
+    long_str[511] = 'E';
+
+    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( long_str.c_str() );
+    PMM_TEST( !p.is_null() );
+
+    const TestPsv* psv = p.resolve();
+    PMM_TEST( psv != nullptr );
+    PMM_TEST( psv->size() == long_str.size() );
+    PMM_TEST( std::string( psv->c_str() ) == long_str );
+
+    // Deduplication also works for long strings
+    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( long_str.c_str() );
+    PMM_TEST( p == p2 );
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief Multiple std::strings interned; all are stored correctly and deduplicated.
+static bool test_i151_stdstring_multiple()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+
+    std::vector<std::string> strings = { "first", "second", "third", "fourth", "fifth",
+                                         "sixth", "seventh", "eighth", "ninth", "tenth" };
+
+    std::vector<TestMgr_pptr_psv> ptrs;
+    for ( const auto& s : strings )
+    {
+        TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+        PMM_TEST( !p.is_null() );
+        ptrs.push_back( p );
+    }
+
+    // Verify content of each interned string
+    for ( std::size_t i = 0; i < strings.size(); ++i )
+    {
+        const TestPsv* psv = ptrs[i].resolve();
+        PMM_TEST( psv != nullptr );
+        PMM_TEST( std::string( psv->c_str() ) == strings[i] );
+        PMM_TEST( psv->size() == strings[i].size() );
+    }
+
+    // All pptrs are distinct
+    for ( std::size_t i = 0; i < ptrs.size(); ++i )
+        for ( std::size_t j = i + 1; j < ptrs.size(); ++j )
+            PMM_TEST( ptrs[i] != ptrs[j] );
+
+    // Re-interning via std::string returns the same pptr
+    for ( std::size_t i = 0; i < strings.size(); ++i )
+    {
+        TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( strings[i].c_str() );
+        PMM_TEST( p2 == ptrs[i] );
+    }
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief Comparison between pstringview and std::string (via c_str()) works correctly.
+static bool test_i151_stdstring_comparison()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+
+    std::string      sa = "apple";
+    std::string      sb = "banana";
+    std::string      sc = "cherry";
+
+    TestMgr_pptr_psv pa = pmm::pstringview_manager<TestMgr>::intern( sa.c_str() );
+    TestMgr_pptr_psv pb = pmm::pstringview_manager<TestMgr>::intern( sb.c_str() );
+    TestMgr_pptr_psv pc = pmm::pstringview_manager<TestMgr>::intern( sc.c_str() );
+
+    PMM_TEST( !pa.is_null() && !pb.is_null() && !pc.is_null() );
+
+    const TestPsv* a = pa.resolve();
+    const TestPsv* b = pb.resolve();
+    const TestPsv* c = pc.resolve();
+    PMM_TEST( a != nullptr && b != nullptr && c != nullptr );
+
+    // operator== with std::string via c_str()
+    PMM_TEST( *a == sa.c_str() );
+    PMM_TEST( *b == sb.c_str() );
+    PMM_TEST( *c == sc.c_str() );
+
+    // operator!= with std::string
+    PMM_TEST( *a != sb.c_str() );
+    PMM_TEST( *b != sc.c_str() );
+
+    // operator< with pstringview
+    PMM_TEST( *a < *b );
+    PMM_TEST( *b < *c );
+
+    // std::string round-trip: intern → c_str() → std::string
+    std::string result_a( a->c_str() );
+    std::string result_b( b->c_str() );
+    std::string result_c( c->c_str() );
+    PMM_TEST( result_a == sa );
+    PMM_TEST( result_b == sb );
+    PMM_TEST( result_c == sc );
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief intern() called with std::string built at runtime (concatenation).
+static bool test_i151_stdstring_runtime_built()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+
+    std::string      prefix = "key_";
+    std::string      suffix = "value";
+    std::string      s      = prefix + suffix; // "key_value" — built at runtime
+
+    TestMgr_pptr_psv p1 = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+    PMM_TEST( !p1.is_null() );
+
+    // Same string built independently → same pptr
+    std::string      s2 = std::string( "key_" ) + std::string( "value" );
+    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( s2.c_str() );
+    PMM_TEST( p1 == p2 );
+
+    const TestPsv* psv = p1.resolve();
+    PMM_TEST( psv != nullptr );
+    PMM_TEST( std::string( psv->c_str() ) == "key_value" );
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief intern() with std::string of numeric content.
+static bool test_i151_stdstring_numeric_content()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+
+    // Intern strings built from integers via std::to_string
+    std::vector<TestMgr_pptr_psv> ptrs;
+    for ( int i = 0; i < 10; ++i )
+    {
+        std::string      s = std::to_string( i );
+        TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+        PMM_TEST( !p.is_null() );
+        ptrs.push_back( p );
+    }
+
+    // Re-intern and verify deduplication
+    for ( int i = 0; i < 10; ++i )
+    {
+        std::string      s  = std::to_string( i );
+        TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+        PMM_TEST( p2 == ptrs[static_cast<std::size_t>( i )] );
+
+        const TestPsv* psv = p2.resolve();
+        PMM_TEST( psv != nullptr );
+        PMM_TEST( std::string( psv->c_str() ) == s );
+    }
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+/// @brief intern() with interleaved const char* and std::string calls; deduplication holds.
+static bool test_i151_stdstring_mixed_with_cstr()
+{
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+
+    // Intern via const char* first
+    TestMgr_pptr_psv p_cstr = pmm::pstringview_manager<TestMgr>::intern( "mixed" );
+    PMM_TEST( !p_cstr.is_null() );
+
+    // Intern same value via std::string — must return same pptr
+    std::string      str    = "mixed";
+    TestMgr_pptr_psv p_str  = pmm::pstringview_manager<TestMgr>::intern( str.c_str() );
+    PMM_TEST( !p_str.is_null() );
+    PMM_TEST( p_cstr == p_str );
+
+    // Intern a different value via std::string
+    std::string      other  = "other_value";
+    TestMgr_pptr_psv p_other = pmm::pstringview_manager<TestMgr>::intern( other.c_str() );
+    PMM_TEST( !p_other.is_null() );
+    PMM_TEST( p_cstr != p_other );
+
+    // Intern that different value via const char* — must equal p_other
+    TestMgr_pptr_psv p_other2 = pmm::pstringview_manager<TestMgr>::intern( "other_value" );
+    PMM_TEST( p_other == p_other2 );
+
+    TestMgr::destroy();
+    pmm::pstringview_manager<TestMgr>::reset();
+    return true;
+}
+
+// =============================================================================
 // main
 // =============================================================================
 
@@ -529,6 +842,18 @@ int main()
 
     std::cout << "  I151-H: pstringview layout\n";
     PMM_RUN( "    pstringview size check", test_i151_layout );
+
+    std::cout << "  I151-I: Tests using std::string\n";
+    PMM_RUN( "    intern std::string basic", test_i151_stdstring_basic );
+    PMM_RUN( "    intern std::string deduplication", test_i151_stdstring_deduplication );
+    PMM_RUN( "    intern empty std::string", test_i151_stdstring_empty );
+    PMM_RUN( "    intern std::string with spaces and special chars", test_i151_stdstring_special_chars );
+    PMM_RUN( "    intern long std::string (>255 chars)", test_i151_stdstring_long );
+    PMM_RUN( "    intern multiple std::strings", test_i151_stdstring_multiple );
+    PMM_RUN( "    compare pstringview with std::string", test_i151_stdstring_comparison );
+    PMM_RUN( "    intern runtime-built std::string (concatenation)", test_i151_stdstring_runtime_built );
+    PMM_RUN( "    intern std::string with numeric content (std::to_string)", test_i151_stdstring_numeric_content );
+    PMM_RUN( "    interleaved const char* and std::string interns", test_i151_stdstring_mixed_with_cstr );
 
     std::cout << "\n";
     if ( all_passed )
