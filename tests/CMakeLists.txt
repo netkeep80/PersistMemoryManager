@@ -113,6 +113,11 @@ pmm_add_test(test_issue144_code_review test_issue144_code_review.cpp)
 # ─── Тесты переосмысления конфигураций (Issue #146) ──────────────────────────
 pmm_add_test(test_issue146_configs test_issue146_configs.cpp)
 
+# ─── Тесты поддержки 16-bit и 64-bit индексов (Issue #146) ───────────────────
+add_executable(test_issue146_index_sizes test_issue146_index_sizes.cpp)
+target_link_libraries(test_issue146_index_sizes PRIVATE pmm Threads::Threads)
+add_test(NAME test_issue146_index_sizes COMMAND test_issue146_index_sizes)
+
 # ─── Тесты самодостаточности single-header файлов (Issue #123) ───────────────
 # Каждый single-header файл тестируется отдельным исполняемым файлом.
 # Это гарантирует автономность: каждый файл компилируется без include/pmm/*.
@@ -128,6 +133,22 @@ endforeach()
 # ─── Тест самодостаточности single-header файла для EmbeddedStaticHeap (Issue #146) ─
 set(target test_issue146_sh_embedded_static)
 add_executable(${target} test_issue146_sh_embedded_static.cpp)
+target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
+target_compile_features(${target} PRIVATE cxx_std_20)
+target_link_libraries(${target} PRIVATE Threads::Threads)
+add_test(NAME ${target} COMMAND ${target})
+
+# ─── Тест самодостаточности single-header файла для SmallEmbeddedStaticHeap (Issue #146) ─
+set(target test_issue146_sh_small_embedded_static)
+add_executable(${target} test_issue146_sh_small_embedded_static.cpp)
+target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
+target_compile_features(${target} PRIVATE cxx_std_20)
+target_link_libraries(${target} PRIVATE Threads::Threads)
+add_test(NAME ${target} COMMAND ${target})
+
+# ─── Тест самодостаточности single-header файла для LargeDBHeap (Issue #146) ─
+set(target test_issue146_sh_large_db)
+add_executable(${target} test_issue146_sh_large_db.cpp)
 target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
 target_compile_features(${target} PRIVATE cxx_std_20)
 target_link_libraries(${target} PRIVATE Threads::Threads)

@@ -11,6 +11,7 @@ build-test/
 build_clean/
 build_test2/
 build_asan/
+build_dbg/
 build_demo/
 build-demo/
 build_local/

@@ -16,7 +16,9 @@
 #   single_include/pmm/pmm_industrial_db_heap.h    — SharedMutexLock + HeapStorage, grow 100% (IndustrialDBConfig)
 #
 # Output files (Issue #146 — new presets):
-#   single_include/pmm/pmm_embedded_static_heap.h     — NoLock + StaticStorage/16B, 4 KiB (EmbeddedStaticConfig<4096>)
+#   single_include/pmm/pmm_embedded_static_heap.h       — NoLock + StaticStorage/16B, 4 KiB (EmbeddedStaticConfig<4096>)
+#   single_include/pmm/pmm_small_embedded_static_heap.h — NoLock + StaticStorage/16B, 16-bit index (SmallEmbeddedStaticConfig)
+#   single_include/pmm/pmm_large_db_heap.h              — SharedMutexLock + HeapStorage/64B, 64-bit index (LargeDBConfig)
 
 set -euo pipefail
 
@@ -130,10 +132,22 @@ make_entry_point \
     "EmbeddedStaticHeap" \
     "NoLock + StaticStorage/16B granule (EmbeddedStaticConfig)"
 
+make_entry_point \
+    "pmm_small_embedded_static_heap.h" \
+    "SmallEmbeddedStaticHeap" \
+    "NoLock + StaticStorage/16B granule/16-bit index (SmallEmbeddedStaticConfig)"
+
+make_entry_point \
+    "pmm_large_db_heap.h" \
+    "LargeDBHeap" \
+    "SharedMutexLock + HeapStorage/64B granule/64-bit index (LargeDBConfig)"
+
 echo ""
 echo "All single-header presets generated in $OUTPUT_DIR:"
 for f in pmm_single_threaded_heap.h pmm_multi_threaded_heap.h \
           pmm_embedded_heap.h pmm_industrial_db_heap.h \
-          pmm_embedded_static_heap.h; do
+          pmm_embedded_static_heap.h \
+          pmm_small_embedded_static_heap.h \
+          pmm_large_db_heap.h; do
     echo "  $OUTPUT_DIR/$f ($(wc -l < "$OUTPUT_DIR/$f") lines)"
 done

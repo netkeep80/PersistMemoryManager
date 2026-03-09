@@ -6,8 +6,9 @@
  * конфигураций менеджера персистентной памяти:
  *
  *   --- Embedded (статические, однопоточные) ---
- *   - `EmbeddedStaticHeap<N>`   — 32-bit, NoLock, StaticStorage<N> (без heap, фиксированный пул)
- *   - `EmbeddedHeap`            — 32-bit, NoLock, HeapStorage, рост 50% (embedded с heap)
+ *   - `SmallEmbeddedStaticHeap<N>` — 16-bit, NoLock, StaticStorage<N> (до ~1 МБ, tiny embedded)
+ *   - `EmbeddedStaticHeap<N>`      — 32-bit, NoLock, StaticStorage<N> (без heap, фиксированный пул)
+ *   - `EmbeddedHeap`               — 32-bit, NoLock, HeapStorage, рост 50% (embedded с heap)
  *
  *   --- Desktop (динамические, однопоточные/многопоточные) ---
  *   - `SingleThreadedHeap`      — 32-bit/16B, NoLock, HeapStorage, рост 25%
@@ -16,11 +17,14 @@
  *   --- Industrial DB (высоконагруженные, многопоточные) ---
  *   - `IndustrialDBHeap`        — 32-bit/16B, SharedMutexLock, HeapStorage, рост 100%
  *
+ *   --- Large DB (крупные базы данных, 64-bit) ---
+ *   - `LargeDBHeap`             — 64-bit/64B, SharedMutexLock, HeapStorage, рост 100%
+ *
  * Использует унифицированный `PersistMemoryManager<ConfigT, InstanceId>` (Issue #110).
  *
  * @see persist_memory_manager.h — PersistMemoryManager (Issue #110)
  * @see manager_configs.h — готовые конфигурации менеджеров
- * @version 0.4 (Issue #146 — новые архитектурные пресеты и правила: EmbeddedStaticHeap)
+ * @version 0.5 (Issue #146 — добавлена поддержка 16-bit и 64-bit индексов)
  */
 
 #pragma once
@@ -34,6 +38,32 @@ namespace presets
 {
 
 // ─── Embedded пресеты ─────────────────────────────────────────────────────────
+
+/**
+ * @brief Tiny embedded-менеджер с фиксированным статическим буфером и 16-bit индексом.
+ *
+ * - 16-bit адресация (SmallAddressTraits), 16-байтная гранула
+ * - pptr<T> хранит 2-байтный индекс — экономия памяти на ARM Cortex-M, AVR, ESP32
+ * - StaticStorage<BufferSize, SmallAddressTraits> — фиксированный буфер, нет malloc
+ * - Максимальный пул: 65535 × 16 = ~1 МБ
+ * - Без блокировок (для однопоточных embedded-систем без heap)
+ * - Не расширяется (expand() всегда false)
+ * - InstanceId=0 (по умолчанию)
+ *
+ * @tparam BufferSize Размер статического буфера в байтах (кратно 16, максимум ~1 МБ).
+ *                    По умолчанию 1024 байт (1 КБ).
+ *
+ * Использование:
+ * @code
+ *   using TinyMgr = pmm::presets::SmallEmbeddedStaticHeap<1024>;
+ *   TinyMgr::create(1024);
+ *   void* ptr = TinyMgr::allocate(32);
+ *   TinyMgr::deallocate(ptr);
+ *   // sizeof(TinyMgr::pptr<int>) == 2  (16-bit индекс)
+ * @endcode
+ */
+template <std::size_t BufferSize = 1024>
+using SmallEmbeddedStaticHeap = PersistMemoryManager<SmallEmbeddedStaticConfig<BufferSize>, 0>;
 
 /**
  * @brief Embedded-менеджер с фиксированным статическим буфером (без heap).
@@ -117,9 +147,9 @@ using MultiThreadedHeap = PersistMemoryManager<PersistentDataConfig, 0>;
 // ─── Industrial DB пресеты ────────────────────────────────────────────────────
 
 /**
- * @brief Менеджер для промышленных баз данных с высокой нагрузкой.
+ * @brief Менеджер для промышленных баз данных с высокой нагрузкой (32-bit).
  *
- * - 32-bit адресация, 16-байтная гранула
+ * - 32-bit адресация, 16-байтная гранула, поддержка до 64 ГБ
  * - Динамическая память через HeapStorage
  * - Блокировки через std::shared_mutex
  * - Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений
@@ -133,6 +163,28 @@ using MultiThreadedHeap = PersistMemoryManager<PersistentDataConfig, 0>;
  * @endcode
  */
 using IndustrialDBHeap = PersistMemoryManager<IndustrialDBConfig, 0>;
+
+// ─── Large DB пресеты (64-bit индекс) ────────────────────────────────────────
+
+/**
+ * @brief Менеджер для крупных баз данных с 64-bit индексом.
+ *
+ * - 64-bit адресация (LargeAddressTraits), 64-байтная гранула
+ * - pptr<T> хранит 8-байтный индекс — адресует петабайтный масштаб
+ * - Динамическая память через HeapStorage
+ * - Блокировки через std::shared_mutex
+ * - Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений
+ * - InstanceId=0 (по умолчанию)
+ *
+ * Использование:
+ * @code
+ *   pmm::presets::LargeDBHeap::create(256 * 1024 * 1024); // 256 MiB начальный размер
+ *   void* ptr = pmm::presets::LargeDBHeap::allocate(4096);
+ *   pmm::presets::LargeDBHeap::deallocate(ptr);
+ *   // sizeof(LargeDBHeap::pptr<int>) == 8  (64-bit индекс)
+ * @endcode
+ */
+using LargeDBHeap = PersistMemoryManager<LargeDBConfig, 0>;
 
 } // namespace presets
 } // namespace pmm
