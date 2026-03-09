@@ -82,6 +82,10 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:ade25fcb828ded3abc954f5a7196bf4fd" id="r_ade25fcb828ded3abc954f5a7196bf4fd"><td class="memTemplParams" colspan="2">template&lt;std::size_t BufferSize = 1024&gt; </td></tr>
+<tr class="memitem:ade25fcb828ded3abc954f5a7196bf4fd"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#ade25fcb828ded3abc954f5a7196bf4fd">SmallEmbeddedStaticHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1SmallEmbeddedStaticConfig.html">SmallEmbeddedStaticConfig</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">BufferSize</a> &gt;, 0 &gt;</td></tr>
+<tr class="memdesc:ade25fcb828ded3abc954f5a7196bf4fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tiny embedded-менеджер с фиксированным статическим буфером и 16-bit индексом.  <br /></td></tr>
+<tr class="separator:ade25fcb828ded3abc954f5a7196bf4fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a596fad76677cdf53371726c5cdbca2ab" id="r_a596fad76677cdf53371726c5cdbca2ab"><td class="memTemplParams" colspan="2">template&lt;std::size_t BufferSize = 4096&gt; </td></tr>
 <tr class="memitem:a596fad76677cdf53371726c5cdbca2ab"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#a596fad76677cdf53371726c5cdbca2ab">EmbeddedStaticHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1EmbeddedStaticConfig.html">EmbeddedStaticConfig</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">BufferSize</a> &gt;, 0 &gt;</td></tr>
 <tr class="memdesc:a596fad76677cdf53371726c5cdbca2ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Embedded-менеджер с фиксированным статическим буфером (без heap).  <br /></td></tr>
@@ -96,8 +100,11 @@ Typedefs</h2></td></tr>
 <tr class="memdesc:a11b19ac031d0a909931c0daed9b24a69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Стандартный многопоточный динамический менеджер.  <br /></td></tr>
 <tr class="separator:a11b19ac031d0a909931c0daed9b24a69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f4c296632b9efb00c37c763a9977cc4" id="r_a7f4c296632b9efb00c37c763a9977cc4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#a7f4c296632b9efb00c37c763a9977cc4">IndustrialDBHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1IndustrialDBConfig.html">IndustrialDBConfig</a>, 0 &gt;</td></tr>
-<tr class="memdesc:a7f4c296632b9efb00c37c763a9977cc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Менеджер для промышленных баз данных с высокой нагрузкой.  <br /></td></tr>
+<tr class="memdesc:a7f4c296632b9efb00c37c763a9977cc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Менеджер для промышленных баз данных с высокой нагрузкой (32-bit).  <br /></td></tr>
 <tr class="separator:a7f4c296632b9efb00c37c763a9977cc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed15e8f994e9b53c1b5541dff4d12011" id="r_aed15e8f994e9b53c1b5541dff4d12011"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1presets.html#aed15e8f994e9b53c1b5541dff4d12011">LargeDBHeap</a> = <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt; <a class="el" href="structpmm_1_1LargeDBConfig.html">LargeDBConfig</a>, 0 &gt;</td></tr>
+<tr class="memdesc:aed15e8f994e9b53c1b5541dff4d12011"><td class="mdescLeft">&#160;</td><td class="mdescRight">Менеджер для крупных баз данных с 64-bit индексом.  <br /></td></tr>
+<tr class="separator:aed15e8f994e9b53c1b5541dff4d12011"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a58d3e34f4cdc3d13d532edc8c4de5732" name="a58d3e34f4cdc3d13d532edc8c4de5732"></a>
@@ -123,12 +130,12 @@ Typedefs</h2></td></tr>
 <p>Использование: </p><div class="fragment"><div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033">pmm::presets::EmbeddedHeap::create</a>(4 * 1024); <span class="comment">// 4 KiB начальный размер</span></div>
 <div class="line"><span class="keywordtype">void</span>* <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a> = <a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::presets::EmbeddedHeap::allocate</a>(64);</div>
 <div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::presets::EmbeddedHeap::deallocate</a>(<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a>);</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a137ddd1f39a739af82dd2450c02a8208"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::PersistMemoryManager::deallocate</a></div><div class="ttdeci">static void deallocate(void *ptr) noexcept</div><div class="ttdoc">Освободить блок по указателю на пользовательские данные.</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00242">persist_memory_manager.h:242</a></div></div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a4b67c007f4096ead20874e3fb3c39ec8"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::PersistMemoryManager::allocate</a></div><div class="ttdeci">static void * allocate(std::size_t user_size) noexcept</div><div class="ttdoc">Выделить user_size байт в управляемой области.</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00211">persist_memory_manager.h:211</a></div></div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a63dfa95e41be9f62e33ad3e698d4f033"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033">pmm::PersistMemoryManager::create</a></div><div class="ttdeci">static bool create() noexcept</div><div class="ttdoc">Инициализировать поверх готового бэкенда (бэкенд уже содержит буфер).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00150">persist_memory_manager.h:150</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a137ddd1f39a739af82dd2450c02a8208"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::PersistMemoryManager::deallocate</a></div><div class="ttdeci">static void deallocate(void *ptr) noexcept</div><div class="ttdoc">Освободить блок по указателю на пользовательские данные.</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00249">persist_memory_manager.h:249</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a4b67c007f4096ead20874e3fb3c39ec8"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::PersistMemoryManager::allocate</a></div><div class="ttdeci">static void * allocate(std::size_t user_size) noexcept</div><div class="ttdoc">Выделить user_size байт в управляемой области.</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00214">persist_memory_manager.h:214</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a63dfa95e41be9f62e33ad3e698d4f033"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033">pmm::PersistMemoryManager::create</a></div><div class="ttdeci">static bool create() noexcept</div><div class="ttdoc">Инициализировать поверх готового бэкенда (бэкенд уже содержит буфер).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00152">persist_memory_manager.h:152</a></div></div>
 <div class="ttc" id="anamespacepmm_html_a13826d7e9e815fd280a91ffa868ce33d"><div class="ttname"><a href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></div><div class="ttdeci">constexpr bool is_free_block_tree_policy_v</div><div class="ttdoc">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00062">free_block_tree.h:62</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00077">77</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00107">107</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
 
 </div>
 </div>
@@ -166,7 +173,7 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <div class="line">MyEmbMgr::deallocate(<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a>);</div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00090">persist_memory_manager.h:91</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00059">59</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00089">89</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
 
 </div>
 </div>
@@ -182,9 +189,9 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Менеджер для промышленных баз данных с высокой нагрузкой. </p>
+<p>Менеджер для промышленных баз данных с высокой нагрузкой (32-bit). </p>
 <ul>
-<li>32-bit адресация, 16-байтная гранула</li>
+<li>32-bit адресация, 16-байтная гранула, поддержка до 64 ГБ</li>
 <li>Динамическая память через <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a></li>
 <li>Блокировки через std::shared_mutex</li>
 <li>Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений</li>
@@ -194,7 +201,37 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <div class="line"><span class="keywordtype">void</span>* <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a> = <a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::presets::IndustrialDBHeap::allocate</a>(4096);</div>
 <div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::presets::IndustrialDBHeap::deallocate</a>(<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a>);</div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00135">135</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00165">165</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
+
+</div>
+</div>
+<a id="aed15e8f994e9b53c1b5541dff4d12011" name="aed15e8f994e9b53c1b5541dff4d12011"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed15e8f994e9b53c1b5541dff4d12011">&#9670;&#160;</a></span>LargeDBHeap</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="namespacepmm_1_1presets.html#aed15e8f994e9b53c1b5541dff4d12011">pmm::presets::LargeDBHeap</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typedef</a> <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt;<a class="el" href="structpmm_1_1LargeDBConfig.html">LargeDBConfig</a>, 0&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Менеджер для крупных баз данных с 64-bit индексом. </p>
+<ul>
+<li>64-bit адресация (LargeAddressTraits), 64-байтная гранула</li>
+<li>pptr&lt;T&gt; хранит 8-байтный индекс — адресует петабайтный масштаб</li>
+<li>Динамическая память через <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a></li>
+<li>Блокировки через std::shared_mutex</li>
+<li>Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений</li>
+<li>InstanceId=0 (по умолчанию)</li>
+</ul>
+<p>Использование: </p><div class="fragment"><div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033">pmm::presets::LargeDBHeap::create</a>(256 * 1024 * 1024); <span class="comment">// 256 MiB начальный размер</span></div>
+<div class="line"><span class="keywordtype">void</span>* <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a> = <a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::presets::LargeDBHeap::allocate</a>(4096);</div>
+<div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::presets::LargeDBHeap::deallocate</a>(<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a>);</div>
+<div class="line"><span class="comment">// sizeof(LargeDBHeap::pptr&lt;int&gt;) == 8  (64-bit индекс)</span></div>
+</div><!-- fragment --> 
+<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00187">187</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
 
 </div>
 </div>
@@ -222,7 +259,7 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <div class="line"><span class="keywordtype">void</span>* <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a> = <a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::presets::MultiThreadedHeap::allocate</a>(256);</div>
 <div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::presets::MultiThreadedHeap::deallocate</a>(<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a>);</div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00115">115</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00145">145</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
 
 </div>
 </div>
@@ -250,7 +287,47 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <div class="line"><span class="keywordtype">void</span>* <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a> = <a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::presets::SingleThreadedHeap::allocate</a>(256);</div>
 <div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::presets::SingleThreadedHeap::deallocate</a>(<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a>);</div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00097">97</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00127">127</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
+
+</div>
+</div>
+<a id="ade25fcb828ded3abc954f5a7196bf4fd" name="ade25fcb828ded3abc954f5a7196bf4fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade25fcb828ded3abc954f5a7196bf4fd">&#9670;&#160;</a></span>SmallEmbeddedStaticHeap</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t BufferSize = 1024&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">using</a> <a class="el" href="namespacepmm_1_1presets.html#ade25fcb828ded3abc954f5a7196bf4fd">pmm::presets::SmallEmbeddedStaticHeap</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typedef</a> <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt;<a class="el" href="structpmm_1_1SmallEmbeddedStaticConfig.html">SmallEmbeddedStaticConfig</a>&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">BufferSize</a>&gt;, 0&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tiny embedded-менеджер с фиксированным статическим буфером и 16-bit индексом. </p>
+<ul>
+<li>16-bit адресация (SmallAddressTraits), 16-байтная гранула</li>
+<li>pptr&lt;T&gt; хранит 2-байтный индекс — экономия памяти на ARM Cortex-M, AVR, ESP32</li>
+<li>StaticStorage&lt;BufferSize, SmallAddressTraits&gt; — фиксированный буфер, нет malloc</li>
+<li>Максимальный пул: 65535 × 16 = ~1 МБ</li>
+<li>Без блокировок (для однопоточных embedded-систем без heap)</li>
+<li>Не расширяется (expand() всегда false)</li>
+<li>InstanceId=0 (по умолчанию)</li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">BufferSize</td><td>Размер статического буфера в байтах (кратно 16, максимум ~1 МБ). По умолчанию 1024 байт (1 КБ).</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Использование: </p><div class="fragment"><div class="line"><span class="keyword">using </span><a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">TinyMgr</a> = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::presets::SmallEmbeddedStaticHeap&lt;1024&gt;</a>;</div>
+<div class="line">TinyMgr::create(1024);</div>
+<div class="line"><span class="keywordtype">void</span>* <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a> = TinyMgr::allocate(32);</div>
+<div class="line">TinyMgr::deallocate(<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a>);</div>
+<div class="line"><span class="comment">// sizeof(TinyMgr::pptr&lt;int&gt;) == 2  (16-bit индекс)</span></div>
+</div><!-- fragment --> 
+<p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00066">66</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
 
 </div>
 </div>

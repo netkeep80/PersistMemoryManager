@@ -141,10 +141,13 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Динамический бэкенд хранилища — malloc/free.  <a href="classpmm_1_1HeapStorage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1IndustrialDBConfig.html">IndustrialDBConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация промышленной базы данных (многопоточный, heap, 16B гранула).  <a href="structpmm_1_1IndustrialDBConfig.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация промышленной базы данных (многопоточный, heap, 16B гранула, 32-bit).  <a href="structpmm_1_1IndustrialDBConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1is__persist__memory__manager.html">is_persist_memory_manager</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, является ли T корректным типом менеджера персистентной памяти.  <a href="structpmm_1_1is__persist__memory__manager.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LargeDBConfig.html">LargeDBConfig</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация крупной базы данных с 64-bit индексом (многопоточный, heap, 64B гранула).  <a href="structpmm_1_1LargeDBConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1ManagerInfo.html">ManagerInfo</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,6 +164,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html">pptr</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Персистентный типизированный указатель (гранульный индекс).  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1SmallEmbeddedStaticConfig.html">SmallEmbeddedStaticConfig</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация tiny-embedded-менеджера со статическим буфером и 16-bit индексом.  <a href="structpmm_1_1SmallEmbeddedStaticConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1SplittingBlock.html">SplittingBlock</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два.">SplittingBlock</a> — блок в процессе разбиения на два.  <a href="classpmm_1_1SplittingBlock.html#details">More...</a><br /></td></tr>
@@ -304,7 +310,7 @@ Variables</h2></td></tr>
 
 <p>Псевдоним <a class="el" href="classpmm_1_1AllocatorPolicy.html" title="Политика выделения и освобождения памяти для ПАП-менеджера.">AllocatorPolicy</a> с настройками по умолчанию. </p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00370">370</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00391">391</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -340,7 +346,7 @@ Variables</h2></td></tr>
 
 <p>Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead. </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00332">332</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00363">363</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -997,7 +1003,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Минимальный допустимый размер гранулы (размер слова архитектуры = 4 байта). </p>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00082">82</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00104">104</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

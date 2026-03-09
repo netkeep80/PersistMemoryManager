@@ -95,6 +95,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1SmallEmbeddedStaticConfig.html">pmm::SmallEmbeddedStaticConfig&lt; BufferSize &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация tiny-embedded-менеджера со статическим буфером и 16-bit индексом.  <a href="structpmm_1_1SmallEmbeddedStaticConfig.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1EmbeddedStaticConfig.html">pmm::EmbeddedStaticConfig&lt; BufferSize &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация embedded-менеджера со статическим фиксированным буфером.  <a href="structpmm_1_1EmbeddedStaticConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -108,7 +111,10 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация embedded-менеджера с динамическим хранилищем.  <a href="structpmm_1_1EmbeddedManagerConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1IndustrialDBConfig.html">pmm::IndustrialDBConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация промышленной базы данных (многопоточный, heap, 16B гранула).  <a href="structpmm_1_1IndustrialDBConfig.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация промышленной базы данных (многопоточный, heap, 16B гранула, 32-bit).  <a href="structpmm_1_1IndustrialDBConfig.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1LargeDBConfig.html">pmm::LargeDBConfig</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация крупной базы данных с 64-bit индексом (многопоточный, heap, 64B гранула).  <a href="structpmm_1_1LargeDBConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -135,26 +141,36 @@ Variables</h2></td></tr>
 <li><code>grow_numerator</code> / <code>grow_denominator</code> — коэффициент роста хранилища</li>
 </ul>
 <p>Правила выбора конфигурации (Issue #146):</p>
-<p>Поддерживаемый размер гранулы: 16 байт (DefaultAddressTraits::granule_size). Поддерживаемый размер индекса: uint32_t — текущий уровень поддержки PersistMemoryManager.</p>
+<p>Поддерживаемые размеры индекса:</p><ul>
+<li>uint16_t (SmallAddressTraits, 16B гранула) — до ~1 МБ, малые embedded-системы.</li>
+<li>uint32_t (DefaultAddressTraits, 16B гранула) — до 64 ГБ, основной вариант.</li>
+<li>uint64_t (LargeAddressTraits, 64B гранула) — до петабайт, крупные БД.</li>
+</ul>
 <p>Ключевые ограничения (задокументированы static_assert-ами):</p><ol type="1">
 <li>granule_size &gt;= kMinGranuleSize (4 байта — минимум размер слова архитектуры).</li>
 <li>granule_size — степень двойки.</li>
 </ol>
 <p>Архитектурные сценарии:</p><ul>
-<li>Embedded (без heap, статический пул): StaticStorage&lt;N, DefaultAddressTraits&gt; + NoLock, гранула 16B. Нет динамического расширения, только однопоточный доступ.</li>
-<li>Desktop/server (до 64 ГБ): HeapStorage&lt;DefaultAddressTraits&gt; + NoLock/SharedMutexLock, гранула 16B.</li>
-<li>Industrial DB (высоконагруженный): HeapStorage&lt;DefaultAddressTraits&gt; + SharedMutexLock + агрессивный рост, гранула 16B.</li>
+<li>Tiny embedded (16-bit, без heap, статический пул до ~1 МБ): StaticStorage&lt;N, SmallAddressTraits&gt; + NoLock, гранула 16B. pptr&lt;T&gt; хранит uint16_t-индекс (2 байта).</li>
+<li>Embedded (32-bit, без heap, статический пул): StaticStorage&lt;N, DefaultAddressTraits&gt; + NoLock, гранула 16B. pptr&lt;T&gt; хранит uint32_t-индекс (4 байта).</li>
+<li>Desktop/server (32-bit, до 64 ГБ): HeapStorage&lt;DefaultAddressTraits&gt; + NoLock/SharedMutexLock, гранула 16B.</li>
+<li>Industrial DB (32-bit, высоконагруженный): HeapStorage&lt;DefaultAddressTraits&gt; + SharedMutexLock + агрессивный рост, гранула 16B.</li>
+<li>Large DB (64-bit, крупные базы данных): HeapStorage&lt;LargeAddressTraits&gt; + SharedMutexLock, гранула 64B. pptr&lt;T&gt; хранит uint64_t-индекс (8 байт).</li>
 </ul>
 <p>Доступные конфигурации: &mdash; Embedded (статическое хранилище, однопоточный) &mdash;</p><ul>
-<li><code>EmbeddedStaticConfig&lt;N&gt;</code> — StaticStorage&lt;N&gt;, NoLock, 16B гранула (фиксированный пул)</li>
+<li><code>SmallEmbeddedStaticConfig&lt;N&gt;</code> — StaticStorage&lt;N&gt;, NoLock, 16-bit индекс, 16B гранула</li>
+<li><code>EmbeddedStaticConfig&lt;N&gt;</code> — StaticStorage&lt;N&gt;, NoLock, 32-bit индекс, 16B гранула</li>
 </ul>
-<p>&mdash; Desktop (динамическое хранилище) &mdash;</p><ul>
+<p>&mdash; Desktop (динамическое хранилище, 32-bit) &mdash;</p><ul>
 <li><code>CacheManagerConfig</code> — однопоточный, NoLock, HeapStorage, 16B, рост 25%</li>
 <li><code>PersistentDataConfig</code> — многопоточный, SharedMutexLock, HeapStorage, 16B, рост 25%</li>
 <li><code>EmbeddedManagerConfig</code> — однопоточный, NoLock, HeapStorage, 16B, рост 50%</li>
 </ul>
-<p>&mdash; Industrial DB (высокая нагрузка) &mdash;</p><ul>
+<p>&mdash; Industrial DB (высокая нагрузка, 32-bit) &mdash;</p><ul>
 <li><code>IndustrialDBConfig</code> — многопоточный, SharedMutexLock, HeapStorage, 16B, рост 100%</li>
+</ul>
+<p>&mdash; Large DB (крупные базы данных, 64-bit) &mdash;</p><ul>
+<li><code>LargeDBConfig</code> — многопоточный, SharedMutexLock, HeapStorage, 64B, рост 100%</li>
 </ul>
 <p>Пример использования: </p><div class="fragment"><div class="line"><span class="comment">// Кеш-менеджер (однопоточный, 64 МБ)</span></div>
 <div class="line"><span class="keyword">using </span>AppCache = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::CacheManagerConfig&gt;</a>;</div>
@@ -162,15 +178,25 @@ Variables</h2></td></tr>
 <div class="line">AppCache::pptr&lt;int&gt; ptr = AppCache::allocate_typed&lt;int&gt;();</div>
 <div class="line">*ptr = 42;</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// Embedded-менеджер с фиксированным пулом 8 КБ (без heap)</span></div>
+<div class="line"><span class="comment">// Embedded-менеджер с фиксированным пулом 8 КБ (без heap, 32-bit)</span></div>
 <div class="line"><span class="keyword">using </span>EmbMgr = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::EmbeddedStaticConfig&lt;8192&gt;</a>&gt;;</div>
 <div class="line">EmbMgr::create(8192);</div>
 <div class="line"><span class="keywordtype">void</span>* p = EmbMgr::allocate(64);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Tiny embedded-менеджер (16-bit индекс, до ~1 МБ)</span></div>
+<div class="line"><span class="keyword">using </span>TinyMgr = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::SmallEmbeddedStaticConfig&lt;1024&gt;</a>&gt;;</div>
+<div class="line">TinyMgr::create(1024);</div>
+<div class="line"><span class="keywordtype">void</span>* p = TinyMgr::allocate(32);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Крупная база данных (64-bit индекс, петабайтный масштаб)</span></div>
+<div class="line"><span class="keyword">using </span>BigDB = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::LargeDBConfig&gt;</a>;</div>
+<div class="line">BigDB::create(256 * 1024 * 1024);</div>
+<div class="line"><span class="keywordtype">void</span>* p = BigDB::allocate(4096);</div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00090">persist_memory_manager.h:91</a></div></div>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — унифицированный статический менеджер ПАП (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (Issue #110) </dd>
 <dd>
 <a class="el" href="config_8h.html">config.h</a> — базовые политики блокировок (NoLock, SharedMutexLock) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.3 (Issue #146 — переосмысление конфигов: новые архитектурные пресеты и правила) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.4 (Issue #146 — добавлена поддержка 16-bit и 64-bit индексов) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div></div><!-- contents -->
