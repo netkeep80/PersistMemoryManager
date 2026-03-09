@@ -118,6 +118,9 @@ add_executable(test_issue146_index_sizes test_issue146_index_sizes.cpp)
 target_link_libraries(test_issue146_index_sizes PRIVATE pmm Threads::Threads)
 add_test(NAME test_issue146_index_sizes COMMAND test_issue146_index_sizes)
 
+# ─── Тесты pstringview — интернированных read-only строк (Issue #151) ─────────
+pmm_add_test(test_issue151_pstringview test_issue151_pstringview.cpp)
+
 # ─── Тесты самодостаточности single-header файлов (Issue #123) ───────────────
 # Каждый single-header файл тестируется отдельным исполняемым файлом.
 # Это гарантирует автономность: каждый файл компилируется без include/pmm/*.

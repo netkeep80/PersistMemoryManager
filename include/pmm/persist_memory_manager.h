@@ -53,6 +53,7 @@
 #include "pmm/block_state.h"
 #include "pmm/manager_configs.h"
 #include "pmm/pptr.h"
+#include "pmm/pstringview.h"
 #include "pmm/types.h"
 
 #include <cassert>
@@ -111,6 +112,17 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * @tparam T Тип данных, на который указывает pptr.
      */
     template <typename T> using pptr = pmm::pptr<T, manager_type>;
+
+    /**
+     * @brief Псевдоним для персистентной интернированной строки, привязанной к данному менеджеру.
+     *
+     * Позволяет использовать краткий синтаксис:
+     * @code
+     *   Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("hello");
+     * @endcode
+     * вместо `Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");`
+     */
+    using pstringview = pmm::pstringview<manager_type>;
 
     // ─── Статические методы управления жизненным циклом ──────────────────────
 
