@@ -4541,14 +4541,14 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
  *   Mgr::create(64 * 1024);
  *
  *   // Интернировать строку (найти существующую или создать новую)
- *   Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview_manager<Mgr>::intern("hello");
+ *   Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");
  *   if (p) {
  *       const char* s = p->c_str();   // "hello"
  *       std::size_t n = p->size();    // 5
  *   }
  *
  *   // Повторное интернирование возвращает тот же pptr
- *   Mgr::pptr<pmm::pstringview<Mgr>> p2 = pmm::pstringview_manager<Mgr>::intern("hello");
+ *   Mgr::pptr<pmm::pstringview<Mgr>> p2 = pmm::pstringview<Mgr>("hello");
  *   assert(p == p2);  // одинаковый granule index
  *
  *   Mgr::destroy();
@@ -4557,20 +4557,16 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
  * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока, Issue #87, #138)
- * @version 0.2 (Issue #151 — pstringview через встроенный AVL-лес ПАП)
+ * @version 0.3 (Issue #151 — упрощённый API: pstringview<Mgr>("hello"))
  */
 
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <type_traits>
+
 
 namespace pmm
 {
 
-// Forward declarations
+// Forward declaration
 template <typename ManagerT> struct pstringview;
-template <typename ManagerT> struct pstringview_manager;
 
 // ─── pstringview ─────────────────────────────────────────────────────────────
 
@@ -4579,7 +4575,14 @@ template <typename ManagerT> struct pstringview_manager;
  *
  * Хранит granule-индекс символьного массива (chars_idx) и длину строки.
  * Объекты pstringview живут в ПАП и не могут быть созданы на стеке напрямую.
- * Создавайте через pstringview_manager<ManagerT>::intern(s).
+ *
+ * Простой API (рекомендуемый способ):
+ * @code
+ *   // Конструктор-хелпер: создаёт временный объект, возвращает pptr через implicit conversion
+ *   Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");
+ *   Mgr::pptr<pmm::pstringview<Mgr>> p2 = pmm::pstringview<Mgr>("hello");
+ *   assert(p == p2);  // true — дедупликация
+ * @endcode
  *
  * AVL-дерево: каждый pstringview использует встроенные поля TreeNode своего блока
  * (left_offset, right_offset, parent_offset, avl_height) как ссылки AVL-дерева
@@ -4595,17 +4598,47 @@ template <typename ManagerT> struct pstringview
 {
     using manager_type = ManagerT;
     using index_type   = typename ManagerT::index_type;
+    using psview_pptr  = typename ManagerT::template pptr<pstringview>;
+    using char_pptr    = typename ManagerT::template pptr<char>;
 
     index_type    chars_idx; ///< Granule-индекс массива char в ПАП; 0 = пустая строка
     std::uint32_t length;    ///< Длина строки (без нулевого терминатора)
+
+    // ─── Простой API: конструктор-хелпер + implicit conversion ───────────────
+
+    /**
+     * @brief Конструктор-хелпер для интернирования строки.
+     *
+     * Создаёт временный объект на стеке, содержащий pptr на интернированный pstringview.
+     * Используется через implicit conversion к psview_pptr:
+     * @code
+     *   Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");
+     * @endcode
+     *
+     * @param s C-строка для интернирования (nullptr обрабатывается как "").
+     */
+    explicit pstringview( const char* s ) noexcept : chars_idx( 0 ), length( 0 )
+    {
+        _interned = _intern( s );
+    }
+
+    /**
+     * @brief Implicit conversion к pptr<pstringview<ManagerT>>.
+     *
+     * Позволяет использовать выражение pmm::pstringview<Mgr>("hello")
+     * в позиции, где ожидается Mgr::pptr<pmm::pstringview<Mgr>>.
+     */
+    operator psview_pptr() const noexcept { return _interned; }
+
+    // ─── Методы доступа ──────────────────────────────────────────────────────
 
     /// @brief Получить raw C-строку. Действителен, пока менеджер инициализирован.
     const char* c_str() const noexcept
     {
         if ( chars_idx == 0 )
             return "";
-        typename ManagerT::template pptr<char> p( chars_idx );
-        const char*                            raw = ManagerT::template resolve<char>( p );
+        char_pptr   p( chars_idx );
+        const char* raw = ManagerT::template resolve<char>( p );
         return ( raw != nullptr ) ? raw : "";
     }
 
@@ -4637,39 +4670,7 @@ template <typename ManagerT> struct pstringview
     /// @brief Упорядочивание pstringview (для использования в pmap).
     bool operator<( const pstringview& other ) const noexcept { return std::strcmp( c_str(), other.c_str() ) < 0; }
 
-  private:
-    // Создание pstringview на стеке запрещено — только через pstringview_manager::intern().
-    pstringview() noexcept : chars_idx( 0 ), length( 0 ) {}
-    ~pstringview() = default;
-
-    template <typename M> friend struct pstringview_manager;
-};
-
-// ─── pstringview_manager ─────────────────────────────────────────────────────
-
-/**
- * @brief Синглтон-менеджер словаря интернирования строк на основе встроенного AVL-дерева ПАП (Issue #151).
- *
- * Использует встроенные поля TreeNode каждого pstringview-блока
- * (left_offset, right_offset, parent_offset, avl_height, доступные через pptr::tree_node())
- * в качестве ссылок AVL-дерева, упорядоченного лексикографически по содержимому строки.
- *
- * Это реализует концепцию "леса AVL-деревьев" ПАП для создания map<key, value>.
- * Никаких дополнительных структур в ПАП не требуется — только указатель на корень дерева.
- *
- * Хранит только granule-индекс корня дерева в статической переменной (_root_idx).
- * При первом вызове intern() корень равен 0 (пустое дерево).
- * При вызове reset() сбрасывает синглтон (для тестов).
- *
- * @tparam ManagerT Тип менеджера памяти.
- */
-template <typename ManagerT> struct pstringview_manager
-{
-    using manager_type = ManagerT;
-    using index_type   = typename ManagerT::index_type;
-    using psview_type  = pstringview<ManagerT>;
-    using psview_pptr  = typename ManagerT::template pptr<psview_type>;
-    using char_pptr    = typename ManagerT::template pptr<char>;
+    // ─── Статическое управление словарём ─────────────────────────────────────
 
     /**
      * @brief Интернировать строку s: найти существующий pstringview или создать новый.
@@ -4682,7 +4683,31 @@ template <typename ManagerT> struct pstringview_manager
      * @return pptr<pstringview<ManagerT>> — персистентный указатель на pstringview.
      *         Нулевой pptr при ошибке аллокации.
      */
-    static psview_pptr intern( const char* s ) noexcept
+    static psview_pptr intern( const char* s ) noexcept { return _intern( s ); }
+
+    /**
+     * @brief Сбросить синглтон словаря (для тестов).
+     *
+     * Сбрасывает статическую переменную _root_idx, но не освобождает
+     * данные в ПАП (блоки заблокированы навечно).
+     */
+    static void reset() noexcept { _root_idx = static_cast<index_type>( 0 ); }
+
+    /// @brief Granule-индекс корня AVL-дерева интернирования; 0 = пустое дерево.
+    static inline index_type _root_idx = static_cast<index_type>( 0 );
+
+    // Public destructor required for stack-temporary construction via pstringview<Mgr>("hello").
+    ~pstringview() = default;
+
+  private:
+    psview_pptr _interned; ///< pptr, полученный при конструировании через intern
+
+    // Default constructor for creating objects in PAP (without interning).
+    pstringview() noexcept : chars_idx( 0 ), length( 0 ) {}
+
+    // ─── Реализация интернирования ────────────────────────────────────────────
+
+    static psview_pptr _intern( const char* s ) noexcept
     {
         if ( s == nullptr )
             s = "";
@@ -4701,11 +4726,11 @@ template <typename ManagerT> struct pstringview_manager
             return psview_pptr();
 
         // Создаём объект pstringview в ПАП.
-        psview_pptr new_node = ManagerT::template allocate_typed<psview_type>();
+        psview_pptr new_node = ManagerT::template allocate_typed<pstringview>();
         if ( new_node.is_null() )
             return psview_pptr();
 
-        psview_type* obj = ManagerT::template resolve<psview_type>( new_node );
+        pstringview* obj = ManagerT::template resolve<pstringview>( new_node );
         if ( obj == nullptr )
             return psview_pptr();
         obj->chars_idx = new_chars;
@@ -4727,18 +4752,6 @@ template <typename ManagerT> struct pstringview_manager
         return new_node;
     }
 
-    /**
-     * @brief Сбросить синглтон (для тестов).
-     *
-     * Сбрасывает статическую переменную _root_idx, но не освобождает
-     * данные в ПАП (блоки заблокированы навечно).
-     */
-    static void reset() noexcept { _root_idx = static_cast<index_type>( 0 ); }
-
-    /// @brief Granule-индекс корня AVL-дерева интернирования; 0 = пустое дерево.
-    static inline index_type _root_idx = static_cast<index_type>( 0 );
-
-  private:
     // ─── Вспомогательные методы ────────────────────────────────────────────────
 
     /// @brief Создать массив char в ПАП и заблокировать навечно.
@@ -4925,7 +4938,7 @@ template <typename ManagerT> struct pstringview_manager
         psview_pptr cur( _root_idx );
         while ( !cur.is_null() )
         {
-            psview_type* obj = ManagerT::template resolve<psview_type>( cur );
+            pstringview* obj = ManagerT::template resolve<pstringview>( cur );
             if ( obj == nullptr )
                 break;
             int cmp = std::strcmp( s, obj->c_str() );
@@ -4945,7 +4958,7 @@ template <typename ManagerT> struct pstringview_manager
         if ( new_node.is_null() )
             return;
 
-        psview_type* new_obj = ManagerT::template resolve<psview_type>( new_node );
+        pstringview* new_obj = ManagerT::template resolve<pstringview>( new_node );
         if ( new_obj == nullptr )
             return;
         const char* new_str = new_obj->c_str();
@@ -4968,7 +4981,7 @@ template <typename ManagerT> struct pstringview_manager
 
         while ( !cur.is_null() )
         {
-            psview_type* obj = ManagerT::template resolve<psview_type>( cur );
+            pstringview* obj = ManagerT::template resolve<pstringview>( cur );
             if ( obj == nullptr )
                 break;
             parent  = cur;
@@ -4998,6 +5011,7 @@ template <typename ManagerT> struct pstringview_manager
 // Объявлено как static inline в теле структуры — определение не требуется вне класса.
 
 } // namespace pmm
+
 
 /**
  * @file pmm/io.h

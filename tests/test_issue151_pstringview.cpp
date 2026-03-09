@@ -9,14 +9,21 @@
  *  3. The pstringview dictionary gradually populates during manager lifetime.
  *  4. pstringview supports comparison operators (==, !=, <).
  *  5. Empty strings and null strings are handled correctly.
- *  6. pstringview_manager::reset() clears the singleton for test isolation.
+ *  6. pstringview::reset() clears the singleton for test isolation.
  *  7. The built-in AVL tree node fields (TreeNode via Block) are used for the
  *     pstringview dictionary — no separate hash table structures in PAP.
  *
- * @see include/pmm/pstringview.h — pstringview, pstringview_manager
+ * Simple API (key requirement):
+ *  @code
+ *    Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");
+ *    Mgr::pptr<pmm::pstringview<Mgr>> p2 = pmm::pstringview<Mgr>("hello");
+ *    assert(p == p2);  // true — deduplication via built-in AVL tree
+ *  @endcode
+ *
+ * @see include/pmm/pstringview.h — pstringview
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
  * @see include/pmm/tree_node.h — TreeNode<AT> built-in AVL fields (Issue #87, #138)
- * @version 0.2 (Issue #151 — pstringview via built-in AVL forest)
+ * @version 0.3 (Issue #151 — simplified API: pstringview<Mgr>("hello"))
  */
 
 #include "pmm/persist_memory_manager.h"
@@ -68,14 +75,14 @@ using TestMgr_pptr_psv = TestMgr::pptr<TestPsv>;
 // I151-A: intern() creates a new pstringview and locks the block
 // =============================================================================
 
-/// @brief intern() returns a non-null pptr for a non-empty string.
+/// @brief Simple API: pstringview<Mgr>("hello") returns non-null pptr.
 static bool test_i151_intern_basic()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( "hello" );
+    TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( "hello" );
     PMM_TEST( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -86,18 +93,18 @@ static bool test_i151_intern_basic()
     PMM_TEST( std::strcmp( psv->c_str(), "hello" ) == 0 );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() returns a non-null pptr for an empty string.
+/// @brief Simple API: pstringview<Mgr>("") returns non-null pptr for empty string.
 static bool test_i151_intern_empty_string()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( "" );
+    TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( "" );
     PMM_TEST( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -108,19 +115,19 @@ static bool test_i151_intern_empty_string()
     PMM_TEST( std::strcmp( psv->c_str(), "" ) == 0 );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() with nullptr is treated the same as empty string.
+/// @brief pstringview<Mgr>(nullptr) is treated the same as empty string.
 static bool test_i151_intern_nullptr()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p_null  = pmm::pstringview_manager<TestMgr>::intern( nullptr );
-    TestMgr_pptr_psv p_empty = pmm::pstringview_manager<TestMgr>::intern( "" );
+    TestMgr_pptr_psv p_null  = pmm::pstringview<TestMgr>( nullptr );
+    TestMgr_pptr_psv p_empty = pmm::pstringview<TestMgr>( "" );
 
     PMM_TEST( !p_null.is_null() );
     PMM_TEST( !p_empty.is_null() );
@@ -128,23 +135,23 @@ static bool test_i151_intern_nullptr()
     PMM_TEST( p_null == p_empty );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
 // =============================================================================
-// I151-B: Deduplication — intern() returns same pptr for same string
+// I151-B: Deduplication — same string → same pptr
 // =============================================================================
 
-/// @brief intern() returns the same pptr for the same string value (key requirement #2).
+/// @brief pstringview<Mgr>("world") called twice returns same pptr (key requirement #2).
 static bool test_i151_deduplication()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p1 = pmm::pstringview_manager<TestMgr>::intern( "world" );
-    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( "world" );
+    TestMgr_pptr_psv p1 = pmm::pstringview<TestMgr>( "world" );
+    TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( "world" );
 
     PMM_TEST( !p1.is_null() );
     PMM_TEST( !p2.is_null() );
@@ -152,19 +159,19 @@ static bool test_i151_deduplication()
     PMM_TEST( p1 == p2 );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() returns different pptrs for different strings.
+/// @brief Different strings → different pptrs.
 static bool test_i151_different_strings_different_pptrs()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p_hello = pmm::pstringview_manager<TestMgr>::intern( "hello" );
-    TestMgr_pptr_psv p_world = pmm::pstringview_manager<TestMgr>::intern( "world" );
+    TestMgr_pptr_psv p_hello = pmm::pstringview<TestMgr>( "hello" );
+    TestMgr_pptr_psv p_world = pmm::pstringview<TestMgr>( "world" );
 
     PMM_TEST( !p_hello.is_null() );
     PMM_TEST( !p_world.is_null() );
@@ -176,7 +183,7 @@ static bool test_i151_different_strings_different_pptrs()
     PMM_TEST( *p_world == "world" );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -184,12 +191,12 @@ static bool test_i151_different_strings_different_pptrs()
 static bool test_i151_equality_via_interning()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv pa = pmm::pstringview_manager<TestMgr>::intern( "key" );
-    TestMgr_pptr_psv pb = pmm::pstringview_manager<TestMgr>::intern( "key" );
-    TestMgr_pptr_psv pc = pmm::pstringview_manager<TestMgr>::intern( "other" );
+    TestMgr_pptr_psv pa = pmm::pstringview<TestMgr>( "key" );
+    TestMgr_pptr_psv pb = pmm::pstringview<TestMgr>( "key" );
+    TestMgr_pptr_psv pc = pmm::pstringview<TestMgr>( "other" );
 
     PMM_TEST( !pa.is_null() && !pb.is_null() && !pc.is_null() );
 
@@ -204,7 +211,7 @@ static bool test_i151_equality_via_interning()
     PMM_TEST( *a != *c );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -216,10 +223,10 @@ static bool test_i151_equality_via_interning()
 static bool test_i151_chars_block_permanently_locked()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( "locked_test" );
+    TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( "locked_test" );
     PMM_TEST( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -241,7 +248,7 @@ static bool test_i151_chars_block_permanently_locked()
     PMM_TEST( alloc_before == alloc_after ); // Block not freed
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -249,10 +256,10 @@ static bool test_i151_chars_block_permanently_locked()
 static bool test_i151_psview_block_permanently_locked()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( "psview_lock" );
+    TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( "psview_lock" );
     PMM_TEST( !p.is_null() );
 
     TestPsv* psv = p.resolve();
@@ -268,7 +275,7 @@ static bool test_i151_psview_block_permanently_locked()
     PMM_TEST( alloc_before == alloc_after ); // Block not freed
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -279,32 +286,32 @@ static bool test_i151_psview_block_permanently_locked()
 /// @brief The pstringview dictionary uses built-in TreeNode AVL fields (not a separate hash table).
 ///
 /// Verified by checking that:
-///  1. intern() creates pstringview objects that reference each other via tree_node() fields.
+///  1. pstringview<Mgr>() creates pstringview objects that reference each other via tree_node() fields.
 ///  2. The AVL tree root is tracked only by a static index (no extra PAP allocation for table).
 ///  3. pstringview nodes themselves form the BST structure via their block's TreeNode fields.
 static bool test_i151_avl_tree_structure()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     // Insert strings in sorted order to test AVL balance.
-    TestMgr_pptr_psv p_a = pmm::pstringview_manager<TestMgr>::intern( "alpha" );
-    TestMgr_pptr_psv p_b = pmm::pstringview_manager<TestMgr>::intern( "beta" );
-    TestMgr_pptr_psv p_c = pmm::pstringview_manager<TestMgr>::intern( "gamma" );
+    TestMgr_pptr_psv p_a = pmm::pstringview<TestMgr>( "alpha" );
+    TestMgr_pptr_psv p_b = pmm::pstringview<TestMgr>( "beta" );
+    TestMgr_pptr_psv p_c = pmm::pstringview<TestMgr>( "gamma" );
 
     PMM_TEST( !p_a.is_null() && !p_b.is_null() && !p_c.is_null() );
 
     // All nodes accessible via the AVL tree root.
-    PMM_TEST( pmm::pstringview_manager<TestMgr>::_root_idx != static_cast<TestMgr::index_type>( 0 ) );
+    PMM_TEST( TestPsv::_root_idx != static_cast<TestMgr::index_type>( 0 ) );
 
     // Re-interning returns the same pptr (deduplication via AVL tree search).
-    PMM_TEST( pmm::pstringview_manager<TestMgr>::intern( "alpha" ) == p_a );
-    PMM_TEST( pmm::pstringview_manager<TestMgr>::intern( "beta" ) == p_b );
-    PMM_TEST( pmm::pstringview_manager<TestMgr>::intern( "gamma" ) == p_c );
+    PMM_TEST( static_cast<TestMgr_pptr_psv>( pmm::pstringview<TestMgr>( "alpha" ) ) == p_a );
+    PMM_TEST( static_cast<TestMgr_pptr_psv>( pmm::pstringview<TestMgr>( "beta" ) ) == p_b );
+    PMM_TEST( static_cast<TestMgr_pptr_psv>( pmm::pstringview<TestMgr>( "gamma" ) ) == p_c );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -312,23 +319,23 @@ static bool test_i151_avl_tree_structure()
 static bool test_i151_avl_root_reset()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     // Before any intern — root is null.
-    PMM_TEST( pmm::pstringview_manager<TestMgr>::_root_idx == static_cast<TestMgr::index_type>( 0 ) );
+    PMM_TEST( TestPsv::_root_idx == static_cast<TestMgr::index_type>( 0 ) );
 
-    pmm::pstringview_manager<TestMgr>::intern( "test_root" );
+    pmm::pstringview<TestMgr>( "test_root" );
 
     // After intern — root is non-null.
-    PMM_TEST( pmm::pstringview_manager<TestMgr>::_root_idx != static_cast<TestMgr::index_type>( 0 ) );
+    PMM_TEST( TestPsv::_root_idx != static_cast<TestMgr::index_type>( 0 ) );
 
     // After reset — root is null again.
-    pmm::pstringview_manager<TestMgr>::reset();
-    PMM_TEST( pmm::pstringview_manager<TestMgr>::_root_idx == static_cast<TestMgr::index_type>( 0 ) );
+    TestPsv::reset();
+    PMM_TEST( TestPsv::_root_idx == static_cast<TestMgr::index_type>( 0 ) );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -340,7 +347,7 @@ static bool test_i151_avl_root_reset()
 static bool test_i151_dictionary_grows()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 256 * 1024 ) );
 
     const char* strings[]   = { "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa" };
@@ -349,7 +356,7 @@ static bool test_i151_dictionary_grows()
     TestMgr_pptr_psv ptrs[N];
     for ( std::size_t i = 0; i < N; i++ )
     {
-        ptrs[i] = pmm::pstringview_manager<TestMgr>::intern( strings[i] );
+        ptrs[i] = pmm::pstringview<TestMgr>( strings[i] );
         PMM_TEST( !ptrs[i].is_null() );
     }
 
@@ -369,12 +376,12 @@ static bool test_i151_dictionary_grows()
     // Re-interning returns the same pptr
     for ( std::size_t i = 0; i < N; i++ )
     {
-        TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( strings[i] );
+        TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( strings[i] );
         PMM_TEST( p2 == ptrs[i] );
     }
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -382,7 +389,7 @@ static bool test_i151_dictionary_grows()
 static bool test_i151_dictionary_many_strings()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 512 * 1024 ) );
 
     // Insert 20 strings to verify AVL balancing works correctly.
@@ -391,7 +398,7 @@ static bool test_i151_dictionary_many_strings()
     for ( int i = 0; i < 20; i++ )
     {
         std::snprintf( buf, sizeof( buf ), "string_%02d", i );
-        ptrs[i] = pmm::pstringview_manager<TestMgr>::intern( buf );
+        ptrs[i] = pmm::pstringview<TestMgr>( buf );
         PMM_TEST( !ptrs[i].is_null() );
     }
 
@@ -399,7 +406,7 @@ static bool test_i151_dictionary_many_strings()
     for ( int i = 0; i < 20; i++ )
     {
         std::snprintf( buf, sizeof( buf ), "string_%02d", i );
-        TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( buf );
+        TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( buf );
         PMM_TEST( p2 == ptrs[i] );
         const TestPsv* psv = ptrs[i].resolve();
         PMM_TEST( psv != nullptr );
@@ -407,7 +414,7 @@ static bool test_i151_dictionary_many_strings()
     }
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -419,12 +426,12 @@ static bool test_i151_dictionary_many_strings()
 static bool test_i151_less_than_ordering()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p_a = pmm::pstringview_manager<TestMgr>::intern( "apple" );
-    TestMgr_pptr_psv p_b = pmm::pstringview_manager<TestMgr>::intern( "banana" );
-    TestMgr_pptr_psv p_c = pmm::pstringview_manager<TestMgr>::intern( "cherry" );
+    TestMgr_pptr_psv p_a = pmm::pstringview<TestMgr>( "apple" );
+    TestMgr_pptr_psv p_b = pmm::pstringview<TestMgr>( "banana" );
+    TestMgr_pptr_psv p_c = pmm::pstringview<TestMgr>( "cherry" );
 
     PMM_TEST( !p_a.is_null() && !p_b.is_null() && !p_c.is_null() );
 
@@ -442,38 +449,38 @@ static bool test_i151_less_than_ordering()
     PMM_TEST( !( *a < *a ) );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
 // =============================================================================
-// I151-G: pstringview_manager::reset() for test isolation
+// I151-G: pstringview::reset() for test isolation
 // =============================================================================
 
-/// @brief reset() clears the singleton; a new intern() creates a fresh AVL tree.
+/// @brief reset() clears the singleton; a new intern creates a fresh AVL tree.
 static bool test_i151_reset_clears_singleton()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     // First session
-    TestMgr_pptr_psv p1 = pmm::pstringview_manager<TestMgr>::intern( "session1" );
+    TestMgr_pptr_psv p1 = pmm::pstringview<TestMgr>( "session1" );
     PMM_TEST( !p1.is_null() );
 
     // Destroy and recreate manager, reset singleton
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
 
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     // Second session: singleton was reset, creates a new AVL tree
-    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( "session2" );
+    TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( "session2" );
     PMM_TEST( !p2.is_null() );
     PMM_TEST( std::strcmp( p2->c_str(), "session2" ) == 0 );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -484,7 +491,8 @@ static bool test_i151_reset_clears_singleton()
 /// @brief pstringview<ManagerT> has expected field layout.
 static bool test_i151_layout()
 {
-    // pstringview<ManagerT> has two fields: chars_idx (index_type) and length (uint32_t).
+    // pstringview<ManagerT> has two data fields: chars_idx (index_type) and length (uint32_t).
+    // Plus _interned (psview_pptr) which is used only in the stack-helper constructor path.
     using index_type = TestMgr::index_type;
     // sizeof should be at least sizeof(index_type) + sizeof(uint32_t).
     PMM_TEST( sizeof( TestPsv ) >= sizeof( index_type ) + sizeof( std::uint32_t ) );
@@ -495,15 +503,15 @@ static bool test_i151_layout()
 // I151-I: Tests using std::string
 // =============================================================================
 
-/// @brief intern() accepts std::string via .c_str() and returns correct pstringview.
+/// @brief pstringview<Mgr>(str.c_str()) accepts std::string and returns correct pstringview.
 static bool test_i151_stdstring_basic()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     std::string        s = "hello_stdstring";
-    TestMgr_pptr_psv   p = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+    TestMgr_pptr_psv   p = pmm::pstringview<TestMgr>( s.c_str() );
     PMM_TEST( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -515,39 +523,39 @@ static bool test_i151_stdstring_basic()
     PMM_TEST( *psv == s.c_str() );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() deduplicates when called with equal std::string values.
+/// @brief pstringview deduplicates when called with equal std::string values.
 static bool test_i151_stdstring_deduplication()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     std::string      s1 = "deduplicated";
     std::string      s2 = "deduplicated"; // same value, different object
-    TestMgr_pptr_psv p1 = pmm::pstringview_manager<TestMgr>::intern( s1.c_str() );
-    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( s2.c_str() );
+    TestMgr_pptr_psv p1 = pmm::pstringview<TestMgr>( s1.c_str() );
+    TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( s2.c_str() );
 
     PMM_TEST( !p1.is_null() && !p2.is_null() );
     PMM_TEST( p1 == p2 ); // Same pptr — deduplication works
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() with empty std::string works correctly.
+/// @brief pstringview with empty std::string works correctly.
 static bool test_i151_stdstring_empty()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     std::string      empty_str;
-    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( empty_str.c_str() );
+    TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( empty_str.c_str() );
     PMM_TEST( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -557,19 +565,19 @@ static bool test_i151_stdstring_empty()
     PMM_TEST( std::string( psv->c_str() ) == empty_str );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() with std::string containing spaces and special characters.
+/// @brief pstringview with std::string containing spaces and special characters.
 static bool test_i151_stdstring_special_chars()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     std::string      s = "hello world! 123 @#$%";
-    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+    TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( s.c_str() );
     PMM_TEST( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -579,19 +587,19 @@ static bool test_i151_stdstring_special_chars()
 
     // Same value again → same pptr
     std::string      s2 = "hello world! 123 @#$%";
-    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( s2.c_str() );
+    TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( s2.c_str() );
     PMM_TEST( p == p2 );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() with a long std::string (> 255 characters).
+/// @brief pstringview with a long std::string (> 255 characters).
 static bool test_i151_stdstring_long()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 256 * 1024 ) );
 
     // Build a string longer than 255 characters
@@ -599,7 +607,7 @@ static bool test_i151_stdstring_long()
     long_str[0]   = 'S';
     long_str[511] = 'E';
 
-    TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( long_str.c_str() );
+    TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( long_str.c_str() );
     PMM_TEST( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -608,11 +616,11 @@ static bool test_i151_stdstring_long()
     PMM_TEST( std::string( psv->c_str() ) == long_str );
 
     // Deduplication also works for long strings
-    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( long_str.c_str() );
+    TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( long_str.c_str() );
     PMM_TEST( p == p2 );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -620,7 +628,7 @@ static bool test_i151_stdstring_long()
 static bool test_i151_stdstring_multiple()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 256 * 1024 ) );
 
     std::vector<std::string> strings = { "first", "second", "third", "fourth", "fifth",
@@ -629,7 +637,7 @@ static bool test_i151_stdstring_multiple()
     std::vector<TestMgr_pptr_psv> ptrs;
     for ( const auto& s : strings )
     {
-        TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+        TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( s.c_str() );
         PMM_TEST( !p.is_null() );
         ptrs.push_back( p );
     }
@@ -651,12 +659,12 @@ static bool test_i151_stdstring_multiple()
     // Re-interning via std::string returns the same pptr
     for ( std::size_t i = 0; i < strings.size(); ++i )
     {
-        TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( strings[i].c_str() );
+        TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( strings[i].c_str() );
         PMM_TEST( p2 == ptrs[i] );
     }
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -664,16 +672,16 @@ static bool test_i151_stdstring_multiple()
 static bool test_i151_stdstring_comparison()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     std::string      sa = "apple";
     std::string      sb = "banana";
     std::string      sc = "cherry";
 
-    TestMgr_pptr_psv pa = pmm::pstringview_manager<TestMgr>::intern( sa.c_str() );
-    TestMgr_pptr_psv pb = pmm::pstringview_manager<TestMgr>::intern( sb.c_str() );
-    TestMgr_pptr_psv pc = pmm::pstringview_manager<TestMgr>::intern( sc.c_str() );
+    TestMgr_pptr_psv pa = pmm::pstringview<TestMgr>( sa.c_str() );
+    TestMgr_pptr_psv pb = pmm::pstringview<TestMgr>( sb.c_str() );
+    TestMgr_pptr_psv pc = pmm::pstringview<TestMgr>( sc.c_str() );
 
     PMM_TEST( !pa.is_null() && !pb.is_null() && !pc.is_null() );
 
@@ -704,27 +712,27 @@ static bool test_i151_stdstring_comparison()
     PMM_TEST( result_c == sc );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() called with std::string built at runtime (concatenation).
+/// @brief pstringview called with std::string built at runtime (concatenation).
 static bool test_i151_stdstring_runtime_built()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     std::string      prefix = "key_";
     std::string      suffix = "value";
     std::string      s      = prefix + suffix; // "key_value" — built at runtime
 
-    TestMgr_pptr_psv p1 = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+    TestMgr_pptr_psv p1 = pmm::pstringview<TestMgr>( s.c_str() );
     PMM_TEST( !p1.is_null() );
 
     // Same string built independently → same pptr
     std::string      s2 = std::string( "key_" ) + std::string( "value" );
-    TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( s2.c_str() );
+    TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( s2.c_str() );
     PMM_TEST( p1 == p2 );
 
     const TestPsv* psv = p1.resolve();
@@ -732,15 +740,15 @@ static bool test_i151_stdstring_runtime_built()
     PMM_TEST( std::string( psv->c_str() ) == "key_value" );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() with std::string of numeric content.
+/// @brief pstringview with std::string of numeric content.
 static bool test_i151_stdstring_numeric_content()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     // Intern strings built from integers via std::to_string
@@ -748,7 +756,7 @@ static bool test_i151_stdstring_numeric_content()
     for ( int i = 0; i < 10; ++i )
     {
         std::string      s = std::to_string( i );
-        TestMgr_pptr_psv p = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+        TestMgr_pptr_psv p = pmm::pstringview<TestMgr>( s.c_str() );
         PMM_TEST( !p.is_null() );
         ptrs.push_back( p );
     }
@@ -757,7 +765,7 @@ static bool test_i151_stdstring_numeric_content()
     for ( int i = 0; i < 10; ++i )
     {
         std::string      s  = std::to_string( i );
-        TestMgr_pptr_psv p2 = pmm::pstringview_manager<TestMgr>::intern( s.c_str() );
+        TestMgr_pptr_psv p2 = pmm::pstringview<TestMgr>( s.c_str() );
         PMM_TEST( p2 == ptrs[static_cast<std::size_t>( i )] );
 
         const TestPsv* psv = p2.resolve();
@@ -766,39 +774,39 @@ static bool test_i151_stdstring_numeric_content()
     }
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
-/// @brief intern() with interleaved const char* and std::string calls; deduplication holds.
+/// @brief pstringview with interleaved const char* and std::string calls; deduplication holds.
 static bool test_i151_stdstring_mixed_with_cstr()
 {
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
 
     // Intern via const char* first
-    TestMgr_pptr_psv p_cstr = pmm::pstringview_manager<TestMgr>::intern( "mixed" );
+    TestMgr_pptr_psv p_cstr = pmm::pstringview<TestMgr>( "mixed" );
     PMM_TEST( !p_cstr.is_null() );
 
     // Intern same value via std::string — must return same pptr
     std::string      str    = "mixed";
-    TestMgr_pptr_psv p_str  = pmm::pstringview_manager<TestMgr>::intern( str.c_str() );
+    TestMgr_pptr_psv p_str  = pmm::pstringview<TestMgr>( str.c_str() );
     PMM_TEST( !p_str.is_null() );
     PMM_TEST( p_cstr == p_str );
 
     // Intern a different value via std::string
-    std::string      other  = "other_value";
-    TestMgr_pptr_psv p_other = pmm::pstringview_manager<TestMgr>::intern( other.c_str() );
+    std::string       other  = "other_value";
+    TestMgr_pptr_psv p_other = pmm::pstringview<TestMgr>( other.c_str() );
     PMM_TEST( !p_other.is_null() );
     PMM_TEST( p_cstr != p_other );
 
     // Intern that different value via const char* — must equal p_other
-    TestMgr_pptr_psv p_other2 = pmm::pstringview_manager<TestMgr>::intern( "other_value" );
+    TestMgr_pptr_psv p_other2 = pmm::pstringview<TestMgr>( "other_value" );
     PMM_TEST( p_other == p_other2 );
 
     TestMgr::destroy();
-    pmm::pstringview_manager<TestMgr>::reset();
+    TestPsv::reset();
     return true;
 }
 
@@ -837,7 +845,7 @@ int main()
     std::cout << "  I151-F: Comparison operators\n";
     PMM_RUN( "    operator< lexicographic ordering", test_i151_less_than_ordering );
 
-    std::cout << "  I151-G: pstringview_manager::reset()\n";
+    std::cout << "  I151-G: pstringview::reset()\n";
     PMM_RUN( "    reset() clears singleton for test isolation", test_i151_reset_clears_singleton );
 
     std::cout << "  I151-H: pstringview layout\n";
