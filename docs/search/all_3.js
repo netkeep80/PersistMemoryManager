@@ -1,9 +1,15 @@
 var searchData=
 [
-  ['deallocate_0',['deallocate',['../classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208',1,'pmm::PersistMemoryManager']]],
-  ['deallocate_5ftyped_1',['deallocate_typed',['../classpmm_1_1PersistMemoryManager.html#a805257c17969be444a33000602fee73c',1,'pmm::PersistMemoryManager']]],
-  ['defaultaddresstraits_2',['DefaultAddressTraits',['../namespacepmm.html#a9ca69087900283384dda68352be048bb',1,'pmm']]],
-  ['defaultallocatorpolicy_3',['DefaultAllocatorPolicy',['../namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7',1,'pmm']]],
-  ['destroy_4',['destroy',['../classpmm_1_1PersistMemoryManager.html#a001123ac8daaf9da6e882fa6559a3131',1,'pmm::PersistMemoryManager']]],
-  ['detect_5fblock_5fstate_5',['detect_block_state',['../namespacepmm.html#a0b6c0f639691913c3e5d08e8961efa6b',1,'pmm']]]
+  ['c_5fstr_0',['c_str',['../structpmm_1_1pstringview.html#a1ef3cecb9e01a657216c845ccd675332',1,'pmm::pstringview']]],
+  ['cachemanagerconfig_1',['CacheManagerConfig',['../structpmm_1_1CacheManagerConfig.html',1,'pmm']]],
+  ['cast_5ffrom_5fraw_2',['cast_from_raw',['../classpmm_1_1AllocatedBlock.html#a705b935bb6ea772c31afc2a03465b7ee',1,'pmm::AllocatedBlock::cast_from_raw()'],['../classpmm_1_1CoalescingBlock.html#a2880e0d4551d92b0dd161e46fc801730',1,'pmm::CoalescingBlock::cast_from_raw()'],['../classpmm_1_1FreeBlockNotInAVL.html#a9f54ff75ac6ee7782fdd3466be6b625a',1,'pmm::FreeBlockNotInAVL::cast_from_raw()'],['../classpmm_1_1AllocatedBlock.html#a1541a2f321cd6baead0cb19acbb5e47d',1,'pmm::AllocatedBlock::cast_from_raw()'],['../classpmm_1_1SplittingBlock.html#a32de842699bbc25027783d9b5e852584',1,'pmm::SplittingBlock::cast_from_raw()'],['../classpmm_1_1FreeBlockRemovedAVL.html#a2cf010fa1c3e3eb3bb20c6f326e7792e',1,'pmm::FreeBlockRemovedAVL::cast_from_raw()'],['../classpmm_1_1FreeBlock.html#a2413142ff491a6423dc44eb8ceb1d493',1,'pmm::FreeBlock::cast_from_raw(const void *raw) noexcept'],['../classpmm_1_1FreeBlock.html#adbc90798fe84d6d91a9f2ee42e87117f',1,'pmm::FreeBlock::cast_from_raw(void *raw) noexcept']]],
+  ['char_5fpptr_3',['char_pptr',['../structpmm_1_1pstringview.html#a25f03e86ea7af0874cffdebef6e868dc',1,'pmm::pstringview']]],
+  ['chars_5fidx_4',['chars_idx',['../structpmm_1_1pstringview.html#aaaa65ad48e69ed340a38e1d2fd9d3e54',1,'pmm::pstringview']]],
+  ['close_5',['close',['../classpmm_1_1MMapStorage.html#a6e20811680162e59d9227d1965152377',1,'pmm::MMapStorage']]],
+  ['coalesce_6',['coalesce',['../classpmm_1_1AllocatorPolicy.html#a287f20d7d69fb7efea3f8df52bac6d0b',1,'pmm::AllocatorPolicy']]],
+  ['coalesce_5fwith_5fnext_7',['coalesce_with_next',['../classpmm_1_1CoalescingBlock.html#ab3e5dcdbe604e041f31559a29b0ef6b4',1,'pmm::CoalescingBlock']]],
+  ['coalesce_5fwith_5fprev_8',['coalesce_with_prev',['../classpmm_1_1CoalescingBlock.html#a4b26c1258d705dae31cd4bda1330bdcd',1,'pmm::CoalescingBlock']]],
+  ['coalescingblock_9',['CoalescingBlock',['../classpmm_1_1CoalescingBlock.html',1,'pmm']]],
+  ['config_2eh_10',['config.h',['../config_8h.html',1,'']]],
+  ['create_11',['create',['../classpmm_1_1PersistMemoryManager.html#aa013ea3a201ed0b5a7aca5548540e071',1,'pmm::PersistMemoryManager::create(std::size_t initial_size) noexcept'],['../classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033',1,'pmm::PersistMemoryManager::create() noexcept']]]
 ];

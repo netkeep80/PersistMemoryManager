@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['persistentavltree_0',['PersistentAvlTree',['../namespacepmm.html#a343de335e434d7d59ee388be5c798684',1,'pmm']]],
-  ['pptr_1',['pptr',['../classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3',1,'pmm::PersistMemoryManager']]]
+  ['manager_5ftype_0',['manager_type',['../classpmm_1_1PersistMemoryManager.html#ab7dc5f5527fcfc1ebe29528020635d87',1,'pmm::PersistMemoryManager::manager_type'],['../classpmm_1_1pptr.html#a4491c6edb582bd512b49e3747d0e9421',1,'pmm::pptr::manager_type'],['../structpmm_1_1pstringview.html#af628d5d2e635aa80470ef6c83468f0fe',1,'pmm::pstringview::manager_type']]],
+  ['multithreadedheap_1',['MultiThreadedHeap',['../namespacepmm_1_1presets.html#a11b19ac031d0a909931c0daed9b24a69',1,'pmm::presets']]],
+  ['mutex_5ftype_2',['mutex_type',['../structpmm_1_1config_1_1SharedMutexLock.html#ade9f918c8245c291bed83a84623bfa9c',1,'pmm::config::SharedMutexLock']]]
 ];

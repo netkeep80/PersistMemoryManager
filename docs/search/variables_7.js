@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['largest_5ffree_0',['largest_free',['../structpmm_1_1MemoryStats.html#af04f85408e3c8518f4cab238be67d6e8',1,'pmm::MemoryStats']]],
-  ['last_5fblock_5foffset_1',['last_block_offset',['../structpmm_1_1detail_1_1ManagerHeader.html#a55c9b27bffc2b3df1a909019a280b484',1,'pmm::detail::ManagerHeader']]],
-  ['left_5foffset_2',['left_offset',['../structpmm_1_1TreeNode.html#a7ef6c85c74806fb9e9558b72d267a92c',1,'pmm::TreeNode::left_offset'],['../structpmm_1_1FreeBlockView.html#a7016b91ed1e6775949a50d003bc297bf',1,'pmm::FreeBlockView::left_offset']]]
+  ['index_0',['index',['../structpmm_1_1BlockView.html#a8440107f36a8d0c6d62fb8969133dae3',1,'pmm::BlockView']]],
+  ['is_5ffree_5fblock_5ftree_5fpolicy_5fv_1',['is_free_block_tree_policy_v',['../namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d',1,'pmm']]],
+  ['is_5fpersist_5fmemory_5fmanager_5fv_2',['is_persist_memory_manager_v',['../namespacepmm.html#a7a70401630d11010442cb6026f2a5654',1,'pmm']]],
+  ['is_5fstorage_5fbackend_5fv_3',['is_storage_backend_v',['../namespacepmm.html#a921bde594db4955b918196479bbbff7b',1,'pmm']]]
 ];

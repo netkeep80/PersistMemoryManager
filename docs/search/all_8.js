@@ -1,26 +1,8 @@
 var searchData=
 [
-  ['idx_5fto_5fbyte_5foff_0',['idx_to_byte_off',['../namespacepmm_1_1detail.html#a2bafdf8dfaa8633692a4451d986d37a1',1,'pmm::detail::idx_to_byte_off()'],['../structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2',1,'pmm::AddressTraits::idx_to_byte_off()']]],
-  ['idx_5fto_5fbyte_5foff_5ft_1',['idx_to_byte_off_t',['../namespacepmm_1_1detail.html#a282e3a54af7a8660e84d6f59eb8f4efa',1,'pmm::detail']]],
-  ['index_2',['index',['../structpmm_1_1BlockView.html#a8440107f36a8d0c6d62fb8969133dae3',1,'pmm::BlockView']]],
-  ['index_5ftype_3',['index_type',['../structpmm_1_1TreeNode.html#a828250a3962d90b3fbc97194d752beef',1,'pmm::TreeNode::index_type'],['../classpmm_1_1pptr.html#a9de2a4a2790554362f50d842c94782b5',1,'pmm::pptr::index_type'],['../classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295',1,'pmm::PersistMemoryManager::index_type'],['../structpmm_1_1AvlFreeTree.html#a3708f2fdce3240b0b15a398573a7c27f',1,'pmm::AvlFreeTree::index_type'],['../classpmm_1_1CoalescingBlock.html#a4a6b903289bdd8359065595d104d5459',1,'pmm::CoalescingBlock::index_type'],['../classpmm_1_1FreeBlockNotInAVL.html#aa83228dd8479e1485204c3ba9e6a1238',1,'pmm::FreeBlockNotInAVL::index_type'],['../classpmm_1_1AllocatedBlock.html#a820f882a5354b689242ce9c1e2c51f4f',1,'pmm::AllocatedBlock::index_type'],['../classpmm_1_1SplittingBlock.html#a9422b79901d99dbbacd0232e4a3a1ff7',1,'pmm::SplittingBlock::index_type'],['../classpmm_1_1FreeBlockRemovedAVL.html#a5a0273bb2664dbd8ec08a7c222ef2ff4',1,'pmm::FreeBlockRemovedAVL::index_type'],['../classpmm_1_1FreeBlock.html#acd45a76a7a5ac27d70ac3e6f95d05ba1',1,'pmm::FreeBlock::index_type'],['../classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca',1,'pmm::BlockStateBase::index_type'],['../structpmm_1_1Block.html#a1851fbdd5746ffc9529e1e3554650ad6',1,'pmm::Block::index_type'],['../classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5',1,'pmm::AllocatorPolicy::index_type'],['../structpmm_1_1AddressTraits.html#a819c841691bb1fed566dbfaeb53212a3',1,'pmm::AddressTraits::index_type']]],
-  ['industrialdbconfig_4',['IndustrialDBConfig',['../structpmm_1_1IndustrialDBConfig.html',1,'pmm']]],
-  ['industrialdbheap_5',['IndustrialDBHeap',['../namespacepmm_1_1presets.html#a7f4c296632b9efb00c37c763a9977cc4',1,'pmm::presets']]],
-  ['init_5ffields_6',['init_fields',['../classpmm_1_1BlockStateBase.html#ab6604943175788fe4d7d44bfc7821fcf',1,'pmm::BlockStateBase']]],
-  ['initialize_5fnew_5fblock_7',['initialize_new_block',['../classpmm_1_1SplittingBlock.html#ab87db987a16fdbeaaae72e7c92ec2beb',1,'pmm::SplittingBlock']]],
-  ['insert_8',['insert',['../structpmm_1_1AvlFreeTree.html#ac8cecebea9f68619628bad6d617836e4',1,'pmm::AvlFreeTree']]],
-  ['insert_5fto_5favl_9',['insert_to_avl',['../classpmm_1_1FreeBlockRemovedAVL.html#a88316113a0fe878035e280bd4a7e9f12',1,'pmm::FreeBlockRemovedAVL::insert_to_avl()'],['../classpmm_1_1FreeBlockNotInAVL.html#af22fc5e024b4554ba38bac70553b283f',1,'pmm::FreeBlockNotInAVL::insert_to_avl()']]],
-  ['io_2eh_10',['io.h',['../io_8h.html',1,'']]],
-  ['is_5fallocated_11',['is_allocated',['../classpmm_1_1BlockStateBase.html#a00e102215f632beb708fbed942fb6cac',1,'pmm::BlockStateBase']]],
-  ['is_5ffree_12',['is_free',['../classpmm_1_1BlockStateBase.html#aa899d35627f0980959e660137eda5675',1,'pmm::BlockStateBase']]],
-  ['is_5ffree_5fblock_5ftree_5fpolicy_5fv_13',['is_free_block_tree_policy_v',['../namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d',1,'pmm']]],
-  ['is_5finitialized_14',['is_initialized',['../classpmm_1_1PersistMemoryManager.html#a55c4db722ac210db29a7cfc73d4cc544',1,'pmm::PersistMemoryManager']]],
-  ['is_5fnull_15',['is_null',['../classpmm_1_1pptr.html#a2cb78c12fac91ef44774308b0a7fc952',1,'pmm::pptr']]],
-  ['is_5fopen_16',['is_open',['../classpmm_1_1MMapStorage.html#a7b6756bbf0a7929a36a227d59f098890',1,'pmm::MMapStorage']]],
-  ['is_5fpermanently_5flocked_17',['is_permanently_locked',['../classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda',1,'pmm::BlockStateBase::is_permanently_locked()'],['../classpmm_1_1PersistMemoryManager.html#ab3d073c0cdff0cf27816432777c01053',1,'pmm::PersistMemoryManager::is_permanently_locked()']]],
-  ['is_5fpersist_5fmemory_5fmanager_18',['is_persist_memory_manager',['../structpmm_1_1is__persist__memory__manager.html',1,'pmm']]],
-  ['is_5fpersist_5fmemory_5fmanager_5fv_19',['is_persist_memory_manager_v',['../namespacepmm.html#a7a70401630d11010442cb6026f2a5654',1,'pmm']]],
-  ['is_5fstorage_5fbackend_5fv_20',['is_storage_backend_v',['../namespacepmm.html#a921bde594db4955b918196479bbbff7b',1,'pmm']]],
-  ['is_5fvalid_5falignment_21',['is_valid_alignment',['../namespacepmm_1_1detail.html#a570c97994ec416915edafdbb1ed080b6',1,'pmm::detail']]],
-  ['is_5fvalid_5fblock_22',['is_valid_block',['../namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294',1,'pmm::detail']]]
+  ['header_5ffrom_5fptr_0',['header_from_ptr',['../namespacepmm_1_1detail.html#a9501825712f2b1926faec652eb89f289',1,'pmm::detail']]],
+  ['header_5ffrom_5fptr_5ft_1',['header_from_ptr_t',['../namespacepmm_1_1detail.html#aa9255931c6039b9ba052cfe0a8317d23',1,'pmm::detail']]],
+  ['header_5fsize_2',['header_size',['../structpmm_1_1BlockView.html#a9609631e9f6946e6a4591c38535345dd',1,'pmm::BlockView']]],
+  ['heap_5fstorage_2eh_3',['heap_storage.h',['../heap__storage_8h.html',1,'']]],
+  ['heapstorage_4',['heapstorage',['../classpmm_1_1HeapStorage.html',1,'pmm::HeapStorage&lt; AddressTraitsT &gt;'],['../classpmm_1_1HeapStorage.html#a81ea95cc053af3bc0eaf06b0fbdbc7cf',1,'pmm::HeapStorage::HeapStorage() noexcept=default'],['../classpmm_1_1HeapStorage.html#ab11b995d8be186e10243d15509576e2c',1,'pmm::HeapStorage::HeapStorage(std::size_t initial_size) noexcept'],['../classpmm_1_1HeapStorage.html#af3a016a9684561d1f47b0c7c385defa0',1,'pmm::HeapStorage::HeapStorage(const HeapStorage &amp;)=delete'],['../classpmm_1_1HeapStorage.html#ae5058a34534863a6b8441d21f9f67239',1,'pmm::HeapStorage::HeapStorage(HeapStorage &amp;&amp;other) noexcept']]]
 ];

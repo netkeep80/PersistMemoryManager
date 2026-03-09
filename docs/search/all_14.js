@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['weight_0',['weight',['../structpmm_1_1TreeNode.html#a054b227ed3133233acb113deef6070c0',1,'pmm::TreeNode::weight'],['../classpmm_1_1BlockStateBase.html#ac7373224afdb1f2d8cc6956750b68987',1,'pmm::BlockStateBase::weight()']]]
+  ['verify_5finvariants_0',['verify_invariants',['../classpmm_1_1FreeBlock.html#aa42f1282e63621c7b8795f1175ea4ade',1,'pmm::FreeBlock::verify_invariants()'],['../classpmm_1_1AllocatedBlock.html#a9eba97f1e5e4221a632689ac3b6100f1',1,'pmm::AllocatedBlock::verify_invariants()']]]
 ];

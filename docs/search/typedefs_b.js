@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['unique_5flock_5ftype_0',['unique_lock_type',['../structpmm_1_1config_1_1SharedMutexLock.html#a8c4cb328be5c173b8f7cfbf162fec0ad',1,'pmm::config::SharedMutexLock']]]
+  ['thread_5fpolicy_0',['thread_policy',['../classpmm_1_1PersistMemoryManager.html#ad3666dc713110ae501fdb75922b6357b',1,'pmm::PersistMemoryManager']]],
+  ['tinyaddresstraits_1',['TinyAddressTraits',['../namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b',1,'pmm']]]
 ];

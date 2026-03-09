@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['defaultaddresstraits_0',['DefaultAddressTraits',['../namespacepmm.html#a9ca69087900283384dda68352be048bb',1,'pmm']]],
-  ['defaultallocatorpolicy_1',['DefaultAllocatorPolicy',['../namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7',1,'pmm']]]
+  ['char_5fpptr_0',['char_pptr',['../structpmm_1_1pstringview.html#a25f03e86ea7af0874cffdebef6e868dc',1,'pmm::pstringview']]]
 ];
