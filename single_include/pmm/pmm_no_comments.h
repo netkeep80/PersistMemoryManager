@@ -2617,10 +2617,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        const std::uint8_t* base    = _backend.base_ptr();
-        const void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                              sizeof( Block<address_traits> );
-        index_type left = BlockStateBase<address_traits>::get_left_offset( blk_raw );
+        index_type left = BlockStateBase<address_traits>::get_left_offset( block_raw_ptr_from_pptr( p ) );
         return ( left == address_traits::no_block ) ? static_cast<index_type>( 0 ) : left;
     }
 
@@ -2628,10 +2625,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        const std::uint8_t* base    = _backend.base_ptr();
-        const void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                              sizeof( Block<address_traits> );
-        index_type right = BlockStateBase<address_traits>::get_right_offset( blk_raw );
+        index_type right = BlockStateBase<address_traits>::get_right_offset( block_raw_ptr_from_pptr( p ) );
         return ( right == address_traits::no_block ) ? static_cast<index_type>( 0 ) : right;
     }
 
@@ -2639,10 +2633,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        const std::uint8_t* base    = _backend.base_ptr();
-        const void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                              sizeof( Block<address_traits> );
-        index_type parent = BlockStateBase<address_traits>::get_parent_offset( blk_raw );
+        index_type parent = BlockStateBase<address_traits>::get_parent_offset( block_raw_ptr_from_pptr( p ) );
         return ( parent == address_traits::no_block ) ? static_cast<index_type>( 0 ) : parent;
     }
 
@@ -2650,73 +2641,52 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return;
-        std::uint8_t* base    = _backend.base_ptr();
-        void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                        sizeof( Block<address_traits> );
         index_type v = ( left == 0 ) ? address_traits::no_block : left;
-        BlockStateBase<address_traits>::set_left_offset_of( blk_raw, v );
+        BlockStateBase<address_traits>::set_left_offset_of( block_raw_mut_ptr_from_pptr( p ), v );
     }
 
     template <typename T> static void set_tree_right_offset( pptr<T> p, index_type right ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        std::uint8_t* base    = _backend.base_ptr();
-        void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                        sizeof( Block<address_traits> );
         index_type v = ( right == 0 ) ? address_traits::no_block : right;
-        BlockStateBase<address_traits>::set_right_offset_of( blk_raw, v );
+        BlockStateBase<address_traits>::set_right_offset_of( block_raw_mut_ptr_from_pptr( p ), v );
     }
 
     template <typename T> static void set_tree_parent_offset( pptr<T> p, index_type parent ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        std::uint8_t* base    = _backend.base_ptr();
-        void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                        sizeof( Block<address_traits> );
         index_type v = ( parent == 0 ) ? address_traits::no_block : parent;
-        BlockStateBase<address_traits>::set_parent_offset_of( blk_raw, v );
+        BlockStateBase<address_traits>::set_parent_offset_of( block_raw_mut_ptr_from_pptr( p ), v );
     }
 
     template <typename T> static index_type get_tree_weight( pptr<T> p ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        const std::uint8_t* base    = _backend.base_ptr();
-        const void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                              sizeof( Block<address_traits> );
-        return BlockStateBase<address_traits>::get_weight( blk_raw );
+        return BlockStateBase<address_traits>::get_weight( block_raw_ptr_from_pptr( p ) );
     }
 
     template <typename T> static void set_tree_weight( pptr<T> p, index_type w ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        std::uint8_t* base    = _backend.base_ptr();
-        void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                        sizeof( Block<address_traits> );
-        BlockStateBase<address_traits>::set_weight_of( blk_raw, w );
+        BlockStateBase<address_traits>::set_weight_of( block_raw_mut_ptr_from_pptr( p ), w );
     }
 
     template <typename T> static std::int16_t get_tree_height( pptr<T> p ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        const std::uint8_t* base    = _backend.base_ptr();
-        const void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                              sizeof( Block<address_traits> );
-        return BlockStateBase<address_traits>::get_avl_height( blk_raw );
+        return BlockStateBase<address_traits>::get_avl_height( block_raw_ptr_from_pptr( p ) );
     }
 
     template <typename T> static void set_tree_height( pptr<T> p, std::int16_t h ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        std::uint8_t* base    = _backend.base_ptr();
-        void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                        sizeof( Block<address_traits> );
-        BlockStateBase<address_traits>::set_avl_height_of( blk_raw, h );
+        BlockStateBase<address_traits>::set_avl_height_of( block_raw_mut_ptr_from_pptr( p ), h );
     }
 
     template <typename T> static TreeNode<address_traits>& tree_node( pptr<T> p ) noexcept
@@ -2724,10 +2694,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         
         assert( !p.is_null() && "tree_node: pptr must not be null" );
         assert( _initialized && "tree_node: manager must be initialized before calling tree_node" );
-        std::uint8_t* base    = _backend.base_ptr();
-        void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-                        sizeof( Block<address_traits> );
-        return *reinterpret_cast<TreeNode<address_traits>*>( blk_raw );
+        return *reinterpret_cast<TreeNode<address_traits>*>( block_raw_mut_ptr_from_pptr( p ) );
     }
 
     static std::size_t total_size() noexcept
@@ -2850,6 +2817,20 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static inline std::atomic<bool> _initialized{ false };
 
     static inline typename thread_policy::mutex_type _mutex{};
+
+    template <typename T> static const void* block_raw_ptr_from_pptr( pptr<T> p ) noexcept
+    {
+        const std::uint8_t* base = _backend.base_ptr();
+        return base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
+               sizeof( Block<address_traits> );
+    }
+
+    template <typename T> static void* block_raw_mut_ptr_from_pptr( pptr<T> p ) noexcept
+    {
+        std::uint8_t* base = _backend.base_ptr();
+        return base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
+               sizeof( Block<address_traits> );
+    }
 
     template <typename Callback>
     static void for_each_free_block_inorder( const std::uint8_t* base, const detail::ManagerHeader<address_traits>* hdr,
