@@ -1852,40 +1852,9 @@ inline void* user_ptr( pmm::Block<AddressTraitsT>* block )
     return reinterpret_cast<std::uint8_t*>( block ) + sizeof( pmm::Block<AddressTraitsT> );
 }
 
-/// @brief O(1) get Block<A> from user_ptr (ptr - sizeof(Block<A>)); validated via is_valid_block().
-/// Issue #112: Block<A> is the sole block type.
-/// @note For non-default address traits, use the templated header_from_ptr_t<AddressTraitsT>().
-///       Issue #160: header_from_ptr performs additional is_valid_block() structural validation
-///       which is not yet available generically; for that reason these overloads are kept separate.
-inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t total_size )
-{
-    using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
-    if ( ptr == nullptr )
-        return nullptr;
-    std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
-    // First user data starts after Block_0 + ManagerHeader<DefaultAddressTraits> + Block_1 (Issue #75, #112)
-    static constexpr std::size_t kBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
-    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader<pmm::DefaultAddressTraits> ) + kBlockSize;
-    if ( raw_ptr < min_addr )
-        return nullptr;
-    if ( raw_ptr > base + total_size )
-        return nullptr;
-    std::uint8_t* cand_addr = raw_ptr - kBlockSize;
-    if ( ( reinterpret_cast<std::size_t>( cand_addr ) - reinterpret_cast<std::size_t>( base ) ) % kGranuleSize != 0 )
-        return nullptr;
-    std::uint32_t cand_idx = static_cast<std::uint32_t>( ( cand_addr - base ) / kGranuleSize );
-    // Issue #83: ManagerHeader is at base + kBlockSize.
-    const ManagerHeader<pmm::DefaultAddressTraits>* hdr_const =
-        reinterpret_cast<const ManagerHeader<pmm::DefaultAddressTraits>*>( base + kBlockSize );
-    if ( !is_valid_block( base, hdr_const, cand_idx ) )
-        return nullptr;
-    if ( BlockState::get_weight( cand_addr ) == 0 )
-        return nullptr;
-    return reinterpret_cast<pmm::Block<pmm::DefaultAddressTraits>*>( cand_addr );
-}
-
-/// @brief Templated variant of header_from_ptr for non-default address traits.
-/// O(1) get Block<AddressTraitsT> from user_ptr (ptr - sizeof(Block<AddressTraitsT>)).
+/// @brief O(1) get Block<AddressTraitsT> from user_ptr (ptr - sizeof(Block<AddressTraitsT>)).
+/// Issue #112: Block<AddressTraitsT> is the sole block type.
+/// Issue #179: unified templated helper replaces the former DefaultAddressTraits-specific overload.
 template <typename AddressTraitsT>
 inline pmm::Block<AddressTraitsT>* header_from_ptr_t( std::uint8_t* base, void* ptr, std::size_t total_size )
 {
@@ -5887,4 +5856,3 @@ template <typename T> struct is_persist_memory_manager : std::bool_constant<Pers
 template <typename T> inline constexpr bool is_persist_memory_manager_v = PersistMemoryManagerConcept<T>;
 
 } // namespace pmm
-
