@@ -77,12 +77,13 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#concepts">Concepts</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">manager_configs.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146).  
+<p>Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="address__traits_8h_source.html">pmm/address_traits.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="config_8h_source.html">pmm/config.h</a>&quot;</code><br />
@@ -90,6 +91,8 @@ $(function() {
 <code>#include &quot;<a class="el" href="heap__storage_8h_source.html">pmm/heap_storage.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="static__storage_8h_source.html">pmm/static_storage.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="storage__backend_8h_source.html">pmm/storage_backend.h</a>&quot;</code><br />
+<code>#include &lt;concepts&gt;</code><br />
+<code>#include &lt;cstddef&gt;</code><br />
 </div>
 <p><a href="manager__configs_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -122,6 +125,12 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm" id="r_namespacepmm"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html">pmm</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="concepts" name="concepts"></a>
+Concepts</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1ValidPmmAddressTraits.html">pmm::ValidPmmAddressTraits</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 концепт: проверяет, что AddressTraitsT имеет допустимые параметры гранулы. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:ad7ae412e928bca11f0e3687e2acf680d" id="r_ad7ae412e928bca11f0e3687e2acf680d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad7ae412e928bca11f0e3687e2acf680d">pmm::kMinGranuleSize</a> = 4</td></tr>
@@ -129,7 +138,7 @@ Variables</h2></td></tr>
 <tr class="separator:ad7ae412e928bca11f0e3687e2acf680d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146). </p>
+<div class="textblock"><p>Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155). </p>
 <p>Предоставляет набор предопределённых конфигурационных структур для использования с <code>PersistMemoryManager&lt;ConfigT, InstanceId&gt;</code>. Каждая конфигурация описывает типичный сценарий использования менеджера персистентной памяти.</p>
 <p>Конфигурация включает:</p><ul>
 <li><code>address_traits</code> — тип адресного пространства (размер индекса, гранулы)</li>
@@ -146,7 +155,7 @@ Variables</h2></td></tr>
 <li>uint32_t (DefaultAddressTraits, 16B гранула) — до 64 ГБ, основной вариант.</li>
 <li>uint64_t (LargeAddressTraits, 64B гранула) — до петабайт, крупные БД.</li>
 </ul>
-<p>Ключевые ограничения (задокументированы static_assert-ами):</p><ol type="1">
+<p>Ключевые ограничения (проверяются через концепт ValidPmmAddressTraits, Issue #155):</p><ol type="1">
 <li>granule_size &gt;= kMinGranuleSize (4 байта — минимум размер слова архитектуры).</li>
 <li>granule_size — степень двойки.</li>
 </ol>
@@ -196,7 +205,7 @@ Variables</h2></td></tr>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — унифицированный статический менеджер ПАП (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (Issue #110) </dd>
 <dd>
 <a class="el" href="config_8h.html">config.h</a> — базовые политики блокировок (NoLock, SharedMutexLock) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.4 (Issue #146 — добавлена поддержка 16-bit и 64-bit индексов) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.5 (Issue #155 — ValidPmmAddressTraits concept replaces repeated static_asserts) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div></div><!-- contents -->
