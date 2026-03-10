@@ -13,14 +13,11 @@ var searchData=
   ['get_5fright_5foffset_10',['get_right_offset',['../classpmm_1_1BlockStateBase.html#ab0e22b2ee40844b4e93df60f92991dbc',1,'pmm::BlockStateBase']]],
   ['get_5froot_11',['get_root',['../structpmm_1_1TreeNode.html#a5f69a6a6e4e8bfff2ee604611771f830',1,'pmm::TreeNode']]],
   ['get_5froot_5foffset_12',['get_root_offset',['../classpmm_1_1BlockStateBase.html#ae0a29f9d1ad14ecd87218af498e0a202',1,'pmm::BlockStateBase']]],
-  ['get_5ftree_5fheight_13',['get_tree_height',['../classpmm_1_1PersistMemoryManager.html#ab7311a297d3aba90523186b5b6b7472f',1,'pmm::PersistMemoryManager::get_tree_height()'],['../classpmm_1_1pptr.html#a7d6d1fc38e1e9197bca2307eb640d584',1,'pmm::pptr::get_tree_height() const noexcept']]],
-  ['get_5ftree_5fleft_14',['get_tree_left',['../classpmm_1_1pptr.html#a45220ab1dc9f01a81309382f5bf1a42e',1,'pmm::pptr']]],
-  ['get_5ftree_5fleft_5foffset_15',['get_tree_left_offset',['../classpmm_1_1PersistMemoryManager.html#a21bc7451ded73e225c0183ce68ec41a4',1,'pmm::PersistMemoryManager']]],
-  ['get_5ftree_5fparent_16',['get_tree_parent',['../classpmm_1_1pptr.html#adae4e38fef8c319f0b46a4c573c77406',1,'pmm::pptr']]],
-  ['get_5ftree_5fparent_5foffset_17',['get_tree_parent_offset',['../classpmm_1_1PersistMemoryManager.html#a28ea290cf49e819b2fdf67eddb8f3099',1,'pmm::PersistMemoryManager']]],
-  ['get_5ftree_5fright_18',['get_tree_right',['../classpmm_1_1pptr.html#a01958c6599a793d8008ca756c514bc5c',1,'pmm::pptr']]],
-  ['get_5ftree_5fright_5foffset_19',['get_tree_right_offset',['../classpmm_1_1PersistMemoryManager.html#a13ea961178176ea5fde6cec70de2dc7a',1,'pmm::PersistMemoryManager']]],
-  ['get_5ftree_5fweight_20',['get_tree_weight',['../classpmm_1_1PersistMemoryManager.html#add3d616d951a0dae10d32651c76d4af5',1,'pmm::PersistMemoryManager::get_tree_weight()'],['../classpmm_1_1pptr.html#a02ba414d2bc6a094a5115adabc80da96',1,'pmm::pptr::get_tree_weight()']]],
-  ['get_5fweight_21',['get_weight',['../classpmm_1_1BlockStateBase.html#a020c57cf961ccb6b3f1fc63041caab18',1,'pmm::BlockStateBase::get_weight()'],['../structpmm_1_1TreeNode.html#ac50581a957748b2520039df2c9fb2c02',1,'pmm::TreeNode::get_weight()']]],
-  ['granules_5fto_5fbytes_22',['granules_to_bytes',['../structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7',1,'pmm::AddressTraits::granules_to_bytes()'],['../namespacepmm_1_1detail.html#a8b26126e4182bf35bdea93b5fbc4e867',1,'pmm::detail::granules_to_bytes()']]]
+  ['get_5ftree_5fheight_13',['get_tree_height',['../classpmm_1_1PersistMemoryManager.html#ab7311a297d3aba90523186b5b6b7472f',1,'pmm::PersistMemoryManager']]],
+  ['get_5ftree_5fleft_5foffset_14',['get_tree_left_offset',['../classpmm_1_1PersistMemoryManager.html#a21bc7451ded73e225c0183ce68ec41a4',1,'pmm::PersistMemoryManager']]],
+  ['get_5ftree_5fparent_5foffset_15',['get_tree_parent_offset',['../classpmm_1_1PersistMemoryManager.html#a28ea290cf49e819b2fdf67eddb8f3099',1,'pmm::PersistMemoryManager']]],
+  ['get_5ftree_5fright_5foffset_16',['get_tree_right_offset',['../classpmm_1_1PersistMemoryManager.html#a13ea961178176ea5fde6cec70de2dc7a',1,'pmm::PersistMemoryManager']]],
+  ['get_5ftree_5fweight_17',['get_tree_weight',['../classpmm_1_1PersistMemoryManager.html#add3d616d951a0dae10d32651c76d4af5',1,'pmm::PersistMemoryManager']]],
+  ['get_5fweight_18',['get_weight',['../classpmm_1_1BlockStateBase.html#a020c57cf961ccb6b3f1fc63041caab18',1,'pmm::BlockStateBase::get_weight()'],['../structpmm_1_1TreeNode.html#ac50581a957748b2520039df2c9fb2c02',1,'pmm::TreeNode::get_weight()']]],
+  ['granules_5fto_5fbytes_19',['granules_to_bytes',['../structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7',1,'pmm::AddressTraits::granules_to_bytes()'],['../namespacepmm_1_1detail.html#a8b26126e4182bf35bdea93b5fbc4e867',1,'pmm::detail::granules_to_bytes()']]]
 ];
