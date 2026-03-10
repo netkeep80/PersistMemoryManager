@@ -139,6 +139,11 @@ pmm_add_test(test_issue166_deduplication test_issue166_deduplication.cpp)
 # ─── Тесты дедупликации функций-обёрток (Issue #168) ─────────────────────────
 pmm_add_test(test_issue168_deduplication test_issue168_deduplication.cpp)
 
+# ─── Тесты поддержки 64-bit индексов через ManagerHeader<AT> (Issue #175) ────
+add_executable(test_issue175_64bit_indexes test_issue175_64bit_indexes.cpp)
+target_link_libraries(test_issue175_64bit_indexes PRIVATE pmm Threads::Threads)
+add_test(NAME test_issue175_64bit_indexes COMMAND test_issue175_64bit_indexes)
+
 # ─── Тесты самодостаточности single-header файлов (Issue #123) ───────────────
 # Каждый single-header файл тестируется отдельным исполняемым файлом.
 # Это гарантирует автономность: каждый файл компилируется без include/pmm/*.
