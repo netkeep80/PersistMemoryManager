@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_total_size are runtime-only (nulled by load() — not persisted).  
+<p>Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).  
  <a href="structpmm_1_1detail_1_1ManagerHeader.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="types_8h_source.html">types.h</a>&gt;</code></p>
@@ -118,24 +118,60 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a56a57d4f7cef869939e4ede031857666" id="r_a56a57d4f7cef869939e4ede031857666"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a56a57d4f7cef869939e4ede031857666">owns_memory</a></td></tr>
 <tr class="memdesc:a56a57d4f7cef869939e4ede031857666"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager owns buffer (runtime-only)  <br /></td></tr>
 <tr class="separator:a56a57d4f7cef869939e4ede031857666"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac4d518b1787bb7897f1537e53c140037" id="r_ac4d518b1787bb7897f1537e53c140037"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ac4d518b1787bb7897f1537e53c140037">prev_owns_memory</a></td></tr>
-<tr class="memdesc:ac4d518b1787bb7897f1537e53c140037"><td class="mdescLeft">&#160;</td><td class="mdescRight">prev_base_ptr was allocated by manager (runtime-only)  <br /></td></tr>
-<tr class="separator:ac4d518b1787bb7897f1537e53c140037"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94c052d285a101c0fe3e26d9f0d8019e" id="r_a94c052d285a101c0fe3e26d9f0d8019e"><td class="memItemLeft" align="right" valign="top">std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a94c052d285a101c0fe3e26d9f0d8019e">_pad</a></td></tr>
+<tr class="memdesc:a94c052d285a101c0fe3e26d9f0d8019e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved padding byte (Issue #176: was prev_owns_memory)  <br /></td></tr>
+<tr class="separator:a94c052d285a101c0fe3e26d9f0d8019e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe097fa0656bab921bec5a1a5ed7ac1d" id="r_afe097fa0656bab921bec5a1a5ed7ac1d"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#afe097fa0656bab921bec5a1a5ed7ac1d">granule_size</a></td></tr>
 <tr class="memdesc:afe097fa0656bab921bec5a1a5ed7ac1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: kGranuleSize at creation time; validated on load.  <br /></td></tr>
 <tr class="separator:afe097fa0656bab921bec5a1a5ed7ac1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2c18d6c49db61acbbd79984c7c457c5" id="r_aa2c18d6c49db61acbbd79984c7c457c5"><td class="memItemLeft" align="right" valign="top">std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#aa2c18d6c49db61acbbd79984c7c457c5">prev_total_size</a></td></tr>
 <tr class="memdesc:aa2c18d6c49db61acbbd79984c7c457c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Previous buffer size in bytes (runtime-only)  <br /></td></tr>
 <tr class="separator:aa2c18d6c49db61acbbd79984c7c457c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bb56fffdeca92384e21d17e6ed8133b" id="r_a1bb56fffdeca92384e21d17e6ed8133b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a1bb56fffdeca92384e21d17e6ed8133b">prev_base_ptr</a></td></tr>
-<tr class="memdesc:a1bb56fffdeca92384e21d17e6ed8133b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to previous buffer (runtime-only; nulled on load)  <br /></td></tr>
-<tr class="separator:a1bb56fffdeca92384e21d17e6ed8133b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95b7c2bdb1d0e22258ed0e07e96e4898" id="r_a95b7c2bdb1d0e22258ed0e07e96e4898"><td class="memItemLeft" align="right" valign="top">std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a95b7c2bdb1d0e22258ed0e07e96e4898">_reserved</a> [8]</td></tr>
+<tr class="memdesc:a95b7c2bdb1d0e22258ed0e07e96e4898"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved bytes (Issue #176: was prev_base_ptr)  <br /></td></tr>
+<tr class="separator:a95b7c2bdb1d0e22258ed0e07e96e4898"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_total_size are runtime-only (nulled by load() — not persisted). </p>
+<div class="textblock"><p>Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00138">138</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00139">139</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a94c052d285a101c0fe3e26d9f0d8019e" name="a94c052d285a101c0fe3e26d9f0d8019e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94c052d285a101c0fe3e26d9f0d8019e">&#9670;&#160;</a></span>_pad</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint8_t pmm::detail::ManagerHeader::_pad</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reserved padding byte (Issue #176: was prev_owns_memory) </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00151">151</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a95b7c2bdb1d0e22258ed0e07e96e4898" name="a95b7c2bdb1d0e22258ed0e07e96e4898"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95b7c2bdb1d0e22258ed0e07e96e4898">&#9670;&#160;</a></span>_reserved</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint8_t pmm::detail::ManagerHeader::_reserved[8]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reserved bytes (Issue #176: was prev_base_ptr) </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00154">154</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
 <a id="a4d072b6578f7851810f262aa52cb317f" name="a4d072b6578f7851810f262aa52cb317f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4d072b6578f7851810f262aa52cb317f">&#9670;&#160;</a></span>alloc_count</h2>
 
@@ -150,7 +186,7 @@ Public Attributes</h2></td></tr>
 
 <p>Number of allocated blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00145">145</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00146">146</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -168,7 +204,7 @@ Public Attributes</h2></td></tr>
 
 <p>Total number of blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00143">143</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00144">144</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -186,7 +222,7 @@ Public Attributes</h2></td></tr>
 
 <p>First block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00146">146</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00147">147</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -204,7 +240,7 @@ Public Attributes</h2></td></tr>
 
 <p>Number of free blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00144">144</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00145">145</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -222,7 +258,7 @@ Public Attributes</h2></td></tr>
 
 <p>Root of AVL tree of free blocks (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00148">148</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00149">149</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -240,7 +276,7 @@ Public Attributes</h2></td></tr>
 
 <p>Issue #83: kGranuleSize at creation time; validated on load. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00151">151</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00152">152</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -258,7 +294,7 @@ Public Attributes</h2></td></tr>
 
 <p>[Issue #57 opt 4] Last block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00147">147</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00148">148</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -276,7 +312,7 @@ Public Attributes</h2></td></tr>
 
 <p>Manager magic number. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00140">140</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00141">141</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -293,42 +329,6 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Manager owns buffer (runtime-only) </p>
-
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00149">149</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
-
-</div>
-</div>
-<a id="a1bb56fffdeca92384e21d17e6ed8133b" name="a1bb56fffdeca92384e21d17e6ed8133b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1bb56fffdeca92384e21d17e6ed8133b">&#9670;&#160;</a></span>prev_base_ptr</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>* pmm::detail::ManagerHeader::prev_base_ptr</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Pointer to previous buffer (runtime-only; nulled on load) </p>
-
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00153">153</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
-
-</div>
-</div>
-<a id="ac4d518b1787bb7897f1537e53c140037" name="ac4d518b1787bb7897f1537e53c140037"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac4d518b1787bb7897f1537e53c140037">&#9670;&#160;</a></span>prev_owns_memory</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> pmm::detail::ManagerHeader::prev_owns_memory</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>prev_base_ptr was allocated by manager (runtime-only) </p>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00150">150</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
@@ -348,7 +348,7 @@ Public Attributes</h2></td></tr>
 
 <p>Previous buffer size in bytes (runtime-only) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00152">152</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00153">153</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -366,7 +366,7 @@ Public Attributes</h2></td></tr>
 
 <p>Total size of managed area in bytes. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00141">141</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00142">142</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -384,7 +384,7 @@ Public Attributes</h2></td></tr>
 
 <p>Used size in granules (Issue #59) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00142">142</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00143">143</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>

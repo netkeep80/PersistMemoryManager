@@ -85,7 +85,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_total_size are runtime-only (nulled by load() — not persisted).  <a href="structpmm_1_1detail_1_1ManagerHeader.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).  <a href="structpmm_1_1detail_1_1ManagerHeader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -138,11 +138,11 @@ Functions</h2></td></tr>
 <tr class="separator:a6ab2e8c1c2a4a3e7242540fb67859112"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0c5886e1f57cd47bb5441f444bd2006" id="r_ac0c5886e1f57cd47bb5441f444bd2006"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
 <tr class="memitem:ac0c5886e1f57cd47bb5441f444bd2006"><td class="memTemplItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ac0c5886e1f57cd47bb5441f444bd2006">to_u32_idx</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">v</a>)</td></tr>
-<tr class="memdesc:ac0c5886e1f57cd47bb5441f444bd2006"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translate an index_type sentinel (AddressTraitsT::no_block) to uint32_t kNoBlock. Used when storing index_type values in uint32_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a> fields.  <br /></td></tr>
+<tr class="memdesc:ac0c5886e1f57cd47bb5441f444bd2006"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translate an index_type sentinel (AddressTraitsT::no_block) to uint32_t kNoBlock. Used when storing index_type values in uint32_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runt...">ManagerHeader</a> fields.  <br /></td></tr>
 <tr class="separator:ac0c5886e1f57cd47bb5441f444bd2006"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3535fccbbee1343f27a0a45b01be23a0" id="r_a3535fccbbee1343f27a0a45b01be23a0"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
 <tr class="memitem:a3535fccbbee1343f27a0a45b01be23a0"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a3535fccbbee1343f27a0a45b01be23a0">from_u32_idx</a> (std::uint32_t <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">v</a>)</td></tr>
-<tr class="memdesc:a3535fccbbee1343f27a0a45b01be23a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translate uint32_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a> index to index_type, mapping kNoBlock → no_block.  <br /></td></tr>
+<tr class="memdesc:a3535fccbbee1343f27a0a45b01be23a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translate uint32_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runt...">ManagerHeader</a> index to index_type, mapping kNoBlock → no_block.  <br /></td></tr>
 <tr class="separator:a3535fccbbee1343f27a0a45b01be23a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b129df684b6f71c92fe308cf1e04324" id="r_a5b129df684b6f71c92fe308cf1e04324"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
 <tr class="memitem:a5b129df684b6f71c92fe308cf1e04324"><td class="memTemplItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a5b129df684b6f71c92fe308cf1e04324">block_total_granules</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> std::uint8_t *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">base</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">hdr</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">blk</a>)</td></tr>
@@ -180,13 +180,13 @@ Variables</h2></td></tr>
 <tr class="memdesc:ac8238d730b912b3d2ea95864aa3fa3de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #166: Template alias for AddressTraitsT::no_block sentinel. Use this instead of <a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e" title="Issue #87 Phase 1: matches DefaultAddressTraits::no_block.">detail::kNoBlock</a> in generic (templated) code that works with any AT. For DefaultAddressTraits, kNoBlock_v&lt;DefaultAddressTraits&gt; == kNoBlock == 0xFFFFFFFFU.  <br /></td></tr>
 <tr class="separator:ac8238d730b912b3d2ea95864aa3fa3de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adda9afd5ae768545d32151ed800eb699" id="r_adda9afd5ae768545d32151ed800eb699"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#adda9afd5ae768545d32151ed800eb699">kManagerHeaderGranules</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a> ) / <a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a></td></tr>
-<tr class="memdesc:adda9afd5ae768545d32151ed800eb699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of granules in <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a>.  <br /></td></tr>
+<tr class="memdesc:adda9afd5ae768545d32151ed800eb699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of granules in <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runt...">ManagerHeader</a>.  <br /></td></tr>
 <tr class="separator:adda9afd5ae768545d32151ed800eb699"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65f43ab4cb1daf08535e6a3b2591cbc6" id="r_a65f43ab4cb1daf08535e6a3b2591cbc6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a65f43ab4cb1daf08535e6a3b2591cbc6">kMinBlockSize</a> = <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">sizeof</a>( <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a>&gt; ) + <a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a></td></tr>
 <tr class="memdesc:a65f43ab4cb1daf08535e6a3b2591cbc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: Minimum block size = <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header + 1 data granule (Issue #112: uses <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>).  <br /></td></tr>
 <tr class="separator:a65f43ab4cb1daf08535e6a3b2591cbc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a049a972c096254cddb69b417750c54da" id="r_a049a972c096254cddb69b417750c54da"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a049a972c096254cddb69b417750c54da">kMinMemorySize</a></td></tr>
-<tr class="memdesc:a049a972c096254cddb69b417750c54da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: Minimum memory size = Block_0 + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a> + Block_1 + kMinBlockSize (Issue #112).  <br /></td></tr>
+<tr class="memdesc:a049a972c096254cddb69b417750c54da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: Minimum memory size = Block_0 + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runt...">ManagerHeader</a> + Block_1 + kMinBlockSize (Issue #112).  <br /></td></tr>
 <tr class="separator:a049a972c096254cddb69b417750c54da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a140224a6c0d865821bcae55785630e90" id="r_a140224a6c0d865821bcae55785630e90"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
 <tr class="memitem:a140224a6c0d865821bcae55785630e90"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> std::uint32_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a140224a6c0d865821bcae55785630e90">kBlockHeaderGranules_t</a></td></tr>
@@ -236,7 +236,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Get const pointer to Block&lt;AddressTraitsT&gt; by granule index (read-only). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00274">274</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00275">275</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -278,7 +278,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-file <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">blk_at()</a> helpers in <a class="el" href="allocator__policy_8h.html" title="AllocatorPolicy — политика выделения/освобождения памяти (Issue #87 Phase 6).">allocator_policy.h</a> and <a class="el" href="free__block__tree_8h.html" title="FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95, #129).">free_block_tree.h</a> (Issue #141). Uses AddressTraitsT::granule_size for byte-offset computation (Issue #146). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00265">265</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00266">266</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -318,7 +318,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Get granule index of Block&lt;DefaultAddressTraits&gt;. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00282">282</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00283">283</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -360,7 +360,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Get granule index of Block&lt;AddressTraitsT&gt; — templated variant for non-default address traits. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00291">291</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00292">292</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -408,7 +408,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Compute total granules of block for AddressTraitsT (Issue #112: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout). Issue #59: total_size is no longer stored — computed via next_offset. Issue #160: Single templated implementation; non-templated overload delegates here. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00329">329</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00330">330</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -439,7 +439,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Get granule index from byte offset (must be multiple of kGranuleSize). </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">byte_off_to_idx_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00249">249</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00250">250</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -471,7 +471,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Get granule index from byte offset using AddressTraitsT::granule_size. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00219">219</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00220">220</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -502,7 +502,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Convert bytes to granules (ceiling). Returns 0 on overflow. </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">bytes_to_granules_t&lt;DefaultAddressTraits&gt;()</a> or <a class="el" href="structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75" title="Перевести байты в гранулы (потолок).">DefaultAddressTraits::bytes_to_granules()</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00228">228</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00229">229</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -534,7 +534,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Convert bytes to granules (ceiling) using AddressTraitsT::granule_size. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00186">186</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00187">187</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -566,7 +566,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Convert bytes to index_type granules (ceiling) using AddressTraitsT::granule_size. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00198">198</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00199">199</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -596,9 +596,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p>Translate uint32_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a> index to index_type, mapping kNoBlock → no_block. </p>
+<p>Translate uint32_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runt...">ManagerHeader</a> index to index_type, mapping kNoBlock → no_block. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00320">320</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00321">321</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -629,7 +629,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Convert granules to bytes. </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>Use <a class="el" href="structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7" title="Перевести гранулы в байты.">DefaultAddressTraits::granules_to_bytes()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00235">235</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00236">236</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -676,7 +676,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">O(1)</a> get <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> from user_ptr (ptr - <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">sizeof(Block&lt;A&gt;)</a>); validated via <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69/#106/#112: Structural block validity using Block layout. Invariants: weight&lt;total_gran,...">is_valid_block()</a>. Issue #112: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> is the sole block type. </p>
 <dl class="section note"><dt>Note</dt><dd>For non-default address traits, use the templated <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">header_from_ptr_t&lt;AddressTraitsT&gt;()</a>. Issue #160: header_from_ptr performs additional <a class="el" href="namespacepmm_1_1detail.html#acfed0397d713df8a3a2d501827722294" title="Issue #69/#106/#112: Structural block validity using Block layout. Invariants: weight&lt;total_gran,...">is_valid_block()</a> structural validation which is not yet available generically; for that reason these overloads are kept separate. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00395">395</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00396">396</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -724,7 +724,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Templated variant of header_from_ptr for non-default address traits. <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">O(1)</a> get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">sizeof(Block&lt;AddressTraitsT&gt;)</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00424">424</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00425">425</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -755,7 +755,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Get byte offset from granule index. </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated:</a></b></dt><dd>Use <a class="el" href="structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2" title="Получить байтовое смещение из гранульного индекса.">DefaultAddressTraits::idx_to_byte_off()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00242">242</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00243">243</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -787,7 +787,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Get byte offset from granule index using AddressTraitsT::granule_size. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00213">213</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00214">214</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -817,7 +817,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Returns true only for kGranuleSize (16-byte) alignment. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00255">255</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00256">256</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -863,7 +863,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Issue #69/#106/#112: Structural block validity using <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. Invariants: weight&lt;total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00348">348</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00349">349</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -894,7 +894,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Minimum block granules for user_bytes (header + data, minimum 1 data granule). </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">required_block_granules_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00455">455</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00456">456</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -926,7 +926,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Issue #166: Templated variant of required_block_granules for any AddressTraitsT. Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t&lt;AT&gt; for correct per-AT computation. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00466">466</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00467">467</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -956,9 +956,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p>Translate an index_type sentinel (AddressTraitsT::no_block) to uint32_t kNoBlock. Used when storing index_type values in uint32_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a> fields. </p>
+<p>Translate an index_type sentinel (AddressTraitsT::no_block) to uint32_t kNoBlock. Used when storing index_type values in uint32_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runt...">ManagerHeader</a> fields. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00314">314</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00315">315</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -990,7 +990,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Compute user data address for block (block + <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">sizeof(Block&lt;A&gt;)</a>, Issue #106, #112, #141). Single canonical implementation — use this instead of duplicating the cast in each call site. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00385">385</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00386">386</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1022,7 +1022,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </div><!-- fragment -->
 <p><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header size in granules for AddressTraitsT (Issue #146). Computes ceil(<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">sizeof(Block&lt;AT&gt;)</a> / AT::granule_size). For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00303">303</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00304">304</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1046,9 +1046,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p>Number of granules in <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a>. </p>
+<p>Number of granules in <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runt...">ManagerHeader</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00161">161</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00162">162</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1078,7 +1078,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </div><!-- fragment -->
 <p>Manager header size in granules for AddressTraitsT (Issue #146). For 16B granule: 64/16 = 4. For 64B granule: 64/64 = 1. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00309">309</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00310">310</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1104,7 +1104,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Issue #83: Minimum block size = <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header + 1 data granule (Issue #112: uses <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00164">164</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00165">165</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1131,9 +1131,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <div class="line">                                              <span class="keyword">sizeof</span>( ManagerHeader ) +</div>
 <div class="line">                                              <span class="keyword">sizeof</span>( <a class="code hl_struct" href="structpmm_1_1Block.html">pmm::Block&lt;pmm::DefaultAddressTraits&gt;</a> ) + kMinBlockSize</div>
 </div><!-- fragment -->
-<p>Issue #83: Minimum memory size = Block_0 + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_base_ptr / prev_to...">ManagerHeader</a> + Block_1 + kMinBlockSize (Issue #112). </p>
+<p>Issue #83: Minimum memory size = Block_0 + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runt...">ManagerHeader</a> + Block_1 + kMinBlockSize (Issue #112). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00167">167</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00168">168</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
