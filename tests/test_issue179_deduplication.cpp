@@ -1,6 +1,6 @@
 /**
  * @file test_issue179_deduplication.cpp
- * @brief Tests for blk_raw deduplication in tree accessor methods (Issue #179).
+ * @brief Tests for code-deduplication refactoring in Issue #179.
  *
  * Verifies:
  *   - block_raw_ptr_from_pptr() and block_raw_mut_ptr_from_pptr() helpers work correctly.
@@ -10,9 +10,13 @@
  *       get_tree_weight, set_tree_weight, get_tree_height, set_tree_height
  *   - tree_node() works correctly after refactoring.
  *   - Null pptr and uninitialized manager guard behavior is unchanged.
+ *   - make_pptr_from_raw() helper: allocate_typed, allocate_typed(count), and
+ *     create_typed return pptr<T> that resolves to the allocated data (Issue #179).
+ *   - find_block_from_user_ptr() helper: lock_block_permanent and is_permanently_locked
+ *     work correctly via the new shared prologue helper (Issue #179).
  *
  * @see include/pmm/persist_memory_manager.h
- * @version 0.1 (Issue #179 -- blk_raw helper extraction)
+ * @version 0.2 (Issue #179 -- make_pptr_from_raw and find_block_from_user_ptr helpers)
  */
 
 #include "pmm/manager_configs.h"
@@ -257,12 +261,123 @@ static bool test_i179_alloc_dealloc_functional()
 }
 
 // =============================================================================
+// Issue #179 Tests Section E: make_pptr_from_raw helper (via typed allocation API)
+// =============================================================================
+
+/// @brief allocate_typed<T>() pptr resolves to the same address as the raw allocation.
+static bool test_i179_allocate_typed_pptr_resolves_correctly()
+{
+    TestMgr::create( 64 * 1024 );
+
+    TestMgr::pptr<int> p = TestMgr::allocate_typed<int>();
+    PMM_TEST( !p.is_null() );
+
+    int* resolved = TestMgr::resolve( p );
+    PMM_TEST( resolved != nullptr );
+
+    // Write through raw pointer obtained via resolve, read back via resolve to confirm.
+    *resolved = 42;
+    PMM_TEST( *TestMgr::resolve( p ) == 42 );
+
+    TestMgr::deallocate_typed( p );
+    TestMgr::destroy();
+    return true;
+}
+
+/// @brief allocate_typed<T>(count) pptr resolves to the correct base address.
+static bool test_i179_allocate_typed_count_pptr_resolves_correctly()
+{
+    TestMgr::create( 64 * 1024 );
+
+    const std::size_t  count = 4;
+    TestMgr::pptr<int> p     = TestMgr::allocate_typed<int>( count );
+    PMM_TEST( !p.is_null() );
+
+    int* arr = TestMgr::resolve( p );
+    PMM_TEST( arr != nullptr );
+
+    for ( std::size_t i = 0; i < count; ++i )
+        arr[i] = static_cast<int>( i * 10 );
+
+    for ( std::size_t i = 0; i < count; ++i )
+        PMM_TEST( TestMgr::resolve_at( p, i ) != nullptr &&
+                  *TestMgr::resolve_at( p, i ) == static_cast<int>( i * 10 ) );
+
+    TestMgr::deallocate_typed( p );
+    TestMgr::destroy();
+    return true;
+}
+
+/// @brief create_typed<T>(args...) pptr resolves and the object was constructed.
+static bool test_i179_create_typed_pptr_resolves_with_constructed_value()
+{
+    TestMgr::create( 64 * 1024 );
+
+    TestMgr::pptr<int> p = TestMgr::create_typed<int>( 99 );
+    PMM_TEST( !p.is_null() );
+
+    int* resolved = TestMgr::resolve( p );
+    PMM_TEST( resolved != nullptr );
+    PMM_TEST( *resolved == 99 );
+
+    TestMgr::destroy_typed( p );
+    TestMgr::destroy();
+    return true;
+}
+
+// =============================================================================
+// Issue #179 Tests Section F: find_block_from_user_ptr helper (via lock API)
+// =============================================================================
+
+/// @brief lock_block_permanent and is_permanently_locked work via find_block_from_user_ptr.
+static bool test_i179_lock_permanent_and_query()
+{
+    TestMgr::create( 64 * 1024 );
+
+    void* ptr = TestMgr::allocate( 32 );
+    PMM_TEST( ptr != nullptr );
+
+    // Initially not locked
+    PMM_TEST( !TestMgr::is_permanently_locked( ptr ) );
+
+    // Lock it
+    PMM_TEST( TestMgr::lock_block_permanent( ptr ) );
+
+    // Now it is locked
+    PMM_TEST( TestMgr::is_permanently_locked( ptr ) );
+
+    // deallocate must be a no-op for permanently locked block
+    TestMgr::deallocate( ptr );
+    PMM_TEST( TestMgr::is_permanently_locked( ptr ) );
+
+    TestMgr::destroy();
+    return true;
+}
+
+/// @brief find_block_from_user_ptr: null and out-of-range pointers return safely.
+static bool test_i179_find_block_null_and_invalid_ptr()
+{
+    TestMgr::create( 64 * 1024 );
+
+    // Null ptr
+    PMM_TEST( !TestMgr::is_permanently_locked( nullptr ) );
+    PMM_TEST( !TestMgr::lock_block_permanent( nullptr ) );
+
+    // Out-of-range ptr: should return false/nullptr, not crash
+    void* bad_ptr = reinterpret_cast<void*>( static_cast<std::uintptr_t>( 1 ) );
+    PMM_TEST( !TestMgr::is_permanently_locked( bad_ptr ) );
+
+    TestMgr::destroy();
+    return true;
+}
+
+// =============================================================================
 // main
 // =============================================================================
 
 int main()
 {
-    std::cout << "=== test_issue179_deduplication (Issue #179: blk_raw helper extraction) ===\n\n";
+    std::cout << "=== test_issue179_deduplication (Issue #179: code deduplication helpers) ===\n\n";
     bool all_passed = true;
 
     std::cout << "--- I179-A: guard behavior (null pptr) unchanged ---\n";
@@ -281,6 +396,17 @@ int main()
 
     std::cout << "\n--- I179-D: functional tests ---\n";
     PMM_RUN( "I179-D1: allocate/deallocate cycle works", test_i179_alloc_dealloc_functional );
+
+    std::cout << "\n--- I179-E: make_pptr_from_raw helper (via typed allocation API) ---\n";
+    PMM_RUN( "I179-E1: allocate_typed<T>() pptr resolves correctly", test_i179_allocate_typed_pptr_resolves_correctly );
+    PMM_RUN( "I179-E2: allocate_typed<T>(count) pptr resolves correctly",
+             test_i179_allocate_typed_count_pptr_resolves_correctly );
+    PMM_RUN( "I179-E3: create_typed<T>(args) resolves and constructs value",
+             test_i179_create_typed_pptr_resolves_with_constructed_value );
+
+    std::cout << "\n--- I179-F: find_block_from_user_ptr helper (via lock API) ---\n";
+    PMM_RUN( "I179-F1: lock_block_permanent and is_permanently_locked via helper", test_i179_lock_permanent_and_query );
+    PMM_RUN( "I179-F2: null and invalid ptrs handled safely", test_i179_find_block_null_and_invalid_ptr );
 
     std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
     return all_passed ? 0 : 1;
