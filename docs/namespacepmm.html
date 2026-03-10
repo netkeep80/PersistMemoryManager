@@ -427,14 +427,15 @@ Variables</h2></td></tr>
 <li>Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений</li>
 </ul>
 <p>Типичный сценарий: крупные базы данных, хранилища данных, облачные хранилища, петабайтные time-series системы.</p>
+<dl class="section note"><dt>Note</dt><dd>Issue #172: Известное ограничение — внутренние поля ManagerHeader (used_size, block_count, free_count, alloc_count, first_block_offset, last_block_offset, free_tree_root) хранятся как std::uint32_t, что ограничивает адресуемое пространство 2^32 гранулами × 64 байт = 256 GiB, а не петабайтным масштабом. Для полноценной 64-bit поддержки ManagerHeader необходимо сделать параметрическим по AddressTraitsT (планируемый рефакторинг).</dd></dl>
 <div class="fragment"><div class="line"><span class="keyword">using </span><a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">BigDB</a> = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::LargeDBConfig&gt;</a>;</div>
 <div class="line">BigDB::create(256 * 1024 * 1024); <span class="comment">// 256 МБ начальный размер</span></div>
 <div class="line"><span class="keywordtype">void</span>* <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ptr</a> = BigDB::allocate(4096);</div>
 <div class="line"><span class="comment">// sizeof(BigDB::pptr&lt;int&gt;) == 8  (64-bit индекс)</span></div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00092">persist_memory_manager.h:93</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00106">persist_memory_manager.h:107</a></div></div>
 <div class="ttc" id="anamespacepmm_html_a13826d7e9e815fd280a91ffa868ce33d"><div class="ttname"><a href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></div><div class="ttdeci">constexpr bool is_free_block_tree_policy_v</div><div class="ttdoc">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00062">free_block_tree.h:62</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00340">340</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00347">347</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

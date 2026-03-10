@@ -91,12 +91,14 @@ $(function() {
 <code>#include &quot;<a class="el" href="pptr_8h_source.html">pmm/pptr.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pstringview_8h_source.html">pmm/pstringview.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
+<code>#include &lt;atomic&gt;</code><br />
 <code>#include &lt;cassert&gt;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
 <code>#include &lt;cstdlib&gt;</code><br />
 <code>#include &lt;cstring&gt;</code><br />
 <code>#include &lt;limits&gt;</code><br />
+<code>#include &lt;new&gt;</code><br />
 </div>
 <p><a href="persist__memory__manager_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -134,18 +136,20 @@ Namespaces</h2></td></tr>
 <div class="line">Cache::create(64 * 1024);</div>
 <div class="line">Buffer::create(32 * 1024);</div>
 <div class="line"> </div>
-<div class="line">Cache::pptr&lt;int&gt; cp = Cache::allocate_typed&lt;int&gt;();</div>
-<div class="line">Buffer::pptr&lt;int&gt; bp = Buffer::allocate_typed&lt;int&gt;();</div>
+<div class="line"><span class="comment">// allocate_typed&lt;T&gt;() — сырое выделение без конструктора.</span></div>
+<div class="line"><span class="comment">// create_typed&lt;T&gt;(args...) — выделение + placement new (Issue #172).</span></div>
+<div class="line">Cache::pptr&lt;int&gt; cp = Cache::create_typed&lt;int&gt;(42);  <span class="comment">// конструктор int(42)</span></div>
+<div class="line">Buffer::pptr&lt;int&gt; bp = Buffer::create_typed&lt;int&gt;();  <span class="comment">// default init</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Разыменование без аргументов — используется operator* и operator-&gt;</span></div>
 <div class="line">*cp = 42;</div>
 <div class="line">*bp = 100;</div>
 <div class="line"> </div>
-<div class="line">Cache::deallocate_typed(cp);</div>
-<div class="line">Buffer::deallocate_typed(bp);</div>
+<div class="line">Cache::destroy_typed(cp);   <span class="comment">// деструктор + освобождение (Issue #172)</span></div>
+<div class="line">Buffer::destroy_typed(bp);</div>
 <div class="line">Cache::destroy();</div>
 <div class="line">Buffer::destroy();</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00092">persist_memory_manager.h:93</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00106">persist_memory_manager.h:107</a></div></div>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="manager__configs_8h.html" title="Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).">manager_configs.h</a> — готовые конфигурации менеджеров </dd>
 <dd>
 <a class="el" href="pmm__presets_8h.html" title="pmm_presets — готовые инстанции PersistMemoryManager (Issue #87 Phase 8, #110, #123,...">pmm_presets.h</a> — готовые псевдонимы для типичных сценариев </dd>

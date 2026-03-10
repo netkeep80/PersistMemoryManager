@@ -131,7 +131,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a001123ac8daaf9da6e882fa6559a3131"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить состояние менеджера (не освобождает бэкенд).  <br /></td></tr>
 <tr class="separator:a001123ac8daaf9da6e882fa6559a3131"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55c4db722ac210db29a7cfc73d4cc544" id="r_a55c4db722ac210db29a7cfc73d4cc544"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a55c4db722ac210db29a7cfc73d4cc544">is_initialized</a> () <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:a55c4db722ac210db29a7cfc73d4cc544"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, инициализирован ли менеджер.  <br /></td></tr>
+<tr class="memdesc:a55c4db722ac210db29a7cfc73d4cc544"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, инициализирован ли менеджер. Issue #172: _initialized is std::atomic&lt;bool&gt; — lock-free fast path.  <br /></td></tr>
 <tr class="separator:a55c4db722ac210db29a7cfc73d4cc544"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b67c007f4096ead20874e3fb3c39ec8" id="r_a4b67c007f4096ead20874e3fb3c39ec8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">allocate</a> (std::size_t user_size) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:a4b67c007f4096ead20874e3fb3c39ec8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Выделить <code>user_size</code> байт в управляемой области.  <br /></td></tr>
@@ -157,6 +157,14 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a805257c17969be444a33000602fee73c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a805257c17969be444a33000602fee73c">deallocate_typed</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">p</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:a805257c17969be444a33000602fee73c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Освободить блок по персистентному указателю.  <br /></td></tr>
 <tr class="separator:a805257c17969be444a33000602fee73c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3df6aef4d5b95860ebff95be49a67905" id="r_a3df6aef4d5b95860ebff95be49a67905"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> , typename... Args&gt; </td></tr>
+<tr class="memitem:a3df6aef4d5b95860ebff95be49a67905"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a3df6aef4d5b95860ebff95be49a67905">create_typed</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Args</a> &amp;&amp;... <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">args</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="memdesc:a3df6aef4d5b95860ebff95be49a67905"><td class="mdescLeft">&#160;</td><td class="mdescRight">Выделить память и создать объект типа T с помощью placement new.  <br /></td></tr>
+<tr class="separator:a3df6aef4d5b95860ebff95be49a67905"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30e91e045b6e24a22313cebce340ed33" id="r_a30e91e045b6e24a22313cebce340ed33"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; </td></tr>
+<tr class="memitem:a30e91e045b6e24a22313cebce340ed33"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a30e91e045b6e24a22313cebce340ed33">destroy_typed</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">p</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
+<tr class="memdesc:a30e91e045b6e24a22313cebce340ed33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разрушить объект типа T (вызвать деструктор) и освободить память.  <br /></td></tr>
+<tr class="separator:a30e91e045b6e24a22313cebce340ed33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9742dd880c10aef9271a2a71a73d13d" id="r_aa9742dd880c10aef9271a2a71a73d13d"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; </td></tr>
 <tr class="memitem:aa9742dd880c10aef9271a2a71a73d13d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#aa9742dd880c10aef9271a2a71a73d13d">resolve</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">p</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:aa9742dd880c10aef9271a2a71a73d13d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать pptr&lt;T&gt; — получить сырой указатель T*.  <br /></td></tr>
@@ -254,7 +262,7 @@ class pmm::PersistMemoryManager&lt; ConfigT, InstanceId &gt;</div><p>Унифи�
 <dd>
 Используйте <code><a class="el" href="classpmm_1_1PersistMemoryManager.html#a001123ac8daaf9da6e882fa6559a3131" title="Сбросить состояние менеджера (не освобождает бэкенд).">destroy()</a></code> перед повторной инициализацией и между тестами. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00092">92</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00106">106</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a642db76c919352d17346b65905fdaa33" name="a642db76c919352d17346b65905fdaa33"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a642db76c919352d17346b65905fdaa33">&#9670;&#160;</a></span>address_traits</h2>
@@ -270,7 +278,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00097">97</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00111">111</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -288,7 +296,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00101">101</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00115">115</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -306,7 +314,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00099">99</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00113">113</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -324,7 +332,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00102">102</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00116">116</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -344,7 +352,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Тип самого менеджера. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00105">105</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00119">119</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -378,7 +386,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00142">142</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00156">156</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -407,7 +415,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00115">115</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00129">129</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -429,7 +437,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Позволяет использовать краткий синтаксис: </p><div class="fragment"><div class="line">Mgr::pptr&lt;Mgr::pstringview&gt; <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">p</a> = Mgr::pstringview(<span class="stringliteral">&quot;hello&quot;</span>);</div>
 </div><!-- fragment --><p> вместо <code>Mgr::pptr&lt;<a class="el" href="structpmm_1_1pstringview.html" title="Персистентная интернированная read-only строка (Issue #151).">pmm::pstringview</a>&lt;Mgr&gt;&gt; p = <a class="el" href="structpmm_1_1pstringview.html" title="Персистентная интернированная read-only строка (Issue #151).">pmm::pstringview</a>&lt;Mgr&gt;("hello");</code> </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00126">126</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00140">140</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -447,7 +455,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00098">98</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00112">112</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -465,7 +473,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00100">100</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00114">114</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -495,7 +503,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00718">718</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00818">818</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -528,7 +536,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Выделить <code>user_size</code> байт в управляемой области. </p>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на пользовательские данные или nullptr. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00243">243</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00261">261</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -568,7 +576,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; — персистентный указатель или <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">pptr&lt;T&gt;()</a> при ошибке. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00364">364</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00382">382</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -615,7 +623,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; — персистентный указатель или <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">pptr&lt;T&gt;()</a> при ошибке. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00381">381</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00399">399</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -646,7 +654,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Доступ к статическому бэкенду (для продвинутых сценариев). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00801">801</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00904">904</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -675,7 +683,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00708">708</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00802">802</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -707,7 +715,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Инициализировать поверх готового бэкенда (бэкенд уже содержит буфер). </p>
 <dl class="section return"><dt>Returns</dt><dd>true при успехе. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00181">181</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00198">198</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -747,7 +755,58 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true при успехе. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00155">155</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00169">169</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a3df6aef4d5b95860ebff95be49a67905" name="a3df6aef4d5b95860ebff95be49a67905"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3df6aef4d5b95860ebff95be49a67905">&#9670;&#160;</a></span>create_typed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ConfigT</a>  = CacheManagerConfig, std::size_t InstanceId = 0&gt; </div>
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; <a class="el" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ConfigT</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">InstanceId</a> &gt;::create_typed </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Args</a> &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Выделить память и создать объект типа T с помощью placement new. </p>
+<p>В отличие от <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">allocate_typed&lt;T&gt;()</a>, этот метод конструирует объект T, передавая аргументы в его конструктор. Это делает поведение аналогичным оператору new <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">T(args...)</a>.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Тип создаваемого объекта. </td></tr>
+    <tr><td class="paramname">Args</td><td>Типы аргументов конструктора T. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">args</td><td>Аргументы, передаваемые в конструктор T. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; — персистентный указатель или <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">pptr&lt;T&gt;()</a> при ошибке.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Для освобождения используйте <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">destroy_typed&lt;T&gt;(p)</a>.</dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classpmm_1_1PersistMemoryManager.html#a30e91e045b6e24a22313cebce340ed33" title="Разрушить объект типа T (вызвать деструктор) и освободить память.">destroy_typed</a> </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00450">450</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -780,7 +839,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Освободить блок по указателю на пользовательские данные. </p>
 <dl class="section note"><dt>Note</dt><dd>Если блок заблокирован навечно (lock_block_permanent), освобождение не выполняется. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00278">278</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00296">296</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -813,6 +872,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </div><div class="memdoc">
 
 <p>Освободить блок по персистентному указателю. </p>
+<dl class="section note"><dt>Note</dt><dd>Конструктор и деструктор T не вызываются — только освобождает сырую память. Для типов с нетривиальными деструкторами используйте <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">destroy_typed&lt;T&gt;()</a>.</dd></dl>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип данных. </td></tr>
@@ -826,7 +886,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00402">402</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00423">423</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -858,7 +918,55 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Сбросить состояние менеджера (не освобождает бэкенд). </p>
 <p>Обнуляет флаг инициализации. Необходим для изоляции тестов. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00221">221</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00238">238</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a30e91e045b6e24a22313cebce340ed33" name="a30e91e045b6e24a22313cebce340ed33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30e91e045b6e24a22313cebce340ed33">&#9670;&#160;</a></span>destroy_typed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ConfigT</a>  = CacheManagerConfig, std::size_t InstanceId = 0&gt; </div>
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">static</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> <a class="el" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">ConfigT</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">InstanceId</a> &gt;::destroy_typed </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt;&#160;</td>
+          <td class="paramname"><em>p</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Разрушить объект типа T (вызвать деструктор) и освободить память. </p>
+<p>В отличие от <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">deallocate_typed&lt;T&gt;()</a>, этот метод явно вызывает деструктор T перед освобождением блока. Это необходимо для типов с нетривиальными деструкторами (RAII, строки, контейнеры и т.д.).</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Тип уничтожаемого объекта. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p</td><td>Персистентный указатель на объект (должен быть создан через create_typed).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classpmm_1_1PersistMemoryManager.html#a3df6aef4d5b95860ebff95be49a67905" title="Выделить память и создать объект типа T с помощью placement new.">create_typed</a> </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00476">476</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -907,7 +1015,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <dl class="section return"><dt>Returns</dt><dd>false если менеджер не инициализирован, true иначе.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Метод выполняется под блокировкой — не вызывайте allocate/deallocate из callback во избежание дедлока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00738">738</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00841">841</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -956,7 +1064,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <dl class="section return"><dt>Returns</dt><dd>false если менеджер не инициализирован, true иначе.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Метод выполняется под блокировкой — не вызывайте allocate/deallocate из callback во избежание дедлока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00789">789</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00892">892</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -985,7 +1093,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00713">713</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00810">810</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1014,7 +1122,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00698">698</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00789">789</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1061,7 +1169,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::int16_t — высота поддерева (0 = узел не в дереве). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00628">628</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00704">704</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1108,7 +1216,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>index_type — гранульный индекс левого дочернего узла или 0 (null pptr) если нет. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00460">460</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00536">536</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1155,7 +1263,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>index_type — гранульный индекс родительского узла или 0 (null pptr) если нет. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00500">500</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00576">576</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1202,7 +1310,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>index_type — гранульный индекс правого дочернего узла или 0 (null pptr) если нет. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00480">480</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00556">556</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1250,7 +1358,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>index_type — текущий вес узла. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00586">586</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00662">662</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1279,9 +1387,9 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p>Проверить, инициализирован ли менеджер. </p>
+<p>Проверить, инициализирован ли менеджер. Issue #172: _initialized is std::atomic&lt;bool&gt; — lock-free fast path. </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00234">234</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00252">252</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1320,7 +1428,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если блок заблокирован навечно (node_type == kNodeReadOnly). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00342">342</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00360">360</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1352,7 +1460,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Загрузить существующее состояние из бэкенда. </p>
 <dl class="section return"><dt>Returns</dt><dd>true при успехе. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00194">194</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00211">211</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1392,7 +1500,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если блок успешно заблокирован, false если блок не найден или уже свободен. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00318">318</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00336">336</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1440,7 +1548,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на данные или nullptr при ошибке. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00420">420</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00496">496</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1498,7 +1606,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на i-й элемент или nullptr при ошибке. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00436">436</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00512">512</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1555,7 +1663,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00646">646</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00722">722</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1613,7 +1721,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00521">521</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00597">597</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1671,7 +1779,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00563">563</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00639">639</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1729,7 +1837,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00542">542</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00618">618</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1788,7 +1896,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00610">610</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00686">686</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1817,7 +1925,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00687">687</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00769">769</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1869,7 +1977,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>TreeNode&lt;address_traits&gt;&amp; — ссылка на узел AVL-дерева в заголовке блока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00677">677</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00753">753</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1898,7 +2006,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00689">689</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00777">777</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>

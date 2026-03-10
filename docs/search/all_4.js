@@ -6,5 +6,6 @@ var searchData=
   ['defaultallocatorpolicy_3',['DefaultAllocatorPolicy',['../namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7',1,'pmm']]],
   ['deprecated_20list_4',['Deprecated List',['../deprecated.html',1,'']]],
   ['destroy_5',['destroy',['../classpmm_1_1PersistMemoryManager.html#a001123ac8daaf9da6e882fa6559a3131',1,'pmm::PersistMemoryManager']]],
-  ['detect_5fblock_5fstate_6',['detect_block_state',['../namespacepmm.html#a0b6c0f639691913c3e5d08e8961efa6b',1,'pmm']]]
+  ['destroy_5ftyped_6',['destroy_typed',['../classpmm_1_1PersistMemoryManager.html#a30e91e045b6e24a22313cebce340ed33',1,'pmm::PersistMemoryManager']]],
+  ['detect_5fblock_5fstate_7',['detect_block_state',['../namespacepmm.html#a0b6c0f639691913c3e5d08e8961efa6b',1,'pmm']]]
 ];
