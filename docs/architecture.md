@@ -16,26 +16,31 @@ coexist through the `InstanceId` template parameter (multiton pattern).
 ## Architecture layers
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│  PersistMemoryManager<ConfigT, InstanceId>                │
-│  (static public API: create / load / destroy)             │
-│  allocate_typed / deallocate_typed (pptr<T>)              │
-│  for_each_block / for_each_free_block                     │
-├───────────────────────────────────────────────────────────┤
-│  AllocatorPolicy<FreeBlockTreeT, AddressTraitsT>          │
-│  (best-fit via AVL tree, splitting, coalescing,           │
-│   repair_linked_list, rebuild_free_tree,                  │
-│   recompute_counters)                                     │
-├───────────────────────────────────────────────────────────┤
-│  BlockState machine (block_state.h)                       │
-│  (type-safe state transitions: Free → Allocated → Free)   │
-├───────────────────────────────────────────────────────────┤
-│  Block<AddressTraitsT> raw memory layout                  │
-│  (LinkedListNode<A> + TreeNode<A>, granule indices)       │
-├───────────────────────────────────────────────────────────┤
-│  StorageBackend: HeapStorage / MMapStorage / StaticStorage│
-│  LockPolicy: NoLock / SharedMutexLock                     │
-└───────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│  PersistMemoryManager<ConfigT, InstanceId>                            │
+│  (static public API: create / load / destroy)                         │
+│  allocate_typed / deallocate_typed (pptr<T>)                          │
+│  for_each_block / for_each_free_block                                 │
+│  pstringview<ManagerT> / pmap<_K,_V,ManagerT>                        │
+├───────────────────────────────────────────────────────────────────────┤
+│  avl_tree_mixin.h (detail::avl_*)                                     │
+│  (shared AVL helpers: height, balance, rotate, rebalance, insert)     │
+│  used by both pmap and pstringview                                    │
+├───────────────────────────────────────────────────────────────────────┤
+│  AllocatorPolicy<FreeBlockTreeT, AddressTraitsT>                      │
+│  (best-fit via AVL tree, splitting, coalescing,                       │
+│   repair_linked_list, rebuild_free_tree,                              │
+│   recompute_counters)                                                 │
+├───────────────────────────────────────────────────────────────────────┤
+│  BlockState machine (block_state.h)                                   │
+│  (type-safe state transitions: Free → Allocated → Free)               │
+├───────────────────────────────────────────────────────────────────────┤
+│  Block<AddressTraitsT> raw memory layout                              │
+│  (LinkedListNode<A> + TreeNode<A>, granule indices)                   │
+├───────────────────────────────────────────────────────────────────────┤
+│  StorageBackend: HeapStorage / MMapStorage / StaticStorage            │
+│  LockPolicy: NoLock / SharedMutexLock                                 │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -53,14 +58,15 @@ coexist through the `InstanceId` template parameter (multiton pattern).
 The memory layout is homogeneous: every region is a block. `Block<A>_0` has
 `root_offset=0` (its own index) and `weight=kManagerHeaderGranules`.
 
-User blocks start at granule 6 (byte offset 96 from the buffer start).
+User blocks start at granule 6 (byte offset 96 from the buffer start) for
+`DefaultAddressTraits`. The exact layout depends on `address_traits::granule_size`.
 
 ---
 
 ## ManagerHeader
 
-Located inside `Block<A>_0` at byte offset `sizeof(Block<AddressTraitsT>)` = 32 bytes
-from the buffer start. Contains:
+Located inside `Block<A>_0` at byte offset `sizeof(Block<AddressTraitsT>)` from the
+buffer start. Contains:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -83,8 +89,9 @@ from the buffer start. Contains:
 
 ## Block layout: `Block<AddressTraitsT>`
 
-Every block (header + data) is aligned to `kGranuleSize` (16 bytes). The header
-`Block<A>` is 32 bytes = 2 granules and is placed immediately before the user data.
+Every block (header + data) is aligned to the granule size. The header `Block<A>` is
+32 bytes = 2 granules (for `DefaultAddressTraits`) and is placed immediately before the
+user data.
 
 `Block<A>` = `LinkedListNode<A>` + `TreeNode<A>`:
 
@@ -99,6 +106,10 @@ Every block (header + data) is aligned to `kGranuleSize` (16 bytes). The header
 | `root_offset` | 24–27 | `uint32_t` | 0 = free block; own index = allocated block |
 | `avl_height` | 28–29 | `int16_t` | AVL subtree height (0 = not in tree) |
 | `node_type` | 30–31 | `uint16_t` | 0=`kNodeReadWrite`, 1=`kNodeReadOnly` (permanently locked) |
+
+Field sizes above are for `DefaultAddressTraits` (`uint32_t` index, 16-byte granule).
+For `SmallAddressTraits` (`uint16_t`) and `LargeAddressTraits` (`uint64_t`), the field
+types change accordingly.
 
 **Key invariants:**
 - `weight == 0` → free block; `root_offset == 0`.
@@ -156,7 +167,7 @@ When allocating, if the found free block is significantly larger than needed, it
 [Block (allocated)][user data][Block (free)][remaining free space...]
 ```
 
-Minimum size for the new free block: `sizeof(Block<A>) + kMinBlockSize` (32 + 16 = 48 bytes).
+Minimum size for the new free block: `sizeof(Block<A>) + kMinBlockSize`.
 
 ### Storage backend expansion
 
@@ -175,8 +186,8 @@ When memory is exhausted:
 
 ## Persistence
 
-All inter-block references are stored as **granule indices** (`uint32_t`) — offsets
-from the buffer start, not absolute pointers. This enables:
+All inter-block references are stored as **granule indices** — offsets from the buffer
+start, not absolute pointers. This enables:
 
 1. Saving the memory image to a file (`fwrite` the entire region).
 2. Loading it at a different base address (`mmap` or `malloc`).
@@ -186,18 +197,19 @@ On `load()`, the library validates the magic number, total size, and granule siz
 calls `repair_linked_list()`, `recompute_counters()`, and `rebuild_free_tree()` to
 restore a consistent state.
 
-`pptr<T>` stores a 32-bit granule index, making it persistent: after loading the image
-at a different address, the same index points to the same data.
+`pptr<T>` stores a granule index (2, 4, or 8 bytes depending on `address_traits`),
+making it persistent: after loading the image at a different address, the same index
+points to the same data.
 
 ---
 
 ## Alignment
 
-All blocks are aligned to `kGranuleSize` (16 bytes). User data starts immediately after
-the `Block<A>` header with no additional padding:
+All blocks are aligned to the granule size. User data starts immediately after the
+`Block<A>` header with no additional padding:
 
 ```
-[Block<A> header (32 bytes)][user_data (aligned to 16 bytes)]
+[Block<A> header (2 granules)][user_data (aligned to granule size)]
 ```
 
 ---
@@ -223,12 +235,86 @@ Thread safety is controlled by the `lock_policy` configuration field:
 
 ---
 
+## Address traits
+
+The address space is parameterized by `AddressTraits<IndexT, GranuleSz>`:
+
+| Predefined alias | `index_type` | Granule | Max size | `sizeof(pptr<T>)` |
+|-----------------|-------------|---------|----------|-------------------|
+| `TinyAddressTraits` | `uint8_t` | 8 B | ~2 KB | 1 byte |
+| `SmallAddressTraits` | `uint16_t` | 16 B | ~1 MB | 2 bytes |
+| `DefaultAddressTraits` | `uint32_t` | 16 B | 64 GB | 4 bytes |
+| `LargeAddressTraits` | `uint64_t` | 64 B | Petabyte+ | 8 bytes |
+
+Choosing a smaller `index_type` reduces `pptr<T>` size at the cost of a lower address
+space limit.
+
+---
+
 ## Lock policies
 
 | Policy | Description |
 |--------|-------------|
 | `config::NoLock` | No-op locks; zero overhead; single-threaded only |
 | `config::SharedMutexLock` | `std::shared_mutex`; `shared_lock` for reads, `unique_lock` for writes |
+
+---
+
+## Persistent data structures
+
+### `pstringview<ManagerT>`
+
+An interned read-only persistent string. Multiple calls with the same content return the
+same `pptr` (deduplication). Uses the built-in `TreeNode` fields of each allocated block
+as AVL tree links — no separate AVL node allocations. Blocks are permanently locked via
+`lock_block_permanent()`.
+
+```
+static pstringview::_root_idx  (singleton per ManagerT specialization)
+│
+├── [Block_A][pstringview: chars_idx=X, length=5]   "hello"
+│     left_offset → Block_B
+│     right_offset → Block_C
+│
+├── [Block_B][pstringview: chars_idx=Y, length=3]   "abc"
+│
+└── [Block_C][pstringview: chars_idx=Z, length=5]   "world"
+```
+
+### `pmap<_K, _V, ManagerT>`
+
+A persistent AVL tree dictionary. The `pmap` object itself lives on the stack (holds only
+`_root_idx`). Each node is an allocated block in PAP containing `pmap_node<_K, _V>`. The
+built-in `TreeNode` fields serve as AVL tree links. Nodes are **not** permanently locked
+(unlike `pstringview`), so they can be freed.
+
+```
+pmap::_root_idx
+│
+├── [Block][pmap_node: key=42, value=100]
+│     left_offset → Block with key=10
+│     right_offset → Block with key=99
+│
+├── [Block][pmap_node: key=10, value=200]
+│
+└── [Block][pmap_node: key=99, value=300]
+```
+
+### Shared AVL operations (`avl_tree_mixin.h`)
+
+Both `pstringview` and `pmap` share the same AVL implementation via free template
+functions in `pmm::detail`:
+
+- `avl_height(p)` — get height (0 if null)
+- `avl_update_height(p)` — recompute height from children
+- `avl_balance_factor(p)` — `height(left) - height(right)`
+- `avl_rotate_right(y, root_idx)` — right rotation
+- `avl_rotate_left(x, root_idx)` — left rotation
+- `avl_rebalance_up(p, root_idx)` — walk up the tree, fixing balance
+- `avl_insert(new_node, root_idx, go_left, resolve)` — insert and rebalance
+
+All functions are parameterized by `PPtr` (the persistent pointer type) and `IndexType`,
+making them usable with any `pptr<T, ManagerT>` specialization.
 
 ---
 

@@ -3,18 +3,24 @@
 ## Overview
 
 This document describes the algorithms for modifying blocks in the persistent address
-space (PAS), the criticality analysis of each write operation, and the algorithms for
-verifying and recovering the image after an interrupted operation.
+space (PAP — Persistent Address space), the criticality analysis of each write operation,
+and the algorithms for verifying and recovering the image after an interrupted operation.
 
 **Goal:** provide a mathematically rigorous guarantee that if the manager was interrupted
 at any stage of a write, the image can be verified, the interruption point identified, and
 the operation completed (or rolled back).
 
+**Scope:** covers the core block allocator operations. Persistent data structures
+(`pstringview`, `pmap`) build their own AVL trees using the same block headers — their
+AVL rotations follow the same "non-critical" guarantee: on `load()`, only the free-block
+AVL tree is rebuilt; user-data AVL trees (pstringview interning, pmap) are not affected
+by `rebuild_free_tree()` and must be managed by the user across process restarts.
+
 ---
 
 ## Data structures
 
-### ManagerHeader (64 bytes, 4 granules)
+### ManagerHeader (64 bytes, 4 granules for DefaultAddressTraits)
 
 ```
 Bytes 0–7:   magic           — manager magic number ("PMM_V083")
@@ -28,28 +34,38 @@ Bytes 36–39: last_block_offset  — last block (granule index)
 Bytes 40–43: free_tree_root  — AVL free block tree root (granule index)
 Bytes 44:    owns_memory     — runtime-only (not persistent)
 Bytes 45:    prev_owns_memory — runtime-only (not persistent)
-Bytes 46–47: granule_size    — granule size at creation time
+Bytes 46–47: granule_size    — granule size at creation time; validated on load()
 Bytes 48–55: prev_total_size — runtime-only (not persistent)
 Bytes 56–63: prev_base_ptr   — runtime-only (not persistent)
 ```
 
-### Block\<A\> (32 bytes = 2 granules)
+The `granule_size` field is checked on `load()`: if it does not match the compile-time
+`address_traits::granule_size`, `load()` returns `false` (incompatible image).
+
+### Block\<A\> (32 bytes = 2 granules for DefaultAddressTraits)
 
 `Block<A>` = `LinkedListNode<A>` + `TreeNode<A>`:
 
 ```
-[LinkedListNode<A>]
-  Bytes 0–3:   prev_offset   — previous block (granule index)
-  Bytes 4–7:   next_offset   — next block (granule index)
 [TreeNode<A>]
-  Bytes 8–11:  weight        — user data size in granules (0 = free block)
-  Bytes 12–15: left_offset   — left AVL child (granule index)
-  Bytes 16–19: right_offset  — right AVL child (granule index)
-  Bytes 20–23: parent_offset — parent AVL node (granule index)
-  Bytes 24–27: root_offset   — 0 = free block; own_idx = allocated block
-  Bytes 28–29: avl_height    — AVL subtree height (0 = not in tree)
-  Bytes 30–31: node_type     — 0 = kNodeReadWrite, 1 = kNodeReadOnly (permanently locked)
+  Bytes 0–3:   weight        — user data size in granules (0 = free block)
+  Bytes 4–7:   left_offset   — left AVL child (granule index)
+  Bytes 8–11:  right_offset  — right AVL child (granule index)
+  Bytes 12–15: parent_offset — parent AVL node (granule index)
+  Bytes 16–19: root_offset   — 0 = free block; own_idx = allocated block
+  Bytes 20–21: avl_height    — AVL subtree height (0 = not in tree)
+  Bytes 22–23: node_type     — 0 = kNodeReadWrite, 1 = kNodeReadOnly (permanently locked)
+[LinkedListNode<A>]
+  Bytes 24–27: prev_offset   — previous block (granule index)
+  Bytes 28–31: next_offset   — next block (granule index)
 ```
+
+**Note:** The `TreeNode` fields (`left_offset`, `right_offset`, `parent_offset`,
+`avl_height`) are shared between two separate tree uses:
+1. **Free-block AVL tree** — used by the allocator when `weight == 0` (block is free).
+2. **User-data AVL trees** — used by `pstringview` and `pmap` when `weight > 0` (block
+   is allocated and permanently locked or in a user-managed data structure).
+These two uses are mutually exclusive by the block state machine invariants.
 
 ---
 
@@ -87,7 +103,7 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
     // 3. avl_height < 32
     if (blk->avl_height >= 32) return false;
 
-    // 4. AVL pointer uniqueness
+    // 4. AVL pointer uniqueness (applies only when block is free / in AVL)
     bool l = (blk->left_offset   != kNoBlock);
     bool r = (blk->right_offset  != kNoBlock);
     bool p = (blk->parent_offset != kNoBlock);
@@ -100,6 +116,10 @@ bool is_valid_block(const uint8_t* base, const ManagerHeader* hdr, uint32_t idx)
     return true;
 }
 ```
+
+**Note:** For allocated blocks used as `pstringview` or `pmap` nodes, the AVL pointer
+fields contain user-data tree links (not the free-block tree). These are not validated
+by `is_valid_block` — they are managed exclusively by the user-data data structure.
 
 ---
 
@@ -481,3 +501,40 @@ write-ahead logging (WAL), which is outside the scope of this implementation.
 What is guaranteed: **structural correctness of the image after `load()` for any failure
 point**, where partially completed allocation operations are treated as "not performed"
 (blocks are returned to the free list).
+
+---
+
+## User-data AVL trees (`pstringview`, `pmap`)
+
+`pstringview` and `pmap` use the same `TreeNode` fields inside allocated blocks to
+organize their own AVL trees. This is entirely separate from the free-block AVL tree.
+
+### Persistence of user-data trees
+
+`load()` only rebuilds the **free-block** AVL tree. User-data AVL trees (`pstringview`
+interning dictionary, `pmap` root) are **not** automatically restored.
+
+To persist and restore user-data trees across process restarts:
+
+1. **`pstringview` interning dictionary**: The `pstringview` blocks themselves are
+   preserved in the image (they are permanently locked). To restore the dictionary root,
+   store `pstringview::_root_idx` in a known location in PAP (e.g., in a root header
+   block), and restore it after `load()` by calling `pstringview::_root_idx = saved_idx`.
+
+2. **`pmap` dictionary**: The `pmap` struct contains only `_root_idx`. Store the `pmap`
+   object itself in PAP (as a persistent root), and after `load()`, retrieve it via its
+   saved `pptr`.
+
+### Crash consistency of user-data AVL operations
+
+User-data AVL operations (insert via `pmap::insert`, `pstringview::intern`) are
+**non-critical** with respect to memory structure recovery, because:
+
+- All node blocks remain reachable via the linked list (allocated, `weight > 0`).
+- `rebuild_free_tree()` correctly skips allocated blocks.
+- A partially completed AVL rotation leaves the blocks allocated and reachable.
+
+However, a partially completed `pmap::insert` or `pstringview::intern` may leave the
+user-data tree in an inconsistent state (e.g., a new key not yet linked). This is
+**not** automatically repaired by `load()`. The application must handle this if crash
+consistency is required (e.g., via WAL at the application level).

@@ -16,19 +16,24 @@ instances of the same configuration can coexist through the `InstanceId` templat
 
 **Modular headers** (include individually as needed):
 ```cpp
-#include "pmm/persist_memory_manager.h"  // core manager
+#include "pmm/persist_memory_manager.h"  // core manager (includes pmap, pstringview)
 #include "pmm/manager_configs.h"         // predefined configurations
 #include "pmm/pmm_presets.h"             // named preset aliases
 #include "pmm/io.h"                      // file save / load utilities
+#include "pmm/avl_tree_mixin.h"          // shared AVL helpers (included via pmap/pstringview)
 ```
 
 **Single-header presets** (include one file, get a ready-to-use manager type).
-Located in `single_include/pmm/` (Issue #138):
+Located in `single_include/pmm/`:
 ```cpp
-#include "pmm_single_threaded_heap.h"    // SingleThreadedHeap preset
-#include "pmm_multi_threaded_heap.h"     // MultiThreadedHeap preset
-#include "pmm_embedded_heap.h"           // EmbeddedHeap preset
-#include "pmm_industrial_db_heap.h"      // IndustrialDBHeap preset
+#include "pmm.h"                              // full library, any configuration
+#include "pmm_single_threaded_heap.h"         // SingleThreadedHeap preset
+#include "pmm_multi_threaded_heap.h"          // MultiThreadedHeap preset
+#include "pmm_embedded_heap.h"               // EmbeddedHeap preset
+#include "pmm_industrial_db_heap.h"          // IndustrialDBHeap preset
+#include "pmm_embedded_static_heap.h"        // EmbeddedStaticHeap preset (no heap, 32-bit)
+#include "pmm_small_embedded_static_heap.h"  // SmallEmbeddedStaticHeap (no heap, 16-bit)
+#include "pmm_large_db_heap.h"               // LargeDBHeap preset (64-bit index)
 ```
 
 Namespace: `pmm`
@@ -59,10 +64,18 @@ of `ConfigT` and `InstanceId` is an independent manager with its own separate st
 - `InstanceId` — instance identifier (default `0`). Allows multiple independent managers
   with the same configuration.
 
-**Nested type alias:**
+**Nested type aliases:**
 ```cpp
+// Persistent typed pointer bound to this manager
 template <typename T>
 using pptr = pmm::pptr<T, PersistMemoryManager>;
+
+// Persistent interned read-only string
+using pstringview = pmm::pstringview<PersistMemoryManager>;
+
+// Persistent AVL tree dictionary
+template <typename _K, typename _V>
+using pmap = pmm::pmap<_K, _V, PersistMemoryManager>;
 ```
 
 ### Lifecycle
@@ -402,6 +415,20 @@ They are intended for advanced use cases, such as implementing persistent data s
 | `get_tree_height<T>(p)` | Get AVL subtree height |
 | `set_tree_height<T>(p, h)` | Set AVL subtree height |
 
+#### `tree_node<T>()`
+
+```cpp
+template <typename T>
+static TreeNode<address_traits>& tree_node(pptr<T> p) noexcept;
+```
+
+Returns a direct reference to the `TreeNode` embedded in the block header for `p`.
+Provides unified access to all AVL fields via `get_left()`, `set_left()`, `get_right()`,
+`set_right()`, `get_parent()`, `set_parent()`, `get_height()`, `set_height()`.
+
+> **Warning:** The returned reference is only valid while the manager is initialized and
+> the block has not been freed. Do not store the reference beyond the current operation.
+
 ---
 
 ### Backend access
@@ -431,7 +458,8 @@ A persistent typed pointer. Stores a granule index (offset-based, not address-ba
 which makes it address-independent: it remains valid after loading the image at a different
 base address.
 
-**Requirement:** `sizeof(pptr<T, ManagerT>) == sizeof(index_type)` (typically 4 bytes).
+**Requirement:** `sizeof(pptr<T, ManagerT>) == sizeof(index_type)` (2, 4, or 8 bytes
+depending on `address_traits`).
 
 The preferred way to obtain a `pptr` is through the nested alias in the manager:
 ```cpp
@@ -444,7 +472,7 @@ MyMgr::pptr<int> p = MyMgr::allocate_typed<int>();
 ```cpp
 using element_type = T;
 using manager_type = ManagerT;
-using index_type   = typename ManagerT::address_traits::index_type; // typically uint32_t
+using index_type   = typename ManagerT::address_traits::index_type; // uint16_t, uint32_t, or uint64_t
 ```
 
 ### Constructors
@@ -480,6 +508,20 @@ T&  operator[](std::size_t i) const noexcept; // array element access
 
 All dereference operations call `ManagerT::resolve(p)` internally.
 
+### AVL tree node access
+
+```cpp
+pptr<T, ManagerT> get_tree_left()   const noexcept;  // left child pptr
+pptr<T, ManagerT> get_tree_right()  const noexcept;  // right child pptr
+pptr<T, ManagerT> get_tree_parent() const noexcept;  // parent pptr
+void set_tree_left  (pptr<T, ManagerT> p) noexcept;
+void set_tree_right (pptr<T, ManagerT> p) noexcept;
+void set_tree_parent(pptr<T, ManagerT> p) noexcept;
+std::int16_t get_tree_height() const noexcept;
+void         set_tree_height(std::int16_t h) noexcept;
+TreeNode<...>& tree_node() noexcept;  // direct reference to TreeNode
+```
+
 ### Comparison operators
 
 ```cpp
@@ -512,6 +554,185 @@ MyMgr::pptr<int> p2(saved_idx);
 assert(*p2 == 123);
 
 MyMgr::destroy();
+```
+
+---
+
+## Class `pstringview<ManagerT>`
+
+```cpp
+namespace pmm {
+    template <typename ManagerT>
+    struct pstringview;
+}
+```
+
+A persistent interned read-only string. Provides automatic deduplication: two calls to
+`pstringview("hello")` return the same `pptr` (same granule index). The string data and
+the `pstringview` blocks are permanently locked via `lock_block_permanent()`.
+
+**Accessed via manager nested alias:**
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("hello");
+```
+
+### Data fields
+
+```cpp
+index_type    chars_idx;  // granule index of the char[] data in PAP; 0 = empty string
+std::uint32_t length;     // string length (without null terminator)
+```
+
+### Constructor (interning helper)
+
+```cpp
+explicit pstringview(const char* s) noexcept;
+```
+
+Creates a temporary stack object that interns `s` into PAP. Converts implicitly to
+`pptr<pstringview<ManagerT>>`:
+```cpp
+Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("world");
+```
+
+### Member methods
+
+```cpp
+const char*  c_str() const noexcept;   // raw C-string pointer (valid while manager is initialized)
+std::size_t  size()  const noexcept;   // length without null terminator
+bool         empty() const noexcept;   // true if length == 0
+```
+
+### Comparison operators
+
+```cpp
+bool operator==(const char* s)         const noexcept;
+bool operator==(const pstringview& o)  const noexcept;  // compares chars_idx (fast)
+bool operator!=(const char* s)         const noexcept;
+bool operator!=(const pstringview& o)  const noexcept;
+bool operator<(const pstringview& o)   const noexcept;  // lexicographic; for use as pmap key
+```
+
+### Static methods
+
+```cpp
+static psview_pptr intern(const char* s) noexcept;  // explicit interning
+static void        reset() noexcept;                // reset singleton for test isolation
+```
+
+### Example
+
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+Mgr::create(64 * 1024);
+
+Mgr::pptr<Mgr::pstringview> p  = Mgr::pstringview("hello");
+Mgr::pptr<Mgr::pstringview> p2 = Mgr::pstringview("hello");
+assert(p == p2);           // same pptr — deduplication guaranteed
+assert(p->size() == 5);
+assert(p->c_str()[0] == 'h');
+
+Mgr::destroy();
+```
+
+---
+
+## Class `pmap<_K, _V, ManagerT>`
+
+```cpp
+namespace pmm {
+    template <typename _K, typename _V, typename ManagerT>
+    struct pmap;
+}
+```
+
+A persistent associative container (dictionary) based on an AVL tree. Each node is an
+allocated block in PAP containing a key-value pair. The built-in `TreeNode` fields of
+each block serve as AVL tree links (no separate node allocations). Inserting a duplicate
+key updates the existing value.
+
+**Accessed via manager nested alias:**
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+Mgr::pmap<int, int> map;
+map.insert(42, 100);
+```
+
+**Key type requirements:** `_K` must support `operator<` and `operator==`.
+
+### Data fields
+
+```cpp
+index_type _root_idx;  // granule index of AVL tree root; 0 = empty map
+```
+
+### Constructors
+
+```cpp
+pmap() noexcept;  // creates an empty map (_root_idx = 0)
+```
+
+### Methods
+
+```cpp
+bool      empty()                     const noexcept;
+node_pptr insert(const _K& key, const _V& val) noexcept;  // insert or update; returns node pptr
+node_pptr find  (const _K& key)       const noexcept;     // returns null pptr if not found
+bool      contains(const _K& key)     const noexcept;
+void      reset()                     noexcept;           // reset root for test isolation
+```
+
+### `pmap_node<_K, _V>`
+
+```cpp
+template <typename _K, typename _V>
+struct pmap_node {
+    _K key;
+    _V value;
+};
+```
+
+Each node is a separate PAP block. Access via the returned `pptr`:
+```cpp
+auto p = map.find(42);
+if (!p.is_null()) {
+    int val = p->value;  // 100
+}
+```
+
+### Example
+
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+Mgr::create(64 * 1024);
+
+Mgr::pmap<int, int> map;
+map.insert(42, 100);
+map.insert(10, 200);
+map.insert(42, 300);  // updates existing value
+
+auto p = map.find(42);
+assert(!p.is_null() && p->value == 300);
+assert(map.contains(10));
+assert(!map.contains(99));
+
+Mgr::destroy();
+```
+
+**Using `pstringview` as a key:**
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+Mgr::create(64 * 1024);
+
+Mgr::pmap<Mgr::pstringview, int> dict;
+Mgr::pptr<Mgr::pstringview> key = Mgr::pstringview("hello");
+dict.insert(*key, 42);
+
+auto p = dict.find(*key);
+assert(!p.is_null() && p->value == 42);
+
+Mgr::destroy();
 ```
 
 ---
@@ -585,14 +806,15 @@ if (ok) {
 
 Ready-to-use type aliases in namespace `pmm::presets`:
 
-| Type | Lock policy | Growth | Use case |
-|------|-------------|--------|----------|
-| `SingleThreadedHeap` | `NoLock` | 25% | Single-threaded caches, tools |
-| `MultiThreadedHeap` | `SharedMutexLock` | 25% | Concurrent services |
-| `EmbeddedHeap` | `NoLock` | 50% | Memory-constrained devices |
-| `IndustrialDBHeap` | `SharedMutexLock` | 100% | High-throughput databases |
-
-All presets use 32-bit addressing, 16-byte granules, and `HeapStorage`.
+| Type | Lock policy | Growth | Index | Use case |
+|------|-------------|--------|-------|----------|
+| `SingleThreadedHeap` | `NoLock` | 25% | 32-bit | Single-threaded caches, tools |
+| `MultiThreadedHeap` | `SharedMutexLock` | 25% | 32-bit | Concurrent services |
+| `EmbeddedHeap` | `NoLock` | 50% | 32-bit | Memory-constrained devices |
+| `IndustrialDBHeap` | `SharedMutexLock` | 100% | 32-bit | High-throughput databases |
+| `EmbeddedStaticHeap<N>` | `NoLock` | — | 32-bit | Embedded without heap (static buffer) |
+| `SmallEmbeddedStaticHeap<N>` | `NoLock` | — | 16-bit | Tiny embedded, up to ~1 MB |
+| `LargeDBHeap` | `SharedMutexLock` | 100% | 64-bit | Petabyte-scale databases |
 
 **Example using a preset:**
 ```cpp
@@ -655,12 +877,28 @@ struct FreeBlockView {
 
 ## Predefined configurations (from `pmm/manager_configs.h`)
 
-| Config struct | Lock | Growth | Storage | Use case |
-|---------------|------|--------|---------|----------|
-| `CacheManagerConfig` | `NoLock` | 25% | `HeapStorage` | Single-threaded cache |
-| `PersistentDataConfig` | `SharedMutexLock` | 25% | `HeapStorage` | Multi-threaded persistent storage |
-| `EmbeddedManagerConfig` | `NoLock` | 50% | `HeapStorage` | Embedded systems |
-| `IndustrialDBConfig` | `SharedMutexLock` | 100% | `HeapStorage` | Industrial databases |
+| Config struct | Lock | Growth | Storage | Index | Use case |
+|---------------|------|--------|---------|-------|----------|
+| `CacheManagerConfig` | `NoLock` | 25% | `HeapStorage` | 32-bit | Single-threaded cache |
+| `PersistentDataConfig` | `SharedMutexLock` | 25% | `HeapStorage` | 32-bit | Multi-threaded persistent storage |
+| `EmbeddedManagerConfig` | `NoLock` | 50% | `HeapStorage` | 32-bit | Embedded systems |
+| `IndustrialDBConfig` | `SharedMutexLock` | 100% | `HeapStorage` | 32-bit | Industrial databases |
+| `EmbeddedStaticConfig<N>` | `NoLock` | — | `StaticStorage` | 32-bit | Embedded without heap, fixed pool |
+| `SmallEmbeddedStaticConfig<N>` | `NoLock` | — | `StaticStorage` | 16-bit | Tiny embedded, up to ~1 MB |
+| `LargeDBConfig` | `SharedMutexLock` | 100% | `HeapStorage` | 64-bit | Petabyte-scale databases |
+
+---
+
+## Address traits (from `pmm/address_traits.h`)
+
+| Traits alias | Index type | Granule | Max addressable | Use case |
+|--------------|------------|---------|-----------------|----------|
+| `TinyAddressTraits` | `uint8_t` | 8 B | ~2 KB | Experimental / ultra-tiny embedded |
+| `SmallAddressTraits` | `uint16_t` | 16 B | ~1 MB | Tiny embedded, microcontrollers |
+| `DefaultAddressTraits` | `uint32_t` | 16 B | 64 GB | General purpose (default) |
+| `LargeAddressTraits` | `uint64_t` | 64 B | Petabyte+ | Large-scale databases |
+
+`sizeof(pptr<T, Mgr>)` equals `sizeof(index_type)`: 1, 2, 4, or 8 bytes respectively.
 
 ---
 
@@ -668,10 +906,11 @@ struct FreeBlockView {
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `kGranuleSize` | 16 | Granule size in bytes (addressing unit) |
+| `kGranuleSize` | 16 | Default granule size in bytes (DefaultAddressTraits) |
 | `kMinAlignment` | 16 | Minimum alignment in bytes |
 | `kMinMemorySize` | 4096 | Minimum buffer size in bytes |
 | `kMinBlockSize` | 16 | Minimum user data block size in bytes |
+| `kMinGranuleSize` | 4 | Minimum allowed granule size (architecture word size) |
 | `config::kDefaultGrowNumerator` | 5 | Growth ratio numerator (5/4 = 25%) |
 | `config::kDefaultGrowDenominator` | 4 | Growth ratio denominator |
 
@@ -685,6 +924,7 @@ struct FreeBlockView {
 | `create()` with no backend buffer | Returns `false` |
 | `load()` with invalid magic | Returns `false` |
 | `load()` with mismatched total size | Returns `false` |
+| `load()` with mismatched granule size | Returns `false` |
 | `allocate_typed<T>()` when out of memory | Auto-expands by growth ratio |
 | `allocate_typed<T>(0)` | Returns null `pptr` |
 | `deallocate_typed(null pptr)` | No-op |
@@ -693,6 +933,10 @@ struct FreeBlockView {
 | `load_manager_from_file(nullptr)` | Returns `false` |
 | `load_manager_from_file(nonexistent file)` | Returns `false` |
 | `load_manager_from_file(file > buffer size)` | Returns `false` |
+| `pstringview(nullptr)` | Treated as `""` |
+| `pmap::find(key)` for missing key | Returns null `pptr` |
+| `pmap::insert(key, val)` for existing key | Updates value |
+| `EmbeddedStaticConfig` backend expansion | Always fails (`StaticStorage::expand()` returns `false`) |
 
 ---
 
@@ -714,6 +958,9 @@ Thread safety depends on the `lock_policy` in the configuration:
 > Do **not** call allocate or deallocate from inside `for_each_block` or `for_each_free_block`
 > callbacks — this will deadlock under `SharedMutexLock`.
 
+> `pstringview` and `pmap` are **not** independently thread-safe — their safety depends
+> entirely on the manager's lock policy.
+
 ---
 
 ## Constraints
@@ -722,9 +969,11 @@ Thread safety depends on the `lock_policy` in the configuration:
 - Free block search: best-fit via AVL tree — O(log n).
 - No image compression or encryption.
 - Only one active instance per `(ConfigT, InstanceId)` specialization at a time.
-- Maximum addressable memory: 64 GB (2³² × 16 bytes/granule with 32-bit index).
+- Maximum addressable memory with `DefaultAddressTraits`: 64 GB (2³² × 16 bytes/granule).
+- Maximum addressable memory with `LargeAddressTraits`: petabyte scale.
+- Maximum addressable memory with `SmallAddressTraits`: ~1 MB.
 - Requires C++20 compiler (GCC 10+, Clang 10+, MSVC 2019 16.3+).
 
 ---
 
-*Document version 0.6.0. Reflects the library API as of v0.6.0.*
+*Document version 0.13.0. Reflects the library API as of v0.13.0.*
