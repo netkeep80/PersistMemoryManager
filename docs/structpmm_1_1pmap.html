@@ -133,7 +133,7 @@ struct pmm::pmap&lt; _K, _V, ManagerT &gt;</div><p>Персистентный а
 <p>Особенности:</p><ul>
 <li>Вставка/поиск за <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">O(log n)</a>.</li>
 <li>Повторная вставка по существующему ключу обновляет значение.</li>
-<li>Узлы блокируются через lock_block_permanent() (Issue #126).</li>
+<li>Узлы НЕ блокируются навечно (Issue #155): в отличие от pstringview, узлы pmap могут быть освобождены после удаления из дерева.</li>
 </ul>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
@@ -144,7 +144,7 @@ struct pmm::pmap&lt; _K, _V, ManagerT &gt;</div><p>Персистентный а
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00108">108</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00112">112</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="af910fd73e587597776f0a1b5605605e0" name="af910fd73e587597776f0a1b5605605e0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af910fd73e587597776f0a1b5605605e0">&#9670;&#160;</a></span>index_type</h2>
@@ -160,7 +160,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00111">111</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00115">115</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -178,7 +178,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00110">110</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00114">114</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -196,7 +196,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00113">113</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00117">117</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -214,7 +214,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00112">112</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00116">116</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -246,7 +246,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Создать пустой словарь. </p>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00121">121</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00125">125</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -317,7 +317,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Проверить, пуст ли словарь. </p>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00126">126</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00130">130</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -397,7 +397,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </div><div class="memdoc">
 
 <p>Вставить или обновить пару ключ-значение. </p>
-<p>Если ключ уже существует в словаре — обновляет значение. Если ключ новый — создаёт новый узел в ПАП, блокирует его навечно и вставляет в AVL-дерево.</p>
+<p>Если ключ уже существует в словаре — обновляет значение. Если ключ новый — создаёт новый узел в ПАП и вставляет в AVL-дерево.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">key</td><td>Ключ для вставки. </td></tr>
@@ -407,7 +407,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr на узел с данным ключом. Нулевой pptr при ошибке аллокации. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00141">141</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00144">144</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -437,7 +437,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </div><div class="memdoc">
 
 <p>Сбросить словарь (для тестов). </p>
-<p>Сбрасывает _root_idx, но не освобождает данные в ПАП (блоки заблокированы). </p>
+<p>Сбрасывает _root_idx, но не освобождает данные в ПАП. </p>
 
 <p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00203">203</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
@@ -460,7 +460,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 
 <p>Гранульный индекс корня AVL-дерева; 0 = пустое дерево. </p>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00116">116</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00120">120</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
