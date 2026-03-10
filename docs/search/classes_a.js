@@ -1,10 +1,8 @@
 var searchData=
 [
-  ['persistentdataconfig_0',['PersistentDataConfig',['../structpmm_1_1PersistentDataConfig.html',1,'pmm']]],
-  ['persistmemorymanager_1',['PersistMemoryManager',['../classpmm_1_1PersistMemoryManager.html',1,'pmm']]],
-  ['pmap_2',['pmap',['../structpmm_1_1pmap.html',1,'pmm']]],
-  ['pmap_5fnode_3',['pmap_node',['../structpmm_1_1pmap__node.html',1,'pmm']]],
-  ['pptr_4',['pptr',['../classpmm_1_1pptr.html',1,'pmm']]],
-  ['pptr_3c_20pstringview_20_3e_5',['pptr&lt; pstringview &gt;',['../classpmm_1_1pptr.html',1,'pmm']]],
-  ['pstringview_6',['pstringview',['../structpmm_1_1pstringview.html',1,'pmm']]]
+  ['shared_5flock_5ftype_0',['shared_lock_type',['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html',1,'pmm::config::NoLock']]],
+  ['sharedmutexlock_1',['SharedMutexLock',['../structpmm_1_1config_1_1SharedMutexLock.html',1,'pmm::config']]],
+  ['smallembeddedstaticconfig_2',['SmallEmbeddedStaticConfig',['../structpmm_1_1SmallEmbeddedStaticConfig.html',1,'pmm']]],
+  ['splittingblock_3',['SplittingBlock',['../classpmm_1_1SplittingBlock.html',1,'pmm']]],
+  ['staticstorage_4',['StaticStorage',['../classpmm_1_1StaticStorage.html',1,'pmm']]]
 ];

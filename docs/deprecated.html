@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PersistMemoryManager: Namespace Members</title>
+<title>PersistMemoryManager: Deprecated List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -47,7 +47,6 @@ $(function() {
 /* @license-end */
 </script>
 <div id="main-nav"></div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -69,28 +68,23 @@ $(function() {
 </div>
 </div>
 
+</div><!-- top -->
+<div><div class="header">
+  <div class="headertitle"><div class="title">Deprecated List</div></div>
+</div><!--header-->
 <div class="contents">
-<div class="textblock">Here is a list of all namespace typedefs with links to the namespace documentation for each typedef:</div><ul>
-<li>CacheManagerConfig&#160;:&#160;<a class="el" href="namespacepmm.html#a7300ec13c59027526d51d363b3b14fd7">pmm</a></li>
-<li>DefaultAddressTraits&#160;:&#160;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm</a></li>
-<li>DefaultAllocatorPolicy&#160;:&#160;<a class="el" href="namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7">pmm</a></li>
-<li>EmbeddedHeap&#160;:&#160;<a class="el" href="namespacepmm_1_1presets.html#a58d3e34f4cdc3d13d532edc8c4de5732">pmm::presets</a></li>
-<li>EmbeddedManagerConfig&#160;:&#160;<a class="el" href="namespacepmm.html#a5d67470ab14661a8f15816cfda89caef">pmm</a></li>
-<li>EmbeddedStaticHeap&#160;:&#160;<a class="el" href="namespacepmm_1_1presets.html#a596fad76677cdf53371726c5cdbca2ab">pmm::presets</a></li>
-<li>IndustrialDBConfig&#160;:&#160;<a class="el" href="namespacepmm.html#ad4d0020352552bd90a30a052af126095">pmm</a></li>
-<li>IndustrialDBHeap&#160;:&#160;<a class="el" href="namespacepmm_1_1presets.html#a7f4c296632b9efb00c37c763a9977cc4">pmm::presets</a></li>
-<li>LargeAddressTraits&#160;:&#160;<a class="el" href="namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8">pmm</a></li>
-<li>LargeDBConfig&#160;:&#160;<a class="el" href="namespacepmm.html#a695fbe1b44a1200218e26544023d28f2">pmm</a></li>
-<li>LargeDBHeap&#160;:&#160;<a class="el" href="namespacepmm_1_1presets.html#aed15e8f994e9b53c1b5541dff4d12011">pmm::presets</a></li>
-<li>MultiThreadedHeap&#160;:&#160;<a class="el" href="namespacepmm_1_1presets.html#a11b19ac031d0a909931c0daed9b24a69">pmm::presets</a></li>
-<li>PersistentAvlTree&#160;:&#160;<a class="el" href="namespacepmm.html#a343de335e434d7d59ee388be5c798684">pmm</a></li>
-<li>PersistentDataConfig&#160;:&#160;<a class="el" href="namespacepmm.html#a8e4d4d19d14744c66228f25dcfaf1a8a">pmm</a></li>
-<li>SingleThreadedHeap&#160;:&#160;<a class="el" href="namespacepmm_1_1presets.html#a26c22130e79e20183d2df7c4bec45b00">pmm::presets</a></li>
-<li>SmallAddressTraits&#160;:&#160;<a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">pmm</a></li>
-<li>SmallEmbeddedStaticHeap&#160;:&#160;<a class="el" href="namespacepmm_1_1presets.html#ade25fcb828ded3abc954f5a7196bf4fd">pmm::presets</a></li>
-<li>TinyAddressTraits&#160;:&#160;<a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">pmm</a></li>
-</ul>
-</div><!-- contents -->
+<div class="textblock"><dl class="reflist">
+<dt>Member <a class="el" href="namespacepmm_1_1detail.html#a96fd1e856308cf358d6a9ad0f232ddfc">pmm::detail::byte_off_to_idx</a>  (std::size_t byte_off)</dt>
+<dd><a class="anchor" id="_deprecated000004"></a>Use <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">byte_off_to_idx_t&lt;DefaultAddressTraits&gt;()</a> for new code.  </dd>
+<dt>Member <a class="el" href="namespacepmm_1_1detail.html#ac6f59a24706e7ffd4ed36e1db6795d51">pmm::detail::bytes_to_granules</a>  (std::size_t bytes)</dt>
+<dd><a class="anchor" id="_deprecated000001"></a>Use <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d" title="Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.">bytes_to_granules_t&lt;DefaultAddressTraits&gt;()</a> or <a class="el" href="structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75" title="Перевести байты в гранулы (потолок).">DefaultAddressTraits::bytes_to_granules()</a>.  </dd>
+<dt>Member <a class="el" href="namespacepmm_1_1detail.html#a8b26126e4182bf35bdea93b5fbc4e867">pmm::detail::granules_to_bytes</a>  (std::uint32_t granules)</dt>
+<dd><a class="anchor" id="_deprecated000002"></a>Use <a class="el" href="structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7" title="Перевести гранулы в байты.">DefaultAddressTraits::granules_to_bytes()</a> for new code.  </dd>
+<dt>Member <a class="el" href="namespacepmm_1_1detail.html#a2bafdf8dfaa8633692a4451d986d37a1">pmm::detail::idx_to_byte_off</a>  (std::uint32_t idx)</dt>
+<dd><a class="anchor" id="_deprecated000003"></a>Use <a class="el" href="structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2" title="Получить байтовое смещение из гранульного индекса.">DefaultAddressTraits::idx_to_byte_off()</a> for new code. </dd>
+</dl>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8

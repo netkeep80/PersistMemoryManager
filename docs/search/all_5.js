@@ -2,7 +2,7 @@ var searchData=
 [
   ['element_5ftype_0',['element_type',['../classpmm_1_1pptr.html#a2011f31a800c4ca766683e66aaed2b7d',1,'pmm::pptr']]],
   ['embeddedheap_1',['EmbeddedHeap',['../namespacepmm_1_1presets.html#a58d3e34f4cdc3d13d532edc8c4de5732',1,'pmm::presets']]],
-  ['embeddedmanagerconfig_2',['EmbeddedManagerConfig',['../structpmm_1_1EmbeddedManagerConfig.html',1,'pmm']]],
+  ['embeddedmanagerconfig_2',['EmbeddedManagerConfig',['../namespacepmm.html#a5d67470ab14661a8f15816cfda89caef',1,'pmm']]],
   ['embeddedstaticconfig_3',['EmbeddedStaticConfig',['../structpmm_1_1EmbeddedStaticConfig.html',1,'pmm']]],
   ['embeddedstaticheap_4',['EmbeddedStaticHeap',['../namespacepmm_1_1presets.html#a596fad76677cdf53371726c5cdbca2ab',1,'pmm::presets']]],
   ['empty_5',['empty',['../structpmm_1_1pmap.html#a6e8c3737af2fcbd6c0bd4849f9225dfc',1,'pmm::pmap::empty()'],['../structpmm_1_1pstringview.html#a892c402930ad20a0d561b68f7dc8d809',1,'pmm::pstringview::empty()']]],
