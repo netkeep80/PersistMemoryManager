@@ -1655,40 +1655,83 @@ inline constexpr std::size_t kMinMemorySize = sizeof( pmm::Block<pmm::DefaultAdd
 //
 // Note (Issue #141): AddressTraits<IndexT, GranuleSz> in address_traits.h also provides
 // bytes_to_granules / granules_to_bytes / idx_to_byte_off / byte_off_to_idx methods.
-// The duplication is intentional: address_traits.h versions are templated on GranuleSz
-// (supporting TinyAddressTraits, SmallAddressTraits, LargeAddressTraits), while the
-// detail:: versions below are fixed to the compile-time constant kGranuleSize and add
-// overflow checking and assertions required by the manager's internal logic.
+//
+// Note (Issue #160): The non-templated detail:: functions below are kept for backward
+// compatibility. They now delegate to the templated _t variants using DefaultAddressTraits,
+// eliminating code duplication. New code should use the _t variants directly or use
+// AddressTraits<>::bytes_to_granules() etc.
 
-/// @brief Convert bytes to granules (ceiling). Returns 0 on overflow.
-inline std::uint32_t bytes_to_granules( std::size_t bytes )
+// ─── Address-traits-aware byte/granule conversion helpers (Issue #146) ────────
+// These variants use AddressTraitsT::granule_size instead of the fixed kGranuleSize.
+// Required for non-default address traits (SmallAddressTraits with 16B, LargeAddressTraits with 64B).
+
+/// @brief Convert bytes to granules (ceiling) using AddressTraitsT::granule_size.
+template <typename AddressTraitsT> inline std::uint32_t bytes_to_granules_t( std::size_t bytes )
 {
-    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranuleSize - 1 ) )
+    static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
+    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
         return 0;
-    std::size_t granules = ( bytes + kGranuleSize - 1 ) / kGranuleSize;
+    std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
     if ( granules > std::numeric_limits<std::uint32_t>::max() )
         return 0;
     return static_cast<std::uint32_t>( granules );
 }
 
+/// @brief Convert bytes to index_type granules (ceiling) using AddressTraitsT::granule_size.
+template <typename AddressTraitsT> inline typename AddressTraitsT::index_type bytes_to_idx_t( std::size_t bytes )
+{
+    static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
+    using IndexT                         = typename AddressTraitsT::index_type;
+    if ( bytes == 0 )
+        return static_cast<IndexT>( 0 );
+    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
+        return AddressTraitsT::no_block; // overflow
+    std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
+    if ( granules > static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) )
+        return AddressTraitsT::no_block; // overflow for IndexT
+    return static_cast<IndexT>( granules );
+}
+
+/// @brief Get byte offset from granule index using AddressTraitsT::granule_size.
+template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( std::uint32_t idx )
+{
+    return static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
+}
+
+/// @brief Get granule index from byte offset using AddressTraitsT::granule_size.
+template <typename AddressTraitsT> inline std::uint32_t byte_off_to_idx_t( std::size_t byte_off )
+{
+    assert( byte_off % AddressTraitsT::granule_size == 0 );
+    assert( byte_off / AddressTraitsT::granule_size <= std::numeric_limits<std::uint32_t>::max() );
+    return static_cast<std::uint32_t>( byte_off / AddressTraitsT::granule_size );
+}
+
+/// @brief Convert bytes to granules (ceiling). Returns 0 on overflow.
+/// @deprecated Use bytes_to_granules_t<DefaultAddressTraits>() or DefaultAddressTraits::bytes_to_granules().
+inline std::uint32_t bytes_to_granules( std::size_t bytes )
+{
+    return bytes_to_granules_t<pmm::DefaultAddressTraits>( bytes );
+}
+
 /// @brief Convert granules to bytes.
+/// @deprecated Use DefaultAddressTraits::granules_to_bytes() for new code.
 inline std::size_t granules_to_bytes( std::uint32_t granules )
 {
-    return static_cast<std::size_t>( granules ) * kGranuleSize;
+    return pmm::DefaultAddressTraits::granules_to_bytes( granules );
 }
 
 /// @brief Get byte offset from granule index.
+/// @deprecated Use DefaultAddressTraits::idx_to_byte_off() for new code.
 inline std::size_t idx_to_byte_off( std::uint32_t idx )
 {
-    return static_cast<std::size_t>( idx ) * kGranuleSize;
+    return pmm::DefaultAddressTraits::idx_to_byte_off( idx );
 }
 
 /// @brief Get granule index from byte offset (must be multiple of kGranuleSize).
+/// @deprecated Use byte_off_to_idx_t<DefaultAddressTraits>() for new code.
 inline std::uint32_t byte_off_to_idx( std::size_t byte_off )
 {
-    assert( byte_off % kGranuleSize == 0 );
-    assert( byte_off / kGranuleSize <= std::numeric_limits<std::uint32_t>::max() );
-    return static_cast<std::uint32_t>( byte_off / kGranuleSize );
+    return byte_off_to_idx_t<pmm::DefaultAddressTraits>( byte_off );
 }
 
 /// @brief Returns true only for kGranuleSize (16-byte) alignment.
@@ -1736,51 +1779,6 @@ inline typename AddressTraitsT::index_type block_idx_t( const std::uint8_t*     
     return static_cast<typename AddressTraitsT::index_type>( byte_off / AddressTraitsT::granule_size );
 }
 
-// ─── Address-traits-aware byte/granule conversion helpers (Issue #146) ────────
-// These variants use AddressTraitsT::granule_size instead of the fixed kGranuleSize.
-// Required for non-default address traits (SmallAddressTraits with 16B, LargeAddressTraits with 64B).
-
-/// @brief Convert bytes to granules (ceiling) using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::uint32_t bytes_to_granules_t( std::size_t bytes )
-{
-    static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
-    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
-        return 0;
-    std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
-    if ( granules > std::numeric_limits<std::uint32_t>::max() )
-        return 0;
-    return static_cast<std::uint32_t>( granules );
-}
-
-/// @brief Convert bytes to index_type granules (ceiling) using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline typename AddressTraitsT::index_type bytes_to_idx_t( std::size_t bytes )
-{
-    static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
-    using IndexT                         = typename AddressTraitsT::index_type;
-    if ( bytes == 0 )
-        return static_cast<IndexT>( 0 );
-    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
-        return AddressTraitsT::no_block; // overflow
-    std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
-    if ( granules > static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) )
-        return AddressTraitsT::no_block; // overflow for IndexT
-    return static_cast<IndexT>( granules );
-}
-
-/// @brief Get byte offset from granule index using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( std::uint32_t idx )
-{
-    return static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
-}
-
-/// @brief Get granule index from byte offset using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::uint32_t byte_off_to_idx_t( std::size_t byte_off )
-{
-    assert( byte_off % AddressTraitsT::granule_size == 0 );
-    assert( byte_off / AddressTraitsT::granule_size <= std::numeric_limits<std::uint32_t>::max() );
-    return static_cast<std::uint32_t>( byte_off / AddressTraitsT::granule_size );
-}
-
 /// @brief Block header size in granules for AddressTraitsT (Issue #146).
 /// Computes ceil(sizeof(Block<AT>) / AT::granule_size).
 /// For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1.
@@ -1807,20 +1805,9 @@ template <typename AddressTraitsT> inline typename AddressTraitsT::index_type fr
     return ( v == kNoBlock ) ? AddressTraitsT::no_block : static_cast<typename AddressTraitsT::index_type>( v );
 }
 
-/// @brief Compute total granules of block (Issue #112: Block<A> layout).
+/// @brief Compute total granules of block for AddressTraitsT (Issue #112: Block<A> layout).
 /// Issue #59: total_size is no longer stored — computed via next_offset.
-inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr,
-                                           const pmm::Block<pmm::DefaultAddressTraits>* blk )
-{
-    using BlockState       = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
-    std::uint32_t this_idx = block_idx( base, blk );
-    auto          next_off = BlockState::get_next_offset( blk );
-    if ( next_off != kNoBlock )
-        return next_off - this_idx;
-    return byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - this_idx;
-}
-
-/// @brief Templated variant of block_total_granules for non-default address traits.
+/// Issue #160: Single templated implementation; non-templated overload delegates here.
 template <typename AddressTraitsT>
 inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr,
                                            const pmm::Block<AddressTraitsT>* blk )
@@ -1885,6 +1872,9 @@ inline void* user_ptr( pmm::Block<AddressTraitsT>* block )
 
 /// @brief O(1) get Block<A> from user_ptr (ptr - sizeof(Block<A>)); validated via is_valid_block().
 /// Issue #112: Block<A> is the sole block type.
+/// @note For non-default address traits, use the templated header_from_ptr_t<AddressTraitsT>().
+///       Issue #160: header_from_ptr performs additional is_valid_block() structural validation
+///       which is not yet available generically; for that reason these overloads are kept separate.
 inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t total_size )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
@@ -2606,6 +2596,51 @@ static_assert( ValidPmmAddressTraits<DefaultAddressTraits>, "DefaultAddressTrait
 static_assert( ValidPmmAddressTraits<SmallAddressTraits>, "SmallAddressTraits must satisfy ValidPmmAddressTraits" );
 static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits must satisfy ValidPmmAddressTraits" );
 
+// ─── BasicConfig — базовый шаблон для heap-конфигураций ──────────────────────
+
+/**
+ * @brief Базовый шаблон конфигурации менеджера с HeapStorage (Issue #160).
+ *
+ * Устраняет дублирование между CacheManagerConfig, PersistentDataConfig,
+ * EmbeddedManagerConfig, IndustrialDBConfig и LargeDBConfig.
+ * Готовые конфигурации теперь являются псевдонимами BasicConfig с конкретными параметрами.
+ *
+ * @tparam AddressTraitsT  Тип адресного пространства (DefaultAddressTraits, LargeAddressTraits, etc.)
+ * @tparam LockPolicyT     Политика блокировок (config::NoLock или config::SharedMutexLock)
+ * @tparam GrowNum         Числитель коэффициента роста хранилища (по умолчанию 5)
+ * @tparam GrowDen         Знаменатель коэффициента роста хранилища (по умолчанию 4, т.е. рост 25%)
+ * @tparam MaxMemoryGB     Максимальный объём памяти в ГБ (0 = без ограничения)
+ *
+ * Пример создания собственной конфигурации:
+ * @code
+ *   // Многопоточный менеджер с 50% ростом и 32 ГБ лимитом
+ *   using MyConfig = pmm::BasicConfig<
+ *       pmm::DefaultAddressTraits,
+ *       pmm::config::SharedMutexLock,
+ *       3, 2,  // grow 3/2 = 50%
+ *       32     // max 32 GB
+ *   >;
+ *   using MyManager = pmm::PersistMemoryManager<MyConfig>;
+ * @endcode
+ */
+template <typename AddressTraitsT = DefaultAddressTraits, typename LockPolicyT = config::NoLock,
+          std::size_t GrowNum = config::kDefaultGrowNumerator,
+          std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64>
+struct BasicConfig
+{
+    static_assert( ValidPmmAddressTraits<AddressTraitsT>,
+                   "BasicConfig: AddressTraitsT must satisfy ValidPmmAddressTraits" );
+
+    using address_traits                          = AddressTraitsT;
+    using storage_backend                         = HeapStorage<AddressTraitsT>;
+    using free_block_tree                         = AvlFreeTree<AddressTraitsT>;
+    using lock_policy                             = LockPolicyT;
+    static constexpr std::size_t granule_size     = AddressTraitsT::granule_size;
+    static constexpr std::size_t max_memory_gb    = MaxMemoryGB;
+    static constexpr std::size_t grow_numerator   = GrowNum;
+    static constexpr std::size_t grow_denominator = GrowDen;
+};
+
 // ─── Embedded / статические конфигурации ─────────────────────────────────────
 
 /**
@@ -2694,6 +2729,9 @@ template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
 
 // ─── Desktop / динамические конфигурации ─────────────────────────────────────
 
+// ─── Desktop / динамические конфигурации ─────────────────────────────────────
+// All configs below are aliases of BasicConfig<> with specific parameters (Issue #160).
+
 /**
  * @brief Конфигурация кеш-менеджера (однопоточный, heap, 16B гранула).
  *
@@ -2703,26 +2741,10 @@ template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
  *   - HeapStorage — динамическая память с авторасширением
  *   - Коэффициент роста 5/4 (25%)
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: кеш вычислений, временные буферы в однопоточном коде.
  */
-struct CacheManagerConfig
-{
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "CacheManagerConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = HeapStorage<DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    static constexpr std::size_t granule_size     = 16;
-    static constexpr std::size_t max_memory_gb    = 64;
-    static constexpr std::size_t grow_numerator   = config::kDefaultGrowNumerator;
-    static constexpr std::size_t grow_denominator = config::kDefaultGrowDenominator;
-};
+using CacheManagerConfig = BasicConfig<DefaultAddressTraits, config::NoLock, config::kDefaultGrowNumerator,
+                                       config::kDefaultGrowDenominator, 64>;
 
 /**
  * @brief Конфигурация менеджера персистентных данных (многопоточный, heap, 16B гранула).
@@ -2733,26 +2755,10 @@ struct CacheManagerConfig
  *   - HeapStorage — динамическая память
  *   - Коэффициент роста 5/4 (25%)
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: долговременное хранение данных, файловые менеджеры.
  */
-struct PersistentDataConfig
-{
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "PersistentDataConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = HeapStorage<DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::SharedMutexLock;
-    static constexpr std::size_t granule_size     = 16;
-    static constexpr std::size_t max_memory_gb    = 64;
-    static constexpr std::size_t grow_numerator   = config::kDefaultGrowNumerator;
-    static constexpr std::size_t grow_denominator = config::kDefaultGrowDenominator;
-};
+using PersistentDataConfig = BasicConfig<DefaultAddressTraits, config::SharedMutexLock,
+                                         config::kDefaultGrowNumerator, config::kDefaultGrowDenominator, 64>;
 
 /**
  * @brief Конфигурация embedded-менеджера с динамическим хранилищем.
@@ -2763,26 +2769,9 @@ struct PersistentDataConfig
  *   - HeapStorage — динамическая память
  *   - Консервативный коэффициент роста 3/2 (50%) для экономии памяти
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: Linux embedded (RPi, etc.), системы с ограниченной памятью.
  */
-struct EmbeddedManagerConfig
-{
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "EmbeddedManagerConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = HeapStorage<DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    static constexpr std::size_t granule_size     = 16;
-    static constexpr std::size_t max_memory_gb    = 64;
-    static constexpr std::size_t grow_numerator   = 3;
-    static constexpr std::size_t grow_denominator = 2;
-};
+using EmbeddedManagerConfig = BasicConfig<DefaultAddressTraits, config::NoLock, 3, 2, 64>;
 
 // ─── Industrial DB конфигурации ───────────────────────────────────────────────
 
@@ -2795,26 +2784,9 @@ struct EmbeddedManagerConfig
  *   - HeapStorage — динамическая память
  *   - Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: промышленные базы данных, time-series хранилища (до 64 ГБ).
  */
-struct IndustrialDBConfig
-{
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "IndustrialDBConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = HeapStorage<DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::SharedMutexLock;
-    static constexpr std::size_t granule_size     = 16;
-    static constexpr std::size_t max_memory_gb    = 64;
-    static constexpr std::size_t grow_numerator   = 2;
-    static constexpr std::size_t grow_denominator = 1;
-};
+using IndustrialDBConfig = BasicConfig<DefaultAddressTraits, config::SharedMutexLock, 2, 1, 64>;
 
 // ─── Large DB конфигурации (64-bit индекс) ────────────────────────────────────
 
@@ -2828,10 +2800,6 @@ struct IndustrialDBConfig
  *   - HeapStorage — динамическая память
  *   - Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений
  *
- * Статические проверки:
- *   - granule_size >= kMinGranuleSize (64 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: крупные базы данных, хранилища данных, облачные хранилища,
  * петабайтные time-series системы.
  *
@@ -2842,20 +2810,7 @@ struct IndustrialDBConfig
  *   // sizeof(BigDB::pptr<int>) == 8  (64-bit индекс)
  * @endcode
  */
-struct LargeDBConfig
-{
-    static_assert( ValidPmmAddressTraits<LargeAddressTraits>,
-                   "LargeDBConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = LargeAddressTraits;
-    using storage_backend                         = HeapStorage<LargeAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<LargeAddressTraits>;
-    using lock_policy                             = config::SharedMutexLock;
-    static constexpr std::size_t granule_size     = LargeAddressTraits::granule_size;
-    static constexpr std::size_t max_memory_gb    = 0; // Без ограничения (64-bit адресация)
-    static constexpr std::size_t grow_numerator   = 2;
-    static constexpr std::size_t grow_denominator = 1;
-};
+using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2, 1, 0>;
 
 } // namespace pmm
 

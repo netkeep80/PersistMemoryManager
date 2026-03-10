@@ -169,40 +169,83 @@ inline constexpr std::size_t kMinMemorySize = sizeof( pmm::Block<pmm::DefaultAdd
 //
 // Note (Issue #141): AddressTraits<IndexT, GranuleSz> in address_traits.h also provides
 // bytes_to_granules / granules_to_bytes / idx_to_byte_off / byte_off_to_idx methods.
-// The duplication is intentional: address_traits.h versions are templated on GranuleSz
-// (supporting TinyAddressTraits, SmallAddressTraits, LargeAddressTraits), while the
-// detail:: versions below are fixed to the compile-time constant kGranuleSize and add
-// overflow checking and assertions required by the manager's internal logic.
+//
+// Note (Issue #160): The non-templated detail:: functions below are kept for backward
+// compatibility. They now delegate to the templated _t variants using DefaultAddressTraits,
+// eliminating code duplication. New code should use the _t variants directly or use
+// AddressTraits<>::bytes_to_granules() etc.
 
-/// @brief Convert bytes to granules (ceiling). Returns 0 on overflow.
-inline std::uint32_t bytes_to_granules( std::size_t bytes )
+// ─── Address-traits-aware byte/granule conversion helpers (Issue #146) ────────
+// These variants use AddressTraitsT::granule_size instead of the fixed kGranuleSize.
+// Required for non-default address traits (SmallAddressTraits with 16B, LargeAddressTraits with 64B).
+
+/// @brief Convert bytes to granules (ceiling) using AddressTraitsT::granule_size.
+template <typename AddressTraitsT> inline std::uint32_t bytes_to_granules_t( std::size_t bytes )
 {
-    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranuleSize - 1 ) )
+    static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
+    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
         return 0;
-    std::size_t granules = ( bytes + kGranuleSize - 1 ) / kGranuleSize;
+    std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
     if ( granules > std::numeric_limits<std::uint32_t>::max() )
         return 0;
     return static_cast<std::uint32_t>( granules );
 }
 
+/// @brief Convert bytes to index_type granules (ceiling) using AddressTraitsT::granule_size.
+template <typename AddressTraitsT> inline typename AddressTraitsT::index_type bytes_to_idx_t( std::size_t bytes )
+{
+    static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
+    using IndexT                         = typename AddressTraitsT::index_type;
+    if ( bytes == 0 )
+        return static_cast<IndexT>( 0 );
+    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
+        return AddressTraitsT::no_block; // overflow
+    std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
+    if ( granules > static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) )
+        return AddressTraitsT::no_block; // overflow for IndexT
+    return static_cast<IndexT>( granules );
+}
+
+/// @brief Get byte offset from granule index using AddressTraitsT::granule_size.
+template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( std::uint32_t idx )
+{
+    return static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
+}
+
+/// @brief Get granule index from byte offset using AddressTraitsT::granule_size.
+template <typename AddressTraitsT> inline std::uint32_t byte_off_to_idx_t( std::size_t byte_off )
+{
+    assert( byte_off % AddressTraitsT::granule_size == 0 );
+    assert( byte_off / AddressTraitsT::granule_size <= std::numeric_limits<std::uint32_t>::max() );
+    return static_cast<std::uint32_t>( byte_off / AddressTraitsT::granule_size );
+}
+
+/// @brief Convert bytes to granules (ceiling). Returns 0 on overflow.
+/// @deprecated Use bytes_to_granules_t<DefaultAddressTraits>() or DefaultAddressTraits::bytes_to_granules().
+inline std::uint32_t bytes_to_granules( std::size_t bytes )
+{
+    return bytes_to_granules_t<pmm::DefaultAddressTraits>( bytes );
+}
+
 /// @brief Convert granules to bytes.
+/// @deprecated Use DefaultAddressTraits::granules_to_bytes() for new code.
 inline std::size_t granules_to_bytes( std::uint32_t granules )
 {
-    return static_cast<std::size_t>( granules ) * kGranuleSize;
+    return pmm::DefaultAddressTraits::granules_to_bytes( granules );
 }
 
 /// @brief Get byte offset from granule index.
+/// @deprecated Use DefaultAddressTraits::idx_to_byte_off() for new code.
 inline std::size_t idx_to_byte_off( std::uint32_t idx )
 {
-    return static_cast<std::size_t>( idx ) * kGranuleSize;
+    return pmm::DefaultAddressTraits::idx_to_byte_off( idx );
 }
 
 /// @brief Get granule index from byte offset (must be multiple of kGranuleSize).
+/// @deprecated Use byte_off_to_idx_t<DefaultAddressTraits>() for new code.
 inline std::uint32_t byte_off_to_idx( std::size_t byte_off )
 {
-    assert( byte_off % kGranuleSize == 0 );
-    assert( byte_off / kGranuleSize <= std::numeric_limits<std::uint32_t>::max() );
-    return static_cast<std::uint32_t>( byte_off / kGranuleSize );
+    return byte_off_to_idx_t<pmm::DefaultAddressTraits>( byte_off );
 }
 
 /// @brief Returns true only for kGranuleSize (16-byte) alignment.
@@ -250,51 +293,6 @@ inline typename AddressTraitsT::index_type block_idx_t( const std::uint8_t*     
     return static_cast<typename AddressTraitsT::index_type>( byte_off / AddressTraitsT::granule_size );
 }
 
-// ─── Address-traits-aware byte/granule conversion helpers (Issue #146) ────────
-// These variants use AddressTraitsT::granule_size instead of the fixed kGranuleSize.
-// Required for non-default address traits (SmallAddressTraits with 16B, LargeAddressTraits with 64B).
-
-/// @brief Convert bytes to granules (ceiling) using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::uint32_t bytes_to_granules_t( std::size_t bytes )
-{
-    static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
-    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
-        return 0;
-    std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
-    if ( granules > std::numeric_limits<std::uint32_t>::max() )
-        return 0;
-    return static_cast<std::uint32_t>( granules );
-}
-
-/// @brief Convert bytes to index_type granules (ceiling) using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline typename AddressTraitsT::index_type bytes_to_idx_t( std::size_t bytes )
-{
-    static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
-    using IndexT                         = typename AddressTraitsT::index_type;
-    if ( bytes == 0 )
-        return static_cast<IndexT>( 0 );
-    if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
-        return AddressTraitsT::no_block; // overflow
-    std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
-    if ( granules > static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) )
-        return AddressTraitsT::no_block; // overflow for IndexT
-    return static_cast<IndexT>( granules );
-}
-
-/// @brief Get byte offset from granule index using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( std::uint32_t idx )
-{
-    return static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
-}
-
-/// @brief Get granule index from byte offset using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::uint32_t byte_off_to_idx_t( std::size_t byte_off )
-{
-    assert( byte_off % AddressTraitsT::granule_size == 0 );
-    assert( byte_off / AddressTraitsT::granule_size <= std::numeric_limits<std::uint32_t>::max() );
-    return static_cast<std::uint32_t>( byte_off / AddressTraitsT::granule_size );
-}
-
 /// @brief Block header size in granules for AddressTraitsT (Issue #146).
 /// Computes ceil(sizeof(Block<AT>) / AT::granule_size).
 /// For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1.
@@ -321,20 +319,9 @@ template <typename AddressTraitsT> inline typename AddressTraitsT::index_type fr
     return ( v == kNoBlock ) ? AddressTraitsT::no_block : static_cast<typename AddressTraitsT::index_type>( v );
 }
 
-/// @brief Compute total granules of block (Issue #112: Block<A> layout).
+/// @brief Compute total granules of block for AddressTraitsT (Issue #112: Block<A> layout).
 /// Issue #59: total_size is no longer stored — computed via next_offset.
-inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr,
-                                           const pmm::Block<pmm::DefaultAddressTraits>* blk )
-{
-    using BlockState       = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
-    std::uint32_t this_idx = block_idx( base, blk );
-    auto          next_off = BlockState::get_next_offset( blk );
-    if ( next_off != kNoBlock )
-        return next_off - this_idx;
-    return byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - this_idx;
-}
-
-/// @brief Templated variant of block_total_granules for non-default address traits.
+/// Issue #160: Single templated implementation; non-templated overload delegates here.
 template <typename AddressTraitsT>
 inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr,
                                            const pmm::Block<AddressTraitsT>* blk )
@@ -399,6 +386,9 @@ inline void* user_ptr( pmm::Block<AddressTraitsT>* block )
 
 /// @brief O(1) get Block<A> from user_ptr (ptr - sizeof(Block<A>)); validated via is_valid_block().
 /// Issue #112: Block<A> is the sole block type.
+/// @note For non-default address traits, use the templated header_from_ptr_t<AddressTraitsT>().
+///       Issue #160: header_from_ptr performs additional is_valid_block() structural validation
+///       which is not yet available generically; for that reason these overloads are kept separate.
 inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* base, void* ptr, std::size_t total_size )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;

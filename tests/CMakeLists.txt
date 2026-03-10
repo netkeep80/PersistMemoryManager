@@ -124,6 +124,9 @@ pmm_add_test(test_issue151_pstringview test_issue151_pstringview.cpp)
 # ─── Тесты pmap — персистентного словаря на AVL-дереве (Issue #153) ──────────
 pmm_add_test(test_issue153_pmap test_issue153_pmap.cpp)
 
+# ─── Тесты дедупликации функциональности (Issue #160) ─────────────────────────
+pmm_add_test(test_issue160_deduplication test_issue160_deduplication.cpp)
+
 # ─── Тесты самодостаточности single-header файлов (Issue #123) ───────────────
 # Каждый single-header файл тестируется отдельным исполняемым файлом.
 # Это гарантирует автономность: каждый файл компилируется без include/pmm/*.

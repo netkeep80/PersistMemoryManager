@@ -123,6 +123,51 @@ static_assert( ValidPmmAddressTraits<DefaultAddressTraits>, "DefaultAddressTrait
 static_assert( ValidPmmAddressTraits<SmallAddressTraits>, "SmallAddressTraits must satisfy ValidPmmAddressTraits" );
 static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits must satisfy ValidPmmAddressTraits" );
 
+// ─── BasicConfig — базовый шаблон для heap-конфигураций ──────────────────────
+
+/**
+ * @brief Базовый шаблон конфигурации менеджера с HeapStorage (Issue #160).
+ *
+ * Устраняет дублирование между CacheManagerConfig, PersistentDataConfig,
+ * EmbeddedManagerConfig, IndustrialDBConfig и LargeDBConfig.
+ * Готовые конфигурации теперь являются псевдонимами BasicConfig с конкретными параметрами.
+ *
+ * @tparam AddressTraitsT  Тип адресного пространства (DefaultAddressTraits, LargeAddressTraits, etc.)
+ * @tparam LockPolicyT     Политика блокировок (config::NoLock или config::SharedMutexLock)
+ * @tparam GrowNum         Числитель коэффициента роста хранилища (по умолчанию 5)
+ * @tparam GrowDen         Знаменатель коэффициента роста хранилища (по умолчанию 4, т.е. рост 25%)
+ * @tparam MaxMemoryGB     Максимальный объём памяти в ГБ (0 = без ограничения)
+ *
+ * Пример создания собственной конфигурации:
+ * @code
+ *   // Многопоточный менеджер с 50% ростом и 32 ГБ лимитом
+ *   using MyConfig = pmm::BasicConfig<
+ *       pmm::DefaultAddressTraits,
+ *       pmm::config::SharedMutexLock,
+ *       3, 2,  // grow 3/2 = 50%
+ *       32     // max 32 GB
+ *   >;
+ *   using MyManager = pmm::PersistMemoryManager<MyConfig>;
+ * @endcode
+ */
+template <typename AddressTraitsT = DefaultAddressTraits, typename LockPolicyT = config::NoLock,
+          std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator,
+          std::size_t MaxMemoryGB = 64>
+struct BasicConfig
+{
+    static_assert( ValidPmmAddressTraits<AddressTraitsT>,
+                   "BasicConfig: AddressTraitsT must satisfy ValidPmmAddressTraits" );
+
+    using address_traits                          = AddressTraitsT;
+    using storage_backend                         = HeapStorage<AddressTraitsT>;
+    using free_block_tree                         = AvlFreeTree<AddressTraitsT>;
+    using lock_policy                             = LockPolicyT;
+    static constexpr std::size_t granule_size     = AddressTraitsT::granule_size;
+    static constexpr std::size_t max_memory_gb    = MaxMemoryGB;
+    static constexpr std::size_t grow_numerator   = GrowNum;
+    static constexpr std::size_t grow_denominator = GrowDen;
+};
+
 // ─── Embedded / статические конфигурации ─────────────────────────────────────
 
 /**
@@ -211,6 +256,9 @@ template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
 
 // ─── Desktop / динамические конфигурации ─────────────────────────────────────
 
+// ─── Desktop / динамические конфигурации ─────────────────────────────────────
+// All configs below are aliases of BasicConfig<> with specific parameters (Issue #160).
+
 /**
  * @brief Конфигурация кеш-менеджера (однопоточный, heap, 16B гранула).
  *
@@ -220,26 +268,10 @@ template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
  *   - HeapStorage — динамическая память с авторасширением
  *   - Коэффициент роста 5/4 (25%)
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: кеш вычислений, временные буферы в однопоточном коде.
  */
-struct CacheManagerConfig
-{
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "CacheManagerConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = HeapStorage<DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    static constexpr std::size_t granule_size     = 16;
-    static constexpr std::size_t max_memory_gb    = 64;
-    static constexpr std::size_t grow_numerator   = config::kDefaultGrowNumerator;
-    static constexpr std::size_t grow_denominator = config::kDefaultGrowDenominator;
-};
+using CacheManagerConfig = BasicConfig<DefaultAddressTraits, config::NoLock, config::kDefaultGrowNumerator,
+                                       config::kDefaultGrowDenominator, 64>;
 
 /**
  * @brief Конфигурация менеджера персистентных данных (многопоточный, heap, 16B гранула).
@@ -250,26 +282,10 @@ struct CacheManagerConfig
  *   - HeapStorage — динамическая память
  *   - Коэффициент роста 5/4 (25%)
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: долговременное хранение данных, файловые менеджеры.
  */
-struct PersistentDataConfig
-{
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "PersistentDataConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = HeapStorage<DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::SharedMutexLock;
-    static constexpr std::size_t granule_size     = 16;
-    static constexpr std::size_t max_memory_gb    = 64;
-    static constexpr std::size_t grow_numerator   = config::kDefaultGrowNumerator;
-    static constexpr std::size_t grow_denominator = config::kDefaultGrowDenominator;
-};
+using PersistentDataConfig = BasicConfig<DefaultAddressTraits, config::SharedMutexLock, config::kDefaultGrowNumerator,
+                                         config::kDefaultGrowDenominator, 64>;
 
 /**
  * @brief Конфигурация embedded-менеджера с динамическим хранилищем.
@@ -280,26 +296,9 @@ struct PersistentDataConfig
  *   - HeapStorage — динамическая память
  *   - Консервативный коэффициент роста 3/2 (50%) для экономии памяти
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: Linux embedded (RPi, etc.), системы с ограниченной памятью.
  */
-struct EmbeddedManagerConfig
-{
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "EmbeddedManagerConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = HeapStorage<DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    static constexpr std::size_t granule_size     = 16;
-    static constexpr std::size_t max_memory_gb    = 64;
-    static constexpr std::size_t grow_numerator   = 3;
-    static constexpr std::size_t grow_denominator = 2;
-};
+using EmbeddedManagerConfig = BasicConfig<DefaultAddressTraits, config::NoLock, 3, 2, 64>;
 
 // ─── Industrial DB конфигурации ───────────────────────────────────────────────
 
@@ -312,26 +311,9 @@ struct EmbeddedManagerConfig
  *   - HeapStorage — динамическая память
  *   - Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: промышленные базы данных, time-series хранилища (до 64 ГБ).
  */
-struct IndustrialDBConfig
-{
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "IndustrialDBConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = HeapStorage<DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::SharedMutexLock;
-    static constexpr std::size_t granule_size     = 16;
-    static constexpr std::size_t max_memory_gb    = 64;
-    static constexpr std::size_t grow_numerator   = 2;
-    static constexpr std::size_t grow_denominator = 1;
-};
+using IndustrialDBConfig = BasicConfig<DefaultAddressTraits, config::SharedMutexLock, 2, 1, 64>;
 
 // ─── Large DB конфигурации (64-bit индекс) ────────────────────────────────────
 
@@ -345,10 +327,6 @@ struct IndustrialDBConfig
  *   - HeapStorage — динамическая память
  *   - Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений
  *
- * Статические проверки:
- *   - granule_size >= kMinGranuleSize (64 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *
  * Типичный сценарий: крупные базы данных, хранилища данных, облачные хранилища,
  * петабайтные time-series системы.
  *
@@ -359,19 +337,6 @@ struct IndustrialDBConfig
  *   // sizeof(BigDB::pptr<int>) == 8  (64-bit индекс)
  * @endcode
  */
-struct LargeDBConfig
-{
-    static_assert( ValidPmmAddressTraits<LargeAddressTraits>,
-                   "LargeDBConfig: address_traits must satisfy ValidPmmAddressTraits" );
-
-    using address_traits                          = LargeAddressTraits;
-    using storage_backend                         = HeapStorage<LargeAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<LargeAddressTraits>;
-    using lock_policy                             = config::SharedMutexLock;
-    static constexpr std::size_t granule_size     = LargeAddressTraits::granule_size;
-    static constexpr std::size_t max_memory_gb    = 0; // Без ограничения (64-bit адресация)
-    static constexpr std::size_t grow_numerator   = 2;
-    static constexpr std::size_t grow_denominator = 1;
-};
+using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2, 1, 0>;
 
 } // namespace pmm
