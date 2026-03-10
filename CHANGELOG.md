@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.12.0] - 2026-03-10
+
+### Added
+- `pmap<_K,_V>` — persistent AVL tree dictionary in PAP (Issue #153). Stores key-value pairs
+  in PAP blocks using built-in TreeNode fields for the AVL tree structure, analogous to
+  `pstringview` (Issue #151). Features: O(log n) insert/find/contains, automatic
+  AVL self-balancing, permanent block locking (Issue #126), value update on duplicate key.
+- `Mgr::pmap<_K,_V>` — concise manager-bound type alias in `PersistMemoryManager`.
+  Example: `Mgr::pmap<Mgr::pstringview, int>` for named persistent object dictionaries.
+
+
 ## [0.11.0] - 2026-03-09
 
 ### Added
