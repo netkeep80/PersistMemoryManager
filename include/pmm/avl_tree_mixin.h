@@ -1,10 +1,10 @@
 /**
  * @file pmm/avl_tree_mixin.h
- * @brief Shared AVL tree helper functions for pmap and pstringview (Issue #155).
+ * @brief Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162).
  *
  * Provides a set of free static template functions implementing the core AVL
- * tree operations (height, balance factor, rotations, rebalancing) that are
- * shared between pmap<_K,_V,ManagerT> and pstringview<ManagerT>.
+ * tree operations (height, balance factor, rotations, rebalancing, insert, find)
+ * that are shared between pmap<_K,_V,ManagerT> and pstringview<ManagerT>.
  *
  * Both pmap and pstringview use the same AVL logic via pptr<T,ManagerT> — the
  * only difference is the pptr type and the comparison key. This header factors
@@ -19,7 +19,7 @@
  *
  * @see pmap.h — pmap<_K,_V,ManagerT> (Issue #153)
  * @see pstringview.h — pstringview<ManagerT> (Issue #151)
- * @version 0.1 (Issue #155 — code deduplication)
+ * @version 0.2 (Issue #162 — avl_find() deduplication)
  */
 
 #pragma once
@@ -162,6 +162,38 @@ template <typename PPtr, typename IndexType> static void avl_rebalance_up( PPtr 
         }
         p = PPtr( p.get_tree_parent().offset() );
     }
+}
+
+/// @brief Search the AVL tree for a node matching the given key.
+///
+/// Traverses the tree starting from root_idx, using compare_less to determine
+/// the direction at each node. When compare_less(cur, key) is true the search
+/// goes right; when compare_less(key, cur) is true it goes left; otherwise the
+/// node is considered a match and is returned.
+///
+/// @param root_idx     Index of the tree root (0 = empty tree).
+/// @param compare_less Callable(PPtr cur) -> int: returns negative if key < cur,
+///                     zero if key == cur, positive if key > cur.
+/// @param resolve      Callable(PPtr) -> NodeObjPtr: resolves pptr to raw pointer.
+///                     Must return nullptr when the pointer is invalid.
+/// @return PPtr to the matching node, or a null PPtr if not found.
+template <typename PPtr, typename IndexType, typename CompareThreeWayFn, typename ResolveFn>
+static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way, ResolveFn&& resolve ) noexcept
+{
+    PPtr cur( root_idx );
+    while ( !cur.is_null() )
+    {
+        if ( resolve( cur ) == nullptr )
+            break;
+        int cmp = compare_three_way( cur );
+        if ( cmp == 0 )
+            return cur;
+        else if ( cmp < 0 )
+            cur = PPtr( cur.get_tree_left().offset() );
+        else
+            cur = PPtr( cur.get_tree_right().offset() );
+    }
+    return PPtr(); // not found
 }
 
 /// @brief Insert new_node into the AVL tree with the given root.

@@ -3307,16 +3307,16 @@ using DefaultAllocatorPolicy = AllocatorPolicy<AvlFreeTree<DefaultAddressTraits>
  * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока)
- * @version 0.2 (Issue #155 — устранение дублирования AVL-кода, удаление lock_block_permanent)
+ * @version 0.3 (Issue #162 — дедупликация _avl_find через detail::avl_find())
  */
 
 /**
  * @file pmm/avl_tree_mixin.h
- * @brief Shared AVL tree helper functions for pmap and pstringview (Issue #155).
+ * @brief Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162).
  *
  * Provides a set of free static template functions implementing the core AVL
- * tree operations (height, balance factor, rotations, rebalancing) that are
- * shared between pmap<_K,_V,ManagerT> and pstringview<ManagerT>.
+ * tree operations (height, balance factor, rotations, rebalancing, insert, find)
+ * that are shared between pmap<_K,_V,ManagerT> and pstringview<ManagerT>.
  *
  * Both pmap and pstringview use the same AVL logic via pptr<T,ManagerT> — the
  * only difference is the pptr type and the comparison key. This header factors
@@ -3331,7 +3331,7 @@ using DefaultAllocatorPolicy = AllocatorPolicy<AvlFreeTree<DefaultAddressTraits>
  *
  * @see pmap.h — pmap<_K,_V,ManagerT> (Issue #153)
  * @see pstringview.h — pstringview<ManagerT> (Issue #151)
- * @version 0.1 (Issue #155 — code deduplication)
+ * @version 0.2 (Issue #162 — avl_find() deduplication)
  */
 
 #include <cstdint>
@@ -3472,6 +3472,38 @@ template <typename PPtr, typename IndexType> static void avl_rebalance_up( PPtr 
         }
         p = PPtr( p.get_tree_parent().offset() );
     }
+}
+
+/// @brief Search the AVL tree for a node matching the given key.
+///
+/// Traverses the tree starting from root_idx, using compare_less to determine
+/// the direction at each node. When compare_less(cur, key) is true the search
+/// goes right; when compare_less(key, cur) is true it goes left; otherwise the
+/// node is considered a match and is returned.
+///
+/// @param root_idx     Index of the tree root (0 = empty tree).
+/// @param compare_less Callable(PPtr cur) -> int: returns negative if key < cur,
+///                     zero if key == cur, positive if key > cur.
+/// @param resolve      Callable(PPtr) -> NodeObjPtr: resolves pptr to raw pointer.
+///                     Must return nullptr when the pointer is invalid.
+/// @return PPtr to the matching node, or a null PPtr if not found.
+template <typename PPtr, typename IndexType, typename CompareThreeWayFn, typename ResolveFn>
+static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way, ResolveFn&& resolve ) noexcept
+{
+    PPtr cur( root_idx );
+    while ( !cur.is_null() )
+    {
+        if ( resolve( cur ) == nullptr )
+            break;
+        int cmp = compare_three_way( cur );
+        if ( cmp == 0 )
+            return cur;
+        else if ( cmp < 0 )
+            cur = PPtr( cur.get_tree_left().offset() );
+        else
+            cur = PPtr( cur.get_tree_right().offset() );
+    }
+    return PPtr(); // not found
 }
 
 /// @brief Insert new_node into the AVL tree with the given root.
@@ -3672,20 +3704,18 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     /// @brief Найти узел AVL-дерева с заданным ключом. Возвращает null если не найден.
     node_pptr _avl_find( const _K& key ) const noexcept
     {
-        node_pptr cur( _root_idx );
-        while ( !cur.is_null() )
-        {
-            node_type* obj = ManagerT::template resolve<node_type>( cur );
-            if ( obj == nullptr )
-                break;
-            if ( key == obj->key )
-                return cur;
-            else if ( key < obj->key )
-                cur = node_pptr( cur.get_tree_left().offset() );
-            else
-                cur = node_pptr( cur.get_tree_right().offset() );
-        }
-        return node_pptr(); // null
+        return detail::avl_find<node_pptr>(
+            _root_idx,
+            [&]( node_pptr cur ) -> int
+            {
+                node_type* obj = ManagerT::template resolve<node_type>( cur );
+                if ( obj == nullptr )
+                    return 0;
+                if ( key == obj->key )
+                    return 0;
+                return ( key < obj->key ) ? -1 : 1;
+            },
+            []( node_pptr p ) -> node_type* { return ManagerT::template resolve<node_type>( p ); } );
     }
 
     /// @brief Вставить новый узел в AVL-дерево. Предполагается, что ключ ещё не в дереве.
@@ -4024,7 +4054,7 @@ class pptr
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока, Issue #87, #138)
- * @version 0.5 (Issue #155 — устранение дублирования AVL-кода)
+ * @version 0.6 (Issue #162 — дедупликация _avl_find через detail::avl_find())
  */
 
 #include <cstddef>
@@ -4254,21 +4284,14 @@ template <typename ManagerT> struct pstringview
     /// @brief Найти узел AVL-дерева с заданной строкой. Возвращает null если не найден.
     static psview_pptr _avl_find( const char* s ) noexcept
     {
-        psview_pptr cur( _root_idx );
-        while ( !cur.is_null() )
-        {
-            pstringview* obj = ManagerT::template resolve<pstringview>( cur );
-            if ( obj == nullptr )
-                break;
-            int cmp = std::strcmp( s, obj->c_str() );
-            if ( cmp == 0 )
-                return cur;
-            else if ( cmp < 0 )
-                cur = psview_pptr( cur.get_tree_left().offset() );
-            else
-                cur = psview_pptr( cur.get_tree_right().offset() );
-        }
-        return psview_pptr(); // null
+        return detail::avl_find<psview_pptr>(
+            _root_idx,
+            [&]( psview_pptr cur ) -> int
+            {
+                pstringview* obj = ManagerT::template resolve<pstringview>( cur );
+                return ( obj != nullptr ) ? std::strcmp( s, obj->c_str() ) : 0;
+            },
+            []( psview_pptr p ) -> pstringview* { return ManagerT::template resolve<pstringview>( p ); } );
     }
 
     /// @brief Вставить новый узел в AVL-дерево. Предполагается, что строка ещё не в дереве.

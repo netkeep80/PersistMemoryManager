@@ -42,7 +42,7 @@
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока, Issue #87, #138)
- * @version 0.5 (Issue #155 — устранение дублирования AVL-кода)
+ * @version 0.6 (Issue #162 — дедупликация _avl_find через detail::avl_find())
  */
 
 #pragma once
@@ -276,21 +276,14 @@ template <typename ManagerT> struct pstringview
     /// @brief Найти узел AVL-дерева с заданной строкой. Возвращает null если не найден.
     static psview_pptr _avl_find( const char* s ) noexcept
     {
-        psview_pptr cur( _root_idx );
-        while ( !cur.is_null() )
-        {
-            pstringview* obj = ManagerT::template resolve<pstringview>( cur );
-            if ( obj == nullptr )
-                break;
-            int cmp = std::strcmp( s, obj->c_str() );
-            if ( cmp == 0 )
-                return cur;
-            else if ( cmp < 0 )
-                cur = psview_pptr( cur.get_tree_left().offset() );
-            else
-                cur = psview_pptr( cur.get_tree_right().offset() );
-        }
-        return psview_pptr(); // null
+        return detail::avl_find<psview_pptr>(
+            _root_idx,
+            [&]( psview_pptr cur ) -> int
+            {
+                pstringview* obj = ManagerT::template resolve<pstringview>( cur );
+                return ( obj != nullptr ) ? std::strcmp( s, obj->c_str() ) : 0;
+            },
+            []( psview_pptr p ) -> pstringview* { return ManagerT::template resolve<pstringview>( p ); } );
     }
 
     /// @brief Вставить новый узел в AVL-дерево. Предполагается, что строка ещё не в дереве.

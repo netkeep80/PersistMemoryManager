@@ -55,7 +55,7 @@
  * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока)
- * @version 0.2 (Issue #155 — устранение дублирования AVL-кода, удаление lock_block_permanent)
+ * @version 0.3 (Issue #162 — дедупликация _avl_find через detail::avl_find())
  */
 
 #pragma once
@@ -208,20 +208,18 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     /// @brief Найти узел AVL-дерева с заданным ключом. Возвращает null если не найден.
     node_pptr _avl_find( const _K& key ) const noexcept
     {
-        node_pptr cur( _root_idx );
-        while ( !cur.is_null() )
-        {
-            node_type* obj = ManagerT::template resolve<node_type>( cur );
-            if ( obj == nullptr )
-                break;
-            if ( key == obj->key )
-                return cur;
-            else if ( key < obj->key )
-                cur = node_pptr( cur.get_tree_left().offset() );
-            else
-                cur = node_pptr( cur.get_tree_right().offset() );
-        }
-        return node_pptr(); // null
+        return detail::avl_find<node_pptr>(
+            _root_idx,
+            [&]( node_pptr cur ) -> int
+            {
+                node_type* obj = ManagerT::template resolve<node_type>( cur );
+                if ( obj == nullptr )
+                    return 0;
+                if ( key == obj->key )
+                    return 0;
+                return ( key < obj->key ) ? -1 : 1;
+            },
+            []( node_pptr p ) -> node_type* { return ManagerT::template resolve<node_type>( p ); } );
     }
 
     /// @brief Вставить новый узел в AVL-дерево. Предполагается, что ключ ещё не в дереве.
