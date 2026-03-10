@@ -402,19 +402,6 @@ They are intended for advanced use cases, such as implementing persistent data s
 > block tree. Only use these methods on blocks that are permanently locked via
 > `lock_block_permanent()`.
 
-| Method | Description |
-|--------|-------------|
-| `get_tree_left_offset<T>(p)` | Get granule index of left child |
-| `get_tree_right_offset<T>(p)` | Get granule index of right child |
-| `get_tree_parent_offset<T>(p)` | Get granule index of parent node |
-| `set_tree_left_offset<T>(p, idx)` | Set left child granule index |
-| `set_tree_right_offset<T>(p, idx)` | Set right child granule index |
-| `set_tree_parent_offset<T>(p, idx)` | Set parent node granule index |
-| `get_tree_weight<T>(p)` | Get node weight (data size in granules) |
-| `set_tree_weight<T>(p, w)` | Set node weight |
-| `get_tree_height<T>(p)` | Get AVL subtree height |
-| `set_tree_height<T>(p, h)` | Set AVL subtree height |
-
 #### `tree_node<T>()`
 
 ```cpp
@@ -424,10 +411,13 @@ static TreeNode<address_traits>& tree_node(pptr<T> p) noexcept;
 
 Returns a direct reference to the `TreeNode` embedded in the block header for `p`.
 Provides unified access to all AVL fields via `get_left()`, `set_left()`, `get_right()`,
-`set_right()`, `get_parent()`, `set_parent()`, `get_height()`, `set_height()`.
+`set_right()`, `get_parent()`, `set_parent()`, `get_height()`, `set_height()`,
+`get_weight()`, `set_weight()`.
 
 > **Warning:** The returned reference is only valid while the manager is initialized and
 > the block has not been freed. Do not store the reference beyond the current operation.
+>
+> Absent links are stored as `address_traits::no_block` sentinel, not as zero.
 
 ---
 
@@ -500,27 +490,37 @@ index_type offset() const noexcept;  // granule index of user data
 ### Dereference (static manager model)
 
 ```cpp
-T*  resolve() const noexcept;              // raw pointer to object
-T&  operator*() const noexcept;            // dereference
-T*  operator->() const noexcept;           // member access
-T&  operator[](std::size_t i) const noexcept; // array element access
+T&  operator*() const noexcept;   // dereference
+T*  operator->() const noexcept;  // member access
 ```
 
-All dereference operations call `ManagerT::resolve(p)` internally.
+Both operations call `ManagerT::resolve<T>(p)` internally.
 
 ### AVL tree node access
 
 ```cpp
-pptr<T, ManagerT> get_tree_left()   const noexcept;  // left child pptr
-pptr<T, ManagerT> get_tree_right()  const noexcept;  // right child pptr
-pptr<T, ManagerT> get_tree_parent() const noexcept;  // parent pptr
-void set_tree_left  (pptr<T, ManagerT> p) noexcept;
-void set_tree_right (pptr<T, ManagerT> p) noexcept;
-void set_tree_parent(pptr<T, ManagerT> p) noexcept;
-std::int16_t get_tree_height() const noexcept;
-void         set_tree_height(std::int16_t h) noexcept;
-TreeNode<...>& tree_node() noexcept;  // direct reference to TreeNode
+TreeNode<address_traits>& tree_node() const noexcept;  // direct reference to TreeNode
 ```
+
+Returns a reference to the `TreeNode` embedded in the block header. All AVL fields
+are accessed through the returned `TreeNode` reference:
+
+```cpp
+auto& tn = p.tree_node();
+tn.get_left();              // index_type — left child granule index or no_block
+tn.get_right();             // index_type — right child granule index or no_block
+tn.get_parent();            // index_type — parent granule index or no_block
+tn.get_weight();            // index_type — node weight
+tn.get_height();            // std::int16_t — AVL subtree height
+tn.set_left(idx);
+tn.set_right(idx);
+tn.set_parent(idx);
+tn.set_weight(w);
+tn.set_height(h);
+```
+
+> **Note:** Absent links are stored as `address_traits::no_block` sentinel. Use
+> `p.offset()` to convert a `pptr` to a granule index for storage in tree fields.
 
 ### Comparison operators
 
@@ -947,10 +947,11 @@ Thread safety depends on the `lock_policy` in the configuration:
 - **`SharedMutexLock`**: All public methods are thread-safe using `std::shared_mutex`.
   Read operations (`total_size`, `used_size`, `free_size`, `block_count`,
   `free_block_count`, `alloc_block_count`, `for_each_block`, `for_each_free_block`,
-  `is_initialized`, `resolve`, `get_tree_*`, `is_permanently_locked`) acquire a
+  `is_initialized`, `resolve`, `tree_node`, `is_permanently_locked`) acquire a
   `shared_lock` and can run concurrently. Write operations (`create`, `load`, `destroy`,
-  `allocate`, `deallocate`, `allocate_typed`, `deallocate_typed`, `lock_block_permanent`,
-  `set_tree_*`) acquire a `unique_lock`.
+  `allocate`, `deallocate`, `allocate_typed`, `deallocate_typed`, `lock_block_permanent`)
+  acquire a `unique_lock`. Note: `tree_node()` returns a reference — writes through
+  that reference are not guarded by the manager lock.
 
 - **`NoLock`**: No synchronization is performed. All operations are safe only in
   single-threaded contexts.
