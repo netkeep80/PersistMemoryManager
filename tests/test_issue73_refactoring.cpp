@@ -53,7 +53,9 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 // Issue #112: BlockHeader struct removed; Block<DefaultAddressTraits> is the sole block type.
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
                "FR-03: Block<DefaultAddressTraits> must be exactly 32 bytes (Issue #112)" );
-static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "FR-03: ManagerHeader must be exactly 64 bytes" );
+// Issue #175: ManagerHeader<AT> is now templated; DefaultAddressTraits variant remains 64 bytes.
+static_assert( sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) == 64,
+               "FR-03: ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #175)" );
 static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr<T> must be exactly 4 bytes (Issue #59)" );
 
 // ─── FR-02/AR-03: PersistentAvlTree is a standalone class ────────────────────
@@ -147,7 +149,9 @@ static bool test_file_separation()
     static_assert( pmm::kGranuleSize == 16, "Types header must provide kGranuleSize" );
     // Issue #112: BlockHeader removed; Block<DefaultAddressTraits> is the sole block type.
     static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Types header: Block<A> (Issue #112)" );
-    static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "Types header: ManagerHeader" );
+    // Issue #175: ManagerHeader<AT> is now templated.
+    static_assert( sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) == 64,
+                   "Types header: ManagerHeader<DefaultAddressTraits> (Issue #175)" );
 
     // Config from pmm_config.h
     static_assert( pmm::config::kDefaultGrowNumerator == 5, "Config header: grow_numerator" );

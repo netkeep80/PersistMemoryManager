@@ -221,7 +221,9 @@ static bool test_stress_save_load()
 /// ManagerHeader must record the correct granule_size.
 static bool test_manager_header_granule_size()
 {
-    static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes" );
+    // Issue #175: ManagerHeader is now templated; DefaultAddressTraits variant must remain 64 bytes.
+    static_assert( sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) == 64,
+                   "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #175)" );
     // The ManagerHeader.granule_size field is validated on load — tested by save/load round-trip
     return true;
 }
