@@ -40,7 +40,7 @@
 
 /**
  * @file pmm/manager_configs.h
- * @brief Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146).
+ * @brief Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).
  *
  * Предоставляет набор предопределённых конфигурационных структур для использования
  * с `PersistMemoryManager<ConfigT, InstanceId>`. Каждая конфигурация описывает
@@ -62,7 +62,7 @@
  *     - uint32_t (DefaultAddressTraits, 16B гранула) — до 64 ГБ, основной вариант.
  *     - uint64_t (LargeAddressTraits,  64B гранула) — до петабайт, крупные БД.
  *
- *   Ключевые ограничения (задокументированы static_assert-ами):
+ *   Ключевые ограничения (проверяются через концепт ValidPmmAddressTraits, Issue #155):
  *     1. granule_size >= kMinGranuleSize (4 байта — минимум размер слова архитектуры).
  *     2. granule_size — степень двойки.
  *
@@ -123,7 +123,7 @@
  *
  * @see persist_memory_manager.h — PersistMemoryManager (Issue #110)
  * @see config.h — базовые политики блокировок (NoLock, SharedMutexLock)
- * @version 0.4 (Issue #146 — добавлена поддержка 16-bit и 64-bit индексов)
+ * @version 0.5 (Issue #155 — ValidPmmAddressTraits concept replaces repeated static_asserts)
  */
 
 /**
@@ -2578,6 +2578,9 @@ static_assert( is_storage_backend_v<StaticStorage<64>>, "StaticStorage must sati
 
 } // namespace pmm
 
+#include <concepts>
+#include <cstddef>
+
 namespace pmm
 {
 
@@ -2585,6 +2588,23 @@ namespace pmm
 
 /// @brief Минимальный допустимый размер гранулы (размер слова архитектуры = 4 байта).
 inline constexpr std::size_t kMinGranuleSize = 4;
+
+/**
+ * @brief C++20 концепт: проверяет, что AddressTraitsT имеет допустимые параметры гранулы.
+ *
+ * Заменяет повторяющиеся пары `static_assert` в каждой конфигурационной структуре (Issue #155).
+ *
+ * Требования:
+ *   - `AT::granule_size >= kMinGranuleSize` (минимум 4 байта — размер машинного слова).
+ *   - `AT::granule_size` — степень двойки.
+ */
+template <typename AT>
+concept ValidPmmAddressTraits =
+    ( AT::granule_size >= kMinGranuleSize ) && ( ( AT::granule_size & ( AT::granule_size - 1 ) ) == 0 );
+
+static_assert( ValidPmmAddressTraits<DefaultAddressTraits>, "DefaultAddressTraits must satisfy ValidPmmAddressTraits" );
+static_assert( ValidPmmAddressTraits<SmallAddressTraits>, "SmallAddressTraits must satisfy ValidPmmAddressTraits" );
+static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits must satisfy ValidPmmAddressTraits" );
 
 // ─── Embedded / статические конфигурации ─────────────────────────────────────
 
@@ -2619,10 +2639,8 @@ inline constexpr std::size_t kMinGranuleSize = 4;
  */
 template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
 {
-    static_assert( SmallAddressTraits::granule_size >= kMinGranuleSize,
-                   "SmallEmbeddedStaticConfig: granule_size must be >= kMinGranuleSize (4 bytes)" );
-    static_assert( ( SmallAddressTraits::granule_size & ( SmallAddressTraits::granule_size - 1 ) ) == 0,
-                   "SmallEmbeddedStaticConfig: granule_size must be a power of 2" );
+    static_assert( ValidPmmAddressTraits<SmallAddressTraits>,
+                   "SmallEmbeddedStaticConfig: address_traits must satisfy ValidPmmAddressTraits" );
 
     using address_traits                          = SmallAddressTraits;
     using storage_backend                         = StaticStorage<BufferSize, SmallAddressTraits>;
@@ -2661,10 +2679,8 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
  */
 template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
 {
-    static_assert( DefaultAddressTraits::granule_size >= kMinGranuleSize,
-                   "EmbeddedStaticConfig: granule_size must be >= kMinGranuleSize (4 bytes)" );
-    static_assert( ( DefaultAddressTraits::granule_size & ( DefaultAddressTraits::granule_size - 1 ) ) == 0,
-                   "EmbeddedStaticConfig: granule_size must be a power of 2" );
+    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
+                   "EmbeddedStaticConfig: address_traits must satisfy ValidPmmAddressTraits" );
 
     using address_traits                          = DefaultAddressTraits;
     using storage_backend                         = StaticStorage<BufferSize, DefaultAddressTraits>;
@@ -2695,10 +2711,8 @@ template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
  */
 struct CacheManagerConfig
 {
-    static_assert( DefaultAddressTraits::granule_size >= kMinGranuleSize,
-                   "CacheManagerConfig: granule_size must be >= kMinGranuleSize (4 bytes)" );
-    static_assert( ( DefaultAddressTraits::granule_size & ( DefaultAddressTraits::granule_size - 1 ) ) == 0,
-                   "CacheManagerConfig: granule_size must be a power of 2" );
+    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
+                   "CacheManagerConfig: address_traits must satisfy ValidPmmAddressTraits" );
 
     using address_traits                          = DefaultAddressTraits;
     using storage_backend                         = HeapStorage<DefaultAddressTraits>;
@@ -2727,10 +2741,8 @@ struct CacheManagerConfig
  */
 struct PersistentDataConfig
 {
-    static_assert( DefaultAddressTraits::granule_size >= kMinGranuleSize,
-                   "PersistentDataConfig: granule_size must be >= kMinGranuleSize (4 bytes)" );
-    static_assert( ( DefaultAddressTraits::granule_size & ( DefaultAddressTraits::granule_size - 1 ) ) == 0,
-                   "PersistentDataConfig: granule_size must be a power of 2" );
+    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
+                   "PersistentDataConfig: address_traits must satisfy ValidPmmAddressTraits" );
 
     using address_traits                          = DefaultAddressTraits;
     using storage_backend                         = HeapStorage<DefaultAddressTraits>;
@@ -2759,10 +2771,8 @@ struct PersistentDataConfig
  */
 struct EmbeddedManagerConfig
 {
-    static_assert( DefaultAddressTraits::granule_size >= kMinGranuleSize,
-                   "EmbeddedManagerConfig: granule_size must be >= kMinGranuleSize (4 bytes)" );
-    static_assert( ( DefaultAddressTraits::granule_size & ( DefaultAddressTraits::granule_size - 1 ) ) == 0,
-                   "EmbeddedManagerConfig: granule_size must be a power of 2" );
+    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
+                   "EmbeddedManagerConfig: address_traits must satisfy ValidPmmAddressTraits" );
 
     using address_traits                          = DefaultAddressTraits;
     using storage_backend                         = HeapStorage<DefaultAddressTraits>;
@@ -2793,10 +2803,8 @@ struct EmbeddedManagerConfig
  */
 struct IndustrialDBConfig
 {
-    static_assert( DefaultAddressTraits::granule_size >= kMinGranuleSize,
-                   "IndustrialDBConfig: granule_size must be >= kMinGranuleSize (4 bytes)" );
-    static_assert( ( DefaultAddressTraits::granule_size & ( DefaultAddressTraits::granule_size - 1 ) ) == 0,
-                   "IndustrialDBConfig: granule_size must be a power of 2" );
+    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
+                   "IndustrialDBConfig: address_traits must satisfy ValidPmmAddressTraits" );
 
     using address_traits                          = DefaultAddressTraits;
     using storage_backend                         = HeapStorage<DefaultAddressTraits>;
@@ -2836,10 +2844,8 @@ struct IndustrialDBConfig
  */
 struct LargeDBConfig
 {
-    static_assert( LargeAddressTraits::granule_size >= kMinGranuleSize,
-                   "LargeDBConfig: granule_size must be >= kMinGranuleSize (4 bytes)" );
-    static_assert( ( LargeAddressTraits::granule_size & ( LargeAddressTraits::granule_size - 1 ) ) == 0,
-                   "LargeDBConfig: granule_size must be a power of 2" );
+    static_assert( ValidPmmAddressTraits<LargeAddressTraits>,
+                   "LargeDBConfig: address_traits must satisfy ValidPmmAddressTraits" );
 
     using address_traits                          = LargeAddressTraits;
     using storage_backend                         = HeapStorage<LargeAddressTraits>;
