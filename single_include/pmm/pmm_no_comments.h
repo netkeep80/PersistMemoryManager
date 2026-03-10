@@ -1553,6 +1553,14 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
 
 } 
 
+#if defined( _MSVC_LANG )
+#if _MSVC_LANG < 202002L
+#error "pmm.h requires C++20 or later. Please compile with /std:c++20 on MSVC."
+#endif
+#elif __cplusplus < 202002L
+#error "pmm.h requires C++20 or later. Please compile with -std=c++20."
+#endif
+
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -2352,12 +2360,14 @@ template <typename ManagerT> struct pstringview
 
 } 
 
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <new>
 
 namespace pmm
 {
@@ -2388,7 +2398,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             return false;
         
         static constexpr std::size_t kGranSzCreate = address_traits::granule_size;
-        std::size_t                  aligned = ( ( initial_size + kGranSzCreate - 1 ) / kGranSzCreate ) * kGranSzCreate;
+        if ( initial_size > std::numeric_limits<std::size_t>::max() - ( kGranSzCreate - 1 ) )
+            return false; 
+        std::size_t aligned = ( ( initial_size + kGranSzCreate - 1 ) / kGranSzCreate ) * kGranSzCreate;
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < aligned )
         {
             
@@ -2444,7 +2456,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         _initialized = false;
     }
 
-    static bool is_initialized() noexcept { return _initialized; }
+    static bool is_initialized() noexcept { return _initialized.load( std::memory_order_acquire ); }
 
     static void* allocate( std::size_t user_size ) noexcept
     {
@@ -2571,6 +2583,29 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         deallocate( raw );
     }
 
+    template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
+    {
+        void* raw = allocate( sizeof( T ) );
+        if ( raw == nullptr )
+            return pptr<T>();
+        
+        ::new ( raw ) T( static_cast<Args&&>( args )... );
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
+        return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
+    }
+
+    template <typename T> static void destroy_typed( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base = _backend.base_ptr();
+        void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        
+        reinterpret_cast<T*>( raw )->~T();
+        deallocate( raw );
+    }
+
     template <typename T> static T* resolve( pptr<T> p ) noexcept
     {
         if ( p.is_null() || !_initialized )
@@ -2693,17 +2728,29 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     template <typename T> static TreeNode<address_traits>& tree_node( pptr<T> p ) noexcept
     {
+        
+        assert( !p.is_null() && "tree_node: pptr must not be null" );
+        assert( _initialized && "tree_node: manager must be initialized before calling tree_node" );
         std::uint8_t* base    = _backend.base_ptr();
         void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
                         sizeof( Block<address_traits> );
         return *reinterpret_cast<TreeNode<address_traits>*>( blk_raw );
     }
 
-    static std::size_t total_size() noexcept { return _initialized ? _backend.total_size() : 0; }
+    static std::size_t total_size() noexcept
+    {
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        return _initialized.load( std::memory_order_relaxed ) ? _backend.total_size() : 0;
+    }
 
     static std::size_t used_size() noexcept
     {
-        if ( !_initialized )
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized.load( std::memory_order_relaxed ) )
             return 0;
         const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
         
@@ -2712,7 +2759,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static std::size_t free_size() noexcept
     {
-        if ( !_initialized )
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized.load( std::memory_order_relaxed ) )
             return 0;
         const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
         
@@ -2722,17 +2772,26 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static std::size_t block_count() noexcept
     {
-        return _initialized ? get_header_c( _backend.base_ptr() )->block_count : 0;
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->block_count : 0;
     }
 
     static std::size_t free_block_count() noexcept
     {
-        return _initialized ? get_header_c( _backend.base_ptr() )->free_count : 0;
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->free_count : 0;
     }
 
     static std::size_t alloc_block_count() noexcept
     {
-        return _initialized ? get_header_c( _backend.base_ptr() )->alloc_count : 0;
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->alloc_count : 0;
     }
 
     template <typename Callback> static bool for_each_block( Callback&& callback ) noexcept
@@ -2789,7 +2848,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     
     static inline storage_backend _backend{};
 
-    static inline bool _initialized = false;
+    static inline std::atomic<bool> _initialized{ false };
 
     static inline typename thread_policy::mutex_type _mutex{};
 

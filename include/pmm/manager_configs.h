@@ -330,6 +330,13 @@ using IndustrialDBConfig = BasicConfig<DefaultAddressTraits, config::SharedMutex
  * Типичный сценарий: крупные базы данных, хранилища данных, облачные хранилища,
  * петабайтные time-series системы.
  *
+ * @note Issue #172: Известное ограничение — внутренние поля ManagerHeader
+ *   (used_size, block_count, free_count, alloc_count, first_block_offset,
+ *    last_block_offset, free_tree_root) хранятся как std::uint32_t, что
+ *   ограничивает адресуемое пространство 2^32 гранулами × 64 байт = 256 GiB,
+ *   а не петабайтным масштабом. Для полноценной 64-bit поддержки ManagerHeader
+ *   необходимо сделать параметрическим по AddressTraitsT (планируемый рефакторинг).
+ *
  * @code
  *   using BigDB = pmm::PersistMemoryManager<pmm::LargeDBConfig>;
  *   BigDB::create(256 * 1024 * 1024); // 256 МБ начальный размер

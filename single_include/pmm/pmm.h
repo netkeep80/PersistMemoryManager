@@ -2761,6 +2761,13 @@ using IndustrialDBConfig = BasicConfig<DefaultAddressTraits, config::SharedMutex
  * Типичный сценарий: крупные базы данных, хранилища данных, облачные хранилища,
  * петабайтные time-series системы.
  *
+ * @note Issue #172: Известное ограничение — внутренние поля ManagerHeader
+ *   (used_size, block_count, free_count, alloc_count, first_block_offset,
+ *    last_block_offset, free_tree_root) хранятся как std::uint32_t, что
+ *   ограничивает адресуемое пространство 2^32 гранулами × 64 байт = 256 GiB,
+ *   а не петабайтным масштабом. Для полноценной 64-bit поддержки ManagerHeader
+ *   необходимо сделать параметрическим по AddressTraitsT (планируемый рефакторинг).
+ *
  * @code
  *   using BigDB = pmm::PersistMemoryManager<pmm::LargeDBConfig>;
  *   BigDB::create(256 * 1024 * 1024); // 256 МБ начальный размер
@@ -2801,15 +2808,17 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
  *   Cache::create(64 * 1024);
  *   Buffer::create(32 * 1024);
  *
- *   Cache::pptr<int> cp = Cache::allocate_typed<int>();
- *   Buffer::pptr<int> bp = Buffer::allocate_typed<int>();
+ *   // allocate_typed<T>() — сырое выделение без конструктора.
+ *   // create_typed<T>(args...) — выделение + placement new (Issue #172).
+ *   Cache::pptr<int> cp = Cache::create_typed<int>(42);  // конструктор int(42)
+ *   Buffer::pptr<int> bp = Buffer::create_typed<int>();  // default init
  *
  *   // Разыменование без аргументов — используется operator* и operator->
  *   *cp = 42;
  *   *bp = 100;
  *
- *   Cache::deallocate_typed(cp);
- *   Buffer::deallocate_typed(bp);
+ *   Cache::destroy_typed(cp);   // деструктор + освобождение (Issue #172)
+ *   Buffer::destroy_typed(bp);
  *   Cache::destroy();
  *   Buffer::destroy();
  * @endcode
@@ -2819,6 +2828,16 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
  * @see pptr.h — pptr<T, ManagerT> (с поддержкой статического resolve())
  * @version 0.1 (Issue #110 — унификация архитектуры)
  */
+
+// Issue #172: require C++20 — this library uses concepts, std::atomic, and other C++20 features.
+// Note: On MSVC, __cplusplus is always 199711L unless /Zc:__cplusplus is set; use _MSVC_LANG instead.
+#if defined( _MSVC_LANG )
+#if _MSVC_LANG < 202002L
+#error "pmm.h requires C++20 or later. Please compile with /std:c++20 on MSVC."
+#endif
+#elif __cplusplus < 202002L
+#error "pmm.h requires C++20 or later. Please compile with -std=c++20."
+#endif
 
 /**
  * @file pmm/allocator_policy.h
@@ -4244,12 +4263,14 @@ template <typename ManagerT> struct pstringview
 
 } // namespace pmm
 
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <new>
 
 namespace pmm
 {
@@ -4345,8 +4366,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( initial_size < detail::kMinMemorySize )
             return false;
         // Issue #146: use address_traits::granule_size instead of hardcoded kGranuleSize.
+        // Issue #172: guard against overflow when initial_size is close to size_t max.
         static constexpr std::size_t kGranSzCreate = address_traits::granule_size;
-        std::size_t                  aligned = ( ( initial_size + kGranSzCreate - 1 ) / kGranSzCreate ) * kGranSzCreate;
+        if ( initial_size > std::numeric_limits<std::size_t>::max() - ( kGranSzCreate - 1 ) )
+            return false; // overflow in alignment computation
+        std::size_t aligned = ( ( initial_size + kGranSzCreate - 1 ) / kGranSzCreate ) * kGranSzCreate;
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < aligned )
         {
             // Либо буфера нет, либо он меньше требуемого — расширяем
@@ -4418,7 +4442,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /// @brief Проверить, инициализирован ли менеджер.
-    static bool is_initialized() noexcept { return _initialized; }
+    /// Issue #172: _initialized is std::atomic<bool> — lock-free fast path.
+    static bool is_initialized() noexcept { return _initialized.load( std::memory_order_acquire ); }
 
     // ─── Статические методы выделения и освобождения ─────────────────────────
 
@@ -4583,6 +4608,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     /**
      * @brief Освободить блок по персистентному указателю.
      *
+     * @note Конструктор и деструктор T не вызываются — только освобождает сырую память.
+     *       Для типов с нетривиальными деструкторами используйте destroy_typed<T>().
+     *
      * @tparam T Тип данных.
      * @param p Персистентный указатель на блок.
      */
@@ -4592,6 +4620,61 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             return;
         std::uint8_t* base = _backend.base_ptr();
         void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        deallocate( raw );
+    }
+
+    // ─── Типизированный API с вызовом конструктора/деструктора (Issue #172) ───
+
+    /**
+     * @brief Выделить память и создать объект типа T с помощью placement new.
+     *
+     * В отличие от allocate_typed<T>(), этот метод конструирует объект T,
+     * передавая аргументы в его конструктор. Это делает поведение аналогичным
+     * оператору new T(args...).
+     *
+     * @tparam T    Тип создаваемого объекта.
+     * @tparam Args Типы аргументов конструктора T.
+     * @param args  Аргументы, передаваемые в конструктор T.
+     * @return pptr<T> — персистентный указатель или pptr<T>() при ошибке.
+     *
+     * @note Для освобождения используйте destroy_typed<T>(p).
+     *
+     * @see destroy_typed
+     */
+    template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
+    {
+        void* raw = allocate( sizeof( T ) );
+        if ( raw == nullptr )
+            return pptr<T>();
+        // Placement new — конструирует T в выделенной области.
+        // noexcept: если конструктор T бросает исключение, память утечёт,
+        // но pmm API является полностью noexcept. Используйте только для noexcept-конструкторов.
+        ::new ( raw ) T( static_cast<Args&&>( args )... );
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
+        return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
+    }
+
+    /**
+     * @brief Разрушить объект типа T (вызвать деструктор) и освободить память.
+     *
+     * В отличие от deallocate_typed<T>(), этот метод явно вызывает деструктор T
+     * перед освобождением блока. Это необходимо для типов с нетривиальными
+     * деструкторами (RAII, строки, контейнеры и т.д.).
+     *
+     * @tparam T Тип уничтожаемого объекта.
+     * @param p  Персистентный указатель на объект (должен быть создан через create_typed).
+     *
+     * @see create_typed
+     */
+    template <typename T> static void destroy_typed( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        std::uint8_t* base = _backend.base_ptr();
+        void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        // Явный вызов деструктора T перед освобождением памяти.
+        reinterpret_cast<T*>( raw )->~T();
         deallocate( raw );
     }
 
@@ -4863,6 +4946,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      */
     template <typename T> static TreeNode<address_traits>& tree_node( pptr<T> p ) noexcept
     {
+        // Issue #172: guard against null pointer and uninitialized manager to prevent UB.
+        assert( !p.is_null() && "tree_node: pptr must not be null" );
+        assert( _initialized && "tree_node: manager must be initialized before calling tree_node" );
         std::uint8_t* base    = _backend.base_ptr();
         void*         blk_raw = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
                         sizeof( Block<address_traits> );
@@ -4870,12 +4956,24 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     // ─── Статистика ────────────────────────────────────────────────────────────
+    // Issue #172: all read-only methods take shared_lock to prevent data races in
+    // multi-threaded configurations (e.g. SharedMutexLock). _initialized is
+    // std::atomic<bool> — we do a fast load first to avoid contention when not initialized.
 
-    static std::size_t total_size() noexcept { return _initialized ? _backend.total_size() : 0; }
+    static std::size_t total_size() noexcept
+    {
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        return _initialized.load( std::memory_order_relaxed ) ? _backend.total_size() : 0;
+    }
 
     static std::size_t used_size() noexcept
     {
-        if ( !_initialized )
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized.load( std::memory_order_relaxed ) )
             return 0;
         const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
         // Issue #166: use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
@@ -4884,7 +4982,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static std::size_t free_size() noexcept
     {
-        if ( !_initialized )
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized.load( std::memory_order_relaxed ) )
             return 0;
         const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
         // Issue #166: use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
@@ -4894,17 +4995,26 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static std::size_t block_count() noexcept
     {
-        return _initialized ? get_header_c( _backend.base_ptr() )->block_count : 0;
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->block_count : 0;
     }
 
     static std::size_t free_block_count() noexcept
     {
-        return _initialized ? get_header_c( _backend.base_ptr() )->free_count : 0;
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->free_count : 0;
     }
 
     static std::size_t alloc_block_count() noexcept
     {
-        return _initialized ? get_header_c( _backend.base_ptr() )->alloc_count : 0;
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->alloc_count : 0;
     }
 
     // ─── Итерация по блокам ────────────────────────────────────────────────────
@@ -4994,7 +5104,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static inline storage_backend _backend{};
 
     /// @brief Флаг инициализации.
-    static inline bool _initialized = false;
+    /// Issue #172: std::atomic<bool> allows lock-free is_initialized() fast path
+    /// while remaining safe when racing against destroy()/load()/create().
+    static inline std::atomic<bool> _initialized{ false };
 
     /// @brief Мьютекс для потокобезопасности.
     static inline typename thread_policy::mutex_type _mutex{};

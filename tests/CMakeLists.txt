@@ -110,6 +110,9 @@ pmm_add_test(test_issue123_presets test_issue123_presets.cpp)
 # ─── Тесты улучшений по code review (Issue #144) ─────────────────────────────
 pmm_add_test(test_issue144_code_review test_issue144_code_review.cpp)
 
+# ─── Тесты исправлений по code review (Issue #172) ────────────────────────────
+pmm_add_test(test_issue172_code_review test_issue172_code_review.cpp)
+
 # ─── Тесты переосмысления конфигураций (Issue #146) ──────────────────────────
 pmm_add_test(test_issue146_configs test_issue146_configs.cpp)
 
