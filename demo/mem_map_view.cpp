@@ -72,8 +72,8 @@ void MemMapView::rebuild_pixel_map()
     // Block<A> header size in bytes (32 bytes for DefaultAddressTraits).
     const std::size_t kBlockHdrSize =
         pmm::DefaultAddressTraits::granule_size * pmm::detail::kBlockHeaderGranules_t<pmm::DefaultAddressTraits>;
-    // ManagerHeader size in bytes (64 bytes).
-    const std::size_t kMgrHdrSize = sizeof( pmm::detail::ManagerHeader );
+    // ManagerHeader size in bytes (64 bytes for DefaultAddressTraits).
+    const std::size_t kMgrHdrSize = sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> );
 
     // First block (Block_0) starts at offset 0; ManagerHeader follows immediately.
     // Mark Block_0 + ManagerHeader as ManagerHeader colour (manager metadata region).

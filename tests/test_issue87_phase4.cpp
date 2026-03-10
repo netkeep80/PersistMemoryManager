@@ -76,7 +76,11 @@ static bool test_p4_partial_policy_fails_concept()
 {
     struct PartialPolicy
     {
-        static void insert( std::uint8_t*, pmm::detail::ManagerHeader*, std::uint32_t ) {}
+        // Issue #175: ManagerHeader<AT> is now templated.
+        static void insert( std::uint8_t*, pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*,
+                            pmm::DefaultAddressTraits::index_type )
+        {
+        }
     };
     static_assert( !pmm::is_free_block_tree_policy_v<PartialPolicy>,
                    "PartialPolicy (insert only) must not satisfy FreeBlockTreePolicy" );

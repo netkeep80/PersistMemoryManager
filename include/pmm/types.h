@@ -7,15 +7,17 @@
  *
  * Sizes of structures are protected by static_assert (Issue #59, #73 FR-03):
  *   Block<DefaultAddressTraits> == 32 bytes
- *   ManagerHeader               == 64 bytes
+ *   ManagerHeader<DefaultAddressTraits> == 64 bytes
  *
  * Issue #95: Moved from persist_memory_types.h to pmm/types.h as part of
  * refactoring to consolidate all PMM code under include/pmm/.
  *
  * Issue #106: Block<A>* utilities replace legacy BlockHeader* ones.
  * Issue #112: BlockHeader struct removed — Block<DefaultAddressTraits> is the sole block type.
+ * Issue #175: ManagerHeader<AT> templated on AddressTraitsT — index fields use index_type
+ *   so LargeDBConfig (uint64_t) uses 64-bit indices throughout (no 32-bit truncation).
  *
- * @version 2.3 (Issue #166 — added kNoBlock_v<AT> template alias and required_block_granules_t<AT>)
+ * @version 2.4 (Issue #175 — ManagerHeader<AT> templated on AddressTraitsT for 64-bit support)
  */
 
 #pragma once
@@ -133,20 +135,30 @@ static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block,
 template <typename AddressTraitsT>
 inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
 
-/// @brief Manager header (Issue #59: 64 bytes). All _offset fields are granule indices.
+/// @brief Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support).
+/// All _offset and counter fields use index_type, so LargeDBConfig uses uint64_t indices
+/// and DefaultAddressTraits keeps uint32_t with exactly 64 bytes as before.
 /// prev_total_size is runtime-only (zeroed by load() — not persisted).
 /// Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).
-struct ManagerHeader
+///
+/// Layout for DefaultAddressTraits (uint32_t):
+///   magic (8) + total_size (8) + 7×uint32_t + owns_memory(1) + _pad(1) +
+///   granule_size(2) + prev_total_size(8) + _reserved[8] = 64 bytes
+/// For LargeAddressTraits (uint64_t): sizeof = 16 + 56 + 4*(+4 padding) + 16 = 96 bytes
+///   → occupies ceil(96/64) = 2 granules = 128 bytes via kManagerHeaderGranules_t<AT>
+template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
 {
+    using index_type = typename AddressTraitsT::index_type;
+
     std::uint64_t magic;              ///< Manager magic number
     std::uint64_t total_size;         ///< Total size of managed area in bytes
-    std::uint32_t used_size;          ///< Used size in granules (Issue #59)
-    std::uint32_t block_count;        ///< Total number of blocks
-    std::uint32_t free_count;         ///< Number of free blocks
-    std::uint32_t alloc_count;        ///< Number of allocated blocks
-    std::uint32_t first_block_offset; ///< First block (granule index)
-    std::uint32_t last_block_offset;  ///< [Issue #57 opt 4] Last block (granule index)
-    std::uint32_t free_tree_root;     ///< Root of AVL tree of free blocks (granule index)
+    index_type    used_size;          ///< Used size in granules (Issue #59)
+    index_type    block_count;        ///< Total number of blocks
+    index_type    free_count;         ///< Number of free blocks
+    index_type    alloc_count;        ///< Number of allocated blocks
+    index_type    first_block_offset; ///< First block (granule index)
+    index_type    last_block_offset;  ///< [Issue #57 opt 4] Last block (granule index)
+    index_type    free_tree_root;     ///< Root of AVL tree of free blocks (granule index)
     bool          owns_memory;        ///< Manager owns buffer (runtime-only)
     std::uint8_t  _pad;               ///< Reserved padding byte (Issue #176: was prev_owns_memory)
     std::uint16_t granule_size;       ///< Issue #83: kGranuleSize at creation time; validated on load
@@ -154,19 +166,21 @@ struct ManagerHeader
     std::uint8_t  _reserved[8];       ///< Reserved bytes (Issue #176: was prev_base_ptr)
 };
 
-static_assert( sizeof( ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes (Issue #59, #73 FR-03)" );
-static_assert( sizeof( ManagerHeader ) % kGranuleSize == 0,
-               "ManagerHeader must be granule-aligned (Issue #59, #73 FR-03)" );
+static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
+               "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #59, #73 FR-03, #175)" );
+static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) % kGranuleSize == 0,
+               "ManagerHeader<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
 
-/// @brief Number of granules in ManagerHeader
-inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader ) / kGranuleSize;
+/// @brief Number of granules in ManagerHeader<DefaultAddressTraits>
+inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader<DefaultAddressTraits> ) / kGranuleSize;
 
 /// @brief Issue #83: Minimum block size = Block header + 1 data granule (Issue #112: uses Block<A>).
 inline constexpr std::size_t kMinBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + kGranuleSize;
 
 /// @brief Issue #83: Minimum memory size = Block_0 + ManagerHeader + Block_1 + kMinBlockSize (Issue #112).
+/// Uses DefaultAddressTraits for the non-templated constant (backwards compatibility).
 inline constexpr std::size_t kMinMemorySize = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
-                                              sizeof( ManagerHeader ) +
+                                              sizeof( ManagerHeader<pmm::DefaultAddressTraits> ) +
                                               sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + kMinBlockSize;
 
 // ─── Byte ↔ granule conversion ──────────────────────────────────────────────
@@ -184,15 +198,17 @@ inline constexpr std::size_t kMinMemorySize = sizeof( pmm::Block<pmm::DefaultAdd
 // Required for non-default address traits (SmallAddressTraits with 16B, LargeAddressTraits with 64B).
 
 /// @brief Convert bytes to granules (ceiling) using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::uint32_t bytes_to_granules_t( std::size_t bytes )
+/// Returns AddressTraitsT::index_type (Issue #175: was uint32_t, now uses index_type).
+template <typename AddressTraitsT> inline typename AddressTraitsT::index_type bytes_to_granules_t( std::size_t bytes )
 {
+    using IndexT                         = typename AddressTraitsT::index_type;
     static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
     if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
-        return 0;
+        return static_cast<IndexT>( 0 );
     std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
-    if ( granules > std::numeric_limits<std::uint32_t>::max() )
-        return 0;
-    return static_cast<std::uint32_t>( granules );
+    if ( granules > static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) )
+        return static_cast<IndexT>( 0 );
+    return static_cast<IndexT>( granules );
 }
 
 /// @brief Convert bytes to index_type granules (ceiling) using AddressTraitsT::granule_size.
@@ -211,17 +227,20 @@ template <typename AddressTraitsT> inline typename AddressTraitsT::index_type by
 }
 
 /// @brief Get byte offset from granule index using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( std::uint32_t idx )
+/// Issue #175: parameter changed from uint32_t to index_type for 64-bit support.
+template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( typename AddressTraitsT::index_type idx )
 {
     return static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
 }
 
 /// @brief Get granule index from byte offset using AddressTraitsT::granule_size.
-template <typename AddressTraitsT> inline std::uint32_t byte_off_to_idx_t( std::size_t byte_off )
+/// Issue #175: return type changed from uint32_t to index_type for 64-bit support.
+template <typename AddressTraitsT> inline typename AddressTraitsT::index_type byte_off_to_idx_t( std::size_t byte_off )
 {
+    using IndexT = typename AddressTraitsT::index_type;
     assert( byte_off % AddressTraitsT::granule_size == 0 );
-    assert( byte_off / AddressTraitsT::granule_size <= std::numeric_limits<std::uint32_t>::max() );
-    return static_cast<std::uint32_t>( byte_off / AddressTraitsT::granule_size );
+    assert( byte_off / AddressTraitsT::granule_size <= static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) );
+    return static_cast<IndexT>( byte_off / AddressTraitsT::granule_size );
 }
 
 /// @brief Convert bytes to granules (ceiling). Returns 0 on overflow.
@@ -262,19 +281,21 @@ inline bool is_valid_alignment( std::size_t align )
 /// Single canonical implementation replacing per-file blk_at() helpers in
 /// allocator_policy.h and free_block_tree.h (Issue #141).
 /// Uses AddressTraitsT::granule_size for byte-offset computation (Issue #146).
+/// Issue #175: idx parameter is now index_type (was uint32_t) for 64-bit support.
 template <typename AddressTraitsT = pmm::DefaultAddressTraits>
-inline pmm::Block<AddressTraitsT>* block_at( std::uint8_t* base, std::uint32_t idx )
+inline pmm::Block<AddressTraitsT>* block_at( std::uint8_t* base, typename AddressTraitsT::index_type idx )
 {
-    assert( idx != kNoBlock );
+    assert( idx != kNoBlock_v<AddressTraitsT> );
     return reinterpret_cast<pmm::Block<AddressTraitsT>*>( base + static_cast<std::size_t>( idx ) *
                                                                      AddressTraitsT::granule_size );
 }
 
 /// @brief Get const pointer to Block<AddressTraitsT> by granule index (read-only).
+/// Issue #175: idx parameter is now index_type (was uint32_t) for 64-bit support.
 template <typename AddressTraitsT = pmm::DefaultAddressTraits>
-inline const pmm::Block<AddressTraitsT>* block_at( const std::uint8_t* base, std::uint32_t idx )
+inline const pmm::Block<AddressTraitsT>* block_at( const std::uint8_t* base, typename AddressTraitsT::index_type idx )
 {
-    assert( idx != kNoBlock );
+    assert( idx != kNoBlock_v<AddressTraitsT> );
     return reinterpret_cast<const pmm::Block<AddressTraitsT>*>( base + static_cast<std::size_t>( idx ) *
                                                                            AddressTraitsT::granule_size );
 }
@@ -301,34 +322,45 @@ inline typename AddressTraitsT::index_type block_idx_t( const std::uint8_t*     
 /// Computes ceil(sizeof(Block<AT>) / AT::granule_size).
 /// For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1.
 template <typename AddressTraitsT>
-inline constexpr std::uint32_t kBlockHeaderGranules_t = static_cast<std::uint32_t>(
-    ( sizeof( pmm::Block<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
+inline constexpr typename AddressTraitsT::index_type kBlockHeaderGranules_t =
+    static_cast<typename AddressTraitsT::index_type>(
+        ( sizeof( pmm::Block<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
 
-/// @brief Manager header size in granules for AddressTraitsT (Issue #146).
-/// For 16B granule: 64/16 = 4. For 64B granule: 64/64 = 1.
+/// @brief Manager header size in granules for AddressTraitsT (Issue #146, #175).
+/// Uses ceiling division: ceil(sizeof(ManagerHeader<AT>) / AT::granule_size).
+/// For DefaultAddressTraits (16B granule): 64/16 = 4.
+/// For LargeAddressTraits (64B granule): ceil(96/64) = 2.
 template <typename AddressTraitsT>
-inline constexpr std::uint32_t kManagerHeaderGranules_t =
-    static_cast<std::uint32_t>( sizeof( ManagerHeader ) / AddressTraitsT::granule_size );
+inline constexpr typename AddressTraitsT::index_type kManagerHeaderGranules_t =
+    static_cast<typename AddressTraitsT::index_type>(
+        ( sizeof( ManagerHeader<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
 
-/// @brief Translate an index_type sentinel (AddressTraitsT::no_block) to uint32_t kNoBlock.
-/// Used when storing index_type values in uint32_t ManagerHeader fields.
-template <typename AddressTraitsT> inline std::uint32_t to_u32_idx( typename AddressTraitsT::index_type v )
+/// @brief Translate an index_type sentinel (AddressTraitsT::no_block) to index_type kNoBlock_v.
+/// Issue #175: ManagerHeader fields are now index_type, so this is an identity function.
+/// Kept for backward compatibility — callers that used to need uint32_t→index_type translation
+/// can now use no_block_v<AT> directly; this function is a no-op pass-through.
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type to_u32_idx( typename AddressTraitsT::index_type v )
 {
-    return ( v == AddressTraitsT::no_block ) ? kNoBlock : static_cast<std::uint32_t>( v );
+    return v;
 }
 
-/// @brief Translate uint32_t ManagerHeader index to index_type, mapping kNoBlock → no_block.
-template <typename AddressTraitsT> inline typename AddressTraitsT::index_type from_u32_idx( std::uint32_t v )
+/// @brief Translate index_type ManagerHeader index to index_type (identity, Issue #175).
+/// Kept for backward compatibility — was uint32_t→index_type, now index_type→index_type.
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type from_u32_idx( typename AddressTraitsT::index_type v )
 {
-    return ( v == kNoBlock ) ? AddressTraitsT::no_block : static_cast<typename AddressTraitsT::index_type>( v );
+    return v;
 }
 
 /// @brief Compute total granules of block for AddressTraitsT (Issue #112: Block<A> layout).
 /// Issue #59: total_size is no longer stored — computed via next_offset.
 /// Issue #160: Single templated implementation; non-templated overload delegates here.
+/// Issue #175: ManagerHeader parameter is now ManagerHeader<AddressTraitsT>*.
 template <typename AddressTraitsT>
-inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr,
-                                           const pmm::Block<AddressTraitsT>* blk )
+inline typename AddressTraitsT::index_type block_total_granules( const std::uint8_t*                  base,
+                                                                 const ManagerHeader<AddressTraitsT>* hdr,
+                                                                 const pmm::Block<AddressTraitsT>*    blk )
 {
     using BlockState                     = pmm::BlockStateBase<AddressTraitsT>;
     static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
@@ -340,13 +372,15 @@ inline std::uint32_t block_total_granules( const std::uint8_t* base, const Manag
     IndexT      next_off   = BlockState::get_next_offset( blk );
     IndexT      total_gran = static_cast<IndexT>( hdr->total_size / kGranSz );
     if ( next_off != kNoBlk )
-        return static_cast<std::uint32_t>( next_off - this_idx );
-    return static_cast<std::uint32_t>( total_gran - this_idx );
+        return static_cast<IndexT>( next_off - this_idx );
+    return static_cast<IndexT>( total_gran - this_idx );
 }
 
-/// @brief Issue #69/#106/#112: Structural block validity using Block<A> layout.
+/// @brief Issue #69/#106/#112: Structural block validity using Block<DefaultAddressTraits> layout.
 /// Invariants: weight<total_gran, prev<idx<next, avl_height<32, distinct AVL refs.
-inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, std::uint32_t idx )
+/// Note: this non-templated overload is kept for backward compatibility (DefaultAddressTraits).
+inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader<pmm::DefaultAddressTraits>* hdr,
+                            std::uint32_t idx )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     if ( idx == kNoBlock )
@@ -399,9 +433,9 @@ inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* bas
     if ( ptr == nullptr )
         return nullptr;
     std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
-    // First user data starts after Block_0 + ManagerHeader + Block_1 (Issue #75, #112)
+    // First user data starts after Block_0 + ManagerHeader<DefaultAddressTraits> + Block_1 (Issue #75, #112)
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
-    std::uint8_t*                min_addr   = base + kBlockSize + sizeof( ManagerHeader ) + kBlockSize;
+    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader<pmm::DefaultAddressTraits> ) + kBlockSize;
     if ( raw_ptr < min_addr )
         return nullptr;
     if ( raw_ptr > base + total_size )
@@ -411,7 +445,8 @@ inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* bas
         return nullptr;
     std::uint32_t cand_idx = static_cast<std::uint32_t>( ( cand_addr - base ) / kGranuleSize );
     // Issue #83: ManagerHeader is at base + kBlockSize.
-    const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base + kBlockSize );
+    const ManagerHeader<pmm::DefaultAddressTraits>* hdr_const =
+        reinterpret_cast<const ManagerHeader<pmm::DefaultAddressTraits>*>( base + kBlockSize );
     if ( !is_valid_block( base, hdr_const, cand_idx ) )
         return nullptr;
     if ( BlockState::get_weight( cand_addr ) == 0 )
@@ -427,14 +462,12 @@ inline pmm::Block<AddressTraitsT>* header_from_ptr_t( std::uint8_t* base, void* 
     using BlockState                        = pmm::BlockStateBase<AddressTraitsT>;
     static constexpr std::size_t kGranSz    = AddressTraitsT::granule_size;
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<AddressTraitsT> );
-    using IndexT                            = typename AddressTraitsT::index_type;
-    static constexpr IndexT kNoBlk          = AddressTraitsT::no_block;
 
     if ( ptr == nullptr )
         return nullptr;
     std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
-    // First user data starts after Block_0 + ManagerHeader + Block_1
-    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader ) + kBlockSize;
+    // First user data starts after Block_0 + ManagerHeader<AddressTraitsT> + Block_1
+    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader<AddressTraitsT> ) + kBlockSize;
     if ( raw_ptr < min_addr )
         return nullptr;
     if ( raw_ptr > base + total_size )
@@ -464,9 +497,11 @@ inline std::uint32_t required_block_granules( std::size_t user_bytes )
 /// @brief Issue #166: Templated variant of required_block_granules for any AddressTraitsT.
 /// Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)).
 /// Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t<AT> for correct per-AT computation.
-template <typename AddressTraitsT> inline std::uint32_t required_block_granules_t( std::size_t user_bytes )
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type required_block_granules_t( std::size_t user_bytes )
 {
-    std::uint32_t data_granules = bytes_to_granules_t<AddressTraitsT>( user_bytes );
+    using index_type         = typename AddressTraitsT::index_type;
+    index_type data_granules = bytes_to_granules_t<AddressTraitsT>( user_bytes );
     if ( data_granules == 0 )
         data_granules = 1;
     return kBlockHeaderGranules_t<AddressTraitsT> + data_granules;

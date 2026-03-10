@@ -69,14 +69,14 @@ struct has_prev_base_ptr<T, std::void_t<decltype( std::declval<T>().prev_base_pt
 {
 };
 
-static_assert( !has_prev_owns_memory<pmm::detail::ManagerHeader>::value,
+static_assert( !has_prev_owns_memory<pmm::detail::ManagerHeader<>>::value,
                "#176-R1: prev_owns_memory must be removed from ManagerHeader" );
-static_assert( !has_prev_base_ptr<pmm::detail::ManagerHeader>::value,
+static_assert( !has_prev_base_ptr<pmm::detail::ManagerHeader<>>::value,
                "#176-R1: prev_base_ptr must be removed from ManagerHeader" );
 
 // ─── #176-R2: ManagerHeader is still 64 bytes ─────────────────────────────────
 
-static_assert( sizeof( pmm::detail::ManagerHeader ) == 64,
+static_assert( sizeof( pmm::detail::ManagerHeader<> ) == 64,
                "#176-R2: ManagerHeader must still be exactly 64 bytes after field removal" );
 
 // ─── #176-R3: _pad and _reserved[8] presence ─────────────────────────────────
@@ -95,11 +95,11 @@ template <typename T> struct has_reserved<T, std::void_t<decltype( std::declval<
 {
 };
 
-static_assert( has_pad<pmm::detail::ManagerHeader>::value, "#176-R3: _pad field must be present in ManagerHeader" );
-static_assert( has_reserved<pmm::detail::ManagerHeader>::value,
+static_assert( has_pad<pmm::detail::ManagerHeader<>>::value, "#176-R3: _pad field must be present in ManagerHeader" );
+static_assert( has_reserved<pmm::detail::ManagerHeader<>>::value,
                "#176-R3: _reserved field must be present in ManagerHeader" );
 
-static_assert( sizeof( pmm::detail::ManagerHeader::_reserved ) == 8, "#176-R3: _reserved must be exactly 8 bytes" );
+static_assert( sizeof( pmm::detail::ManagerHeader<>::_reserved ) == 8, "#176-R3: _reserved must be exactly 8 bytes" );
 
 // ─── Manager alias for runtime tests ──────────────────────────────────────────
 
@@ -132,12 +132,13 @@ static bool test_i176_load_resets_runtime_fields()
 /// @brief ManagerHeader fields have correct types and sizes (compile-time checks).
 static bool test_i176_manager_header_field_types()
 {
-    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader::owns_memory ), bool>,
+    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::owns_memory ), bool>,
                    "owns_memory must be bool" );
-    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader::_pad ), std::uint8_t>, "_pad must be uint8_t" );
-    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader::granule_size ), std::uint16_t>,
+    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::_pad ), std::uint8_t>,
+                   "_pad must be uint8_t" );
+    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::granule_size ), std::uint16_t>,
                    "granule_size must be uint16_t" );
-    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader::prev_total_size ), std::uint64_t>,
+    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::prev_total_size ), std::uint64_t>,
                    "prev_total_size must be uint64_t" );
     return true;
 }

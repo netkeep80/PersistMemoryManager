@@ -46,7 +46,7 @@
  * @see plan_issue87.md §5 «Фаза 6: AllocatorPolicy»
  * @see block_state.h — автомат состояний блока (Issue #93, #106, #114, #168)
  * @see free_block_tree.h — концепт FreeBlockTree
- * @version 0.5 (Issue #168 — устранение дублирующих функций-обёрток)
+ * @version 0.6 (Issue #175 — ManagerHeader<AddressTraitsT> templated; index_type for indices)
  */
 
 #pragma once
@@ -74,8 +74,9 @@ namespace pmm
 template <typename FreeBlockTreeT = AvlFreeTree<DefaultAddressTraits>, typename AddressTraitsT = DefaultAddressTraits>
 class AllocatorPolicy
 {
-    static_assert( is_free_block_tree_policy_v<FreeBlockTreeT>,
-                   "AllocatorPolicy: FreeBlockTreeT must satisfy FreeBlockTreePolicy" );
+    // Issue #175: check against the specific AddressTraitsT, not hardcoded DefaultAddressTraits.
+    static_assert( FreeBlockTreePolicyForTraitsConcept<FreeBlockTreeT, AddressTraitsT>,
+                   "AllocatorPolicy: FreeBlockTreeT must satisfy FreeBlockTreePolicy for AddressTraitsT" );
 
   public:
     using address_traits  = AddressTraitsT;
@@ -109,8 +110,8 @@ class AllocatorPolicy
      * @param user_size Размер пользовательских данных в байтах.
      * @return Указатель на пользовательские данные или nullptr.
      */
-    static void* allocate_from_block( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t blk_idx,
-                                      std::size_t user_size )
+    static void* allocate_from_block( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
+                                      index_type blk_idx, std::size_t user_size )
     {
         // State: FreeBlock → FreeBlockRemovedAVL [remove_from_avl]
         FreeBlockTreeT::remove( base, hdr, blk_idx );
@@ -119,23 +120,23 @@ class AllocatorPolicy
         FreeBlockRemovedAVL<AddressTraitsT>* removed = fb->remove_from_avl();
 
         // Issue #146: use AddressTraitsT-specific granule computations.
-        static constexpr std::uint32_t kBlkHdrGran =
+        static constexpr index_type kBlkHdrGran =
             detail::kBlockHeaderGranules_t<AddressTraitsT>; ///< Block header granules for this AT.
 
-        std::uint32_t blk_total_gran =
+        index_type blk_total_gran =
             detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, blk_idx ) );
-        std::uint32_t data_gran    = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
-        std::uint32_t needed_gran  = kBlkHdrGran + data_gran;
-        std::uint32_t min_rem_gran = kBlkHdrGran + 1;
-        bool          can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
+        index_type data_gran    = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+        index_type needed_gran  = kBlkHdrGran + data_gran;
+        index_type min_rem_gran = kBlkHdrGran + 1;
+        bool       can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {
             // State: FreeBlockRemovedAVL → SplittingBlock [begin_splitting]
             SplittingBlock<AddressTraitsT>* splitting = removed->begin_splitting();
 
-            std::uint32_t new_idx     = blk_idx + needed_gran;
-            void*         new_blk_ptr = detail::block_at<AddressTraitsT>( base, new_idx );
+            index_type new_idx     = blk_idx + needed_gran;
+            void*      new_blk_ptr = detail::block_at<AddressTraitsT>( base, new_idx );
 
             // Capture old_next before initialize_new_block modifies splitting->next_offset()
             // Issue #146: compare against AddressTraitsT::no_block (correct sentinel for index_type).
@@ -194,7 +195,7 @@ class AllocatorPolicy
      * @param hdr      Заголовок менеджера.
      * @param blk_idx  Гранульный индекс только что освобождённого блока (weight == 0).
      */
-    static void coalesce( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t blk_idx )
+    static void coalesce( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx )
     {
         // State: FreeBlockNotInAVL → CoalescingBlock [begin_coalescing]
         FreeBlockNotInAVL<AddressTraitsT>* not_avl =
@@ -202,9 +203,9 @@ class AllocatorPolicy
         CoalescingBlock<AddressTraitsT>* coalescing = not_avl->begin_coalescing();
 
         // Issue #146: use AddressTraitsT-specific block header granule count.
-        static constexpr std::uint32_t kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
+        static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
 
-        std::uint32_t b_idx = blk_idx;
+        index_type b_idx = blk_idx;
 
         // Слияние с правым соседом
         // State: CoalescingBlock::coalesce_with_next
@@ -216,11 +217,11 @@ class AllocatorPolicy
                 detail::block_at<AddressTraitsT>( base, curr_next ) );
             if ( nxt_state->weight() == 0 ) // free block
             {
-                std::uint32_t nxt_idx     = static_cast<std::uint32_t>( curr_next );
-                index_type    nxt_next    = nxt_state->next_offset();
-                BlockT*       nxt_nxt_blk = ( nxt_next != AddressTraitsT::no_block )
-                                                ? detail::block_at<AddressTraitsT>( base, nxt_next )
-                                                : nullptr;
+                index_type nxt_idx     = curr_next;
+                index_type nxt_next    = nxt_state->next_offset();
+                BlockT*    nxt_nxt_blk = ( nxt_next != AddressTraitsT::no_block )
+                                             ? detail::block_at<AddressTraitsT>( base, nxt_next )
+                                             : nullptr;
 
                 FreeBlockTreeT::remove( base, hdr, nxt_idx );
 
@@ -246,11 +247,11 @@ class AllocatorPolicy
                 detail::block_at<AddressTraitsT>( base, curr_prev ) );
             if ( prv_state->weight() == 0 ) // free block
             {
-                std::uint32_t prv_idx  = static_cast<std::uint32_t>( curr_prev );
-                index_type    blk_next = coalescing->next_offset();
-                BlockT*       next_blk = ( blk_next != AddressTraitsT::no_block )
-                                             ? detail::block_at<AddressTraitsT>( base, blk_next )
-                                             : nullptr;
+                index_type prv_idx  = curr_prev;
+                index_type blk_next = coalescing->next_offset();
+                BlockT*    next_blk = ( blk_next != AddressTraitsT::no_block )
+                                          ? detail::block_at<AddressTraitsT>( base, blk_next )
+                                          : nullptr;
 
                 FreeBlockTreeT::remove( base, hdr, prv_idx );
 
@@ -292,12 +293,12 @@ class AllocatorPolicy
      * @param base  Базовый указатель управляемой области.
      * @param hdr   Заголовок менеджера.
      */
-    static void rebuild_free_tree( std::uint8_t* base, detail::ManagerHeader* hdr )
+    static void rebuild_free_tree( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr )
     {
-        hdr->free_tree_root    = detail::kNoBlock;
-        hdr->last_block_offset = detail::kNoBlock;
-        std::uint32_t idx      = hdr->first_block_offset;
-        while ( idx != detail::kNoBlock )
+        hdr->free_tree_root    = AddressTraitsT::no_block;
+        hdr->last_block_offset = AddressTraitsT::no_block;
+        index_type idx         = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
         {
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
 
@@ -305,7 +306,7 @@ class AllocatorPolicy
             BlockState::reset_avl_fields_of( blk_ptr );
 
             // Issue #106: recover state — fix incorrect transitional states
-            BlockState::recover_state( blk_ptr, static_cast<index_type>( idx ) );
+            BlockState::recover_state( blk_ptr, idx );
 
             if ( BlockState::get_weight( blk_ptr ) == 0 ) // free block
                 FreeBlockTreeT::insert( base, hdr, idx );
@@ -313,7 +314,7 @@ class AllocatorPolicy
             index_type next_idx = BlockState::get_next_offset( blk_ptr );
             if ( next_idx == AddressTraitsT::no_block )
                 hdr->last_block_offset = idx;
-            idx = detail::to_u32_idx<AddressTraitsT>( next_idx );
+            idx = next_idx;
         }
     }
 
@@ -326,22 +327,20 @@ class AllocatorPolicy
      * @param base  Базовый указатель управляемой области.
      * @param hdr   Заголовок менеджера.
      */
-    static void repair_linked_list( std::uint8_t* base, detail::ManagerHeader* hdr )
+    static void repair_linked_list( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr )
     {
-        std::uint32_t idx = hdr->first_block_offset;
-        // Issue #146: use AddressTraitsT::no_block for correct sentinel value.
+        index_type idx  = hdr->first_block_offset;
         index_type prev = AddressTraitsT::no_block;
-        while ( idx != detail::kNoBlock )
+        while ( idx != AddressTraitsT::no_block )
         {
             // Issue #146: use AddressTraitsT::granule_size for correct size check.
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
                 break;
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             BlockState::repair_prev_offset( blk_ptr, prev ); // Issue #114, #168
-            prev                   = static_cast<index_type>( idx );
+            prev                   = idx;
             index_type next_offset = BlockState::get_next_offset( blk_ptr );
-            // Issue #146: use sentinel-aware translation to convert index_type back to uint32_t.
-            idx = detail::to_u32_idx<AddressTraitsT>( next_offset );
+            idx                    = next_offset;
         }
     }
 
@@ -355,15 +354,15 @@ class AllocatorPolicy
      * @param base  Базовый указатель управляемой области.
      * @param hdr   Заголовок менеджера.
      */
-    static void recompute_counters( std::uint8_t* base, detail::ManagerHeader* hdr )
+    static void recompute_counters( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr )
     {
         // Issue #146: use AddressTraitsT-specific block header granule count.
-        static constexpr std::uint32_t kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
+        static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
 
-        std::uint32_t block_count = 0, free_count = 0, alloc_count = 0;
-        std::uint32_t used_gran = 0;
-        std::uint32_t idx       = hdr->first_block_offset;
-        while ( idx != detail::kNoBlock )
+        index_type block_count = 0, free_count = 0, alloc_count = 0;
+        index_type used_gran = 0;
+        index_type idx       = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
         {
             // Issue #146: use AddressTraitsT::granule_size for correct size check.
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
@@ -375,14 +374,13 @@ class AllocatorPolicy
             if ( w > 0 )                                      // allocated block
             {
                 alloc_count++;
-                used_gran += static_cast<std::uint32_t>( w );
+                used_gran += w;
             }
             else
             {
                 free_count++;
             }
-            // Issue #146: use sentinel-aware translation to convert index_type back to uint32_t.
-            idx = detail::to_u32_idx<AddressTraitsT>( BlockState::get_next_offset( blk_ptr ) );
+            idx = BlockState::get_next_offset( blk_ptr );
         }
         hdr->block_count = block_count;
         hdr->free_count  = free_count;

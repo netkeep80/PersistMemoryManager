@@ -55,10 +55,12 @@ static_assert( pmm::kGranuleSize == 16, "#83-R1: kGranuleSize must equal 16" );
 // Issue #112: BlockHeader removed, using Block<DefaultAddressTraits> (same size: 32 bytes).
 static_assert( pmm::detail::kMinBlockSize == sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::kGranuleSize,
                "#83-R2: kMinBlockSize must equal sizeof(Block<A>) + kGranuleSize" );
-static_assert( pmm::detail::kMinMemorySize ==
-                   sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + sizeof( pmm::detail::ManagerHeader ) +
-                       sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::detail::kMinBlockSize,
-               "#83-R2: kMinMemorySize must be computed from struct sizes" );
+// Issue #175: ManagerHeader<AT> is now templated; DefaultAddressTraits variant keeps same size.
+static_assert( pmm::detail::kMinMemorySize == sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
+                                                  sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) +
+                                                  sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
+                                                  pmm::detail::kMinBlockSize,
+               "#83-R2: kMinMemorySize must be computed from struct sizes (Issue #175)" );
 
 // ─── #83-R3: kDefaultGrowNumerator / kDefaultGrowDenominator ─────────────────
 
@@ -67,7 +69,9 @@ static_assert( pmm::config::kDefaultGrowDenominator == 4, "#83-R3: default grow 
 
 // ─── #83-R4: ManagerHeader has granule_size field ────────────────────────────
 
-static_assert( sizeof( pmm::detail::ManagerHeader ) == 64, "#83-R4: ManagerHeader must still be exactly 64 bytes" );
+// Issue #175: ManagerHeader<AT> is now templated; DefaultAddressTraits variant remains 64 bytes.
+static_assert( sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) == 64,
+               "#83-R4: ManagerHeader<DefaultAddressTraits> must still be exactly 64 bytes (Issue #175)" );
 
 // ─── Runtime tests ────────────────────────────────────────────────────────────
 
@@ -93,8 +97,9 @@ static bool test_min_memory_size_computed()
     // kMinMemorySize = Block_0 + ManagerHeader + Block_1 + kMinBlockSize (Issue #112)
     //                = 32 + 64 + 32 + 48 = 176
     using Block = pmm::Block<pmm::DefaultAddressTraits>;
-    std::size_t expected =
-        sizeof( Block ) + sizeof( pmm::detail::ManagerHeader ) + sizeof( Block ) + pmm::detail::kMinBlockSize;
+    // Issue #175: ManagerHeader<AT> is now templated.
+    std::size_t expected = sizeof( Block ) + sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) +
+                           sizeof( Block ) + pmm::detail::kMinBlockSize;
     PMM_TEST( pmm::detail::kMinMemorySize == expected );
     PMM_TEST( pmm::detail::kMinMemorySize == 176 );
     return true;
