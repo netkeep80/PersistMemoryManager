@@ -216,7 +216,6 @@ Mgr::pptr<int> p = Mgr::allocate_typed<int>();
 if (p) {           // explicit bool conversion
     *p = 42;       // dereference via operator*
     p->field;      // field access via operator->
-    p.resolve();   // explicit T* pointer
     p.offset();    // underlying granule index
     p.is_null();   // same as !p
 }
@@ -224,23 +223,28 @@ if (p) {           // explicit bool conversion
 
 **Prohibited operations** — pointer arithmetic (`p++`, `p--`) is deleted to enforce safe usage.
 
-### AVL tree node methods (pptr)
+### AVL tree node access (pptr)
 
-`pptr` exposes the block's internal tree node fields, allowing you to build user-level AVL trees on top of PMM blocks:
+`pptr` provides direct access to the block's internal `TreeNode` via `tree_node()`, allowing you to build user-level AVL trees on top of PMM blocks:
 
 ```cpp
-pptr get_tree_left()   const noexcept;
-pptr get_tree_right()  const noexcept;
-pptr get_tree_parent() const noexcept;
-void set_tree_left(pptr left)     noexcept;
-void set_tree_right(pptr right)   noexcept;
-void set_tree_parent(pptr parent) noexcept;
+auto& tn = p.tree_node();  // reference to TreeNode in block header
 
-index_type   get_tree_weight() const noexcept;
-void         set_tree_weight(index_type w) noexcept;
-std::int16_t get_tree_height() const noexcept;
-void         set_tree_height(std::int16_t h) noexcept;
+// Read links (return granule index, or no_block if absent)
+tn.get_left();     // index_type — left child granule index
+tn.get_right();    // index_type — right child granule index
+tn.get_parent();   // index_type — parent granule index
+tn.get_weight();   // index_type — node weight (data size in granules)
+tn.get_height();   // std::int16_t — AVL subtree height
+
+// Write links (use offset() to convert pptr to granule index)
+tn.set_left(child.offset());
+tn.set_right(child.offset());
+tn.set_parent(parent.offset());
+tn.set_height(h);
 ```
+
+> **Note:** Absent links are stored as `address_traits::no_block` sentinel, not as zero.
 
 ## Persistent String — pstringview
 

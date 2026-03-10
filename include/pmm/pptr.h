@@ -10,7 +10,10 @@
  *   - Index 0 означает null
  *
  * Поддерживаемые режимы разыменования (Issue #102, #108):
- *   - Статическая модель: `p.resolve()`, `*p`, `p->field` — через статический метод менеджера
+ *   - Статическая модель: `*p`, `p->field` — через статический метод менеджера
+ *
+ * Доступ к узлу AVL-дерева (Issue #138):
+ *   - `p.tree_node()` — прямой доступ к TreeNode через ссылку
  *
  * Пример использования с PersistMemoryManager (статическая модель):
  * @code
@@ -21,7 +24,6 @@
  *   if (p) {
  *       *p = 42;        // operator* — разыменование без аргументов
  *       p->some_field;  // operator-> — доступ к полям
- *       int* raw = p.resolve();  // явный вызов resolve() без аргументов
  *   }
  *   MyMgr::deallocate_typed(p);
  *   MyMgr::destroy();
@@ -29,7 +31,7 @@
  *
  * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
  * @see tree_node.h — TreeNode<A> с публичными методами (Issue #138)
- * @version 0.7 (Issue #138 — добавлен tree_node() для прямого доступа к TreeNode)
+ * @version 0.8 (Issue #164 — удалены избыточные методы tree_node)
  */
 
 #pragma once
@@ -77,7 +79,7 @@ struct manager_index_type<ManagerT>
  * @tparam ManagerT Тип менеджера (обязателен, void не допускается).
  *
  * Поддерживается статическая модель разыменования:
- *   - `p.resolve()`, `*p`, `p->field` — через статический метод менеджера
+ *   - `*p`, `p->field` — через статический метод менеджера
  */
 template <class T, class ManagerT>
     requires( !std::is_void_v<ManagerT> )
@@ -126,34 +128,38 @@ class pptr
     // ─── Разыменование через статический менеджер (статическая модель) ────────
 
     /**
-     * @brief Разыменовать через статический метод менеджера (статическая модель).
-     *
-     * Вызывает `ManagerT::resolve<T>(*this)` без аргументов.
-     * Доступно только для менеджеров со статическим API (например, StaticMemoryManager).
-     *
-     * @return T* — указатель на данные или nullptr если is_null().
-     */
-    T* resolve() const noexcept { return ManagerT::template resolve<T>( *this ); }
-
-    /**
      * @brief Разыменование указателя (статическая модель).
      *
-     * Эквивалентно `*resolve()`.
-     * Доступно только для менеджеров со статическим API.
+     * Вызывает `ManagerT::resolve<T>(*this)` без аргументов.
+     * Доступно только для менеджеров со статическим API (например, PersistMemoryManager).
      *
      * @return T& — ссылка на данные.
      */
-    T& operator*() const noexcept { return *resolve(); }
+    T& operator*() const noexcept { return *ManagerT::template resolve<T>( *this ); }
 
     /**
      * @brief Доступ к членам через персистентный указатель (статическая модель).
      *
-     * Эквивалентно `resolve()`.
+     * Вызывает `ManagerT::resolve<T>(*this)` без аргументов.
      * Доступно только для менеджеров со статическим API.
      *
      * @return T* — указатель на данные.
      */
-    T* operator->() const noexcept { return resolve(); }
+    T* operator->() const noexcept { return ManagerT::template resolve<T>( *this ); }
+
+    /**
+     * @brief Получить сырой указатель (низкоуровневый доступ).
+     *
+     * Вызывает `ManagerT::resolve<T>(*this)`.
+     * Используйте `*p` или `p->field` вместо этого метода для обычных операций.
+     * Для доступа к элементам массива используйте `ManagerT::resolve_at(p, i)`.
+     *
+     * @warning Сырой указатель действителен только пока менеджер инициализирован
+     *          и блок не освобождён. Не храните его дольше необходимого.
+     *
+     * @return T* — указатель на данные или nullptr если is_null().
+     */
+    T* resolve() const noexcept { return ManagerT::template resolve<T>( *this ); }
 
     // ─── Доступ к узлу AVL-дерева (Issue #138) ────────────────────────────────
 
@@ -176,97 +182,6 @@ class pptr
      * @return TreeNode& — ссылка на узел AVL-дерева в заголовке выделенного блока.
      */
     auto& tree_node() const noexcept { return ManagerT::tree_node( *this ); }
-
-    // ─── Методы работы с узлом AVL-дерева (Issue #125) ────────────────────────
-
-    /**
-     * @brief Получить левый дочерний узел AVL-дерева для данного блока.
-     *
-     * Позволяет использовать pptr как узел пользовательского AVL-дерева.
-     * Возвращает pptr того же типа, что и данный указатель.
-     * Доступно только для ненулевых указателей (поведение неопределено для null).
-     *
-     * @return pptr<T, ManagerT> — левый дочерний узел или null pptr если нет.
-     */
-    pptr get_tree_left() const noexcept { return pptr( ManagerT::get_tree_left_offset( *this ) ); }
-
-    /**
-     * @brief Получить правый дочерний узел AVL-дерева для данного блока.
-     *
-     * @return pptr<T, ManagerT> — правый дочерний узел или null pptr если нет.
-     */
-    pptr get_tree_right() const noexcept { return pptr( ManagerT::get_tree_right_offset( *this ) ); }
-
-    /**
-     * @brief Получить родительский узел AVL-дерева для данного блока.
-     *
-     * @return pptr<T, ManagerT> — родительский узел или null pptr если нет.
-     */
-    pptr get_tree_parent() const noexcept { return pptr( ManagerT::get_tree_parent_offset( *this ) ); }
-
-    /**
-     * @brief Установить левый дочерний узел AVL-дерева.
-     *
-     * Принимает только pptr того же типа менеджера (ManagerT).
-     *
-     * @param left pptr<T, ManagerT> — новый левый дочерний узел (может быть null).
-     */
-    void set_tree_left( pptr left ) noexcept { ManagerT::set_tree_left_offset( *this, left.offset() ); }
-
-    /**
-     * @brief Установить правый дочерний узел AVL-дерева.
-     *
-     * Принимает только pptr того же типа менеджера (ManagerT).
-     *
-     * @param right pptr<T, ManagerT> — новый правый дочерний узел (может быть null).
-     */
-    void set_tree_right( pptr right ) noexcept { ManagerT::set_tree_right_offset( *this, right.offset() ); }
-
-    /**
-     * @brief Установить родительский узел AVL-дерева.
-     *
-     * Принимает только pptr того же типа менеджера (ManagerT).
-     *
-     * @param parent pptr<T, ManagerT> — новый родительский узел (может быть null).
-     */
-    void set_tree_parent( pptr parent ) noexcept { ManagerT::set_tree_parent_offset( *this, parent.offset() ); }
-
-    /**
-     * @brief Получить вес (ключ балансировки) узла AVL-дерева.
-     *
-     * Для выделенных блоков возвращает размер пользовательских данных в гранулах.
-     * Это значение используется менеджером для управления памятью.
-     *
-     * @return index_type — текущий вес узла (размер данных в гранулах).
-     */
-    index_type get_tree_weight() const noexcept { return ManagerT::get_tree_weight( *this ); }
-
-    /**
-     * @brief Установить вес (ключ балансировки) узла AVL-дерева.
-     *
-     * Принимает только pptr того же типа менеджера (ManagerT).
-     *
-     * @warning Этот метод следует использовать только для блоков, заблокированных
-     *          навечно через lock_block_permanent(), так как изменение веса
-     *          может нарушить инварианты менеджера памяти.
-     *
-     * @param w Новый вес узла.
-     */
-    void set_tree_weight( index_type w ) noexcept { ManagerT::set_tree_weight( *this, w ); }
-
-    /**
-     * @brief Получить высоту AVL-поддерева для данного узла.
-     *
-     * @return std::int16_t — высота поддерева (0 = узел не в дереве).
-     */
-    std::int16_t get_tree_height() const noexcept { return ManagerT::get_tree_height( *this ); }
-
-    /**
-     * @brief Установить высоту AVL-поддерева для данного узла.
-     *
-     * @param h Новая высота поддерева.
-     */
-    void set_tree_height( std::int16_t h ) noexcept { ManagerT::set_tree_height( *this, h ); }
 };
 
 // pptr<T, ManagerT> хранит только гранульный индекс — ManagerT не хранится.
