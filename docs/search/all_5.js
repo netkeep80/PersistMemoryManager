@@ -5,6 +5,6 @@ var searchData=
   ['embeddedmanagerconfig_2',['EmbeddedManagerConfig',['../structpmm_1_1EmbeddedManagerConfig.html',1,'pmm']]],
   ['embeddedstaticconfig_3',['EmbeddedStaticConfig',['../structpmm_1_1EmbeddedStaticConfig.html',1,'pmm']]],
   ['embeddedstaticheap_4',['EmbeddedStaticHeap',['../namespacepmm_1_1presets.html#a596fad76677cdf53371726c5cdbca2ab',1,'pmm::presets']]],
-  ['empty_5',['empty',['../structpmm_1_1pstringview.html#a892c402930ad20a0d561b68f7dc8d809',1,'pmm::pstringview']]],
+  ['empty_5',['empty',['../structpmm_1_1pmap.html#a6e8c3737af2fcbd6c0bd4849f9225dfc',1,'pmm::pmap::empty()'],['../structpmm_1_1pstringview.html#a892c402930ad20a0d561b68f7dc8d809',1,'pmm::pstringview::empty()']]],
   ['expand_6',['expand',['../classpmm_1_1HeapStorage.html#a0b679f8fc17871cbd26dc24bd92e942d',1,'pmm::HeapStorage::expand()'],['../classpmm_1_1MMapStorage.html#a31f4cdc687c88e1e798af18ee279c1d9',1,'pmm::MMapStorage::expand()'],['../classpmm_1_1StaticStorage.html#a298e7f86b667f5d6b17f01c058da0e5d',1,'pmm::StaticStorage::expand()']]]
 ];

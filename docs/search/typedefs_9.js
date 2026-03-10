@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['persistentavltree_0',['PersistentAvlTree',['../namespacepmm.html#a343de335e434d7d59ee388be5c798684',1,'pmm']]],
-  ['pptr_1',['pptr',['../classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3',1,'pmm::PersistMemoryManager']]],
-  ['pstringview_2',['pstringview',['../classpmm_1_1PersistMemoryManager.html#a3ffaacff7d4795badd3889736bb2f063',1,'pmm::PersistMemoryManager']]],
-  ['psview_5fpptr_3',['psview_pptr',['../structpmm_1_1pstringview.html#a9c83b90b16bea5f9a82f99e00eeb2fe1',1,'pmm::pstringview']]]
+  ['node_5fpptr_0',['node_pptr',['../structpmm_1_1pmap.html#ae95ce2bc6480a9aebeded7dcba47f1c2',1,'pmm::pmap']]],
+  ['node_5ftype_1',['node_type',['../structpmm_1_1pmap.html#aac3b6fd97db41a18c93a8b26cfdf9a49',1,'pmm::pmap']]]
 ];

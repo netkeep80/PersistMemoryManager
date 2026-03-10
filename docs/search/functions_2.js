@@ -6,5 +6,6 @@ var searchData=
   ['coalesce_3',['coalesce',['../classpmm_1_1AllocatorPolicy.html#a287f20d7d69fb7efea3f8df52bac6d0b',1,'pmm::AllocatorPolicy']]],
   ['coalesce_5fwith_5fnext_4',['coalesce_with_next',['../classpmm_1_1CoalescingBlock.html#ab3e5dcdbe604e041f31559a29b0ef6b4',1,'pmm::CoalescingBlock']]],
   ['coalesce_5fwith_5fprev_5',['coalesce_with_prev',['../classpmm_1_1CoalescingBlock.html#a4b26c1258d705dae31cd4bda1330bdcd',1,'pmm::CoalescingBlock']]],
-  ['create_6',['create',['../classpmm_1_1PersistMemoryManager.html#aa013ea3a201ed0b5a7aca5548540e071',1,'pmm::PersistMemoryManager::create(std::size_t initial_size) noexcept'],['../classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033',1,'pmm::PersistMemoryManager::create() noexcept']]]
+  ['contains_6',['contains',['../structpmm_1_1pmap.html#aa48dab6f34fb84746e3f83ee38cc84b5',1,'pmm::pmap']]],
+  ['create_7',['create',['../classpmm_1_1PersistMemoryManager.html#aa013ea3a201ed0b5a7aca5548540e071',1,'pmm::PersistMemoryManager::create(std::size_t initial_size) noexcept'],['../classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033',1,'pmm::PersistMemoryManager::create() noexcept']]]
 ];

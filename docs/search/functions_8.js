@@ -4,7 +4,7 @@ var searchData=
   ['idx_5fto_5fbyte_5foff_5ft_1',['idx_to_byte_off_t',['../namespacepmm_1_1detail.html#a282e3a54af7a8660e84d6f59eb8f4efa',1,'pmm::detail']]],
   ['init_5ffields_2',['init_fields',['../classpmm_1_1BlockStateBase.html#ab6604943175788fe4d7d44bfc7821fcf',1,'pmm::BlockStateBase']]],
   ['initialize_5fnew_5fblock_3',['initialize_new_block',['../classpmm_1_1SplittingBlock.html#ab87db987a16fdbeaaae72e7c92ec2beb',1,'pmm::SplittingBlock']]],
-  ['insert_4',['insert',['../structpmm_1_1AvlFreeTree.html#ac8cecebea9f68619628bad6d617836e4',1,'pmm::AvlFreeTree']]],
+  ['insert_4',['insert',['../structpmm_1_1AvlFreeTree.html#ac8cecebea9f68619628bad6d617836e4',1,'pmm::AvlFreeTree::insert()'],['../structpmm_1_1pmap.html#a9a0412208a39b704c95219ad7e3bc125',1,'pmm::pmap::insert()']]],
   ['insert_5fto_5favl_5',['insert_to_avl',['../classpmm_1_1FreeBlockRemovedAVL.html#a88316113a0fe878035e280bd4a7e9f12',1,'pmm::FreeBlockRemovedAVL::insert_to_avl()'],['../classpmm_1_1FreeBlockNotInAVL.html#af22fc5e024b4554ba38bac70553b283f',1,'pmm::FreeBlockNotInAVL::insert_to_avl()']]],
   ['intern_6',['intern',['../structpmm_1_1pstringview.html#a7aefdee1ff0d676d7752ef570a4c3bd8',1,'pmm::pstringview']]],
   ['is_5fallocated_7',['is_allocated',['../classpmm_1_1BlockStateBase.html#a00e102215f632beb708fbed942fb6cac',1,'pmm::BlockStateBase']]],
