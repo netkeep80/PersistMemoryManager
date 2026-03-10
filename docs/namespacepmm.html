@@ -243,22 +243,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3">recover_block_state</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">own_idx</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f3ba4efd2645f9a865dea3ee773fe4e" id="r_a7f3ba4efd2645f9a865dea3ee773fe4e"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:a7f3ba4efd2645f9a865dea3ee773fe4e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a7f3ba4efd2645f9a865dea3ee773fe4e">reset_block_avl_fields</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:a7f3ba4efd2645f9a865dea3ee773fe4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).  <br /></td></tr>
-<tr class="separator:a7f3ba4efd2645f9a865dea3ee773fe4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae637dc3c766a0c43f416bfd60ef463f1" id="r_ae637dc3c766a0c43f416bfd60ef463f1"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:ae637dc3c766a0c43f416bfd60ef463f1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ae637dc3c766a0c43f416bfd60ef463f1">repair_block_prev_offset</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">prev_idx</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:ae637dc3c766a0c43f416bfd60ef463f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить prev_offset блока (при repair_linked_list).  <br /></td></tr>
-<tr class="separator:ae637dc3c766a0c43f416bfd60ef463f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2523a754e6a6f3005b5fbd1245d2f8e2" id="r_a2523a754e6a6f3005b5fbd1245d2f8e2"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:a2523a754e6a6f3005b5fbd1245d2f8e2"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a2523a754e6a6f3005b5fbd1245d2f8e2">read_block_next_offset</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:a2523a754e6a6f3005b5fbd1245d2f8e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать next_offset блока (read-only, без перехода состояний).  <br /></td></tr>
-<tr class="separator:a2523a754e6a6f3005b5fbd1245d2f8e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8e82c44a65a703ee336e637ccfdef1e" id="r_ac8e82c44a65a703ee336e637ccfdef1e"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:ac8e82c44a65a703ee336e637ccfdef1e"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ac8e82c44a65a703ee336e637ccfdef1e">read_block_weight</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:ac8e82c44a65a703ee336e637ccfdef1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать weight блока (read-only, без перехода состояний).  <br /></td></tr>
-<tr class="separator:ac8e82c44a65a703ee336e637ccfdef1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa84c31a0bacf0828dc85574f21ab8e3f" id="r_aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">MgrT</a> &gt; </td></tr>
 <tr class="memitem:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#aa84c31a0bacf0828dc85574f21ab8e3f">save_manager</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">char</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">filename</a>)</td></tr>
 <tr class="memdesc:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сохранить образ <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Унифицированный статический менеджер персистентной памяти (Issue #110).">PersistMemoryManager</a> в файл (Issue #110 — статический интерфейс).  <br /></td></tr>
@@ -350,7 +334,7 @@ Variables</h2></td></tr>
 
 <p>Псевдоним <a class="el" href="classpmm_1_1AllocatorPolicy.html" title="Политика выделения и освобождения памяти для ПАП-менеджера.">AllocatorPolicy</a> с настройками по умолчанию. </p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00391">391</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00395">395</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -621,7 +605,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 = <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a>, 1 = <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>, -1 = неопределённое/переходное. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00820">820</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00824">824</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -670,98 +654,6 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
 <p>Предусловие: filename != nullptr, MgrT::backend().base_ptr() != nullptr. Постусловие: менеджер восстановлен из файла. </p>
 
 <p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00086">86</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
-
-</div>
-</div>
-<a id="a2523a754e6a6f3005b5fbd1245d2f8e2" name="a2523a754e6a6f3005b5fbd1245d2f8e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2523a754e6a6f3005b5fbd1245d2f8e2">&#9670;&#160;</a></span>read_block_next_offset()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">AddressTraitsT::index_type pmm::read_block_next_offset </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td>
-          <td class="paramname"><em>raw_blk</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Прочитать next_offset блока (read-only, без перехода состояний). </p>
-<p>Вспомогательная функция для итерации по блокам в recovery-методах, когда состояние блока неизвестно заранее.</p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">raw_blk</td><td>Указатель на блок. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Гранульный индекс следующего блока. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00887">887</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
-
-</div>
-</div>
-<a id="ac8e82c44a65a703ee336e637ccfdef1e" name="ac8e82c44a65a703ee336e637ccfdef1e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac8e82c44a65a703ee336e637ccfdef1e">&#9670;&#160;</a></span>read_block_weight()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">AddressTraitsT::index_type pmm::read_block_weight </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td>
-          <td class="paramname"><em>raw_blk</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Прочитать weight блока (read-only, без перехода состояний). </p>
-<p>Вспомогательная функция для проверки состояния блока в recovery-методах, когда состояние блока неизвестно заранее.</p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">raw_blk</td><td>Указатель на блок. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Значение поля weight (0 = свободный, &gt;0 = занятый). </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00902">902</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -817,108 +709,7 @@ template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00841">841</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
-
-</div>
-</div>
-<a id="ae637dc3c766a0c43f416bfd60ef463f1" name="ae637dc3c766a0c43f416bfd60ef463f1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae637dc3c766a0c43f416bfd60ef463f1">&#9670;&#160;</a></span>repair_block_prev_offset()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> pmm::repair_block_prev_offset </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td>
-          <td class="paramname"><em>raw_blk</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type&#160;</td>
-          <td class="paramname"><em>prev_idx</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Восстановить prev_offset блока (при repair_linked_list). </p>
-<p>Используется в <a class="el" href="classpmm_1_1AllocatorPolicy.html#a76a73b9c5caae0fe2ed469ce05b83826" title="Восстановить двухсвязный список блоков.">AllocatorPolicy::repair_linked_list()</a> для восстановления двухсвязного списка блоков после загрузки из персистентного хранилища.</p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">raw_blk</td><td>Указатель на блок. </td></tr>
-    <tr><td class="paramname">prev_idx</td><td>Гранульный индекс предыдущего блока (или no_block). </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00871">871</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
-
-</div>
-</div>
-<a id="a7f3ba4efd2645f9a865dea3ee773fe4e" name="a7f3ba4efd2645f9a865dea3ee773fe4e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7f3ba4efd2645f9a865dea3ee773fe4e">&#9670;&#160;</a></span>reset_block_avl_fields()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> pmm::reset_block_avl_fields </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *&#160;</td>
-          <td class="paramname"><em>raw_blk</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree). </p>
-<p>Устанавливает left_offset, right_offset, parent_offset в no_block, avl_height в 0. Используется в <a class="el" href="classpmm_1_1AllocatorPolicy.html#a761c4bedece020f9f4602b6e633ca69b" title="Перестроить дерево свободных блоков.">AllocatorPolicy::rebuild_free_tree()</a> перед повторной вставкой блоков.</p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">raw_blk</td><td>Указатель на блок. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00855">855</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00845">845</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

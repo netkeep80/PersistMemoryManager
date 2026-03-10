@@ -132,22 +132,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3">pmm::recover_block_state</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">own_idx</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
 <tr class="memdesc:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f3ba4efd2645f9a865dea3ee773fe4e" id="r_a7f3ba4efd2645f9a865dea3ee773fe4e"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:a7f3ba4efd2645f9a865dea3ee773fe4e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a7f3ba4efd2645f9a865dea3ee773fe4e">pmm::reset_block_avl_fields</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:a7f3ba4efd2645f9a865dea3ee773fe4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).  <br /></td></tr>
-<tr class="separator:a7f3ba4efd2645f9a865dea3ee773fe4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae637dc3c766a0c43f416bfd60ef463f1" id="r_ae637dc3c766a0c43f416bfd60ef463f1"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:ae637dc3c766a0c43f416bfd60ef463f1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ae637dc3c766a0c43f416bfd60ef463f1">pmm::repair_block_prev_offset</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>, <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">prev_idx</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:ae637dc3c766a0c43f416bfd60ef463f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить prev_offset блока (при repair_linked_list).  <br /></td></tr>
-<tr class="separator:ae637dc3c766a0c43f416bfd60ef463f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2523a754e6a6f3005b5fbd1245d2f8e2" id="r_a2523a754e6a6f3005b5fbd1245d2f8e2"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:a2523a754e6a6f3005b5fbd1245d2f8e2"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a2523a754e6a6f3005b5fbd1245d2f8e2">pmm::read_block_next_offset</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:a2523a754e6a6f3005b5fbd1245d2f8e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать next_offset блока (read-only, без перехода состояний).  <br /></td></tr>
-<tr class="separator:a2523a754e6a6f3005b5fbd1245d2f8e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8e82c44a65a703ee336e637ccfdef1e" id="r_ac8e82c44a65a703ee336e637ccfdef1e"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">AddressTraitsT</a> &gt; </td></tr>
-<tr class="memitem:ac8e82c44a65a703ee336e637ccfdef1e"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ac8e82c44a65a703ee336e637ccfdef1e">pmm::read_block_weight</a> (<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">const</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">void</a> *<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">raw_blk</a>) <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">noexcept</a></td></tr>
-<tr class="memdesc:ac8e82c44a65a703ee336e637ccfdef1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать weight блока (read-only, без перехода состояний).  <br /></td></tr>
-<tr class="separator:ac8e82c44a65a703ee336e637ccfdef1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>BlockState machine — автомат состояний блока для атомарных операций (Issue #93). </p>
@@ -168,16 +152,17 @@ Functions</h2></td></tr>
 <li>Атомарность: каждый метод выполняет один атомарный шаг</li>
 <li>Завершаемость: цепочка вызовов приводит к корректному состоянию</li>
 </ol>
-<p>Issue #114: Добавлены утилиты для recovery-операций в AllocatorPolicy:</p><ul>
-<li>reset_block_avl_fields() — сброс AVL-полей перед rebuild_free_tree</li>
-<li>repair_block_prev_offset() — восстановление prev_offset при repair_linked_list</li>
-<li>read_block_next_offset() — чтение next_offset в recovery-методах</li>
-<li>read_block_weight() — чтение weight в recovery-методах</li>
+<p>Issue #114: Добавлены статические методы в BlockStateBase для recovery-операций:</p><ul>
+<li>reset_avl_fields_of() — сброс AVL-полей перед rebuild_free_tree</li>
+<li>repair_prev_offset() — восстановление prev_offset при repair_linked_list</li>
+<li>get_next_offset() — чтение next_offset в recovery-методах</li>
+<li>get_weight() — чтение weight в recovery-методах</li>
 </ul>
+<p>Issue #168: Удалены избыточные функции-обёртки reset_block_avl_fields(), repair_block_prev_offset(), read_block_next_offset(), read_block_weight() — AllocatorPolicy вызывает BlockStateBase&lt;AT&gt;::* напрямую.</p>
 <dl class="section see"><dt>See also</dt><dd>docs/atomic_writes.md «Граф состояний блока» </dd>
 <dd>
 plan_issue87.md §5 «Фаза 9: BlockState machine» </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.3 (Issue #114 — recovery utilities for AllocatorPolicy encapsulation) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.4 (Issue #168 — удалены дублирующие функции-обёртки) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div></div><!-- contents -->
