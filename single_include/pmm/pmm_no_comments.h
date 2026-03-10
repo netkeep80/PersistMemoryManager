@@ -735,17 +735,19 @@ static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block,
 template <typename AddressTraitsT>
 inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
 
-struct ManagerHeader
+template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
 {
+    using index_type = typename AddressTraitsT::index_type;
+
     std::uint64_t magic;              
     std::uint64_t total_size;         
-    std::uint32_t used_size;          
-    std::uint32_t block_count;        
-    std::uint32_t free_count;         
-    std::uint32_t alloc_count;        
-    std::uint32_t first_block_offset; 
-    std::uint32_t last_block_offset;  
-    std::uint32_t free_tree_root;     
+    index_type    used_size;          
+    index_type    block_count;        
+    index_type    free_count;         
+    index_type    alloc_count;        
+    index_type    first_block_offset; 
+    index_type    last_block_offset;  
+    index_type    free_tree_root;     
     bool          owns_memory;        
     bool          prev_owns_memory;   
     std::uint16_t granule_size;       
@@ -753,27 +755,29 @@ struct ManagerHeader
     void*         prev_base_ptr;      
 };
 
-static_assert( sizeof( ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes (Issue #59, #73 FR-03)" );
-static_assert( sizeof( ManagerHeader ) % kGranuleSize == 0,
-               "ManagerHeader must be granule-aligned (Issue #59, #73 FR-03)" );
+static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
+               "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #59, #73 FR-03, #175)" );
+static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) % kGranuleSize == 0,
+               "ManagerHeader<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
 
-inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader ) / kGranuleSize;
+inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader<DefaultAddressTraits> ) / kGranuleSize;
 
 inline constexpr std::size_t kMinBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + kGranuleSize;
 
 inline constexpr std::size_t kMinMemorySize = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
-                                              sizeof( ManagerHeader ) +
+                                              sizeof( ManagerHeader<pmm::DefaultAddressTraits> ) +
                                               sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + kMinBlockSize;
 
-template <typename AddressTraitsT> inline std::uint32_t bytes_to_granules_t( std::size_t bytes )
+template <typename AddressTraitsT> inline typename AddressTraitsT::index_type bytes_to_granules_t( std::size_t bytes )
 {
+    using IndexT                         = typename AddressTraitsT::index_type;
     static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
     if ( bytes > std::numeric_limits<std::size_t>::max() - ( kGranSz - 1 ) )
-        return 0;
+        return static_cast<IndexT>( 0 );
     std::size_t granules = ( bytes + kGranSz - 1 ) / kGranSz;
-    if ( granules > std::numeric_limits<std::uint32_t>::max() )
-        return 0;
-    return static_cast<std::uint32_t>( granules );
+    if ( granules > static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) )
+        return static_cast<IndexT>( 0 );
+    return static_cast<IndexT>( granules );
 }
 
 template <typename AddressTraitsT> inline typename AddressTraitsT::index_type bytes_to_idx_t( std::size_t bytes )
@@ -790,16 +794,17 @@ template <typename AddressTraitsT> inline typename AddressTraitsT::index_type by
     return static_cast<IndexT>( granules );
 }
 
-template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( std::uint32_t idx )
+template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( typename AddressTraitsT::index_type idx )
 {
     return static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
 }
 
-template <typename AddressTraitsT> inline std::uint32_t byte_off_to_idx_t( std::size_t byte_off )
+template <typename AddressTraitsT> inline typename AddressTraitsT::index_type byte_off_to_idx_t( std::size_t byte_off )
 {
+    using IndexT = typename AddressTraitsT::index_type;
     assert( byte_off % AddressTraitsT::granule_size == 0 );
-    assert( byte_off / AddressTraitsT::granule_size <= std::numeric_limits<std::uint32_t>::max() );
-    return static_cast<std::uint32_t>( byte_off / AddressTraitsT::granule_size );
+    assert( byte_off / AddressTraitsT::granule_size <= static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) );
+    return static_cast<IndexT>( byte_off / AddressTraitsT::granule_size );
 }
 
 inline std::uint32_t bytes_to_granules( std::size_t bytes )
@@ -828,17 +833,17 @@ inline bool is_valid_alignment( std::size_t align )
 }
 
 template <typename AddressTraitsT = pmm::DefaultAddressTraits>
-inline pmm::Block<AddressTraitsT>* block_at( std::uint8_t* base, std::uint32_t idx )
+inline pmm::Block<AddressTraitsT>* block_at( std::uint8_t* base, typename AddressTraitsT::index_type idx )
 {
-    assert( idx != kNoBlock );
+    assert( idx != kNoBlock_v<AddressTraitsT> );
     return reinterpret_cast<pmm::Block<AddressTraitsT>*>( base + static_cast<std::size_t>( idx ) *
                                                                      AddressTraitsT::granule_size );
 }
 
 template <typename AddressTraitsT = pmm::DefaultAddressTraits>
-inline const pmm::Block<AddressTraitsT>* block_at( const std::uint8_t* base, std::uint32_t idx )
+inline const pmm::Block<AddressTraitsT>* block_at( const std::uint8_t* base, typename AddressTraitsT::index_type idx )
 {
-    assert( idx != kNoBlock );
+    assert( idx != kNoBlock_v<AddressTraitsT> );
     return reinterpret_cast<const pmm::Block<AddressTraitsT>*>( base + static_cast<std::size_t>( idx ) *
                                                                            AddressTraitsT::granule_size );
 }
@@ -860,26 +865,31 @@ inline typename AddressTraitsT::index_type block_idx_t( const std::uint8_t*     
 }
 
 template <typename AddressTraitsT>
-inline constexpr std::uint32_t kBlockHeaderGranules_t = static_cast<std::uint32_t>(
-    ( sizeof( pmm::Block<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
+inline constexpr typename AddressTraitsT::index_type kBlockHeaderGranules_t =
+    static_cast<typename AddressTraitsT::index_type>(
+        ( sizeof( pmm::Block<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
 
 template <typename AddressTraitsT>
-inline constexpr std::uint32_t kManagerHeaderGranules_t =
-    static_cast<std::uint32_t>( sizeof( ManagerHeader ) / AddressTraitsT::granule_size );
+inline constexpr typename AddressTraitsT::index_type kManagerHeaderGranules_t =
+    static_cast<typename AddressTraitsT::index_type>(
+        ( sizeof( ManagerHeader<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
 
-template <typename AddressTraitsT> inline std::uint32_t to_u32_idx( typename AddressTraitsT::index_type v )
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type to_u32_idx( typename AddressTraitsT::index_type v )
 {
-    return ( v == AddressTraitsT::no_block ) ? kNoBlock : static_cast<std::uint32_t>( v );
-}
-
-template <typename AddressTraitsT> inline typename AddressTraitsT::index_type from_u32_idx( std::uint32_t v )
-{
-    return ( v == kNoBlock ) ? AddressTraitsT::no_block : static_cast<typename AddressTraitsT::index_type>( v );
+    return v;
 }
 
 template <typename AddressTraitsT>
-inline std::uint32_t block_total_granules( const std::uint8_t* base, const ManagerHeader* hdr,
-                                           const pmm::Block<AddressTraitsT>* blk )
+inline typename AddressTraitsT::index_type from_u32_idx( typename AddressTraitsT::index_type v )
+{
+    return v;
+}
+
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type block_total_granules( const std::uint8_t*                  base,
+                                                                 const ManagerHeader<AddressTraitsT>* hdr,
+                                                                 const pmm::Block<AddressTraitsT>*    blk )
 {
     using BlockState                     = pmm::BlockStateBase<AddressTraitsT>;
     static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
@@ -891,11 +901,12 @@ inline std::uint32_t block_total_granules( const std::uint8_t* base, const Manag
     IndexT      next_off   = BlockState::get_next_offset( blk );
     IndexT      total_gran = static_cast<IndexT>( hdr->total_size / kGranSz );
     if ( next_off != kNoBlk )
-        return static_cast<std::uint32_t>( next_off - this_idx );
-    return static_cast<std::uint32_t>( total_gran - this_idx );
+        return static_cast<IndexT>( next_off - this_idx );
+    return static_cast<IndexT>( total_gran - this_idx );
 }
 
-inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader* hdr, std::uint32_t idx )
+inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader<pmm::DefaultAddressTraits>* hdr,
+                            std::uint32_t idx )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     if ( idx == kNoBlock )
@@ -943,7 +954,7 @@ inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* bas
     std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
     
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
-    std::uint8_t*                min_addr   = base + kBlockSize + sizeof( ManagerHeader ) + kBlockSize;
+    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader<pmm::DefaultAddressTraits> ) + kBlockSize;
     if ( raw_ptr < min_addr )
         return nullptr;
     if ( raw_ptr > base + total_size )
@@ -953,7 +964,8 @@ inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* bas
         return nullptr;
     std::uint32_t cand_idx = static_cast<std::uint32_t>( ( cand_addr - base ) / kGranuleSize );
     
-    const ManagerHeader* hdr_const = reinterpret_cast<const ManagerHeader*>( base + kBlockSize );
+    const ManagerHeader<pmm::DefaultAddressTraits>* hdr_const =
+        reinterpret_cast<const ManagerHeader<pmm::DefaultAddressTraits>*>( base + kBlockSize );
     if ( !is_valid_block( base, hdr_const, cand_idx ) )
         return nullptr;
     if ( BlockState::get_weight( cand_addr ) == 0 )
@@ -967,14 +979,12 @@ inline pmm::Block<AddressTraitsT>* header_from_ptr_t( std::uint8_t* base, void* 
     using BlockState                        = pmm::BlockStateBase<AddressTraitsT>;
     static constexpr std::size_t kGranSz    = AddressTraitsT::granule_size;
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<AddressTraitsT> );
-    using IndexT                            = typename AddressTraitsT::index_type;
-    static constexpr IndexT kNoBlk          = AddressTraitsT::no_block;
 
     if ( ptr == nullptr )
         return nullptr;
     std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
     
-    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader ) + kBlockSize;
+    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader<AddressTraitsT> ) + kBlockSize;
     if ( raw_ptr < min_addr )
         return nullptr;
     if ( raw_ptr > base + total_size )
@@ -999,9 +1009,11 @@ inline std::uint32_t required_block_granules( std::size_t user_bytes )
     return kBlockHeaderGranules_t<pmm::DefaultAddressTraits> + data_granules;
 }
 
-template <typename AddressTraitsT> inline std::uint32_t required_block_granules_t( std::size_t user_bytes )
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type required_block_granules_t( std::size_t user_bytes )
 {
-    std::uint32_t data_granules = bytes_to_granules_t<AddressTraitsT>( user_bytes );
+    using index_type         = typename AddressTraitsT::index_type;
+    index_type data_granules = bytes_to_granules_t<AddressTraitsT>( user_bytes );
     if ( data_granules == 0 )
         data_granules = 1;
     return kBlockHeaderGranules_t<AddressTraitsT> + data_granules;
@@ -1020,12 +1032,16 @@ template <typename AddressTraitsT> inline std::uint32_t required_block_granules_
 namespace pmm
 {
 
-template <typename Policy>
-concept FreeBlockTreePolicyConcept = requires( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t idx ) {
+template <typename Policy, typename AddressTraitsT>
+concept FreeBlockTreePolicyForTraitsConcept = requires( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
+                                                        typename AddressTraitsT::index_type idx ) {
     { Policy::insert( base, hdr, idx ) };
     { Policy::remove( base, hdr, idx ) };
-    { Policy::find_best_fit( base, hdr, idx ) } -> std::convertible_to<std::uint32_t>;
+    { Policy::find_best_fit( base, hdr, idx ) } -> std::convertible_to<typename AddressTraitsT::index_type>;
 };
+
+template <typename Policy>
+concept FreeBlockTreePolicyConcept = FreeBlockTreePolicyForTraitsConcept<Policy, DefaultAddressTraits>;
 
 template <typename Policy> inline constexpr bool is_free_block_tree_policy_v = FreeBlockTreePolicyConcept<Policy>;
 
@@ -1040,98 +1056,87 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
     AvlFreeTree( const AvlFreeTree& )            = delete;
     AvlFreeTree& operator=( const AvlFreeTree& ) = delete;
 
-    static void insert( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t blk_idx )
+    static void insert( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx )
     {
         void* blk = detail::block_at<AddressTraitsT>( base, blk_idx );
         BlockState::set_left_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_right_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_parent_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_avl_height_of( blk, 1 );
-        if ( hdr->free_tree_root == detail::kNoBlock )
+        if ( hdr->free_tree_root == AddressTraitsT::no_block )
         {
             hdr->free_tree_root = blk_idx;
             return;
         }
         
-        std::uint32_t total_gran = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
-        index_type    blk_next   = BlockState::get_next_offset( blk );
-        std::uint32_t blk_gran   = ( blk_next != AddressTraitsT::no_block )
-                                       ? static_cast<std::uint32_t>( blk_next ) - blk_idx
-                                       : ( total_gran - blk_idx );
-        std::uint32_t cur = hdr->free_tree_root, parent = detail::kNoBlock;
-        bool          go_left = false;
-        while ( cur != detail::kNoBlock )
+        index_type total_gran = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
+        index_type blk_next   = BlockState::get_next_offset( blk );
+        index_type blk_gran =
+            ( blk_next != AddressTraitsT::no_block ) ? ( blk_next - blk_idx ) : ( total_gran - blk_idx );
+        index_type cur = hdr->free_tree_root, parent = AddressTraitsT::no_block;
+        bool       go_left = false;
+        while ( cur != AddressTraitsT::no_block )
         {
-            parent                = cur;
-            const void*   n       = detail::block_at<AddressTraitsT>( base, cur );
-            index_type    n_next  = BlockState::get_next_offset( n );
-            std::uint32_t n_gran  = ( n_next != AddressTraitsT::no_block ) ? static_cast<std::uint32_t>( n_next ) - cur
-                                                                           : ( total_gran - cur );
-            bool          smaller = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx < cur );
-            go_left               = smaller;
-            
-            cur = detail::to_u32_idx<AddressTraitsT>( smaller ? BlockState::get_left_offset( n )
-                                                              : BlockState::get_right_offset( n ) );
+            parent              = cur;
+            const void* n       = detail::block_at<AddressTraitsT>( base, cur );
+            index_type  n_next  = BlockState::get_next_offset( n );
+            index_type  n_gran  = ( n_next != AddressTraitsT::no_block ) ? ( n_next - cur ) : ( total_gran - cur );
+            bool        smaller = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx < cur );
+            go_left             = smaller;
+            cur                 = smaller ? BlockState::get_left_offset( n ) : BlockState::get_right_offset( n );
         }
-        
-        BlockState::set_parent_offset_of( blk, detail::from_u32_idx<AddressTraitsT>( parent ) );
+        BlockState::set_parent_offset_of( blk, parent );
         if ( go_left )
-            BlockState::set_left_offset_of( detail::block_at<AddressTraitsT>( base, parent ),
-                                            static_cast<index_type>( blk_idx ) );
+            BlockState::set_left_offset_of( detail::block_at<AddressTraitsT>( base, parent ), blk_idx );
         else
-            BlockState::set_right_offset_of( detail::block_at<AddressTraitsT>( base, parent ),
-                                             static_cast<index_type>( blk_idx ) );
+            BlockState::set_right_offset_of( detail::block_at<AddressTraitsT>( base, parent ), blk_idx );
         rebalance_up( base, hdr, parent );
     }
 
-    static void remove( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t blk_idx )
+    static void remove( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx )
     {
-        void* blk = detail::block_at<AddressTraitsT>( base, blk_idx );
-        
-        std::uint32_t parent = detail::to_u32_idx<AddressTraitsT>( BlockState::get_parent_offset( blk ) );
-        std::uint32_t left   = detail::to_u32_idx<AddressTraitsT>( BlockState::get_left_offset( blk ) );
-        std::uint32_t right  = detail::to_u32_idx<AddressTraitsT>( BlockState::get_right_offset( blk ) );
-        std::uint32_t rebal  = detail::kNoBlock;
+        void*      blk    = detail::block_at<AddressTraitsT>( base, blk_idx );
+        index_type parent = BlockState::get_parent_offset( blk );
+        index_type left   = BlockState::get_left_offset( blk );
+        index_type right  = BlockState::get_right_offset( blk );
+        index_type rebal  = AddressTraitsT::no_block;
 
-        if ( left == detail::kNoBlock && right == detail::kNoBlock )
+        if ( left == AddressTraitsT::no_block && right == AddressTraitsT::no_block )
         {
-            set_child( base, hdr, parent, blk_idx, detail::kNoBlock );
+            set_child( base, hdr, parent, blk_idx, AddressTraitsT::no_block );
             rebal = parent;
         }
-        else if ( left == detail::kNoBlock || right == detail::kNoBlock )
+        else if ( left == AddressTraitsT::no_block || right == AddressTraitsT::no_block )
         {
-            std::uint32_t child = ( left != detail::kNoBlock ) ? left : right;
-            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, child ),
-                                              static_cast<index_type>( parent ) );
+            index_type child = ( left != AddressTraitsT::no_block ) ? left : right;
+            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, child ), parent );
             set_child( base, hdr, parent, blk_idx, child );
             rebal = parent;
         }
         else
         {
-            std::uint32_t succ_idx    = min_node( base, right );
-            void*         succ        = detail::block_at<AddressTraitsT>( base, succ_idx );
-            std::uint32_t succ_parent = detail::to_u32_idx<AddressTraitsT>( BlockState::get_parent_offset( succ ) );
-            std::uint32_t succ_right  = detail::to_u32_idx<AddressTraitsT>( BlockState::get_right_offset( succ ) );
+            index_type succ_idx    = min_node( base, right );
+            void*      succ        = detail::block_at<AddressTraitsT>( base, succ_idx );
+            index_type succ_parent = BlockState::get_parent_offset( succ );
+            index_type succ_right  = BlockState::get_right_offset( succ );
 
             if ( succ_parent != blk_idx )
             {
                 set_child( base, hdr, succ_parent, succ_idx, succ_right );
-                if ( succ_right != detail::kNoBlock )
+                if ( succ_right != AddressTraitsT::no_block )
                     BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, succ_right ),
-                                                      static_cast<index_type>( succ_parent ) );
-                BlockState::set_right_offset_of( succ, static_cast<index_type>( right ) );
-                BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, right ),
-                                                  static_cast<index_type>( succ_idx ) );
+                                                      succ_parent );
+                BlockState::set_right_offset_of( succ, right );
+                BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, right ), succ_idx );
                 rebal = succ_parent;
             }
             else
             {
                 rebal = succ_idx;
             }
-            BlockState::set_left_offset_of( succ, static_cast<index_type>( left ) );
-            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, left ),
-                                              static_cast<index_type>( succ_idx ) );
-            BlockState::set_parent_offset_of( succ, static_cast<index_type>( parent ) );
+            BlockState::set_left_offset_of( succ, left );
+            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, left ), succ_idx );
+            BlockState::set_parent_offset_of( succ, parent );
             set_child( base, hdr, parent, blk_idx, succ_idx );
             update_height( base, succ_idx );
         }
@@ -1142,155 +1147,146 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
         rebalance_up( base, hdr, rebal );
     }
 
-    static std::uint32_t find_best_fit( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t needed_granules )
+    static index_type find_best_fit( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
+                                     index_type needed_granules )
     {
         
-        std::uint32_t total_gran = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
-        std::uint32_t cur = hdr->free_tree_root, result = detail::kNoBlock;
-        while ( cur != detail::kNoBlock )
+        index_type total_gran = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
+        index_type cur = hdr->free_tree_root, result = AddressTraitsT::no_block;
+        while ( cur != AddressTraitsT::no_block )
         {
             const void* node      = detail::block_at<AddressTraitsT>( base, cur );
             index_type  node_next = BlockState::get_next_offset( node );
             
-            std::uint32_t cur_gran = ( node_next != AddressTraitsT::no_block )
-                                         ? static_cast<std::uint32_t>( node_next ) - cur
-                                         : ( total_gran - cur );
+            index_type cur_gran =
+                ( node_next != AddressTraitsT::no_block ) ? ( node_next - cur ) : ( total_gran - cur );
             if ( cur_gran >= needed_granules )
             {
                 result = cur;
-                
-                cur = detail::to_u32_idx<AddressTraitsT>( BlockState::get_left_offset( node ) );
+                cur    = BlockState::get_left_offset( node );
             }
             else
             {
-                cur = detail::to_u32_idx<AddressTraitsT>( BlockState::get_right_offset( node ) );
+                cur = BlockState::get_right_offset( node );
             }
         }
         return result;
     }
 
   private:
-    static std::int32_t height( std::uint8_t* base, std::uint32_t idx )
+    static std::int32_t height( std::uint8_t* base, index_type idx )
     {
-        return ( idx == detail::kNoBlock ) ? 0
-                                           : static_cast<std::int32_t>( BlockState::get_avl_height(
-                                                 detail::block_at<AddressTraitsT>( base, idx ) ) );
+        return ( idx == AddressTraitsT::no_block ) ? 0
+                                                   : static_cast<std::int32_t>( BlockState::get_avl_height(
+                                                         detail::block_at<AddressTraitsT>( base, idx ) ) );
     }
 
-    static void update_height( std::uint8_t* base, std::uint32_t node_idx )
+    static void update_height( std::uint8_t* base, index_type node_idx )
     {
         void*        node = detail::block_at<AddressTraitsT>( base, node_idx );
-        std::int32_t h =
-            1 +
-            ( std::max )( height( base, detail::to_u32_idx<AddressTraitsT>( BlockState::get_left_offset( node ) ) ),
-                          height( base, detail::to_u32_idx<AddressTraitsT>( BlockState::get_right_offset( node ) ) ) );
+        std::int32_t h    = 1 + ( std::max )( height( base, BlockState::get_left_offset( node ) ),
+                                           height( base, BlockState::get_right_offset( node ) ) );
         assert( h <= std::numeric_limits<std::int16_t>::max() ); 
         BlockState::set_avl_height_of( node, static_cast<std::int16_t>( h ) );
     }
 
-    static std::int32_t balance_factor( std::uint8_t* base, std::uint32_t node_idx )
+    static std::int32_t balance_factor( std::uint8_t* base, index_type node_idx )
     {
         const void* node = detail::block_at<AddressTraitsT>( base, node_idx );
-        return height( base, detail::to_u32_idx<AddressTraitsT>( BlockState::get_left_offset( node ) ) ) -
-               height( base, detail::to_u32_idx<AddressTraitsT>( BlockState::get_right_offset( node ) ) );
+        return height( base, BlockState::get_left_offset( node ) ) -
+               height( base, BlockState::get_right_offset( node ) );
     }
 
-    static void set_child( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t parent,
-                           std::uint32_t old_child, std::uint32_t new_child )
+    static void set_child( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type parent,
+                           index_type old_child, index_type new_child )
     {
-        if ( parent == detail::kNoBlock )
+        if ( parent == AddressTraitsT::no_block )
         {
             hdr->free_tree_root = new_child;
             return;
         }
         void* p = detail::block_at<AddressTraitsT>( base, parent );
-        if ( detail::to_u32_idx<AddressTraitsT>( BlockState::get_left_offset( p ) ) == old_child )
-            BlockState::set_left_offset_of( p, static_cast<index_type>( new_child ) );
+        if ( BlockState::get_left_offset( p ) == old_child )
+            BlockState::set_left_offset_of( p, new_child );
         else
-            BlockState::set_right_offset_of( p, static_cast<index_type>( new_child ) );
+            BlockState::set_right_offset_of( p, new_child );
     }
 
-    static std::uint32_t rotate_right( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t y_idx )
+    static index_type rotate_right( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type y_idx )
     {
-        void*         y     = detail::block_at<AddressTraitsT>( base, y_idx );
-        std::uint32_t x_idx = detail::to_u32_idx<AddressTraitsT>( BlockState::get_left_offset( y ) );
-        void*         x     = detail::block_at<AddressTraitsT>( base, x_idx );
-        std::uint32_t t2    = detail::to_u32_idx<AddressTraitsT>( BlockState::get_right_offset( x ) );
-        
-        std::uint32_t y_parent = detail::to_u32_idx<AddressTraitsT>( BlockState::get_parent_offset( y ) );
+        void*      y        = detail::block_at<AddressTraitsT>( base, y_idx );
+        index_type x_idx    = BlockState::get_left_offset( y );
+        void*      x        = detail::block_at<AddressTraitsT>( base, x_idx );
+        index_type t2       = BlockState::get_right_offset( x );
+        index_type y_parent = BlockState::get_parent_offset( y );
 
-        BlockState::set_right_offset_of( x, static_cast<index_type>( y_idx ) );
-        BlockState::set_left_offset_of( y, static_cast<index_type>( t2 ) );
+        BlockState::set_right_offset_of( x, y_idx );
+        BlockState::set_left_offset_of( y, t2 );
         
-        BlockState::set_parent_offset_of( x, detail::from_u32_idx<AddressTraitsT>( y_parent ) );
-        BlockState::set_parent_offset_of( y, static_cast<index_type>( x_idx ) );
-        if ( t2 != detail::kNoBlock )
-            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, t2 ),
-                                              static_cast<index_type>( y_idx ) );
+        BlockState::set_parent_offset_of( x, y_parent );
+        BlockState::set_parent_offset_of( y, x_idx );
+        if ( t2 != AddressTraitsT::no_block )
+            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, t2 ), y_idx );
         set_child( base, hdr, y_parent, y_idx, x_idx );
         update_height( base, y_idx );
         update_height( base, x_idx );
         return x_idx;
     }
 
-    static std::uint32_t rotate_left( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t x_idx )
+    static index_type rotate_left( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type x_idx )
     {
-        void*         x     = detail::block_at<AddressTraitsT>( base, x_idx );
-        std::uint32_t y_idx = detail::to_u32_idx<AddressTraitsT>( BlockState::get_right_offset( x ) );
-        void*         y     = detail::block_at<AddressTraitsT>( base, y_idx );
-        std::uint32_t t2    = detail::to_u32_idx<AddressTraitsT>( BlockState::get_left_offset( y ) );
-        
-        std::uint32_t x_parent = detail::to_u32_idx<AddressTraitsT>( BlockState::get_parent_offset( x ) );
+        void*      x        = detail::block_at<AddressTraitsT>( base, x_idx );
+        index_type y_idx    = BlockState::get_right_offset( x );
+        void*      y        = detail::block_at<AddressTraitsT>( base, y_idx );
+        index_type t2       = BlockState::get_left_offset( y );
+        index_type x_parent = BlockState::get_parent_offset( x );
 
-        BlockState::set_left_offset_of( y, static_cast<index_type>( x_idx ) );
-        BlockState::set_right_offset_of( x, static_cast<index_type>( t2 ) );
+        BlockState::set_left_offset_of( y, x_idx );
+        BlockState::set_right_offset_of( x, t2 );
         
-        BlockState::set_parent_offset_of( y, detail::from_u32_idx<AddressTraitsT>( x_parent ) );
-        BlockState::set_parent_offset_of( x, static_cast<index_type>( y_idx ) );
-        if ( t2 != detail::kNoBlock )
-            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, t2 ),
-                                              static_cast<index_type>( x_idx ) );
+        BlockState::set_parent_offset_of( y, x_parent );
+        BlockState::set_parent_offset_of( x, y_idx );
+        if ( t2 != AddressTraitsT::no_block )
+            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, t2 ), x_idx );
         set_child( base, hdr, x_parent, x_idx, y_idx );
         update_height( base, x_idx );
         update_height( base, y_idx );
         return y_idx;
     }
 
-    static void rebalance_up( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t node_idx )
+    static void rebalance_up( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type node_idx )
     {
-        std::uint32_t cur = node_idx;
-        while ( cur != detail::kNoBlock )
+        index_type cur = node_idx;
+        while ( cur != AddressTraitsT::no_block )
         {
             update_height( base, cur );
             std::int32_t bf = balance_factor( base, cur );
             if ( bf > 1 )
             {
-                void*         node     = detail::block_at<AddressTraitsT>( base, cur );
-                std::uint32_t left_idx = detail::to_u32_idx<AddressTraitsT>( BlockState::get_left_offset( node ) );
+                void*      node     = detail::block_at<AddressTraitsT>( base, cur );
+                index_type left_idx = BlockState::get_left_offset( node );
                 if ( balance_factor( base, left_idx ) < 0 )
                     rotate_left( base, hdr, left_idx );
                 cur = rotate_right( base, hdr, cur );
             }
             else if ( bf < -1 )
             {
-                void*         node      = detail::block_at<AddressTraitsT>( base, cur );
-                std::uint32_t right_idx = detail::to_u32_idx<AddressTraitsT>( BlockState::get_right_offset( node ) );
+                void*      node      = detail::block_at<AddressTraitsT>( base, cur );
+                index_type right_idx = BlockState::get_right_offset( node );
                 if ( balance_factor( base, right_idx ) > 0 )
                     rotate_right( base, hdr, right_idx );
                 cur = rotate_left( base, hdr, cur );
             }
-            cur = detail::to_u32_idx<AddressTraitsT>(
-                BlockState::get_parent_offset( detail::block_at<AddressTraitsT>( base, cur ) ) );
+            cur = BlockState::get_parent_offset( detail::block_at<AddressTraitsT>( base, cur ) );
         }
     }
 
-    static std::uint32_t min_node( std::uint8_t* base, std::uint32_t node_idx )
+    static index_type min_node( std::uint8_t* base, index_type node_idx )
     {
-        while ( node_idx != detail::kNoBlock )
+        while ( node_idx != AddressTraitsT::no_block )
         {
-            std::uint32_t left = detail::to_u32_idx<AddressTraitsT>(
-                BlockState::get_left_offset( detail::block_at<AddressTraitsT>( base, node_idx ) ) );
-            if ( left == detail::kNoBlock )
+            index_type left = BlockState::get_left_offset( detail::block_at<AddressTraitsT>( base, node_idx ) );
+            if ( left == AddressTraitsT::no_block )
                 break;
             node_idx = left;
         }
@@ -1572,8 +1568,9 @@ namespace pmm
 template <typename FreeBlockTreeT = AvlFreeTree<DefaultAddressTraits>, typename AddressTraitsT = DefaultAddressTraits>
 class AllocatorPolicy
 {
-    static_assert( is_free_block_tree_policy_v<FreeBlockTreeT>,
-                   "AllocatorPolicy: FreeBlockTreeT must satisfy FreeBlockTreePolicy" );
+    
+    static_assert( FreeBlockTreePolicyForTraitsConcept<FreeBlockTreeT, AddressTraitsT>,
+                   "AllocatorPolicy: FreeBlockTreeT must satisfy FreeBlockTreePolicy for AddressTraitsT" );
 
   public:
     using address_traits  = AddressTraitsT;
@@ -1586,8 +1583,8 @@ class AllocatorPolicy
     AllocatorPolicy( const AllocatorPolicy& )            = delete;
     AllocatorPolicy& operator=( const AllocatorPolicy& ) = delete;
 
-    static void* allocate_from_block( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t blk_idx,
-                                      std::size_t user_size )
+    static void* allocate_from_block( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
+                                      index_type blk_idx, std::size_t user_size )
     {
         
         FreeBlockTreeT::remove( base, hdr, blk_idx );
@@ -1595,23 +1592,23 @@ class AllocatorPolicy
             FreeBlock<AddressTraitsT>::cast_from_raw( detail::block_at<AddressTraitsT>( base, blk_idx ) );
         FreeBlockRemovedAVL<AddressTraitsT>* removed = fb->remove_from_avl();
 
-        static constexpr std::uint32_t kBlkHdrGran =
+        static constexpr index_type kBlkHdrGran =
             detail::kBlockHeaderGranules_t<AddressTraitsT>; 
 
-        std::uint32_t blk_total_gran =
+        index_type blk_total_gran =
             detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, blk_idx ) );
-        std::uint32_t data_gran    = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
-        std::uint32_t needed_gran  = kBlkHdrGran + data_gran;
-        std::uint32_t min_rem_gran = kBlkHdrGran + 1;
-        bool          can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
+        index_type data_gran    = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+        index_type needed_gran  = kBlkHdrGran + data_gran;
+        index_type min_rem_gran = kBlkHdrGran + 1;
+        bool       can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {
             
             SplittingBlock<AddressTraitsT>* splitting = removed->begin_splitting();
 
-            std::uint32_t new_idx     = blk_idx + needed_gran;
-            void*         new_blk_ptr = detail::block_at<AddressTraitsT>( base, new_idx );
+            index_type new_idx     = blk_idx + needed_gran;
+            void*      new_blk_ptr = detail::block_at<AddressTraitsT>( base, new_idx );
 
             index_type curr_next = splitting->next_offset();
             BlockT*    old_next  = ( curr_next != AddressTraitsT::no_block )
@@ -1646,16 +1643,16 @@ class AllocatorPolicy
         return detail::user_ptr<AddressTraitsT>( detail::block_at<AddressTraitsT>( base, blk_idx ) );
     }
 
-    static void coalesce( std::uint8_t* base, detail::ManagerHeader* hdr, std::uint32_t blk_idx )
+    static void coalesce( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx )
     {
         
         FreeBlockNotInAVL<AddressTraitsT>* not_avl =
             FreeBlockNotInAVL<AddressTraitsT>::cast_from_raw( detail::block_at<AddressTraitsT>( base, blk_idx ) );
         CoalescingBlock<AddressTraitsT>* coalescing = not_avl->begin_coalescing();
 
-        static constexpr std::uint32_t kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
+        static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
 
-        std::uint32_t b_idx = blk_idx;
+        index_type b_idx = blk_idx;
 
         index_type curr_next = coalescing->next_offset();
         if ( curr_next != AddressTraitsT::no_block )
@@ -1664,11 +1661,11 @@ class AllocatorPolicy
                 detail::block_at<AddressTraitsT>( base, curr_next ) );
             if ( nxt_state->weight() == 0 ) 
             {
-                std::uint32_t nxt_idx     = static_cast<std::uint32_t>( curr_next );
-                index_type    nxt_next    = nxt_state->next_offset();
-                BlockT*       nxt_nxt_blk = ( nxt_next != AddressTraitsT::no_block )
-                                                ? detail::block_at<AddressTraitsT>( base, nxt_next )
-                                                : nullptr;
+                index_type nxt_idx     = curr_next;
+                index_type nxt_next    = nxt_state->next_offset();
+                BlockT*    nxt_nxt_blk = ( nxt_next != AddressTraitsT::no_block )
+                                             ? detail::block_at<AddressTraitsT>( base, nxt_next )
+                                             : nullptr;
 
                 FreeBlockTreeT::remove( base, hdr, nxt_idx );
 
@@ -1691,11 +1688,11 @@ class AllocatorPolicy
                 detail::block_at<AddressTraitsT>( base, curr_prev ) );
             if ( prv_state->weight() == 0 ) 
             {
-                std::uint32_t prv_idx  = static_cast<std::uint32_t>( curr_prev );
-                index_type    blk_next = coalescing->next_offset();
-                BlockT*       next_blk = ( blk_next != AddressTraitsT::no_block )
-                                             ? detail::block_at<AddressTraitsT>( base, blk_next )
-                                             : nullptr;
+                index_type prv_idx  = curr_prev;
+                index_type blk_next = coalescing->next_offset();
+                BlockT*    next_blk = ( blk_next != AddressTraitsT::no_block )
+                                          ? detail::block_at<AddressTraitsT>( base, blk_next )
+                                          : nullptr;
 
                 FreeBlockTreeT::remove( base, hdr, prv_idx );
 
@@ -1722,18 +1719,18 @@ class AllocatorPolicy
         FreeBlockTreeT::insert( base, hdr, b_idx );
     }
 
-    static void rebuild_free_tree( std::uint8_t* base, detail::ManagerHeader* hdr )
+    static void rebuild_free_tree( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr )
     {
-        hdr->free_tree_root    = detail::kNoBlock;
-        hdr->last_block_offset = detail::kNoBlock;
-        std::uint32_t idx      = hdr->first_block_offset;
-        while ( idx != detail::kNoBlock )
+        hdr->free_tree_root    = AddressTraitsT::no_block;
+        hdr->last_block_offset = AddressTraitsT::no_block;
+        index_type idx         = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
         {
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
 
             BlockState::reset_avl_fields_of( blk_ptr );
 
-            BlockState::recover_state( blk_ptr, static_cast<index_type>( idx ) );
+            BlockState::recover_state( blk_ptr, idx );
 
             if ( BlockState::get_weight( blk_ptr ) == 0 ) 
                 FreeBlockTreeT::insert( base, hdr, idx );
@@ -1741,38 +1738,36 @@ class AllocatorPolicy
             index_type next_idx = BlockState::get_next_offset( blk_ptr );
             if ( next_idx == AddressTraitsT::no_block )
                 hdr->last_block_offset = idx;
-            idx = detail::to_u32_idx<AddressTraitsT>( next_idx );
+            idx = next_idx;
         }
     }
 
-    static void repair_linked_list( std::uint8_t* base, detail::ManagerHeader* hdr )
+    static void repair_linked_list( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr )
     {
-        std::uint32_t idx = hdr->first_block_offset;
-        
+        index_type idx  = hdr->first_block_offset;
         index_type prev = AddressTraitsT::no_block;
-        while ( idx != detail::kNoBlock )
+        while ( idx != AddressTraitsT::no_block )
         {
             
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
                 break;
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             BlockState::repair_prev_offset( blk_ptr, prev ); 
-            prev                   = static_cast<index_type>( idx );
+            prev                   = idx;
             index_type next_offset = BlockState::get_next_offset( blk_ptr );
-            
-            idx = detail::to_u32_idx<AddressTraitsT>( next_offset );
+            idx                    = next_offset;
         }
     }
 
-    static void recompute_counters( std::uint8_t* base, detail::ManagerHeader* hdr )
+    static void recompute_counters( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr )
     {
         
-        static constexpr std::uint32_t kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
+        static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
 
-        std::uint32_t block_count = 0, free_count = 0, alloc_count = 0;
-        std::uint32_t used_gran = 0;
-        std::uint32_t idx       = hdr->first_block_offset;
-        while ( idx != detail::kNoBlock )
+        index_type block_count = 0, free_count = 0, alloc_count = 0;
+        index_type used_gran = 0;
+        index_type idx       = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
         {
             
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
@@ -1784,14 +1779,13 @@ class AllocatorPolicy
             if ( w > 0 )                                      
             {
                 alloc_count++;
-                used_gran += static_cast<std::uint32_t>( w );
+                used_gran += w;
             }
             else
             {
                 free_count++;
             }
-            
-            idx = detail::to_u32_idx<AddressTraitsT>( BlockState::get_next_offset( blk_ptr ) );
+            idx = BlockState::get_next_offset( blk_ptr );
         }
         hdr->block_count = block_count;
         hdr->free_count  = free_count;
@@ -2427,8 +2421,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < detail::kMinMemorySize )
             return false;
-        std::uint8_t*          base = _backend.base_ptr();
-        detail::ManagerHeader* hdr  = get_header( base );
+        std::uint8_t*                          base = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr  = get_header( base );
         if ( hdr->magic != kMagic || hdr->total_size != _backend.total_size() )
             return false;
         
@@ -2449,8 +2443,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( !_initialized )
             return;
-        std::uint8_t*          base = _backend.base_ptr();
-        detail::ManagerHeader* hdr  = ( base != nullptr ) ? get_header( base ) : nullptr;
+        std::uint8_t*                          base = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr  = ( base != nullptr ) ? get_header( base ) : nullptr;
         if ( hdr != nullptr )
             hdr->magic = 0;
         _initialized = false;
@@ -2464,16 +2458,16 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized || user_size == 0 )
             return nullptr;
 
-        std::uint8_t*          base = _backend.base_ptr();
-        detail::ManagerHeader* hdr  = get_header( base );
+        std::uint8_t*                          base = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr  = get_header( base );
         
-        std::uint32_t data_gran = detail::bytes_to_granules_t<address_traits>( user_size );
+        index_type data_gran = detail::bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran == 0 )
             data_gran = 1;
-        std::uint32_t needed = kBlockHdrGranules + data_gran;
-        std::uint32_t idx    = free_block_tree::find_best_fit( base, hdr, needed );
+        index_type needed = kBlockHdrGranules + data_gran;
+        index_type idx    = free_block_tree::find_best_fit( base, hdr, needed );
 
-        if ( idx != detail::kNoBlock )
+        if ( idx != address_traits::no_block )
             return allocator::allocate_from_block( base, hdr, idx, user_size );
 
         if ( !do_expand( user_size ) )
@@ -2482,7 +2476,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         base = _backend.base_ptr();
         hdr  = get_header( base );
         idx  = free_block_tree::find_best_fit( base, hdr, needed );
-        if ( idx != detail::kNoBlock )
+        if ( idx != address_traits::no_block )
             return allocator::allocate_from_block( base, hdr, idx, user_size );
         return nullptr;
     }
@@ -2492,13 +2486,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( !_initialized || ptr == nullptr )
             return;
-        std::uint8_t*               base = _backend.base_ptr();
-        detail::ManagerHeader*      hdr  = get_header( base );
-        pmm::Block<address_traits>* blk =
+        std::uint8_t*                          base = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr  = get_header( base );
+        pmm::Block<address_traits>*            blk =
             detail::header_from_ptr_t<address_traits>( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
         if ( blk == nullptr )
             return;
-        std::uint32_t freed = BlockStateBase<address_traits>::get_weight( blk );
+        index_type freed = BlockStateBase<address_traits>::get_weight( blk );
         if ( freed == 0 )
             return;
 
@@ -2522,13 +2516,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( !_initialized || ptr == nullptr )
             return false;
-        std::uint8_t*               base = _backend.base_ptr();
-        detail::ManagerHeader*      hdr  = get_header( base );
-        pmm::Block<address_traits>* blk =
+        std::uint8_t*                          base = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr  = get_header( base );
+        pmm::Block<address_traits>*            blk =
             detail::header_from_ptr_t<address_traits>( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
         if ( blk == nullptr )
             return false;
-        std::uint32_t w = BlockStateBase<address_traits>::get_weight( blk );
+        index_type w = BlockStateBase<address_traits>::get_weight( blk );
         if ( w == 0 )
             return false; 
         BlockStateBase<address_traits>::set_node_type_of( blk, pmm::kNodeReadOnly );
@@ -2540,9 +2534,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized || ptr == nullptr )
             return false;
-        const std::uint8_t*               base = _backend.base_ptr();
-        const detail::ManagerHeader*      hdr  = get_header_c( base );
-        const pmm::Block<address_traits>* blk  = detail::header_from_ptr_t<address_traits>(
+        const std::uint8_t*                          base = _backend.base_ptr();
+        const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
+        const pmm::Block<address_traits>*            blk  = detail::header_from_ptr_t<address_traits>(
             const_cast<std::uint8_t*>( base ), const_cast<void*>( ptr ), static_cast<std::size_t>( hdr->total_size ) );
         if ( blk == nullptr )
             return false;
@@ -2752,7 +2746,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized.load( std::memory_order_relaxed ) )
             return 0;
-        const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
+        const detail::ManagerHeader<address_traits>* hdr = get_header_c( _backend.base_ptr() );
         
         return address_traits::granules_to_bytes( hdr->used_size );
     }
@@ -2764,7 +2758,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized.load( std::memory_order_relaxed ) )
             return 0;
-        const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
+        const detail::ManagerHeader<address_traits>* hdr = get_header_c( _backend.base_ptr() );
         
         std::size_t used = address_traits::granules_to_bytes( hdr->used_size );
         return ( hdr->total_size > used ) ? ( hdr->total_size - used ) : 0;
@@ -2775,7 +2769,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized.load( std::memory_order_acquire ) )
             return 0;
         typename thread_policy::shared_lock_type lock( _mutex );
-        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->block_count : 0;
+        return _initialized.load( std::memory_order_relaxed )
+                   ? static_cast<std::size_t>( get_header_c( _backend.base_ptr() )->block_count )
+                   : 0;
     }
 
     static std::size_t free_block_count() noexcept
@@ -2783,7 +2779,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized.load( std::memory_order_acquire ) )
             return 0;
         typename thread_policy::shared_lock_type lock( _mutex );
-        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->free_count : 0;
+        return _initialized.load( std::memory_order_relaxed )
+                   ? static_cast<std::size_t>( get_header_c( _backend.base_ptr() )->free_count )
+                   : 0;
     }
 
     static std::size_t alloc_block_count() noexcept
@@ -2791,7 +2789,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized.load( std::memory_order_acquire ) )
             return 0;
         typename thread_policy::shared_lock_type lock( _mutex );
-        return _initialized.load( std::memory_order_relaxed ) ? get_header_c( _backend.base_ptr() )->alloc_count : 0;
+        return _initialized.load( std::memory_order_relaxed )
+                   ? static_cast<std::size_t>( get_header_c( _backend.base_ptr() )->alloc_count )
+                   : 0;
     }
 
     template <typename Callback> static bool for_each_block( Callback&& callback ) noexcept
@@ -2799,19 +2799,19 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized )
             return false;
-        const std::uint8_t* base         = _backend.base_ptr();
-        using BlockState                 = BlockStateBase<address_traits>;
-        const detail::ManagerHeader* hdr = get_header_c( base );
-        std::uint32_t                idx = hdr->first_block_offset;
+        const std::uint8_t* base                         = _backend.base_ptr();
+        using BlockState                                 = BlockStateBase<address_traits>;
+        const detail::ManagerHeader<address_traits>* hdr = get_header_c( base );
+        index_type                                   idx = hdr->first_block_offset;
         
         static constexpr std::size_t kGranSz = address_traits::granule_size;
-        while ( idx != detail::kNoBlock )
+        while ( idx != address_traits::no_block )
         {
             if ( static_cast<std::size_t>( idx ) * kGranSz + sizeof( Block<address_traits> ) > hdr->total_size )
                 break;
             const void*                  blk_raw    = base + static_cast<std::size_t>( idx ) * kGranSz;
             const Block<address_traits>* blk        = reinterpret_cast<const Block<address_traits>*>( blk_raw );
-            std::uint32_t                total_gran = detail::block_total_granules( base, hdr, blk );
+            index_type                   total_gran = detail::block_total_granules( base, hdr, blk );
             auto                         w          = BlockState::get_weight( blk_raw );
             bool                         is_used    = ( w > 0 );
             std::size_t                  hdr_bytes  = sizeof( Block<address_traits> );
@@ -2826,7 +2826,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             view.alignment   = kGranSz;
             view.used        = is_used;
             callback( view );
-            idx = detail::to_u32_idx<address_traits>( BlockState::get_next_offset( blk_raw ) );
+            idx = BlockState::get_next_offset( blk_raw );
         }
         return true;
     }
@@ -2836,8 +2836,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized )
             return false;
-        const std::uint8_t*          base = _backend.base_ptr();
-        const detail::ManagerHeader* hdr  = get_header_c( base );
+        const std::uint8_t*                          base = _backend.base_ptr();
+        const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
         for_each_free_block_inorder( base, hdr, hdr->free_tree_root, 0, callback );
         return true;
     }
@@ -2853,40 +2853,37 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static inline typename thread_policy::mutex_type _mutex{};
 
     template <typename Callback>
-    static void for_each_free_block_inorder( const std::uint8_t* base, const detail::ManagerHeader* hdr,
-                                             std::uint32_t node_idx, int depth, Callback&& callback ) noexcept
+    static void for_each_free_block_inorder( const std::uint8_t* base, const detail::ManagerHeader<address_traits>* hdr,
+                                             index_type node_idx, int depth, Callback&& callback ) noexcept
     {
         using BlockState = BlockStateBase<address_traits>;
         
         static constexpr std::size_t kGranSz = address_traits::granule_size;
-        if ( node_idx == detail::kNoBlock )
+        if ( node_idx == address_traits::no_block )
             return;
         if ( static_cast<std::size_t>( node_idx ) * kGranSz + sizeof( Block<address_traits> ) > hdr->total_size )
             return;
         const void*                  blk_raw = base + static_cast<std::size_t>( node_idx ) * kGranSz;
         const Block<address_traits>* blk     = reinterpret_cast<const Block<address_traits>*>( blk_raw );
 
-        auto          left_off_idx   = BlockState::get_left_offset( blk_raw );
-        auto          right_off_idx  = BlockState::get_right_offset( blk_raw );
-        auto          parent_off_idx = BlockState::get_parent_offset( blk_raw );
-        std::uint32_t left_off       = detail::to_u32_idx<address_traits>( left_off_idx );
-        std::uint32_t right_off      = detail::to_u32_idx<address_traits>( right_off_idx );
-        std::uint32_t parent_off     = detail::to_u32_idx<address_traits>( parent_off_idx );
+        index_type left_off   = BlockState::get_left_offset( blk_raw );
+        index_type right_off  = BlockState::get_right_offset( blk_raw );
+        index_type parent_off = BlockState::get_parent_offset( blk_raw );
 
         for_each_free_block_inorder( base, hdr, left_off, depth + 1, callback );
 
-        std::uint32_t total_gran = detail::block_total_granules( base, hdr, blk );
+        index_type    total_gran = detail::block_total_granules( base, hdr, blk );
         FreeBlockView view;
         view.offset        = static_cast<std::ptrdiff_t>( static_cast<std::size_t>( node_idx ) * kGranSz );
         view.total_size    = static_cast<std::size_t>( total_gran ) * kGranSz;
         view.free_size     = static_cast<std::size_t>( total_gran - kBlockHdrGranules ) * kGranSz;
-        view.left_offset   = ( left_off != detail::kNoBlock )
+        view.left_offset   = ( left_off != address_traits::no_block )
                                  ? static_cast<std::ptrdiff_t>( static_cast<std::size_t>( left_off ) * kGranSz )
                                  : -1;
-        view.right_offset  = ( right_off != detail::kNoBlock )
+        view.right_offset  = ( right_off != address_traits::no_block )
                                  ? static_cast<std::ptrdiff_t>( static_cast<std::size_t>( right_off ) * kGranSz )
                                  : -1;
-        view.parent_offset = ( parent_off != detail::kNoBlock )
+        view.parent_offset = ( parent_off != address_traits::no_block )
                                  ? static_cast<std::ptrdiff_t>( static_cast<std::size_t>( parent_off ) * kGranSz )
                                  : -1;
         view.avl_height    = BlockState::get_avl_height( blk_raw );
@@ -2900,31 +2897,30 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         ( ( sizeof( Block<address_traits> ) + address_traits::granule_size - 1 ) / address_traits::granule_size ) *
         address_traits::granule_size;
 
-    static constexpr std::uint32_t kBlockHdrGranules =
-        static_cast<std::uint32_t>( kBlockHdrByteSize / address_traits::granule_size );
+    static constexpr index_type kBlockHdrGranules =
+        static_cast<index_type>( kBlockHdrByteSize / address_traits::granule_size );
 
-    static constexpr std::uint32_t kMgrHdrGranules =
-        static_cast<std::uint32_t>( sizeof( detail::ManagerHeader ) / address_traits::granule_size );
+    static constexpr index_type kMgrHdrGranules = detail::kManagerHeaderGranules_t<address_traits>;
 
-    static constexpr std::uint32_t kFreeBlkIdxLayout = kBlockHdrGranules + kMgrHdrGranules;
+    static constexpr index_type kFreeBlkIdxLayout = kBlockHdrGranules + kMgrHdrGranules;
 
-    static detail::ManagerHeader* get_header( std::uint8_t* base ) noexcept
+    static detail::ManagerHeader<address_traits>* get_header( std::uint8_t* base ) noexcept
     {
         
-        return reinterpret_cast<detail::ManagerHeader*>( base + kBlockHdrByteSize );
+        return reinterpret_cast<detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
     }
 
-    static const detail::ManagerHeader* get_header_c( const std::uint8_t* base ) noexcept
+    static const detail::ManagerHeader<address_traits>* get_header_c( const std::uint8_t* base ) noexcept
     {
-        return reinterpret_cast<const detail::ManagerHeader*>( base + kBlockHdrByteSize );
+        return reinterpret_cast<const detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
     }
 
     static bool init_layout( std::uint8_t* base, std::size_t size ) noexcept
     {
-        using BlockState                           = BlockStateBase<address_traits>;
-        static constexpr std::uint32_t kHdrBlkIdx  = 0;
-        static constexpr std::uint32_t kFreeBlkIdx = kFreeBlkIdxLayout;
-        static constexpr std::size_t   kGranSz     = address_traits::granule_size;
+        using BlockState                         = BlockStateBase<address_traits>;
+        static constexpr index_type  kHdrBlkIdx  = 0;
+        static constexpr index_type  kFreeBlkIdx = kFreeBlkIdxLayout;
+        static constexpr std::size_t kGranSz     = address_traits::granule_size;
 
         static constexpr std::size_t kMinBlockDataSize = kGranSz; 
         if ( static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz + sizeof( Block<address_traits> ) + kMinBlockDataSize >
@@ -2935,24 +2931,24 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         std::memset( hdr_blk, 0, kBlockHdrByteSize ); 
         BlockState::init_fields( hdr_blk,
                                   address_traits::no_block,
-                                  static_cast<index_type>( kFreeBlkIdx ),
+                                  kFreeBlkIdx,
                                   0,
-                                  static_cast<index_type>( kMgrHdrGranules ),
-                                  static_cast<index_type>( kHdrBlkIdx ) );
+                                  kMgrHdrGranules,
+                                  kHdrBlkIdx );
 
-        detail::ManagerHeader* hdr = get_header( base );
-        std::memset( hdr, 0, sizeof( detail::ManagerHeader ) );
+        detail::ManagerHeader<address_traits>* hdr = get_header( base );
+        std::memset( hdr, 0, sizeof( detail::ManagerHeader<address_traits> ) );
         hdr->magic              = kMagic;
         hdr->total_size         = size;
         hdr->first_block_offset = kHdrBlkIdx;
-        hdr->last_block_offset  = detail::kNoBlock;
-        hdr->free_tree_root     = detail::kNoBlock;
+        hdr->last_block_offset  = address_traits::no_block;
+        hdr->free_tree_root     = address_traits::no_block;
         hdr->granule_size       = static_cast<std::uint16_t>( kGranSz );
 
         void* blk = base + static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz;
         std::memset( blk, 0, sizeof( Block<address_traits> ) );
         BlockState::init_fields( blk,
-                                  static_cast<index_type>( kHdrBlkIdx ),
+                                  kHdrBlkIdx,
                                   address_traits::no_block,
                                   1,
                                   0,
@@ -2974,12 +2970,12 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         using BlockState = BlockStateBase<address_traits>;
         if ( !_initialized )
             return false;
-        std::uint8_t*          base     = _backend.base_ptr();
-        detail::ManagerHeader* hdr      = get_header( base );
-        std::size_t            old_size = hdr->total_size;
+        std::uint8_t*                          base     = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr      = get_header( base );
+        std::size_t                            old_size = hdr->total_size;
 
         static constexpr std::size_t kGranSz        = address_traits::granule_size;
-        std::uint32_t                data_gran_need = detail::bytes_to_granules_t<address_traits>( user_size );
+        index_type                   data_gran_need = detail::bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran_need == 0 )
             data_gran_need = 1;
         
@@ -2999,11 +2995,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
         hdr = get_header( new_base );
 
-        std::uint32_t extra_idx  = detail::byte_off_to_idx_t<address_traits>( old_size );
-        std::size_t   extra_size = new_size - old_size;
+        index_type  extra_idx  = detail::byte_off_to_idx_t<address_traits>( old_size );
+        std::size_t extra_size = new_size - old_size;
 
         void* last_blk_raw =
-            ( hdr->last_block_offset != detail::kNoBlock )
+            ( hdr->last_block_offset != address_traits::no_block )
                 ? static_cast<void*>( new_base + static_cast<std::size_t>( hdr->last_block_offset ) * kGranSz )
                 : nullptr;
 
