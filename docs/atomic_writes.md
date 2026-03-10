@@ -33,10 +33,10 @@ Bytes 32–35: first_block_offset — first block (granule index)
 Bytes 36–39: last_block_offset  — last block (granule index)
 Bytes 40–43: free_tree_root  — AVL free block tree root (granule index)
 Bytes 44:    owns_memory     — runtime-only (not persistent)
-Bytes 45:    prev_owns_memory — runtime-only (not persistent)
+Bytes 45:    _pad            — reserved (Issue #176: was prev_owns_memory)
 Bytes 46–47: granule_size    — granule size at creation time; validated on load()
 Bytes 48–55: prev_total_size — runtime-only (not persistent)
-Bytes 56–63: prev_base_ptr   — runtime-only (not persistent)
+Bytes 56–63: _reserved[8]   — reserved (Issue #176: was prev_base_ptr)
 ```
 
 The `granule_size` field is checked on `load()`: if it does not match the compile-time
@@ -259,10 +259,8 @@ after `load() + rebuild_free_tree()`.
 ### Phase 2: Reset runtime fields
 
 ```
-hdr->owns_memory      = false;
-hdr->prev_owns_memory = false;
-hdr->prev_total_size  = 0;
-hdr->prev_base_ptr    = nullptr;
+hdr->owns_memory     = false;
+hdr->prev_total_size = 0;
 ```
 
 ### Phase 3: Repair linked list (`repair_linked_list`)
@@ -328,9 +326,8 @@ bool load_with_recovery(void* memory, size_t size) {
     if (hdr->magic != kMagic || hdr->total_size != size || hdr->granule_size != kGranuleSize)
         return false;
 
-    hdr->owns_memory = hdr->prev_owns_memory = false;
+    hdr->owns_memory     = false;
     hdr->prev_total_size = 0;
-    hdr->prev_base_ptr   = nullptr;
 
     repair_linked_list(memory, hdr);
     recompute_counters(memory, hdr);

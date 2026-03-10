@@ -113,6 +113,9 @@ pmm_add_test(test_issue144_code_review test_issue144_code_review.cpp)
 # ─── Тесты исправлений по code review (Issue #172) ────────────────────────────
 pmm_add_test(test_issue172_code_review test_issue172_code_review.cpp)
 
+# ─── Тесты удаления устаревших полей ManagerHeader (Issue #176) ───────────────
+pmm_add_test(test_issue176_manager_header test_issue176_manager_header.cpp)
+
 # ─── Тесты переосмысления конфигураций (Issue #146) ──────────────────────────
 pmm_add_test(test_issue146_configs test_issue146_configs.cpp)
 

@@ -220,9 +220,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         // Issue #146: compare stored granule size against address_traits::granule_size.
         if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
             return false;
-        hdr->owns_memory = hdr->prev_owns_memory = false;
-        hdr->prev_total_size                     = 0;
-        hdr->prev_base_ptr                       = nullptr;
+        hdr->owns_memory     = false;
+        hdr->prev_total_size = 0;
         allocator::repair_linked_list( base, hdr );
         allocator::recompute_counters( base, hdr );
         allocator::rebuild_free_tree( base, hdr );

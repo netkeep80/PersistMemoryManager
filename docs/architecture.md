@@ -80,10 +80,10 @@ buffer start. Contains:
 | `last_block_offset` | `uint32_t` | Granule index of the last block |
 | `free_tree_root` | `uint32_t` | Root of the AVL free block tree (granule index) |
 | `owns_memory` | `bool` | Runtime-only: true if manager owns the buffer |
-| `prev_owns_memory` | `bool` | Runtime-only: true if previous buffer was owned |
+| `_pad` | `uint8_t` | Reserved padding byte (Issue #176: was `prev_owns_memory`) |
 | `granule_size` | `uint16_t` | Granule size at creation time; checked on `load()` |
 | `prev_total_size` | `uint64_t` | Runtime-only: previous buffer size after `expand()` |
-| `prev_base_ptr` | `void*` | Runtime-only: previous buffer pointer after `expand()` |
+| `_reserved[8]` | `uint8_t[8]` | Reserved bytes (Issue #176: was `prev_base_ptr`) |
 
 ---
 
@@ -179,7 +179,7 @@ When memory is exhausted:
 2. Copy the contents of the old buffer to the new buffer
 3. Extend or add a free block at the end of the new buffer
 4. Update the singleton to point to the new buffer
-5. Keep the old buffer in prev_base_ptr for cleanup on destroy()
+5. Keep the old buffer for cleanup on destroy()
 ```
 
 ---
