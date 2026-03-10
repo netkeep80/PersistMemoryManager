@@ -155,12 +155,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ab5bf2915d9e0505bc7c75450028865b0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ab5bf2915d9e0505bc7c75450028865b0">user_ptr</a> (<a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">block</a>)</td></tr>
 <tr class="memdesc:ab5bf2915d9e0505bc7c75450028865b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute user data address for block (block + sizeof(Block&lt;A&gt;), Issue #106, #112, #141). Single canonical implementation — use this instead of duplicating the cast in each call site.  <br /></td></tr>
 <tr class="separator:ab5bf2915d9e0505bc7c75450028865b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9501825712f2b1926faec652eb89f289" id="r_a9501825712f2b1926faec652eb89f289"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a9501825712f2b1926faec652eb89f289">header_from_ptr</a> (std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">ptr</a>, std::size_t total_size)</td></tr>
-<tr class="memdesc:a9501825712f2b1926faec652eb89f289"><td class="mdescLeft">&#160;</td><td class="mdescRight">O(1) get <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> from user_ptr (ptr - sizeof(Block&lt;A&gt;)); validated via <a class="el" href="namespacepmm_1_1detail.html#a691ef48013a7a305e4c467028432cd2a" title="Issue #69/#106/#112: Structural block validity using Block&lt;DefaultAddressTraits&gt; layout....">is_valid_block()</a>. Issue #112: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> is the sole block type.  <br /></td></tr>
-<tr class="separator:a9501825712f2b1926faec652eb89f289"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9255931c6039b9ba052cfe0a8317d23" id="r_aa9255931c6039b9ba052cfe0a8317d23"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </td></tr>
 <tr class="memitem:aa9255931c6039b9ba052cfe0a8317d23"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#aa9255931c6039b9ba052cfe0a8317d23">header_from_ptr_t</a> (std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">ptr</a>, std::size_t total_size)</td></tr>
-<tr class="memdesc:aa9255931c6039b9ba052cfe0a8317d23"><td class="mdescLeft">&#160;</td><td class="mdescRight">Templated variant of header_from_ptr for non-default address traits. O(1) get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - sizeof(Block&lt;AddressTraitsT&gt;)).  <br /></td></tr>
+<tr class="memdesc:aa9255931c6039b9ba052cfe0a8317d23"><td class="mdescLeft">&#160;</td><td class="mdescRight">O(1) get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - sizeof(Block&lt;AddressTraitsT&gt;)). Issue #112: Block&lt;AddressTraitsT&gt; is the sole block type. Issue #179: unified templated helper replaces the former DefaultAddressTraits-specific overload.  <br /></td></tr>
 <tr class="separator:aa9255931c6039b9ba052cfe0a8317d23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab890535579b00c765044db90a2f4a642" id="r_ab890535579b00c765044db90a2f4a642"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ab890535579b00c765044db90a2f4a642">required_block_granules</a> (std::size_t <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">user_bytes</a>)</td></tr>
 <tr class="memdesc:ab890535579b00c765044db90a2f4a642"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum block granules for user_bytes (header + data, minimum 1 data granule).  <br /></td></tr>
@@ -633,53 +630,6 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 </div>
 </div>
-<a id="a9501825712f2b1926faec652eb89f289" name="a9501825712f2b1926faec652eb89f289"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9501825712f2b1926faec652eb89f289">&#9670;&#160;</a></span>header_from_ptr()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a> &gt; * pmm::detail::header_from_ptr </td>
-          <td>(</td>
-          <td class="paramtype">std::uint8_t *&#160;</td>
-          <td class="paramname"><em>base</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *&#160;</td>
-          <td class="paramname"><em>ptr</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::size_t&#160;</td>
-          <td class="paramname"><em>total_size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>O(1) get <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> from user_ptr (ptr - sizeof(Block&lt;A&gt;)); validated via <a class="el" href="namespacepmm_1_1detail.html#a691ef48013a7a305e4c467028432cd2a" title="Issue #69/#106/#112: Structural block validity using Block&lt;DefaultAddressTraits&gt; layout....">is_valid_block()</a>. Issue #112: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> is the sole block type. </p>
-<dl class="section note"><dt>Note</dt><dd>For non-default address traits, use the templated <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">header_from_ptr_t&lt;AddressTraitsT&gt;()</a>. Issue #160: header_from_ptr performs additional <a class="el" href="namespacepmm_1_1detail.html#a691ef48013a7a305e4c467028432cd2a" title="Issue #69/#106/#112: Structural block validity using Block&lt;DefaultAddressTraits&gt; layout....">is_valid_block()</a> structural validation which is not yet available generically; for that reason these overloads are kept separate. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00430">430</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
-
-</div>
-</div>
 <a id="aa9255931c6039b9ba052cfe0a8317d23" name="aa9255931c6039b9ba052cfe0a8317d23"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa9255931c6039b9ba052cfe0a8317d23">&#9670;&#160;</a></span>header_from_ptr_t()</h2>
 
@@ -722,9 +672,9 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </table>
 </div><div class="memdoc">
 
-<p>Templated variant of header_from_ptr for non-default address traits. O(1) get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - sizeof(Block&lt;AddressTraitsT&gt;)). </p>
+<p>O(1) get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - sizeof(Block&lt;AddressTraitsT&gt;)). Issue #112: Block&lt;AddressTraitsT&gt; is the sole block type. Issue #179: unified templated helper replaces the former DefaultAddressTraits-specific overload. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00460">460</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00429">429</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -894,7 +844,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Minimum block granules for user_bytes (header + data, minimum 1 data granule). </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">required_block_granules_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00489">489</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00458">458</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -926,7 +876,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Issue #166: Templated variant of required_block_granules for any AddressTraitsT. Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t&lt;AT&gt; for correct per-AT computation. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00501">501</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00470">470</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
