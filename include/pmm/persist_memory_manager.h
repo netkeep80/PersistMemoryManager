@@ -297,10 +297,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( !_initialized || ptr == nullptr )
             return;
-        std::uint8_t*                          base = _backend.base_ptr();
-        detail::ManagerHeader<address_traits>* hdr  = get_header( base );
-        pmm::Block<address_traits>*            blk =
-            detail::header_from_ptr_t<address_traits>( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
+        pmm::Block<address_traits>* blk = find_block_from_user_ptr( ptr );
         if ( blk == nullptr )
             return;
         index_type freed = BlockStateBase<address_traits>::get_weight( blk );
@@ -311,7 +308,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( BlockStateBase<address_traits>::get_node_type( blk ) == pmm::kNodeReadOnly )
             return;
 
-        index_type blk_idx = detail::block_idx_t<address_traits>( base, blk );
+        std::uint8_t*                          base    = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr     = get_header( base );
+        index_type                             blk_idx = detail::block_idx_t<address_traits>( base, blk );
 
         AllocatedBlock<address_traits>* alloc = AllocatedBlock<address_traits>::cast_from_raw( blk );
         alloc->mark_as_free();
@@ -337,10 +336,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( !_initialized || ptr == nullptr )
             return false;
-        std::uint8_t*                          base = _backend.base_ptr();
-        detail::ManagerHeader<address_traits>* hdr  = get_header( base );
-        pmm::Block<address_traits>*            blk =
-            detail::header_from_ptr_t<address_traits>( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
+        pmm::Block<address_traits>* blk = find_block_from_user_ptr( ptr );
         if ( blk == nullptr )
             return false;
         index_type w = BlockStateBase<address_traits>::get_weight( blk );
@@ -361,10 +357,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized || ptr == nullptr )
             return false;
-        const std::uint8_t*                          base = _backend.base_ptr();
-        const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
-        const pmm::Block<address_traits>*            blk  = detail::header_from_ptr_t<address_traits>(
-            const_cast<std::uint8_t*>( base ), const_cast<void*>( ptr ), static_cast<std::size_t>( hdr->total_size ) );
+        const pmm::Block<address_traits>* blk = find_block_from_user_ptr( ptr );
         if ( blk == nullptr )
             return false;
         return BlockStateBase<address_traits>::get_node_type( blk ) == pmm::kNodeReadOnly;
@@ -383,9 +376,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
-        std::uint8_t* base     = _backend.base_ptr();
-        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
+        return make_pptr_from_raw<T>( raw );
     }
 
     /**
@@ -405,9 +396,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         void* raw = allocate( sizeof( T ) * count );
         if ( raw == nullptr )
             return pptr<T>();
-        std::uint8_t* base     = _backend.base_ptr();
-        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
+        return make_pptr_from_raw<T>( raw );
     }
 
     /**
@@ -455,9 +444,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         // noexcept: если конструктор T бросает исключение, память утечёт,
         // но pmm API является полностью noexcept. Используйте только для noexcept-конструкторов.
         ::new ( raw ) T( static_cast<Args&&>( args )... );
-        std::uint8_t* base     = _backend.base_ptr();
-        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
+        return make_pptr_from_raw<T>( raw );
     }
 
     /**
@@ -894,6 +881,41 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static inline typename thread_policy::mutex_type _mutex{};
 
     // ─── Вспомогательные методы ────────────────────────────────────────────────
+
+    // ─── Issue #179: find_block helpers ───────────────────────────────────────
+    // Locate and validate the Block header for a user pointer. Called from
+    // deallocate(), lock_block_permanent(), and is_permanently_locked() after
+    // the lock is already held and _initialized / ptr are confirmed non-null.
+
+    /// @brief Find the mutable block header for a user-data pointer.
+    /// Returns nullptr if ptr is out of range or the block header is invalid.
+    static pmm::Block<address_traits>* find_block_from_user_ptr( void* ptr ) noexcept
+    {
+        std::uint8_t*                          base = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr  = get_header( base );
+        return detail::header_from_ptr_t<address_traits>( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
+    }
+
+    /// @brief Find the const block header for a user-data pointer.
+    /// Returns nullptr if ptr is out of range or the block header is invalid.
+    static const pmm::Block<address_traits>* find_block_from_user_ptr( const void* ptr ) noexcept
+    {
+        const std::uint8_t* base = _backend.base_ptr();
+        return detail::header_from_ptr_t<address_traits>(
+            const_cast<std::uint8_t*>( base ), const_cast<void*>( ptr ),
+            static_cast<std::size_t>( get_header_c( base )->total_size ) );
+    }
+
+    // ─── Issue #179: raw ↔ pptr helpers ───────────────────────────────────────
+
+    /// @brief Convert a raw user-data pointer returned by allocate() into a pptr<T>.
+    /// Caller must ensure raw != nullptr and _initialized before calling.
+    template <typename T> static pptr<T> make_pptr_from_raw( void* raw ) noexcept
+    {
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
+        return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
+    }
 
     // ─── Issue #179: blk_raw helpers ──────────────────────────────────────────
     // Compute the raw block-header pointer from a pptr<T>.
