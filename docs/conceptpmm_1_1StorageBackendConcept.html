@@ -84,14 +84,13 @@ $(function() {
 <p><code>#include &lt;<a class="el" href="storage__backend_8h_source.html">storage_backend.h</a>&gt;</code></p>
 <h2 class="groupheader">Concept definition</h2>
 <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> Backend&gt;</div>
-<div class="line"><span class="keyword">concept </span><a class="code hl_concept" href="conceptpmm_1_1StorageBackendConcept.html">pmm::StorageBackendConcept</a> =  <span class="keyword">requires</span>( <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Backend</a>&amp; <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">b</a>, <span class="keyword">const</span> <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">Backend</a>&amp; <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">cb</a>, std::size_t <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">n</a> ) {</div>
-<div class="line">    { <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">b</a>.base_ptr() } -&gt; std::convertible_to&lt;std::uint8_t*&gt;;</div>
-<div class="line">    { <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">cb</a>.total_size() } -&gt; std::convertible_to&lt;std::size_t&gt;;</div>
-<div class="line">    { <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">b</a>.expand( <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">n</a> ) } -&gt; std::convertible_to&lt;bool&gt;;</div>
-<div class="line">    { <a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">cb</a>.owns_memory() } -&gt; std::convertible_to&lt;bool&gt;;</div>
+<div class="line"><span class="keyword">concept </span><a class="code hl_concept" href="conceptpmm_1_1StorageBackendConcept.html">pmm::StorageBackendConcept</a> =  <span class="keyword">requires</span>( Backend&amp; b, <span class="keyword">const</span> Backend&amp; cb, std::size_t n ) {</div>
+<div class="line">    { b.base_ptr() } -&gt; std::convertible_to&lt;std::uint8_t*&gt;;</div>
+<div class="line">    { cb.total_size() } -&gt; std::convertible_to&lt;std::size_t&gt;;</div>
+<div class="line">    { b.expand( n ) } -&gt; std::convertible_to&lt;bool&gt;;</div>
+<div class="line">    { cb.owns_memory() } -&gt; std::convertible_to&lt;bool&gt;;</div>
 <div class="line">}</div>
 <div class="ttc" id="aconceptpmm_1_1StorageBackendConcept_html"><div class="ttname"><a href="conceptpmm_1_1StorageBackendConcept.html">pmm::StorageBackendConcept</a></div><div class="ttdoc">C++20 концепт: проверяет, соответствует ли Backend концепту StorageBackend.</div><div class="ttdef"><b>Definition</b> <a href="storage__backend_8h_source.html#l00043">storage_backend.h:43</a></div></div>
-<div class="ttc" id="anamespacepmm_html_a13826d7e9e815fd280a91ffa868ce33d"><div class="ttname"><a href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></div><div class="ttdeci">constexpr bool is_free_block_tree_policy_v</div><div class="ttdoc">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00062">free_block_tree.h:62</a></div></div>
 </div><!-- fragment --><a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>C++20 концепт: проверяет, соответствует ли Backend концепту StorageBackend. </p>
 <p>Требует наличия:</p><ul>

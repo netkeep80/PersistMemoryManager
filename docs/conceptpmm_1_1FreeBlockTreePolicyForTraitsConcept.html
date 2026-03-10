@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PersistMemoryManager: pmm::FreeBlockTreePolicyConcept Concept Reference</title>
+<title>PersistMemoryManager: pmm::FreeBlockTreePolicyForTraitsConcept Concept Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,34 +70,45 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespacepmm.html">pmm</a></li><li class="navelem"><a class="el" href="conceptpmm_1_1FreeBlockTreePolicyConcept.html">FreeBlockTreePolicyConcept</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespacepmm.html">pmm</a></li><li class="navelem"><a class="el" href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html">FreeBlockTreePolicyForTraitsConcept</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
-  <div class="headertitle"><div class="title">pmm::FreeBlockTreePolicyConcept Concept Reference</div></div>
+  <div class="headertitle"><div class="title">pmm::FreeBlockTreePolicyForTraitsConcept Concept Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков.  
-<a href="conceptpmm_1_1FreeBlockTreePolicyConcept.html#details">More...</a></p>
+<p>C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков для конкретного AddressTraitsT.  
+<a href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>&gt;</code></p>
 <h2 class="groupheader">Concept definition</h2>
-<div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> Policy&gt;</div>
-<div class="line"><span class="keyword">concept </span><a class="code hl_concept" href="conceptpmm_1_1FreeBlockTreePolicyConcept.html">pmm::FreeBlockTreePolicyConcept</a> =  <a class="code hl_concept" href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html">FreeBlockTreePolicyForTraitsConcept&lt;Policy, DefaultAddressTraits&gt;</a></div>
-<div class="ttc" id="aconceptpmm_1_1FreeBlockTreePolicyConcept_html"><div class="ttname"><a href="conceptpmm_1_1FreeBlockTreePolicyConcept.html">pmm::FreeBlockTreePolicyConcept</a></div><div class="ttdoc">C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков.</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00072">free_block_tree.h:72</a></div></div>
+<div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> Policy, <span class="keyword">typename</span> AddressTraitsT&gt;</div>
+<div class="line"><span class="keyword">concept </span><a class="code hl_concept" href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html">pmm::FreeBlockTreePolicyForTraitsConcept</a> =  <span class="keyword">requires</span>( std::uint8_t* base, <a class="code hl_function" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">detail::ManagerHeader&lt;AddressTraitsT&gt;</a>* hdr,</div>
+<div class="line">                                                        <span class="keyword">typename</span> AddressTraitsT::index_type idx ) {</div>
+<div class="line">    { Policy::insert( base, hdr, idx ) };</div>
+<div class="line">    { Policy::remove( base, hdr, idx ) };</div>
+<div class="line">    { Policy::find_best_fit( base, hdr, idx ) } -&gt; std::convertible_to&lt;typename AddressTraitsT::index_type&gt;;</div>
+<div class="line">}</div>
 <div class="ttc" id="aconceptpmm_1_1FreeBlockTreePolicyForTraitsConcept_html"><div class="ttname"><a href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html">pmm::FreeBlockTreePolicyForTraitsConcept</a></div><div class="ttdoc">C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков для конкрет...</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00056">free_block_tree.h:56</a></div></div>
+<div class="ttc" id="anamespacepmm_1_1detail_html_ad76d7884ca672f08c204dde004e958b4"><div class="ttname"><a href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">pmm::detail::block_at</a></div><div class="ttdeci">pmm::Block&lt; AddressTraitsT &gt; * block_at(std::uint8_t *base, typename AddressTraitsT::index_type idx)</div><div class="ttdoc">Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...</div><div class="ttdef"><b>Definition</b> <a href="types_8h_source.html#l00286">types.h:286</a></div></div>
 </div><!-- fragment --><a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков. </p>
-<p>Backward-compatibility variant checked against DefaultAddressTraits (uint32_t, 16B granule). For checking against a specific AddressTraitsT, use FreeBlockTreePolicyForTraitsConcept&lt;Policy, AT&gt;.</p>
+<div class="textblock"><p>C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков для конкретного AddressTraitsT. </p>
+<p>Policy должна предоставлять три статических метода:</p><ul>
+<li><code>insert(uint8_t* base, ManagerHeader&lt;AT&gt;* hdr, AT::index_type blk_idx) -&gt; void</code></li>
+<li><code>remove(uint8_t* base, ManagerHeader&lt;AT&gt;* hdr, AT::index_type blk_idx) -&gt; void</code></li>
+<li><code>find_best_fit(uint8_t* base, ManagerHeader&lt;AT&gt;* hdr, AT::index_type n) -&gt; AT::index_type</code></li>
+</ul>
+<p>Issue #175: ManagerHeader is now templated on AddressTraitsT, so the concept must be checked against the specific AT used — not hardcoded to DefaultAddressTraits.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">Policy</td><td>Тип, проверяемый на соответствие концепту. </td></tr>
+    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства (определяет типы индексов). </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00072">72</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00056">56</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

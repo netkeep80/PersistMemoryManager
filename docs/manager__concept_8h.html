@@ -110,8 +110,8 @@ Concepts</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a7a70401630d11010442cb6026f2a5654" id="r_a7a70401630d11010442cb6026f2a5654"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">typename</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a> &gt; </td></tr>
-<tr class="memitem:a7a70401630d11010442cb6026f2a5654"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">constexpr</a> <a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a7a70401630d11010442cb6026f2a5654">pmm::is_persist_memory_manager_v</a> = PersistMemoryManagerConcept&lt;<a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">T</a>&gt;</td></tr>
+<tr class="memitem:a7a70401630d11010442cb6026f2a5654" id="r_a7a70401630d11010442cb6026f2a5654"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a7a70401630d11010442cb6026f2a5654"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a7a70401630d11010442cb6026f2a5654">pmm::is_persist_memory_manager_v</a> = PersistMemoryManagerConcept&lt;T&gt;</td></tr>
 <tr class="memdesc:a7a70401630d11010442cb6026f2a5654"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная для <a class="el" href="structpmm_1_1is__persist__memory__manager.html" title="Проверить, является ли T корректным типом менеджера персистентной памяти.">is_persist_memory_manager</a>.  <br /></td></tr>
 <tr class="separator:a7a70401630d11010442cb6026f2a5654"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -129,7 +129,7 @@ Variables</h2></td></tr>
 <li>статический <code>destroy()</code> — сброс состояния</li>
 </ul>
 <p>Использование: </p><div class="fragment"><div class="line"><span class="comment">// Проверка во время компиляции</span></div>
-<div class="line"><span class="keyword">static_assert</span>(<a class="code hl_variable" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_persist_memory_manager_v&lt;pmm::PersistMemoryManager&lt;pmm::CacheManagerConfig&gt;</a>&gt;,</div>
+<div class="line"><span class="keyword">static_assert</span>(pmm::is_persist_memory_manager_v&lt;pmm::PersistMemoryManager&lt;pmm::CacheManagerConfig&gt;&gt;,</div>
 <div class="line">              <span class="stringliteral">&quot;PersistMemoryManager&lt;CacheManagerConfig&gt; must be a valid PersistMemoryManager&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Ограничение шаблонного параметра через C++20 концепт</span></div>
@@ -138,7 +138,6 @@ Variables</h2></td></tr>
 <div class="line">    MgrT::create(64 * 1024);</div>
 <div class="line">    <span class="comment">// ...</span></div>
 <div class="line">}</div>
-<div class="ttc" id="anamespacepmm_html_a13826d7e9e815fd280a91ffa868ce33d"><div class="ttname"><a href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">pmm::is_free_block_tree_policy_v</a></div><div class="ttdeci">constexpr bool is_free_block_tree_policy_v</div><div class="ttdoc">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00062">free_block_tree.h:62</a></div></div>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — унифицированный статический менеджер ПАП (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (Issue #110) </dd>
 <dd>
 <a class="el" href="pptr_8h.html" title="pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129).">pptr.h</a> — pptr&lt;T, ManagerT&gt; </dd></dl>

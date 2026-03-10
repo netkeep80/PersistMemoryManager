@@ -4,7 +4,7 @@ var searchData=
   ['largedbconfig_1',['LargeDBConfig',['../namespacepmm.html#a695fbe1b44a1200218e26544023d28f2',1,'pmm']]],
   ['largedbheap_2',['LargeDBHeap',['../namespacepmm_1_1presets.html#aed15e8f994e9b53c1b5541dff4d12011',1,'pmm::presets']]],
   ['largest_5ffree_3',['largest_free',['../structpmm_1_1MemoryStats.html#af04f85408e3c8518f4cab238be67d6e8',1,'pmm::MemoryStats']]],
-  ['last_5fblock_5foffset_4',['last_block_offset',['../structpmm_1_1detail_1_1ManagerHeader.html#a55c9b27bffc2b3df1a909019a280b484',1,'pmm::detail::ManagerHeader']]],
+  ['last_5fblock_5foffset_4',['last_block_offset',['../structpmm_1_1detail_1_1ManagerHeader.html#ac506fd403b8f6b2761177bfb13821204',1,'pmm::detail::ManagerHeader']]],
   ['left_5foffset_5',['left_offset',['../structpmm_1_1TreeNode.html#a7ef6c85c74806fb9e9558b72d267a92c',1,'pmm::TreeNode::left_offset'],['../structpmm_1_1FreeBlockView.html#a7016b91ed1e6775949a50d003bc297bf',1,'pmm::FreeBlockView::left_offset'],['../classpmm_1_1BlockStateBase.html#a14370afd9bf80348f8b65453e85d39b3',1,'pmm::BlockStateBase::left_offset()']]],
   ['length_6',['length',['../structpmm_1_1pstringview.html#aa8535e226c5c2e70338e44356d6c1d44',1,'pmm::pstringview']]],
   ['link_5fnew_5fblock_7',['link_new_block',['../classpmm_1_1SplittingBlock.html#a640bcb82c72762def18f292bfa4201a6',1,'pmm::SplittingBlock']]],

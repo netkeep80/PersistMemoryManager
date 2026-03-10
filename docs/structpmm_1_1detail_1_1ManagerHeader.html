@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PersistMemoryManager: pmm::detail::ManagerHeader Struct Reference</title>
+<title>PersistMemoryManager: pmm::detail::ManagerHeader&lt; AddressTraitsT &gt; Struct Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -75,316 +75,371 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="structpmm_1_1detail_1_1ManagerHeader-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">pmm::detail::ManagerHeader Struct Reference</div></div>
+  <div class="headertitle"><div class="title">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt; Struct Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).  
+<p>Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support). All _offset and counter fields use index_type, so LargeDBConfig uses uint64_t indices and DefaultAddressTraits keeps uint32_t with exactly 64 bytes as before. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).  
  <a href="structpmm_1_1detail_1_1ManagerHeader.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="types_8h_source.html">types.h</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:af9a78db8736e1b359bf614e2cbad739c" id="r_af9a78db8736e1b359bf614e2cbad739c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> = <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type</td></tr>
+<tr class="separator:af9a78db8736e1b359bf614e2cbad739c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a917ab780875d490249654a77dbeac617" id="r_a917ab780875d490249654a77dbeac617"><td class="memItemLeft" align="right" valign="top">std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a917ab780875d490249654a77dbeac617">magic</a></td></tr>
-<tr class="memdesc:a917ab780875d490249654a77dbeac617"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager magic number.  <br /></td></tr>
-<tr class="separator:a917ab780875d490249654a77dbeac617"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fe53f7d0320767844b4341379dbb23e" id="r_a4fe53f7d0320767844b4341379dbb23e"><td class="memItemLeft" align="right" valign="top">std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a4fe53f7d0320767844b4341379dbb23e">total_size</a></td></tr>
-<tr class="memdesc:a4fe53f7d0320767844b4341379dbb23e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total size of managed area in bytes.  <br /></td></tr>
-<tr class="separator:a4fe53f7d0320767844b4341379dbb23e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d4a92b692a6dcd20bbfe445363ddf9d" id="r_a9d4a92b692a6dcd20bbfe445363ddf9d"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a9d4a92b692a6dcd20bbfe445363ddf9d">used_size</a></td></tr>
-<tr class="memdesc:a9d4a92b692a6dcd20bbfe445363ddf9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used size in granules (Issue #59)  <br /></td></tr>
-<tr class="separator:a9d4a92b692a6dcd20bbfe445363ddf9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aea2cb09874399a51a0fe0f04b54511ac" id="r_aea2cb09874399a51a0fe0f04b54511ac"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#aea2cb09874399a51a0fe0f04b54511ac">block_count</a></td></tr>
-<tr class="memdesc:aea2cb09874399a51a0fe0f04b54511ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of blocks.  <br /></td></tr>
-<tr class="separator:aea2cb09874399a51a0fe0f04b54511ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b092b237146c534590323c2ed5c6b4e" id="r_a2b092b237146c534590323c2ed5c6b4e"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a2b092b237146c534590323c2ed5c6b4e">free_count</a></td></tr>
-<tr class="memdesc:a2b092b237146c534590323c2ed5c6b4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of free blocks.  <br /></td></tr>
-<tr class="separator:a2b092b237146c534590323c2ed5c6b4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d072b6578f7851810f262aa52cb317f" id="r_a4d072b6578f7851810f262aa52cb317f"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a4d072b6578f7851810f262aa52cb317f">alloc_count</a></td></tr>
-<tr class="memdesc:a4d072b6578f7851810f262aa52cb317f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of allocated blocks.  <br /></td></tr>
-<tr class="separator:a4d072b6578f7851810f262aa52cb317f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c7158ef889525b96c7feefc41239aa7" id="r_a6c7158ef889525b96c7feefc41239aa7"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a6c7158ef889525b96c7feefc41239aa7">first_block_offset</a></td></tr>
-<tr class="memdesc:a6c7158ef889525b96c7feefc41239aa7"><td class="mdescLeft">&#160;</td><td class="mdescRight">First block (granule index)  <br /></td></tr>
-<tr class="separator:a6c7158ef889525b96c7feefc41239aa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a55c9b27bffc2b3df1a909019a280b484" id="r_a55c9b27bffc2b3df1a909019a280b484"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a55c9b27bffc2b3df1a909019a280b484">last_block_offset</a></td></tr>
-<tr class="memdesc:a55c9b27bffc2b3df1a909019a280b484"><td class="mdescLeft">&#160;</td><td class="mdescRight">[Issue #57 opt 4] Last block (granule index)  <br /></td></tr>
-<tr class="separator:a55c9b27bffc2b3df1a909019a280b484"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0bdbe2a563639a989f9eb61399b8d5b7" id="r_a0bdbe2a563639a989f9eb61399b8d5b7"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a0bdbe2a563639a989f9eb61399b8d5b7">free_tree_root</a></td></tr>
-<tr class="memdesc:a0bdbe2a563639a989f9eb61399b8d5b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root of AVL tree of free blocks (granule index)  <br /></td></tr>
-<tr class="separator:a0bdbe2a563639a989f9eb61399b8d5b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56a57d4f7cef869939e4ede031857666" id="r_a56a57d4f7cef869939e4ede031857666"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a56a57d4f7cef869939e4ede031857666">owns_memory</a></td></tr>
-<tr class="memdesc:a56a57d4f7cef869939e4ede031857666"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager owns buffer (runtime-only)  <br /></td></tr>
-<tr class="separator:a56a57d4f7cef869939e4ede031857666"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94c052d285a101c0fe3e26d9f0d8019e" id="r_a94c052d285a101c0fe3e26d9f0d8019e"><td class="memItemLeft" align="right" valign="top">std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a94c052d285a101c0fe3e26d9f0d8019e">_pad</a></td></tr>
-<tr class="memdesc:a94c052d285a101c0fe3e26d9f0d8019e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved padding byte (Issue #176: was prev_owns_memory)  <br /></td></tr>
-<tr class="separator:a94c052d285a101c0fe3e26d9f0d8019e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe097fa0656bab921bec5a1a5ed7ac1d" id="r_afe097fa0656bab921bec5a1a5ed7ac1d"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#afe097fa0656bab921bec5a1a5ed7ac1d">granule_size</a></td></tr>
-<tr class="memdesc:afe097fa0656bab921bec5a1a5ed7ac1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: kGranuleSize at creation time; validated on load.  <br /></td></tr>
-<tr class="separator:afe097fa0656bab921bec5a1a5ed7ac1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa2c18d6c49db61acbbd79984c7c457c5" id="r_aa2c18d6c49db61acbbd79984c7c457c5"><td class="memItemLeft" align="right" valign="top">std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#aa2c18d6c49db61acbbd79984c7c457c5">prev_total_size</a></td></tr>
-<tr class="memdesc:aa2c18d6c49db61acbbd79984c7c457c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Previous buffer size in bytes (runtime-only)  <br /></td></tr>
-<tr class="separator:aa2c18d6c49db61acbbd79984c7c457c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95b7c2bdb1d0e22258ed0e07e96e4898" id="r_a95b7c2bdb1d0e22258ed0e07e96e4898"><td class="memItemLeft" align="right" valign="top">std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a95b7c2bdb1d0e22258ed0e07e96e4898">_reserved</a> [8]</td></tr>
-<tr class="memdesc:a95b7c2bdb1d0e22258ed0e07e96e4898"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved bytes (Issue #176: was prev_base_ptr)  <br /></td></tr>
-<tr class="separator:a95b7c2bdb1d0e22258ed0e07e96e4898"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a942739e4796800acfdf773a17ca51758" id="r_a942739e4796800acfdf773a17ca51758"><td class="memItemLeft" align="right" valign="top">std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a942739e4796800acfdf773a17ca51758">magic</a></td></tr>
+<tr class="memdesc:a942739e4796800acfdf773a17ca51758"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager magic number.  <br /></td></tr>
+<tr class="separator:a942739e4796800acfdf773a17ca51758"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35d73e460fc8d82afb28dbd389eff474" id="r_a35d73e460fc8d82afb28dbd389eff474"><td class="memItemLeft" align="right" valign="top">std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a35d73e460fc8d82afb28dbd389eff474">total_size</a></td></tr>
+<tr class="memdesc:a35d73e460fc8d82afb28dbd389eff474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total size of managed area in bytes.  <br /></td></tr>
+<tr class="separator:a35d73e460fc8d82afb28dbd389eff474"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9011ca5c186c9c974833ee9437d47a2d" id="r_a9011ca5c186c9c974833ee9437d47a2d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a9011ca5c186c9c974833ee9437d47a2d">used_size</a></td></tr>
+<tr class="memdesc:a9011ca5c186c9c974833ee9437d47a2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used size in granules (Issue #59)  <br /></td></tr>
+<tr class="separator:a9011ca5c186c9c974833ee9437d47a2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98e908fb35db2b1d9d0f7d316d335cb1" id="r_a98e908fb35db2b1d9d0f7d316d335cb1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a98e908fb35db2b1d9d0f7d316d335cb1">block_count</a></td></tr>
+<tr class="memdesc:a98e908fb35db2b1d9d0f7d316d335cb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of blocks.  <br /></td></tr>
+<tr class="separator:a98e908fb35db2b1d9d0f7d316d335cb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2f687e0f64c73dbb41cc520b58daa28" id="r_ac2f687e0f64c73dbb41cc520b58daa28"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ac2f687e0f64c73dbb41cc520b58daa28">free_count</a></td></tr>
+<tr class="memdesc:ac2f687e0f64c73dbb41cc520b58daa28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of free blocks.  <br /></td></tr>
+<tr class="separator:ac2f687e0f64c73dbb41cc520b58daa28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05d63db2e83a65815bc121c9c18369c1" id="r_a05d63db2e83a65815bc121c9c18369c1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a05d63db2e83a65815bc121c9c18369c1">alloc_count</a></td></tr>
+<tr class="memdesc:a05d63db2e83a65815bc121c9c18369c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of allocated blocks.  <br /></td></tr>
+<tr class="separator:a05d63db2e83a65815bc121c9c18369c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3ab14572b4497c20617262c3b8dbd7d" id="r_aa3ab14572b4497c20617262c3b8dbd7d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#aa3ab14572b4497c20617262c3b8dbd7d">first_block_offset</a></td></tr>
+<tr class="memdesc:aa3ab14572b4497c20617262c3b8dbd7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">First block (granule index)  <br /></td></tr>
+<tr class="separator:aa3ab14572b4497c20617262c3b8dbd7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac506fd403b8f6b2761177bfb13821204" id="r_ac506fd403b8f6b2761177bfb13821204"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ac506fd403b8f6b2761177bfb13821204">last_block_offset</a></td></tr>
+<tr class="memdesc:ac506fd403b8f6b2761177bfb13821204"><td class="mdescLeft">&#160;</td><td class="mdescRight">[Issue #57 opt 4] Last block (granule index)  <br /></td></tr>
+<tr class="separator:ac506fd403b8f6b2761177bfb13821204"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac282e37768152b5f235095ddb56a9a61" id="r_ac282e37768152b5f235095ddb56a9a61"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ac282e37768152b5f235095ddb56a9a61">free_tree_root</a></td></tr>
+<tr class="memdesc:ac282e37768152b5f235095ddb56a9a61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root of AVL tree of free blocks (granule index)  <br /></td></tr>
+<tr class="separator:ac282e37768152b5f235095ddb56a9a61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdc1b2c0302cbf107c498e37ca620c70" id="r_abdc1b2c0302cbf107c498e37ca620c70"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#abdc1b2c0302cbf107c498e37ca620c70">owns_memory</a></td></tr>
+<tr class="memdesc:abdc1b2c0302cbf107c498e37ca620c70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager owns buffer (runtime-only)  <br /></td></tr>
+<tr class="separator:abdc1b2c0302cbf107c498e37ca620c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b82e5962444770066f9be5a66f422c4" id="r_a9b82e5962444770066f9be5a66f422c4"><td class="memItemLeft" align="right" valign="top">std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a9b82e5962444770066f9be5a66f422c4">_pad</a></td></tr>
+<tr class="memdesc:a9b82e5962444770066f9be5a66f422c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved padding byte (Issue #176: was prev_owns_memory)  <br /></td></tr>
+<tr class="separator:a9b82e5962444770066f9be5a66f422c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51fef3fead651864410af3bcde223308" id="r_a51fef3fead651864410af3bcde223308"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a51fef3fead651864410af3bcde223308">granule_size</a></td></tr>
+<tr class="memdesc:a51fef3fead651864410af3bcde223308"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #83: kGranuleSize at creation time; validated on load.  <br /></td></tr>
+<tr class="separator:a51fef3fead651864410af3bcde223308"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73648a0a9110ff96d9880d8fa8a24878" id="r_a73648a0a9110ff96d9880d8fa8a24878"><td class="memItemLeft" align="right" valign="top">std::uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a73648a0a9110ff96d9880d8fa8a24878">prev_total_size</a></td></tr>
+<tr class="memdesc:a73648a0a9110ff96d9880d8fa8a24878"><td class="mdescLeft">&#160;</td><td class="mdescRight">Previous buffer size in bytes (runtime-only)  <br /></td></tr>
+<tr class="separator:a73648a0a9110ff96d9880d8fa8a24878"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f4ed978a036cff07de4b9209f469aa3" id="r_a7f4ed978a036cff07de4b9209f469aa3"><td class="memItemLeft" align="right" valign="top">std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a7f4ed978a036cff07de4b9209f469aa3">_reserved</a> [8]</td></tr>
+<tr class="memdesc:a7f4ed978a036cff07de4b9209f469aa3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved bytes (Issue #176: was prev_base_ptr)  <br /></td></tr>
+<tr class="separator:a7f4ed978a036cff07de4b9209f469aa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Manager header (Issue #59: 64 bytes). All _offset fields are granule indices. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields). </p>
+<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> = DefaultAddressTraits&gt;<br />
+struct pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</div><p>Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support). All _offset and counter fields use index_type, so LargeDBConfig uses uint64_t indices and DefaultAddressTraits keeps uint32_t with exactly 64 bytes as before. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields). </p>
+<p>Layout for DefaultAddressTraits (uint32_t): magic (8) + total_size (8) + 7×uint32_t + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#abdc1b2c0302cbf107c498e37ca620c70" title="Manager owns buffer (runtime-only)">owns_memory(1)</a> + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a9b82e5962444770066f9be5a66f422c4" title="Reserved padding byte (Issue #176: was prev_owns_memory)">_pad(1)</a> + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a51fef3fead651864410af3bcde223308" title="Issue #83: kGranuleSize at creation time; validated on load.">granule_size(2)</a> + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a73648a0a9110ff96d9880d8fa8a24878" title="Previous buffer size in bytes (runtime-only)">prev_total_size(8)</a> + _reserved[8] = 64 bytes For LargeAddressTraits (uint64_t): sizeof = 16 + 56 + 4*(+4 padding) + 16 = 96 bytes → occupies ceil(96/64) = 2 granules = 128 bytes via kManagerHeaderGranules_t&lt;AT&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00139">139</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
-</div><h2 class="groupheader">Member Data Documentation</h2>
-<a id="a94c052d285a101c0fe3e26d9f0d8019e" name="a94c052d285a101c0fe3e26d9f0d8019e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a94c052d285a101c0fe3e26d9f0d8019e">&#9670;&#160;</a></span>_pad</h2>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00149">149</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
+<a id="af9a78db8736e1b359bf614e2cbad739c" name="af9a78db8736e1b359bf614e2cbad739c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9a78db8736e1b359bf614e2cbad739c">&#9670;&#160;</a></span>index_type</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint8_t pmm::detail::ManagerHeader::_pad</td>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">using</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::index_type =  <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00151">151</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a9b82e5962444770066f9be5a66f422c4" name="a9b82e5962444770066f9be5a66f422c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b82e5962444770066f9be5a66f422c4">&#9670;&#160;</a></span>_pad</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::uint8_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::_pad</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Reserved padding byte (Issue #176: was prev_owns_memory) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00151">151</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00163">163</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a95b7c2bdb1d0e22258ed0e07e96e4898" name="a95b7c2bdb1d0e22258ed0e07e96e4898"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a95b7c2bdb1d0e22258ed0e07e96e4898">&#9670;&#160;</a></span>_reserved</h2>
+<a id="a7f4ed978a036cff07de4b9209f469aa3" name="a7f4ed978a036cff07de4b9209f469aa3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f4ed978a036cff07de4b9209f469aa3">&#9670;&#160;</a></span>_reserved</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint8_t pmm::detail::ManagerHeader::_reserved[8]</td>
+          <td class="memname">std::uint8_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::_reserved[8]</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Reserved bytes (Issue #176: was prev_base_ptr) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00154">154</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00166">166</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a4d072b6578f7851810f262aa52cb317f" name="a4d072b6578f7851810f262aa52cb317f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d072b6578f7851810f262aa52cb317f">&#9670;&#160;</a></span>alloc_count</h2>
+<a id="a05d63db2e83a65815bc121c9c18369c1" name="a05d63db2e83a65815bc121c9c18369c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05d63db2e83a65815bc121c9c18369c1">&#9670;&#160;</a></span>alloc_count</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint32_t pmm::detail::ManagerHeader::alloc_count</td>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::alloc_count</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Number of allocated blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00146">146</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00158">158</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="aea2cb09874399a51a0fe0f04b54511ac" name="aea2cb09874399a51a0fe0f04b54511ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aea2cb09874399a51a0fe0f04b54511ac">&#9670;&#160;</a></span>block_count</h2>
+<a id="a98e908fb35db2b1d9d0f7d316d335cb1" name="a98e908fb35db2b1d9d0f7d316d335cb1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98e908fb35db2b1d9d0f7d316d335cb1">&#9670;&#160;</a></span>block_count</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint32_t pmm::detail::ManagerHeader::block_count</td>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::block_count</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Total number of blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00144">144</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00156">156</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a6c7158ef889525b96c7feefc41239aa7" name="a6c7158ef889525b96c7feefc41239aa7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6c7158ef889525b96c7feefc41239aa7">&#9670;&#160;</a></span>first_block_offset</h2>
+<a id="aa3ab14572b4497c20617262c3b8dbd7d" name="aa3ab14572b4497c20617262c3b8dbd7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3ab14572b4497c20617262c3b8dbd7d">&#9670;&#160;</a></span>first_block_offset</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint32_t pmm::detail::ManagerHeader::first_block_offset</td>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::first_block_offset</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>First block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00147">147</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00159">159</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a2b092b237146c534590323c2ed5c6b4e" name="a2b092b237146c534590323c2ed5c6b4e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2b092b237146c534590323c2ed5c6b4e">&#9670;&#160;</a></span>free_count</h2>
+<a id="ac2f687e0f64c73dbb41cc520b58daa28" name="ac2f687e0f64c73dbb41cc520b58daa28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2f687e0f64c73dbb41cc520b58daa28">&#9670;&#160;</a></span>free_count</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint32_t pmm::detail::ManagerHeader::free_count</td>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::free_count</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Number of free blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00145">145</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00157">157</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a0bdbe2a563639a989f9eb61399b8d5b7" name="a0bdbe2a563639a989f9eb61399b8d5b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0bdbe2a563639a989f9eb61399b8d5b7">&#9670;&#160;</a></span>free_tree_root</h2>
+<a id="ac282e37768152b5f235095ddb56a9a61" name="ac282e37768152b5f235095ddb56a9a61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac282e37768152b5f235095ddb56a9a61">&#9670;&#160;</a></span>free_tree_root</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint32_t pmm::detail::ManagerHeader::free_tree_root</td>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::free_tree_root</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Root of AVL tree of free blocks (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00149">149</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00161">161</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="afe097fa0656bab921bec5a1a5ed7ac1d" name="afe097fa0656bab921bec5a1a5ed7ac1d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afe097fa0656bab921bec5a1a5ed7ac1d">&#9670;&#160;</a></span>granule_size</h2>
+<a id="a51fef3fead651864410af3bcde223308" name="a51fef3fead651864410af3bcde223308"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51fef3fead651864410af3bcde223308">&#9670;&#160;</a></span>granule_size</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint16_t pmm::detail::ManagerHeader::granule_size</td>
+          <td class="memname">std::uint16_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::granule_size</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Issue #83: kGranuleSize at creation time; validated on load. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00152">152</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00164">164</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a55c9b27bffc2b3df1a909019a280b484" name="a55c9b27bffc2b3df1a909019a280b484"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a55c9b27bffc2b3df1a909019a280b484">&#9670;&#160;</a></span>last_block_offset</h2>
+<a id="ac506fd403b8f6b2761177bfb13821204" name="ac506fd403b8f6b2761177bfb13821204"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac506fd403b8f6b2761177bfb13821204">&#9670;&#160;</a></span>last_block_offset</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint32_t pmm::detail::ManagerHeader::last_block_offset</td>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::last_block_offset</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>[Issue #57 opt 4] Last block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00148">148</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00160">160</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a917ab780875d490249654a77dbeac617" name="a917ab780875d490249654a77dbeac617"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a917ab780875d490249654a77dbeac617">&#9670;&#160;</a></span>magic</h2>
+<a id="a942739e4796800acfdf773a17ca51758" name="a942739e4796800acfdf773a17ca51758"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a942739e4796800acfdf773a17ca51758">&#9670;&#160;</a></span>magic</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint64_t pmm::detail::ManagerHeader::magic</td>
+          <td class="memname">std::uint64_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::magic</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Manager magic number. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00141">141</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00153">153</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a56a57d4f7cef869939e4ede031857666" name="a56a57d4f7cef869939e4ede031857666"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56a57d4f7cef869939e4ede031857666">&#9670;&#160;</a></span>owns_memory</h2>
+<a id="abdc1b2c0302cbf107c498e37ca620c70" name="abdc1b2c0302cbf107c498e37ca620c70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdc1b2c0302cbf107c498e37ca620c70">&#9670;&#160;</a></span>owns_memory</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">bool</a> pmm::detail::ManagerHeader::owns_memory</td>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::owns_memory</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Manager owns buffer (runtime-only) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00150">150</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00162">162</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="aa2c18d6c49db61acbbd79984c7c457c5" name="aa2c18d6c49db61acbbd79984c7c457c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2c18d6c49db61acbbd79984c7c457c5">&#9670;&#160;</a></span>prev_total_size</h2>
+<a id="a73648a0a9110ff96d9880d8fa8a24878" name="a73648a0a9110ff96d9880d8fa8a24878"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73648a0a9110ff96d9880d8fa8a24878">&#9670;&#160;</a></span>prev_total_size</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint64_t pmm::detail::ManagerHeader::prev_total_size</td>
+          <td class="memname">std::uint64_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::prev_total_size</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Previous buffer size in bytes (runtime-only) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00153">153</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00165">165</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a4fe53f7d0320767844b4341379dbb23e" name="a4fe53f7d0320767844b4341379dbb23e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4fe53f7d0320767844b4341379dbb23e">&#9670;&#160;</a></span>total_size</h2>
+<a id="a35d73e460fc8d82afb28dbd389eff474" name="a35d73e460fc8d82afb28dbd389eff474"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35d73e460fc8d82afb28dbd389eff474">&#9670;&#160;</a></span>total_size</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint64_t pmm::detail::ManagerHeader::total_size</td>
+          <td class="memname">std::uint64_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::total_size</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Total size of managed area in bytes. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00142">142</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00154">154</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
-<a id="a9d4a92b692a6dcd20bbfe445363ddf9d" name="a9d4a92b692a6dcd20bbfe445363ddf9d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9d4a92b692a6dcd20bbfe445363ddf9d">&#9670;&#160;</a></span>used_size</h2>
+<a id="a9011ca5c186c9c974833ee9437d47a2d" name="a9011ca5c186c9c974833ee9437d47a2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9011ca5c186c9c974833ee9437d47a2d">&#9670;&#160;</a></span>used_size</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::uint32_t pmm::detail::ManagerHeader::used_size</td>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::used_size</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Used size in granules (Issue #59) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00143">143</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00155">155</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>

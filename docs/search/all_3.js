@@ -6,7 +6,7 @@ var searchData=
   ['char_5fpptr_3',['char_pptr',['../structpmm_1_1pstringview.html#a25f03e86ea7af0874cffdebef6e868dc',1,'pmm::pstringview']]],
   ['chars_5fidx_4',['chars_idx',['../structpmm_1_1pstringview.html#aaaa65ad48e69ed340a38e1d2fd9d3e54',1,'pmm::pstringview']]],
   ['close_5',['close',['../classpmm_1_1MMapStorage.html#a6e20811680162e59d9227d1965152377',1,'pmm::MMapStorage']]],
-  ['coalesce_6',['coalesce',['../classpmm_1_1AllocatorPolicy.html#a287f20d7d69fb7efea3f8df52bac6d0b',1,'pmm::AllocatorPolicy']]],
+  ['coalesce_6',['coalesce',['../classpmm_1_1AllocatorPolicy.html#ab32a19b815b6ce4858f4833e8e024608',1,'pmm::AllocatorPolicy']]],
   ['coalesce_5fwith_5fnext_7',['coalesce_with_next',['../classpmm_1_1CoalescingBlock.html#ab3e5dcdbe604e041f31559a29b0ef6b4',1,'pmm::CoalescingBlock']]],
   ['coalesce_5fwith_5fprev_8',['coalesce_with_prev',['../classpmm_1_1CoalescingBlock.html#a4b26c1258d705dae31cd4bda1330bdcd',1,'pmm::CoalescingBlock']]],
   ['coalescingblock_9',['CoalescingBlock',['../classpmm_1_1CoalescingBlock.html',1,'pmm']]],
