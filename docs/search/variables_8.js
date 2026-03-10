@@ -13,13 +13,14 @@ var searchData=
   ['kmingranulesize_10',['kMinGranuleSize',['../namespacepmm.html#ad7ae412e928bca11f0e3687e2acf680d',1,'pmm']]],
   ['kminmemorysize_11',['kMinMemorySize',['../namespacepmm_1_1detail.html#a049a972c096254cddb69b417750c54da',1,'pmm::detail']]],
   ['knoblock_12',['kNoBlock',['../namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e',1,'pmm::detail']]],
-  ['koffsetavlheight_13',['kOffsetAvlHeight',['../classpmm_1_1BlockStateBase.html#af4e69f6da12c1e0dc674a5d3e8683911',1,'pmm::BlockStateBase']]],
-  ['koffsetleftoffset_14',['kOffsetLeftOffset',['../classpmm_1_1BlockStateBase.html#a9136f988103a51137c2b8426973a7f68',1,'pmm::BlockStateBase']]],
-  ['koffsetnextoffset_15',['kOffsetNextOffset',['../classpmm_1_1BlockStateBase.html#a00e9b10610fac2190098bffadb06acb8',1,'pmm::BlockStateBase']]],
-  ['koffsetnodetype_16',['kOffsetNodeType',['../classpmm_1_1BlockStateBase.html#a07dbf77c3aac828bb413349fc84bb275',1,'pmm::BlockStateBase']]],
-  ['koffsetparentoffset_17',['kOffsetParentOffset',['../classpmm_1_1BlockStateBase.html#af907b101dce0282573ecd77d7edb2318',1,'pmm::BlockStateBase']]],
-  ['koffsetprevoffset_18',['kOffsetPrevOffset',['../classpmm_1_1BlockStateBase.html#a490dc724d1c4303eb66730d8f0122233',1,'pmm::BlockStateBase']]],
-  ['koffsetrightoffset_19',['kOffsetRightOffset',['../classpmm_1_1BlockStateBase.html#adc2e9f1fef6dabd8606f7fc0d9d35fd1',1,'pmm::BlockStateBase']]],
-  ['koffsetrootoffset_20',['kOffsetRootOffset',['../classpmm_1_1BlockStateBase.html#ac34402bb25d700c343c1c38fa367f4a3',1,'pmm::BlockStateBase']]],
-  ['koffsetweight_21',['kOffsetWeight',['../classpmm_1_1BlockStateBase.html#a62f751f73050ee88505271cb7fbe67aa',1,'pmm::BlockStateBase']]]
+  ['knoblock_5fv_13',['kNoBlock_v',['../namespacepmm_1_1detail.html#ac8238d730b912b3d2ea95864aa3fa3de',1,'pmm::detail']]],
+  ['koffsetavlheight_14',['kOffsetAvlHeight',['../classpmm_1_1BlockStateBase.html#af4e69f6da12c1e0dc674a5d3e8683911',1,'pmm::BlockStateBase']]],
+  ['koffsetleftoffset_15',['kOffsetLeftOffset',['../classpmm_1_1BlockStateBase.html#a9136f988103a51137c2b8426973a7f68',1,'pmm::BlockStateBase']]],
+  ['koffsetnextoffset_16',['kOffsetNextOffset',['../classpmm_1_1BlockStateBase.html#a00e9b10610fac2190098bffadb06acb8',1,'pmm::BlockStateBase']]],
+  ['koffsetnodetype_17',['kOffsetNodeType',['../classpmm_1_1BlockStateBase.html#a07dbf77c3aac828bb413349fc84bb275',1,'pmm::BlockStateBase']]],
+  ['koffsetparentoffset_18',['kOffsetParentOffset',['../classpmm_1_1BlockStateBase.html#af907b101dce0282573ecd77d7edb2318',1,'pmm::BlockStateBase']]],
+  ['koffsetprevoffset_19',['kOffsetPrevOffset',['../classpmm_1_1BlockStateBase.html#a490dc724d1c4303eb66730d8f0122233',1,'pmm::BlockStateBase']]],
+  ['koffsetrightoffset_20',['kOffsetRightOffset',['../classpmm_1_1BlockStateBase.html#adc2e9f1fef6dabd8606f7fc0d9d35fd1',1,'pmm::BlockStateBase']]],
+  ['koffsetrootoffset_21',['kOffsetRootOffset',['../classpmm_1_1BlockStateBase.html#ac34402bb25d700c343c1c38fa367f4a3',1,'pmm::BlockStateBase']]],
+  ['koffsetweight_22',['kOffsetWeight',['../classpmm_1_1BlockStateBase.html#a62f751f73050ee88505271cb7fbe67aa',1,'pmm::BlockStateBase']]]
 ];
