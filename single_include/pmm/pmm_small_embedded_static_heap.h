@@ -1,7 +1,6 @@
 /**
  * @file pmm_small_embedded_static_heap.h
- * @brief PMM preset: SmallEmbeddedStaticHeap — NoLock + StaticStorage/16B granule/16-bit index
- * (SmallEmbeddedStaticConfig)
+ * @brief PMM preset: SmallEmbeddedStaticHeap — NoLock + StaticStorage/16B granule/16-bit index (SmallEmbeddedStaticConfig)
  *
  * Thin single-header preset file for the PersistMemoryManager library
  * (https://github.com/netkeep80/PersistMemoryManager).
