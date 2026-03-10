@@ -121,11 +121,6 @@ static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) ==
 static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 5 * sizeof( std::uint32_t ) + 4,
                "TreeNode<DefaultAddressTraits> must be 24 bytes (Issue #87, #126)" );
 
-/// @brief Number of granules per block header (2 granules = 32 bytes, Issue #112)
-/// @deprecated Use kBlockHeaderGranules_t<DefaultAddressTraits> for new code (Issue #168).
-/// For DefaultAddressTraits this is equivalent; use the templated form for non-default AT.
-inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( pmm::Block<pmm::DefaultAddressTraits> ) / kGranuleSize;
-
 // kBlockMagic removed (Issue #69): block validity now uses is_valid_block() structural invariants.
 /// Issue #87 Phase 1: matches DefaultAddressTraits::no_block.
 inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: no block (granule index)
@@ -308,10 +303,6 @@ template <typename AddressTraitsT>
 inline constexpr std::uint32_t kBlockHeaderGranules_t = static_cast<std::uint32_t>(
     ( sizeof( pmm::Block<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
 
-// Issue #168: verify non-templated kBlockHeaderGranules matches the templated version for DefaultAddressTraits.
-static_assert( kBlockHeaderGranules == kBlockHeaderGranules_t<pmm::DefaultAddressTraits>,
-               "kBlockHeaderGranules must match kBlockHeaderGranules_t<DefaultAddressTraits> (Issue #168)" );
-
 /// @brief Manager header size in granules for AddressTraitsT (Issue #146).
 /// For 16B granule: 64/16 = 4. For 64B granule: 64/64 = 1.
 template <typename AddressTraitsT>
@@ -466,7 +457,7 @@ inline std::uint32_t required_block_granules( std::size_t user_bytes )
     std::uint32_t data_granules = bytes_to_granules( user_bytes );
     if ( data_granules == 0 )
         data_granules = 1;
-    return kBlockHeaderGranules + data_granules;
+    return kBlockHeaderGranules_t<pmm::DefaultAddressTraits> + data_granules;
 }
 
 /// @brief Issue #166: Templated variant of required_block_granules for any AddressTraitsT.

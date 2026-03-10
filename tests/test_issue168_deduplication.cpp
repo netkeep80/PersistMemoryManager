@@ -7,13 +7,13 @@
  *       reset_block_avl_fields(), repair_block_prev_offset(),
  *       read_block_next_offset(), read_block_weight()
  *   - AllocatorPolicy использует BlockStateBase<AT>::* напрямую (Issue #168)
- *   - detail::kBlockHeaderGranules == kBlockHeaderGranules_t<DefaultAddressTraits> (Issue #168)
+ *   - detail::kBlockHeaderGranules_t<AT> корректно вычисляет размер заголовка блока (Issue #168)
  *   - Функциональность recovery-методов (rebuild_free_tree, repair_linked_list,
  *     recompute_counters) не изменилась после рефакторинга
  *
  * @see include/pmm/block_state.h    — BlockStateBase<AT>::* методы (Issue #168)
  * @see include/pmm/allocator_policy.h — AllocatorPolicy (Issue #168)
- * @see include/pmm/types.h          — detail::kBlockHeaderGranules (deprecated)
+ * @see include/pmm/types.h          — detail::kBlockHeaderGranules_t<AT> (Issue #168)
  * @version 0.1 (Issue #168 — дедупликация функций-обёрток)
  */
 
@@ -57,18 +57,16 @@
     } while ( false )
 
 // =============================================================================
-// Issue #168 Tests Section A: kBlockHeaderGranules == kBlockHeaderGranules_t<DefaultAddressTraits>
+// Issue #168 Tests Section A: kBlockHeaderGranules_t<AT> correctness
 // =============================================================================
 
-/// @brief kBlockHeaderGranules (deprecated) matches kBlockHeaderGranules_t<DefaultAddressTraits>.
+/// @brief kBlockHeaderGranules_t<DefaultAddressTraits> is correct (2 granules = 32 bytes / 16 bytes).
 static bool test_i168_kBlockHeaderGranules_matches_templated()
 {
     using AT = pmm::DefaultAddressTraits;
 
-    static_assert( pmm::detail::kBlockHeaderGranules == pmm::detail::kBlockHeaderGranules_t<AT>,
-                   "kBlockHeaderGranules must equal kBlockHeaderGranules_t<DefaultAddressTraits> (Issue #168)" );
-    static_assert( pmm::detail::kBlockHeaderGranules == 2,
-                   "kBlockHeaderGranules must be 2 for DefaultAddressTraits (32 bytes / 16 bytes)" );
+    static_assert( pmm::detail::kBlockHeaderGranules_t<AT> == 2,
+                   "kBlockHeaderGranules_t<DefaultAddressTraits> must be 2 (32 bytes / 16 bytes, Issue #168)" );
     return true;
 }
 
@@ -342,8 +340,8 @@ int main()
     std::cout << "=== test_issue168_deduplication (Issue #168: Deduplication) ===\n\n";
     bool all_passed = true;
 
-    std::cout << "--- I168-A: kBlockHeaderGranules == kBlockHeaderGranules_t<DefaultAddressTraits> ---\n";
-    PMM_RUN( "I168-A1: kBlockHeaderGranules matches templated version",
+    std::cout << "--- I168-A: kBlockHeaderGranules_t<AT> correctness ---\n";
+    PMM_RUN( "I168-A1: kBlockHeaderGranules_t<DefaultAddressTraits> == 2",
              test_i168_kBlockHeaderGranules_matches_templated );
     PMM_RUN( "I168-A2: kBlockHeaderGranules_t<SmallAddressTraits> is correct", test_i168_kBlockHeaderGranules_t_small );
     PMM_RUN( "I168-A3: kBlockHeaderGranules_t<LargeAddressTraits> is >= 1", test_i168_kBlockHeaderGranules_t_large );
