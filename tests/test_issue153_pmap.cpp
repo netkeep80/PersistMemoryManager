@@ -200,11 +200,14 @@ static bool test_i153_update_on_duplicate_key()
 }
 
 // =============================================================================
-// I153-D: Block locking (Issue #126)
+// I153-D: Block locking (Issue #155)
 // =============================================================================
 
-/// @brief After insert(), the node block is permanently locked.
-static bool test_i153_node_block_permanently_locked()
+/// @brief After insert(), pmap node blocks are NOT permanently locked (Issue #155).
+///
+/// Unlike pstringview (where interning semantics require permanent lock), pmap
+/// nodes are regular allocations that can be freed when removed from the tree.
+static bool test_i153_node_block_not_permanently_locked()
 {
     TestMgr::destroy();
     PMM_TEST( TestMgr::create( 64 * 1024 ) );
@@ -216,14 +219,8 @@ static bool test_i153_node_block_permanently_locked()
     auto* node = p.resolve();
     PMM_TEST( node != nullptr );
 
-    // The node block must be permanently locked
-    PMM_TEST( TestMgr::is_permanently_locked( node ) == true );
-
-    // Verify we cannot free it (deallocate is a no-op for locked blocks)
-    std::size_t alloc_before = TestMgr::alloc_block_count();
-    TestMgr::deallocate( node );
-    std::size_t alloc_after = TestMgr::alloc_block_count();
-    PMM_TEST( alloc_before == alloc_after ); // Block not freed
+    // pmap node blocks are NOT permanently locked (Issue #155)
+    PMM_TEST( TestMgr::is_permanently_locked( node ) == false );
 
     TestMgr::destroy();
     return true;
@@ -511,8 +508,8 @@ int main()
     std::cout << "  I153-C: Update on duplicate key\n";
     PMM_RUN( "    insert with existing key updates value", test_i153_update_on_duplicate_key );
 
-    std::cout << "  I153-D: Block locking (Issue #126)\n";
-    PMM_RUN( "    node block permanently locked after insert", test_i153_node_block_permanently_locked );
+    std::cout << "  I153-D: Block locking (Issue #155)\n";
+    PMM_RUN( "    pmap node block NOT permanently locked (Issue #155)", test_i153_node_block_not_permanently_locked );
 
     std::cout << "  I153-E: Built-in AVL tree structure\n";
     PMM_RUN( "    AVL tree via built-in TreeNode fields", test_i153_avl_tree_structure );

@@ -3304,7 +3304,7 @@ using DefaultAllocatorPolicy = AllocatorPolicy<AvlFreeTree<DefaultAddressTraits>
  *   - Встроенный AVL: узлы используют встроенные TreeNode-поля Block<AT> без
  *     дополнительных аллокаций структур дерева.
  *   - Не дублирует ключи: повторная вставка по существующему ключу обновляет значение.
- *   - Блокировка: узлы блокируются навечно через lock_block_permanent() (Issue #126).
+ *   - Узлы НЕ блокируются навечно (в отличие от pstringview — Issue #155).
  *   - Тип ключа _K должен поддерживать operator< и operator==.
  *
  * Пример использования:
@@ -3343,10 +3343,227 @@ using DefaultAllocatorPolicy = AllocatorPolicy<AvlFreeTree<DefaultAddressTraits>
  * @endcode
  *
  * @see pstringview.h — аналогичный тип с AVL-деревом (Issue #151)
+ * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока)
- * @version 0.1 (Issue #153 — реализация pmap<_K,_V>)
+ * @version 0.2 (Issue #155 — устранение дублирования AVL-кода, удаление lock_block_permanent)
  */
+
+/**
+ * @file pmm/avl_tree_mixin.h
+ * @brief Shared AVL tree helper functions for pmap and pstringview (Issue #155).
+ *
+ * Provides a set of free static template functions implementing the core AVL
+ * tree operations (height, balance factor, rotations, rebalancing) that are
+ * shared between pmap<_K,_V,ManagerT> and pstringview<ManagerT>.
+ *
+ * Both pmap and pstringview use the same AVL logic via pptr<T,ManagerT> — the
+ * only difference is the pptr type and the comparison key. This header factors
+ * out the common tree structure code, eliminating ~130 lines of duplication.
+ *
+ * Template parameter PPtr must support:
+ *   - is_null()
+ *   - get_tree_left(), get_tree_right(), get_tree_parent()
+ *   - set_tree_left(), set_tree_right(), set_tree_parent()
+ *   - get_tree_height(), set_tree_height()
+ *   - offset()
+ *
+ * @see pmap.h — pmap<_K,_V,ManagerT> (Issue #153)
+ * @see pstringview.h — pstringview<ManagerT> (Issue #151)
+ * @version 0.1 (Issue #155 — code deduplication)
+ */
+
+#include <cstdint>
+
+namespace pmm
+{
+namespace detail
+{
+
+/// @brief Get height of node (0 if null).
+template <typename PPtr> static std::int16_t avl_height( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return 0;
+    return p.get_tree_height();
+}
+
+/// @brief Update height of node from its children.
+template <typename PPtr> static void avl_update_height( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return;
+    std::int16_t lh = avl_height( PPtr( p.get_tree_left().offset() ) );
+    std::int16_t rh = avl_height( PPtr( p.get_tree_right().offset() ) );
+    std::int16_t h  = static_cast<std::int16_t>( 1 + ( lh > rh ? lh : rh ) );
+    p.set_tree_height( h );
+}
+
+/// @brief Balance factor: height(left) - height(right).
+template <typename PPtr> static std::int16_t avl_balance_factor( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return 0;
+    std::int16_t lh = avl_height( PPtr( p.get_tree_left().offset() ) );
+    std::int16_t rh = avl_height( PPtr( p.get_tree_right().offset() ) );
+    return static_cast<std::int16_t>( lh - rh );
+}
+
+/// @brief Update parent → child link (or root if parent is null).
+/// @param root_idx Reference to the tree's root index, updated when parent is null.
+template <typename PPtr, typename IndexType>
+static void avl_set_child( PPtr parent, PPtr old_child, PPtr new_child, IndexType& root_idx ) noexcept
+{
+    if ( parent.is_null() )
+    {
+        root_idx = new_child.offset();
+        return;
+    }
+    PPtr left_of_parent( parent.get_tree_left().offset() );
+    if ( left_of_parent == old_child )
+        parent.set_tree_left( new_child );
+    else
+        parent.set_tree_right( new_child );
+}
+
+/**
+ * @brief Right rotation around y; returns new subtree root (x).
+ *
+ *     y            x
+ *    / \          / \
+ *   x   C  -->  A    y
+ *  / \               / \
+ * A   B             B   C
+ */
+template <typename PPtr, typename IndexType> static PPtr avl_rotate_right( PPtr y, IndexType& root_idx ) noexcept
+{
+    PPtr x     = PPtr( y.get_tree_left().offset() );
+    PPtr b     = PPtr( x.get_tree_right().offset() );
+    PPtr y_par = PPtr( y.get_tree_parent().offset() );
+
+    x.set_tree_right( y );
+    y.set_tree_parent( x );
+
+    y.set_tree_left( b );
+    if ( !b.is_null() )
+        b.set_tree_parent( y );
+
+    x.set_tree_parent( y_par );
+
+    avl_set_child( y_par, y, x, root_idx );
+
+    avl_update_height( y );
+    avl_update_height( x );
+    return x;
+}
+
+/**
+ * @brief Left rotation around x; returns new subtree root (y).
+ *
+ *   x               y
+ *  / \             / \
+ * A   y   -->    x    C
+ *    / \        / \
+ *   B   C      A   B
+ */
+template <typename PPtr, typename IndexType> static PPtr avl_rotate_left( PPtr x, IndexType& root_idx ) noexcept
+{
+    PPtr y     = PPtr( x.get_tree_right().offset() );
+    PPtr b     = PPtr( y.get_tree_left().offset() );
+    PPtr x_par = PPtr( x.get_tree_parent().offset() );
+
+    y.set_tree_left( x );
+    x.set_tree_parent( y );
+
+    x.set_tree_right( b );
+    if ( !b.is_null() )
+        b.set_tree_parent( x );
+
+    y.set_tree_parent( x_par );
+
+    avl_set_child( x_par, x, y, root_idx );
+
+    avl_update_height( x );
+    avl_update_height( y );
+    return y;
+}
+
+/// @brief Rebalance from node p upward to root.
+template <typename PPtr, typename IndexType> static void avl_rebalance_up( PPtr p, IndexType& root_idx ) noexcept
+{
+    while ( !p.is_null() )
+    {
+        avl_update_height( p );
+        std::int16_t bf = avl_balance_factor( p );
+        if ( bf > 1 )
+        {
+            PPtr left( p.get_tree_left().offset() );
+            if ( avl_balance_factor( left ) < 0 )
+                avl_rotate_left( left, root_idx );
+            p = avl_rotate_right( p, root_idx );
+        }
+        else if ( bf < -1 )
+        {
+            PPtr right( p.get_tree_right().offset() );
+            if ( avl_balance_factor( right ) > 0 )
+                avl_rotate_right( right, root_idx );
+            p = avl_rotate_left( p, root_idx );
+        }
+        p = PPtr( p.get_tree_parent().offset() );
+    }
+}
+
+/// @brief Insert new_node into the AVL tree with the given root.
+/// The caller must resolve the comparison ordering via go_left callback.
+/// @param new_node  The node to insert (must not be null, not already in tree).
+/// @param root_idx  Reference to the tree root index.
+/// @param go_left   Callable(cur_node_ptr) -> bool: returns true if new_node < cur.
+/// @param resolve   Callable(pptr) -> NodeObjPtr: resolves pptr to raw object pointer.
+template <typename PPtr, typename IndexType, typename GoLeftFn, typename ResolveFn>
+static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, ResolveFn&& resolve ) noexcept
+{
+    if ( new_node.is_null() )
+        return;
+    if ( resolve( new_node ) == nullptr )
+        return;
+
+    if ( root_idx == static_cast<IndexType>( 0 ) )
+    {
+        new_node.set_tree_left( PPtr() );
+        new_node.set_tree_right( PPtr() );
+        new_node.set_tree_parent( PPtr() );
+        new_node.set_tree_height( static_cast<std::int16_t>( 1 ) );
+        root_idx = new_node.offset();
+        return;
+    }
+
+    PPtr cur( root_idx );
+    PPtr parent;
+    bool left = false;
+
+    while ( !cur.is_null() )
+    {
+        if ( resolve( cur ) == nullptr )
+            break;
+        parent = cur;
+        left   = go_left( cur );
+        if ( left )
+            cur = PPtr( cur.get_tree_left().offset() );
+        else
+            cur = PPtr( cur.get_tree_right().offset() );
+    }
+
+    new_node.set_tree_parent( parent );
+    if ( left )
+        parent.set_tree_left( new_node );
+    else
+        parent.set_tree_right( new_node );
+
+    avl_rebalance_up( parent, root_idx );
+}
+
+} // namespace detail
+} // namespace pmm
 
 #include <cstddef>
 #include <cstdint>
@@ -3388,7 +3605,8 @@ template <typename _K, typename _V> struct pmap_node
  * Особенности:
  *   - Вставка/поиск за O(log n).
  *   - Повторная вставка по существующему ключу обновляет значение.
- *   - Узлы блокируются через lock_block_permanent() (Issue #126).
+ *   - Узлы НЕ блокируются навечно (Issue #155): в отличие от pstringview, узлы
+ *     pmap могут быть освобождены после удаления из дерева.
  *
  * @tparam _K       Тип ключа. Должен поддерживать operator< и operator==.
  * @tparam _V       Тип значения.
@@ -3420,8 +3638,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
      * @brief Вставить или обновить пару ключ-значение.
      *
      * Если ключ уже существует в словаре — обновляет значение.
-     * Если ключ новый — создаёт новый узел в ПАП, блокирует его навечно и
-     * вставляет в AVL-дерево.
+     * Если ключ новый — создаёт новый узел в ПАП и вставляет в AVL-дерево.
      *
      * @param key   Ключ для вставки.
      * @param val   Значение для вставки.
@@ -3459,9 +3676,6 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         tn.set_parent( static_cast<index_type>( 0 ) );
         tn.set_height( static_cast<std::int16_t>( 1 ) );
 
-        // Блокируем блок навечно (Issue #126).
-        ManagerT::lock_block_permanent( obj );
-
         // Вставляем в AVL-дерево.
         _avl_insert( new_node );
 
@@ -3487,148 +3701,13 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     /**
      * @brief Сбросить словарь (для тестов).
      *
-     * Сбрасывает _root_idx, но не освобождает данные в ПАП (блоки заблокированы).
+     * Сбрасывает _root_idx, но не освобождает данные в ПАП.
      */
     void reset() noexcept { _root_idx = static_cast<index_type>( 0 ); }
 
     // ─── AVL-дерево (использует встроенные TreeNode-поля каждого узла) ────────
 
   private:
-    /// @brief Получить высоту узла (0 если null).
-    static std::int16_t _height( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return 0;
-        return p.get_tree_height();
-    }
-
-    /// @brief Обновить высоту узла по высотам его потомков.
-    void _update_height( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return;
-        std::int16_t lh = _height( node_pptr( p.get_tree_left().offset() ) );
-        std::int16_t rh = _height( node_pptr( p.get_tree_right().offset() ) );
-        std::int16_t h  = static_cast<std::int16_t>( 1 + ( lh > rh ? lh : rh ) );
-        p.set_tree_height( h );
-    }
-
-    /// @brief Фактор баланса: height(left) - height(right).
-    static std::int16_t _balance_factor( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return 0;
-        std::int16_t lh = _height( node_pptr( p.get_tree_left().offset() ) );
-        std::int16_t rh = _height( node_pptr( p.get_tree_right().offset() ) );
-        return static_cast<std::int16_t>( lh - rh );
-    }
-
-    /// @brief Обновить ссылку child у parent (или корень дерева если parent == null).
-    void _set_child( node_pptr parent, node_pptr old_child, node_pptr new_child ) noexcept
-    {
-        if ( parent.is_null() )
-        {
-            _root_idx = new_child.offset();
-            return;
-        }
-        node_pptr left_of_parent( parent.get_tree_left().offset() );
-        if ( left_of_parent == old_child )
-            parent.set_tree_left( new_child );
-        else
-            parent.set_tree_right( new_child );
-    }
-
-    /**
-     * @brief Правый поворот вокруг y; возвращает новый корень поддерева (x).
-     *
-     *     y            x
-     *    / \          / \
-     *   x   C  -->  A    y
-     *  / \               / \
-     * A   B             B   C
-     */
-    node_pptr _rotate_right( node_pptr y ) noexcept
-    {
-        node_pptr x     = node_pptr( y.get_tree_left().offset() );
-        node_pptr b     = node_pptr( x.get_tree_right().offset() );
-        node_pptr y_par = node_pptr( y.get_tree_parent().offset() );
-
-        x.set_tree_right( y );
-        y.set_tree_parent( x );
-
-        y.set_tree_left( b );
-        if ( !b.is_null() )
-            b.set_tree_parent( y );
-
-        x.set_tree_parent( y_par );
-
-        _set_child( y_par, y, x );
-
-        _update_height( y );
-        _update_height( x );
-        return x;
-    }
-
-    /**
-     * @brief Левый поворот вокруг x; возвращает новый корень поддерева (y).
-     *
-     *   x               y
-     *  / \             / \
-     * A   y   -->    x    C
-     *    / \        / \
-     *   B   C      A   B
-     */
-    node_pptr _rotate_left( node_pptr x ) noexcept
-    {
-        node_pptr y     = node_pptr( x.get_tree_right().offset() );
-        node_pptr b     = node_pptr( y.get_tree_left().offset() );
-        node_pptr x_par = node_pptr( x.get_tree_parent().offset() );
-
-        y.set_tree_left( x );
-        x.set_tree_parent( y );
-
-        x.set_tree_right( b );
-        if ( !b.is_null() )
-            b.set_tree_parent( x );
-
-        y.set_tree_parent( x_par );
-
-        _set_child( x_par, x, y );
-
-        _update_height( x );
-        _update_height( y );
-        return y;
-    }
-
-    /// @brief Ребалансировка начиная с узла p вверх до корня.
-    void _rebalance_up( node_pptr p ) noexcept
-    {
-        while ( !p.is_null() )
-        {
-            _update_height( p );
-            std::int16_t bf = _balance_factor( p );
-            if ( bf > 1 )
-            {
-                node_pptr left( p.get_tree_left().offset() );
-                if ( _balance_factor( left ) < 0 )
-                {
-                    _rotate_left( left );
-                }
-                p = _rotate_right( p );
-            }
-            else if ( bf < -1 )
-            {
-                node_pptr right( p.get_tree_right().offset() );
-                if ( _balance_factor( right ) > 0 )
-                {
-                    _rotate_right( right );
-                }
-                p = _rotate_left( p );
-            }
-            p = node_pptr( p.get_tree_parent().offset() );
-        }
-    }
-
     /// @brief Найти узел AVL-дерева с заданным ключом. Возвращает null если не найден.
     node_pptr _avl_find( const _K& key ) const noexcept
     {
@@ -3651,53 +3730,15 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     /// @brief Вставить новый узел в AVL-дерево. Предполагается, что ключ ещё не в дереве.
     void _avl_insert( node_pptr new_node ) noexcept
     {
-        if ( new_node.is_null() )
-            return;
-
         node_type* new_obj = ManagerT::template resolve<node_type>( new_node );
-        if ( new_obj == nullptr )
-            return;
-
-        if ( _root_idx == static_cast<index_type>( 0 ) )
-        {
-            // Дерево пустое — новый узел становится корнем.
-            new_node.set_tree_left( node_pptr() );
-            new_node.set_tree_right( node_pptr() );
-            new_node.set_tree_parent( node_pptr() );
-            new_node.set_tree_height( static_cast<std::int16_t>( 1 ) );
-            _root_idx = new_node.offset();
-            return;
-        }
-
-        // Ищем место для вставки.
-        node_pptr cur( _root_idx );
-        node_pptr parent;
-        bool      go_left = false;
-
-        while ( !cur.is_null() )
-        {
-            node_type* obj = ManagerT::template resolve<node_type>( cur );
-            if ( obj == nullptr )
-                break;
-            parent  = cur;
-            go_left = ( new_obj->key < obj->key );
-            if ( go_left )
-                cur = node_pptr( cur.get_tree_left().offset() );
-            else
-                cur = node_pptr( cur.get_tree_right().offset() );
-        }
-
-        // Устанавливаем родителя нового узла.
-        new_node.set_tree_parent( parent );
-
-        // Прикрепляем новый узел к родителю.
-        if ( go_left )
-            parent.set_tree_left( new_node );
-        else
-            parent.set_tree_right( new_node );
-
-        // Ребалансировка вверх от родителя.
-        _rebalance_up( parent );
+        detail::avl_insert(
+            new_node, _root_idx,
+            [&]( node_pptr cur ) -> bool
+            {
+                node_type* obj = ManagerT::template resolve<node_type>( cur );
+                return ( obj != nullptr ) && ( new_obj->key < obj->key );
+            },
+            []( node_pptr p ) -> node_type* { return ManagerT::template resolve<node_type>( p ); } );
     }
 };
 
@@ -4020,8 +4061,9 @@ class pptr
  *
  * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
+ * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока, Issue #87, #138)
- * @version 0.4 (Issue #151 — краткий API: Mgr::pstringview("hello"))
+ * @version 0.5 (Issue #155 — устранение дублирования AVL-кода)
  */
 
 #include <cstddef>
@@ -4248,154 +4290,6 @@ template <typename ManagerT> struct pstringview
 
     // ─── AVL-дерево (использует встроенные TreeNode-поля каждого pstringview-блока) ─
 
-    /// @brief Получить высоту узла (0 если null).
-    static std::int16_t _height( psview_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return 0;
-        return p.get_tree_height();
-    }
-
-    /// @brief Обновить высоту узла по высотам его потомков.
-    static void _update_height( psview_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return;
-        std::int16_t lh = _height( psview_pptr( p.get_tree_left().offset() ) );
-        std::int16_t rh = _height( psview_pptr( p.get_tree_right().offset() ) );
-        std::int16_t h  = static_cast<std::int16_t>( 1 + ( lh > rh ? lh : rh ) );
-        p.set_tree_height( h );
-    }
-
-    /// @brief Фактор баланса: height(left) - height(right).
-    static std::int16_t _balance_factor( psview_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return 0;
-        std::int16_t lh = _height( psview_pptr( p.get_tree_left().offset() ) );
-        std::int16_t rh = _height( psview_pptr( p.get_tree_right().offset() ) );
-        return static_cast<std::int16_t>( lh - rh );
-    }
-
-    /// @brief Обновить ссылку child у parent (или корень дерева если parent == null).
-    static void _set_child( psview_pptr parent, psview_pptr old_child, psview_pptr new_child ) noexcept
-    {
-        if ( parent.is_null() )
-        {
-            _root_idx = new_child.offset();
-            return;
-        }
-        psview_pptr left_of_parent( parent.get_tree_left().offset() );
-        if ( left_of_parent == old_child )
-            parent.set_tree_left( new_child );
-        else
-            parent.set_tree_right( new_child );
-    }
-
-    /**
-     * @brief Правый поворот вокруг y; возвращает новый корень поддерева (x).
-     *
-     *     y            x
-     *    / \          / \
-     *   x   C  -->  A    y
-     *  / \               / \
-     * A   B             B   C
-     */
-    static psview_pptr _rotate_right( psview_pptr y ) noexcept
-    {
-        psview_pptr x     = psview_pptr( y.get_tree_left().offset() );
-        psview_pptr b     = psview_pptr( x.get_tree_right().offset() );
-        psview_pptr y_par = psview_pptr( y.get_tree_parent().offset() );
-
-        // x.right = y; y.parent = x
-        x.set_tree_right( y );
-        y.set_tree_parent( x );
-
-        // y.left = B; B.parent = y (если B не null)
-        y.set_tree_left( b );
-        if ( !b.is_null() )
-            b.set_tree_parent( y );
-
-        // x.parent = y_par
-        x.set_tree_parent( y_par );
-
-        // Обновить ссылку у родителя
-        _set_child( y_par, y, x );
-
-        _update_height( y );
-        _update_height( x );
-        return x;
-    }
-
-    /**
-     * @brief Левый поворот вокруг x; возвращает новый корень поддерева (y).
-     *
-     *   x               y
-     *  / \             / \
-     * A   y   -->    x    C
-     *    / \        / \
-     *   B   C      A   B
-     */
-    static psview_pptr _rotate_left( psview_pptr x ) noexcept
-    {
-        psview_pptr y     = psview_pptr( x.get_tree_right().offset() );
-        psview_pptr b     = psview_pptr( y.get_tree_left().offset() );
-        psview_pptr x_par = psview_pptr( x.get_tree_parent().offset() );
-
-        // y.left = x; x.parent = y
-        y.set_tree_left( x );
-        x.set_tree_parent( y );
-
-        // x.right = B; B.parent = x (если B не null)
-        x.set_tree_right( b );
-        if ( !b.is_null() )
-            b.set_tree_parent( x );
-
-        // y.parent = x_par
-        y.set_tree_parent( x_par );
-
-        // Обновить ссылку у родителя
-        _set_child( x_par, x, y );
-
-        _update_height( x );
-        _update_height( y );
-        return y;
-    }
-
-    /// @brief Ребалансировка начиная с узла p вверх до корня.
-    static void _rebalance_up( psview_pptr p ) noexcept
-    {
-        while ( !p.is_null() )
-        {
-            _update_height( p );
-            std::int16_t bf = _balance_factor( p );
-            if ( bf > 1 )
-            {
-                // Левое поддерево перевешивает.
-                psview_pptr left( p.get_tree_left().offset() );
-                if ( _balance_factor( left ) < 0 )
-                {
-                    // LR-случай: сначала левый поворот левого потомка.
-                    _rotate_left( left );
-                }
-                p = _rotate_right( p );
-            }
-            else if ( bf < -1 )
-            {
-                // Правое поддерево перевешивает.
-                psview_pptr right( p.get_tree_right().offset() );
-                if ( _balance_factor( right ) > 0 )
-                {
-                    // RL-случай: сначала правый поворот правого потомка.
-                    _rotate_right( right );
-                }
-                p = _rotate_left( p );
-            }
-            // Переходим к родителю.
-            p = psview_pptr( p.get_tree_parent().offset() );
-        }
-    }
-
     /// @brief Найти узел AVL-дерева с заданной строкой. Возвращает null если не найден.
     static psview_pptr _avl_find( const char* s ) noexcept
     {
@@ -4419,55 +4313,16 @@ template <typename ManagerT> struct pstringview
     /// @brief Вставить новый узел в AVL-дерево. Предполагается, что строка ещё не в дереве.
     static void _avl_insert( psview_pptr new_node ) noexcept
     {
-        if ( new_node.is_null() )
-            return;
-
         pstringview* new_obj = ManagerT::template resolve<pstringview>( new_node );
-        if ( new_obj == nullptr )
-            return;
-        const char* new_str = new_obj->c_str();
-
-        if ( _root_idx == static_cast<index_type>( 0 ) )
-        {
-            // Дерево пустое — новый узел становится корнем.
-            new_node.set_tree_left( psview_pptr() );
-            new_node.set_tree_right( psview_pptr() );
-            new_node.set_tree_parent( psview_pptr() );
-            new_node.set_tree_height( static_cast<std::int16_t>( 1 ) );
-            _root_idx = new_node.offset();
-            return;
-        }
-
-        // Ищем место для вставки.
-        psview_pptr cur( _root_idx );
-        psview_pptr parent;
-        bool        go_left = false;
-
-        while ( !cur.is_null() )
-        {
-            pstringview* obj = ManagerT::template resolve<pstringview>( cur );
-            if ( obj == nullptr )
-                break;
-            parent  = cur;
-            int cmp = std::strcmp( new_str, obj->c_str() );
-            go_left = ( cmp < 0 );
-            if ( go_left )
-                cur = psview_pptr( cur.get_tree_left().offset() );
-            else
-                cur = psview_pptr( cur.get_tree_right().offset() );
-        }
-
-        // Устанавливаем родителя нового узла.
-        new_node.set_tree_parent( parent );
-
-        // Прикрепляем новый узел к родителю.
-        if ( go_left )
-            parent.set_tree_left( new_node );
-        else
-            parent.set_tree_right( new_node );
-
-        // Ребалансировка вверх от родителя.
-        _rebalance_up( parent );
+        const char*  new_str = ( new_obj != nullptr ) ? new_obj->c_str() : "";
+        detail::avl_insert(
+            new_node, _root_idx,
+            [&]( psview_pptr cur ) -> bool
+            {
+                pstringview* obj = ManagerT::template resolve<pstringview>( cur );
+                return ( obj != nullptr ) && ( std::strcmp( new_str, obj->c_str() ) < 0 );
+            },
+            []( psview_pptr p ) -> pstringview* { return ManagerT::template resolve<pstringview>( p ); } );
     }
 };
 
