@@ -83,7 +83,8 @@
  *
  * @see persist_memory_manager.h — PersistMemoryManager (Issue #110)
  * @see config.h — базовые политики блокировок (NoLock, SharedMutexLock)
- * @version 0.5 (Issue #155 — ValidPmmAddressTraits concept replaces repeated static_asserts)
+ * @version 0.6 (Issue #166 — removed redundant ValidPmmAddressTraits static_asserts in
+ * SmallEmbeddedStaticConfig/EmbeddedStaticConfig)
  */
 
 #pragma once
@@ -201,8 +202,8 @@ struct BasicConfig
  */
 template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
 {
-    static_assert( ValidPmmAddressTraits<SmallAddressTraits>,
-                   "SmallEmbeddedStaticConfig: address_traits must satisfy ValidPmmAddressTraits" );
+    // Issue #166: ValidPmmAddressTraits<SmallAddressTraits> is already verified at namespace scope (line 123).
+    // No redundant static_assert needed here.
 
     using address_traits                          = SmallAddressTraits;
     using storage_backend                         = StaticStorage<BufferSize, SmallAddressTraits>;
@@ -223,9 +224,8 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
  *   - Нет блокировок (NoLock) — только однопоточный контекст
  *   - Не расширяется (StaticStorage::expand() всегда false)
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
+ * Статические проверки (Issue #146, #166):
+ *   - ValidPmmAddressTraits<DefaultAddressTraits> проверяется на уровне namespace (не дублируется здесь)
  *   - BufferSize кратно granule_size ✓ (проверяется в StaticStorage)
  *
  * Типичный сценарий: встраиваемые системы без heap, Linux bare-metal, фиксированный пул.
@@ -241,8 +241,8 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
  */
 template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
 {
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "EmbeddedStaticConfig: address_traits must satisfy ValidPmmAddressTraits" );
+    // Issue #166: ValidPmmAddressTraits<DefaultAddressTraits> is already verified at namespace scope (line 122).
+    // No redundant static_assert needed here.
 
     using address_traits                          = DefaultAddressTraits;
     using storage_backend                         = StaticStorage<BufferSize, DefaultAddressTraits>;

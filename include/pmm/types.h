@@ -15,7 +15,7 @@
  * Issue #106: Block<A>* utilities replace legacy BlockHeader* ones.
  * Issue #112: BlockHeader struct removed — Block<DefaultAddressTraits> is the sole block type.
  *
- * @version 2.2 (Issue #112 — BlockHeader removed)
+ * @version 2.3 (Issue #166 — added kNoBlock_v<AT> template alias and required_block_granules_t<AT>)
  */
 
 #pragma once
@@ -129,6 +129,12 @@ inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( pmm::Block<pmm::De
 inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: no block (granule index)
 static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block,
                "kNoBlock must match DefaultAddressTraits::no_block (Issue #87)" );
+
+/// @brief Issue #166: Template alias for AddressTraitsT::no_block sentinel.
+/// Use this instead of detail::kNoBlock in generic (templated) code that works with any AT.
+/// For DefaultAddressTraits, kNoBlock_v<DefaultAddressTraits> == kNoBlock == 0xFFFFFFFFU.
+template <typename AddressTraitsT>
+inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
 
 /// @brief Manager header (Issue #59: 64 bytes). All _offset fields are granule indices.
 /// prev_base_ptr / prev_total_size are runtime-only (nulled by load() — not persisted).
@@ -448,12 +454,24 @@ inline pmm::Block<AddressTraitsT>* header_from_ptr_t( std::uint8_t* base, void* 
 }
 
 /// @brief Minimum block granules for user_bytes (header + data, minimum 1 data granule).
+/// @deprecated Use required_block_granules_t<DefaultAddressTraits>() for new code.
 inline std::uint32_t required_block_granules( std::size_t user_bytes )
 {
     std::uint32_t data_granules = bytes_to_granules( user_bytes );
     if ( data_granules == 0 )
         data_granules = 1;
     return kBlockHeaderGranules + data_granules;
+}
+
+/// @brief Issue #166: Templated variant of required_block_granules for any AddressTraitsT.
+/// Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)).
+/// Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t<AT> for correct per-AT computation.
+template <typename AddressTraitsT> inline std::uint32_t required_block_granules_t( std::size_t user_bytes )
+{
+    std::uint32_t data_granules = bytes_to_granules_t<AddressTraitsT>( user_bytes );
+    if ( data_granules == 0 )
+        data_granules = 1;
+    return kBlockHeaderGranules_t<AddressTraitsT> + data_granules;
 }
 
 } // namespace detail

@@ -123,7 +123,8 @@
  *
  * @see persist_memory_manager.h — PersistMemoryManager (Issue #110)
  * @see config.h — базовые политики блокировок (NoLock, SharedMutexLock)
- * @version 0.5 (Issue #155 — ValidPmmAddressTraits concept replaces repeated static_asserts)
+ * @version 0.6 (Issue #166 — removed redundant ValidPmmAddressTraits static_asserts in
+ * SmallEmbeddedStaticConfig/EmbeddedStaticConfig)
  */
 
 /**
@@ -1508,7 +1509,7 @@ template <typename AddressTraitsT> typename AddressTraitsT::index_type read_bloc
  * Issue #106: Block<A>* utilities replace legacy BlockHeader* ones.
  * Issue #112: BlockHeader struct removed — Block<DefaultAddressTraits> is the sole block type.
  *
- * @version 2.2 (Issue #112 — BlockHeader removed)
+ * @version 2.3 (Issue #166 — added kNoBlock_v<AT> template alias and required_block_granules_t<AT>)
  */
 
 #include <algorithm>
@@ -1615,6 +1616,12 @@ inline constexpr std::uint32_t kBlockHeaderGranules = sizeof( pmm::Block<pmm::De
 inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: no block (granule index)
 static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block,
                "kNoBlock must match DefaultAddressTraits::no_block (Issue #87)" );
+
+/// @brief Issue #166: Template alias for AddressTraitsT::no_block sentinel.
+/// Use this instead of detail::kNoBlock in generic (templated) code that works with any AT.
+/// For DefaultAddressTraits, kNoBlock_v<DefaultAddressTraits> == kNoBlock == 0xFFFFFFFFU.
+template <typename AddressTraitsT>
+inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
 
 /// @brief Manager header (Issue #59: 64 bytes). All _offset fields are granule indices.
 /// prev_base_ptr / prev_total_size are runtime-only (nulled by load() — not persisted).
@@ -1934,12 +1941,24 @@ inline pmm::Block<AddressTraitsT>* header_from_ptr_t( std::uint8_t* base, void* 
 }
 
 /// @brief Minimum block granules for user_bytes (header + data, minimum 1 data granule).
+/// @deprecated Use required_block_granules_t<DefaultAddressTraits>() for new code.
 inline std::uint32_t required_block_granules( std::size_t user_bytes )
 {
     std::uint32_t data_granules = bytes_to_granules( user_bytes );
     if ( data_granules == 0 )
         data_granules = 1;
     return kBlockHeaderGranules + data_granules;
+}
+
+/// @brief Issue #166: Templated variant of required_block_granules for any AddressTraitsT.
+/// Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)).
+/// Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t<AT> for correct per-AT computation.
+template <typename AddressTraitsT> inline std::uint32_t required_block_granules_t( std::size_t user_bytes )
+{
+    std::uint32_t data_granules = bytes_to_granules_t<AddressTraitsT>( user_bytes );
+    if ( data_granules == 0 )
+        data_granules = 1;
+    return kBlockHeaderGranules_t<AddressTraitsT> + data_granules;
 }
 
 } // namespace detail
@@ -2674,8 +2693,8 @@ struct BasicConfig
  */
 template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
 {
-    static_assert( ValidPmmAddressTraits<SmallAddressTraits>,
-                   "SmallEmbeddedStaticConfig: address_traits must satisfy ValidPmmAddressTraits" );
+    // Issue #166: ValidPmmAddressTraits<SmallAddressTraits> is already verified at namespace scope (line 123).
+    // No redundant static_assert needed here.
 
     using address_traits                          = SmallAddressTraits;
     using storage_backend                         = StaticStorage<BufferSize, SmallAddressTraits>;
@@ -2696,9 +2715,8 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
  *   - Нет блокировок (NoLock) — только однопоточный контекст
  *   - Не расширяется (StaticStorage::expand() всегда false)
  *
- * Статические проверки (Issue #146):
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
+ * Статические проверки (Issue #146, #166):
+ *   - ValidPmmAddressTraits<DefaultAddressTraits> проверяется на уровне namespace (не дублируется здесь)
  *   - BufferSize кратно granule_size ✓ (проверяется в StaticStorage)
  *
  * Типичный сценарий: встраиваемые системы без heap, Linux bare-metal, фиксированный пул.
@@ -2714,8 +2732,8 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
  */
 template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
 {
-    static_assert( ValidPmmAddressTraits<DefaultAddressTraits>,
-                   "EmbeddedStaticConfig: address_traits must satisfy ValidPmmAddressTraits" );
+    // Issue #166: ValidPmmAddressTraits<DefaultAddressTraits> is already verified at namespace scope (line 122).
+    // No redundant static_assert needed here.
 
     using address_traits                          = DefaultAddressTraits;
     using storage_backend                         = StaticStorage<BufferSize, DefaultAddressTraits>;
@@ -4916,15 +4934,17 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized )
             return 0;
         const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
-        return detail::granules_to_bytes( hdr->used_size );
+        // Issue #166: use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
+        return address_traits::granules_to_bytes( hdr->used_size );
     }
 
     static std::size_t free_size() noexcept
     {
         if ( !_initialized )
             return 0;
-        const detail::ManagerHeader* hdr  = get_header_c( _backend.base_ptr() );
-        std::size_t                  used = detail::granules_to_bytes( hdr->used_size );
+        const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
+        // Issue #166: use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
+        std::size_t used = address_traits::granules_to_bytes( hdr->used_size );
         return ( hdr->total_size > used ) ? ( hdr->total_size - used ) : 0;
     }
 

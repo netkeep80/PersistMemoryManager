@@ -691,15 +691,17 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized )
             return 0;
         const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
-        return detail::granules_to_bytes( hdr->used_size );
+        // Issue #166: use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
+        return address_traits::granules_to_bytes( hdr->used_size );
     }
 
     static std::size_t free_size() noexcept
     {
         if ( !_initialized )
             return 0;
-        const detail::ManagerHeader* hdr  = get_header_c( _backend.base_ptr() );
-        std::size_t                  used = detail::granules_to_bytes( hdr->used_size );
+        const detail::ManagerHeader* hdr = get_header_c( _backend.base_ptr() );
+        // Issue #166: use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
+        std::size_t used = address_traits::granules_to_bytes( hdr->used_size );
         return ( hdr->total_size > used ) ? ( hdr->total_size - used ) : 0;
     }
 
