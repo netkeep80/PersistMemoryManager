@@ -133,6 +133,9 @@ pmm_add_test(test_issue162_deduplication test_issue162_deduplication.cpp)
 # ─── Тесты дедупликации функциональности (Issue #166) ─────────────────────────
 pmm_add_test(test_issue166_deduplication test_issue166_deduplication.cpp)
 
+# ─── Тесты дедупликации функций-обёрток (Issue #168) ─────────────────────────
+pmm_add_test(test_issue168_deduplication test_issue168_deduplication.cpp)
+
 # ─── Тесты самодостаточности single-header файлов (Issue #123) ───────────────
 # Каждый single-header файл тестируется отдельным исполняемым файлом.
 # Это гарантирует автономность: каждый файл компилируется без include/pmm/*.

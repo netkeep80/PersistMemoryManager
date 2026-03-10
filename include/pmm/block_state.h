@@ -23,15 +23,19 @@
  *   3. Атомарность: каждый метод выполняет один атомарный шаг
  *   4. Завершаемость: цепочка вызовов приводит к корректному состоянию
  *
- * Issue #114: Добавлены утилиты для recovery-операций в AllocatorPolicy:
- *   - reset_block_avl_fields()      — сброс AVL-полей перед rebuild_free_tree
- *   - repair_block_prev_offset()    — восстановление prev_offset при repair_linked_list
- *   - read_block_next_offset()      — чтение next_offset в recovery-методах
- *   - read_block_weight()           — чтение weight в recovery-методах
+ * Issue #114: Добавлены статические методы в BlockStateBase для recovery-операций:
+ *   - reset_avl_fields_of()     — сброс AVL-полей перед rebuild_free_tree
+ *   - repair_prev_offset()      — восстановление prev_offset при repair_linked_list
+ *   - get_next_offset()         — чтение next_offset в recovery-методах
+ *   - get_weight()              — чтение weight в recovery-методах
+ *
+ * Issue #168: Удалены избыточные функции-обёртки reset_block_avl_fields(),
+ *   repair_block_prev_offset(), read_block_next_offset(), read_block_weight() —
+ *   AllocatorPolicy вызывает BlockStateBase<AT>::* напрямую.
  *
  * @see docs/atomic_writes.md «Граф состояний блока»
  * @see plan_issue87.md §5 «Фаза 9: BlockState machine»
- * @version 0.3 (Issue #114 — recovery utilities for AllocatorPolicy encapsulation)
+ * @version 0.4 (Issue #168 — удалены дублирующие функции-обёртки)
  */
 
 #pragma once
@@ -841,67 +845,6 @@ template <typename AddressTraitsT>
 void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own_idx ) noexcept
 {
     BlockStateBase<AddressTraitsT>::recover_state( raw_blk, own_idx );
-}
-
-/**
- * @brief Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).
- *
- * Устанавливает left_offset, right_offset, parent_offset в no_block, avl_height в 0.
- * Используется в AllocatorPolicy::rebuild_free_tree() перед повторной вставкой блоков.
- *
- * @tparam AddressTraitsT Traits адресного пространства.
- * @param raw_blk  Указатель на блок.
- */
-template <typename AddressTraitsT> void reset_block_avl_fields( void* raw_blk ) noexcept
-{
-    BlockStateBase<AddressTraitsT>::reset_avl_fields_of( raw_blk );
-}
-
-/**
- * @brief Восстановить prev_offset блока (при repair_linked_list).
- *
- * Используется в AllocatorPolicy::repair_linked_list() для восстановления
- * двухсвязного списка блоков после загрузки из персистентного хранилища.
- *
- * @tparam AddressTraitsT Traits адресного пространства.
- * @param raw_blk   Указатель на блок.
- * @param prev_idx  Гранульный индекс предыдущего блока (или no_block).
- */
-template <typename AddressTraitsT>
-void repair_block_prev_offset( void* raw_blk, typename AddressTraitsT::index_type prev_idx ) noexcept
-{
-    BlockStateBase<AddressTraitsT>::repair_prev_offset( raw_blk, prev_idx );
-}
-
-/**
- * @brief Прочитать next_offset блока (read-only, без перехода состояний).
- *
- * Вспомогательная функция для итерации по блокам в recovery-методах,
- * когда состояние блока неизвестно заранее.
- *
- * @tparam AddressTraitsT Traits адресного пространства.
- * @param raw_blk  Указатель на блок.
- * @return Гранульный индекс следующего блока.
- */
-template <typename AddressTraitsT>
-typename AddressTraitsT::index_type read_block_next_offset( const void* raw_blk ) noexcept
-{
-    return BlockStateBase<AddressTraitsT>::get_next_offset( raw_blk );
-}
-
-/**
- * @brief Прочитать weight блока (read-only, без перехода состояний).
- *
- * Вспомогательная функция для проверки состояния блока в recovery-методах,
- * когда состояние блока неизвестно заранее.
- *
- * @tparam AddressTraitsT Traits адресного пространства.
- * @param raw_blk  Указатель на блок.
- * @return Значение поля weight (0 = свободный, >0 = занятый).
- */
-template <typename AddressTraitsT> typename AddressTraitsT::index_type read_block_weight( const void* raw_blk ) noexcept
-{
-    return BlockStateBase<AddressTraitsT>::get_weight( raw_blk );
 }
 
 } // namespace pmm

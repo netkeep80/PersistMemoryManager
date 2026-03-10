@@ -463,10 +463,11 @@ static bool test_i144_permanently_locked_block()
 }
 
 // =============================================================================
-// I144-H: reset_block_avl_fields clears all AVL tree pointers
+// I144-H: BlockStateBase::reset_avl_fields_of clears all AVL tree pointers
 // =============================================================================
 
-/// @brief reset_block_avl_fields zeroes left/right/parent/height.
+/// @brief BlockStateBase::reset_avl_fields_of zeroes left/right/parent/height.
+/// Issue #168: reset_block_avl_fields() removed; use BlockStateBase<AT>::reset_avl_fields_of() directly.
 static bool test_i144_reset_avl_fields()
 {
     using A          = pmm::DefaultAddressTraits;
@@ -481,8 +482,8 @@ static bool test_i144_reset_avl_fields()
     BlockState::set_parent_offset_of( buffer, 30u );
     BlockState::set_avl_height_of( buffer, 5 );
 
-    // Reset
-    pmm::reset_block_avl_fields<A>( buffer );
+    // Reset via BlockStateBase directly (Issue #168: wrapper removed)
+    BlockState::reset_avl_fields_of( buffer );
 
     PMM_TEST( BlockState::get_left_offset( buffer ) == A::no_block );
     PMM_TEST( BlockState::get_right_offset( buffer ) == A::no_block );
@@ -532,8 +533,8 @@ int main()
     std::cout << "  I144-G: lock_block_permanent prevents deallocation\n";
     PMM_RUN( "    permanently locked block", test_i144_permanently_locked_block );
 
-    std::cout << "  I144-H: reset_block_avl_fields\n";
-    PMM_RUN( "    reset_block_avl_fields clears AVL fields", test_i144_reset_avl_fields );
+    std::cout << "  I144-H: BlockStateBase::reset_avl_fields_of\n";
+    PMM_RUN( "    reset_avl_fields_of clears AVL fields", test_i144_reset_avl_fields );
 
     std::cout << "\n";
     if ( all_passed )

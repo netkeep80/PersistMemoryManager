@@ -26,8 +26,11 @@
  * используются методы SplittingBlock (initialize_new_block, link_new_block,
  * finalize_split). В coalesce() соседние блоки проверяются через BlockStateBase.
  * В recovery-методах (rebuild_free_tree, repair_linked_list, recompute_counters)
- * используются утилиты из block_state.h (reset_block_avl_fields,
- * repair_block_prev_offset, read_block_next_offset, read_block_weight).
+ * напрямую используются статические методы BlockStateBase<AT>:
+ *   - reset_avl_fields_of()  — вместо удалённой reset_block_avl_fields() (Issue #168)
+ *   - repair_prev_offset()   — вместо удалённой repair_block_prev_offset() (Issue #168)
+ *   - get_next_offset()      — вместо удалённой read_block_next_offset() (Issue #168)
+ *   - get_weight()           — вместо удалённой read_block_weight() (Issue #168)
  *
  * Граф состояний блока во время allocate_from_block():
  *   FreeBlock → remove_from_avl → FreeBlockRemovedAVL
@@ -41,9 +44,9 @@
  *     → finalize_coalesce → FreeBlock (вставка в AVL)
  *
  * @see plan_issue87.md §5 «Фаза 6: AllocatorPolicy»
- * @see block_state.h — автомат состояний блока (Issue #93, #106, #114)
+ * @see block_state.h — автомат состояний блока (Issue #93, #106, #114, #168)
  * @see free_block_tree.h — концепт FreeBlockTree
- * @version 0.4 (Issue #114 — устранение нарушений инкапсуляции Block<A>)
+ * @version 0.5 (Issue #168 — устранение дублирующих функций-обёрток)
  */
 
 #pragma once
@@ -79,6 +82,7 @@ class AllocatorPolicy
     using free_block_tree = FreeBlockTreeT;
     using index_type      = typename AddressTraitsT::index_type;
     using BlockT          = Block<AddressTraitsT>;
+    using BlockState      = BlockStateBase<AddressTraitsT>;
 
     AllocatorPolicy()                                    = delete;
     AllocatorPolicy( const AllocatorPolicy& )            = delete;
@@ -283,7 +287,7 @@ class AllocatorPolicy
      *
      * Сбрасывает все AVL-ссылки в блоках и заново вставляет свободные блоки.
      * Вызывается при `load()` после восстановления менеджера из файла.
-     * Также вызывает recover_block_state для каждого блока (Issue #106).
+     * Также вызывает BlockState::recover_state для каждого блока (Issue #106).
      *
      * @param base  Базовый указатель управляемой области.
      * @param hdr   Заголовок менеджера.
@@ -297,16 +301,16 @@ class AllocatorPolicy
         {
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
 
-            // Reset AVL fields via state machine utility (Issue #114)
-            reset_block_avl_fields<AddressTraitsT>( blk_ptr );
+            // Reset AVL fields via BlockStateBase (Issue #114, #168)
+            BlockState::reset_avl_fields_of( blk_ptr );
 
-            // Issue #106: recover_block_state — исправить некорректные переходные состояния
-            recover_block_state<AddressTraitsT>( blk_ptr, static_cast<index_type>( idx ) );
+            // Issue #106: recover state — fix incorrect transitional states
+            BlockState::recover_state( blk_ptr, static_cast<index_type>( idx ) );
 
-            if ( read_block_weight<AddressTraitsT>( blk_ptr ) == 0 ) // free block
+            if ( BlockState::get_weight( blk_ptr ) == 0 ) // free block
                 FreeBlockTreeT::insert( base, hdr, idx );
             // Issue #146: use AddressTraitsT::no_block for correct sentinel check.
-            index_type next_idx = read_block_next_offset<AddressTraitsT>( blk_ptr );
+            index_type next_idx = BlockState::get_next_offset( blk_ptr );
             if ( next_idx == AddressTraitsT::no_block )
                 hdr->last_block_offset = idx;
             idx = detail::to_u32_idx<AddressTraitsT>( next_idx );
@@ -333,9 +337,9 @@ class AllocatorPolicy
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
                 break;
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
-            repair_block_prev_offset<AddressTraitsT>( blk_ptr, prev ); // Issue #114
+            BlockState::repair_prev_offset( blk_ptr, prev ); // Issue #114, #168
             prev                   = static_cast<index_type>( idx );
-            index_type next_offset = read_block_next_offset<AddressTraitsT>( blk_ptr );
+            index_type next_offset = BlockState::get_next_offset( blk_ptr );
             // Issue #146: use sentinel-aware translation to convert index_type back to uint32_t.
             idx = detail::to_u32_idx<AddressTraitsT>( next_offset );
         }
@@ -367,8 +371,8 @@ class AllocatorPolicy
             const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             block_count++;
             used_gran += kBlkHdrGran;
-            index_type w = read_block_weight<AddressTraitsT>( blk_ptr ); // Issue #114
-            if ( w > 0 )                                                 // allocated block
+            index_type w = BlockState::get_weight( blk_ptr ); // Issue #114, #168
+            if ( w > 0 )                                      // allocated block
             {
                 alloc_count++;
                 used_gran += static_cast<std::uint32_t>( w );
@@ -378,7 +382,7 @@ class AllocatorPolicy
                 free_count++;
             }
             // Issue #146: use sentinel-aware translation to convert index_type back to uint32_t.
-            idx = detail::to_u32_idx<AddressTraitsT>( read_block_next_offset<AddressTraitsT>( blk_ptr ) );
+            idx = detail::to_u32_idx<AddressTraitsT>( BlockState::get_next_offset( blk_ptr ) );
         }
         hdr->block_count = block_count;
         hdr->free_count  = free_count;
