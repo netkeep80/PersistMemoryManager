@@ -134,7 +134,8 @@ template <typename AddressTraitsT>
 inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
 
 /// @brief Manager header (Issue #59: 64 bytes). All _offset fields are granule indices.
-/// prev_base_ptr / prev_total_size are runtime-only (nulled by load() — not persisted).
+/// prev_total_size is runtime-only (zeroed by load() — not persisted).
+/// Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).
 struct ManagerHeader
 {
     std::uint64_t magic;              ///< Manager magic number
@@ -147,10 +148,10 @@ struct ManagerHeader
     std::uint32_t last_block_offset;  ///< [Issue #57 opt 4] Last block (granule index)
     std::uint32_t free_tree_root;     ///< Root of AVL tree of free blocks (granule index)
     bool          owns_memory;        ///< Manager owns buffer (runtime-only)
-    bool          prev_owns_memory;   ///< prev_base_ptr was allocated by manager (runtime-only)
+    std::uint8_t  _pad;               ///< Reserved padding byte (Issue #176: was prev_owns_memory)
     std::uint16_t granule_size;       ///< Issue #83: kGranuleSize at creation time; validated on load
     std::uint64_t prev_total_size;    ///< Previous buffer size in bytes (runtime-only)
-    void*         prev_base_ptr;      ///< Pointer to previous buffer (runtime-only; nulled on load)
+    std::uint8_t  _reserved[8];       ///< Reserved bytes (Issue #176: was prev_base_ptr)
 };
 
 static_assert( sizeof( ManagerHeader ) == 64, "ManagerHeader must be exactly 64 bytes (Issue #59, #73 FR-03)" );
