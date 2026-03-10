@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.14.0] - 2026-03-10
+
+### Changed
+- `docs/api_reference.md`: rewritten from scratch to reflect library as of v0.13.0 — added `pstringview`, `pmap`, `avl_tree_mixin`, all new configurations (`SmallEmbeddedStaticConfig`, `EmbeddedStaticConfig`, `LargeDBConfig`), all new presets (`EmbeddedStaticHeap`, `SmallEmbeddedStaticHeap`, `LargeDBHeap`), new single-header files (`pmm.h`), address traits table, `tree_node()` method, updated pptr AVL access methods (Issue #134)
+- `docs/architecture.md`: rewritten from scratch to reflect library as of v0.13.0 — added `pstringview`/`pmap` persistent data structures section, `avl_tree_mixin` layer diagram, address traits table, updated block layout order, storage backends and lock policies (Issue #134)
+- `docs/atomic_writes.md`: updated to reflect current block layout (`TreeNode` before `LinkedListNode`), added section on user-data AVL trees (`pstringview`, `pmap`) persistence and crash consistency, added `granule_size` validation note (Issue #134)
+
+### Changed
+- Replaced 14 repeated `static_assert` pairs in `manager_configs.h` with a single `ValidPmmAddressTraits<AT>` C++20 concept (Issue #155)
+
+
 ## [0.13.0] - 2026-03-10
 
 ### Added
