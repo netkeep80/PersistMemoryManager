@@ -235,14 +235,12 @@ static bool test_i160_block_total_granules_templated()
     // Issue #175: return type is now AT::index_type and ManagerHeader is templated on AT.
     static_assert(
         std::is_same<decltype( &pmm::detail::block_total_granules<AT1> ),
-                     typename AT1::index_type ( * )( const std::uint8_t*,
-                                                     const pmm::detail::ManagerHeader<AT1>*,
+                     typename AT1::index_type ( * )( const std::uint8_t*, const pmm::detail::ManagerHeader<AT1>*,
                                                      const pmm::Block<AT1>* )>::value,
         "block_total_granules<DefaultAddressTraits> must have correct signature (Issue #175)" );
     static_assert(
         std::is_same<decltype( &pmm::detail::block_total_granules<AT2> ),
-                     typename AT2::index_type ( * )( const std::uint8_t*,
-                                                     const pmm::detail::ManagerHeader<AT2>*,
+                     typename AT2::index_type ( * )( const std::uint8_t*, const pmm::detail::ManagerHeader<AT2>*,
                                                      const pmm::Block<AT2>* )>::value,
         "block_total_granules<SmallAddressTraits> must have correct signature (Issue #175)" );
     return true;

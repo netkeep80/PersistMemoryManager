@@ -150,9 +150,8 @@ static bool test_i175_kManagerHeaderGranules_default()
 {
     using AT = pmm::DefaultAddressTraits;
 
-    static_assert(
-        std::is_same<decltype( pmm::detail::kManagerHeaderGranules_t<AT> ), const std::uint32_t>::value,
-        "kManagerHeaderGranules_t<DefaultAddressTraits> must have type const uint32_t (AT::index_type)" );
+    static_assert( std::is_same<decltype( pmm::detail::kManagerHeaderGranules_t<AT> ), const std::uint32_t>::value,
+                   "kManagerHeaderGranules_t<DefaultAddressTraits> must have type const uint32_t (AT::index_type)" );
 
     // sizeof(ManagerHeader<DefaultAddressTraits>) = 64, granule_size = 16 → 64/16 = 4
     static_assert( pmm::detail::kManagerHeaderGranules_t<AT> == 4,
@@ -165,9 +164,8 @@ static bool test_i175_kManagerHeaderGranules_small()
 {
     using AT = pmm::SmallAddressTraits;
 
-    static_assert(
-        std::is_same<decltype( pmm::detail::kManagerHeaderGranules_t<AT> ), const std::uint16_t>::value,
-        "kManagerHeaderGranules_t<SmallAddressTraits> must have type const uint16_t (AT::index_type)" );
+    static_assert( std::is_same<decltype( pmm::detail::kManagerHeaderGranules_t<AT> ), const std::uint16_t>::value,
+                   "kManagerHeaderGranules_t<SmallAddressTraits> must have type const uint16_t (AT::index_type)" );
 
     // sizeof(ManagerHeader<SmallAddressTraits>) — fits in a few granules
     static_assert( pmm::detail::kManagerHeaderGranules_t<AT> >= 1,
@@ -180,9 +178,8 @@ static bool test_i175_kManagerHeaderGranules_large()
 {
     using AT = pmm::LargeAddressTraits;
 
-    static_assert(
-        std::is_same<decltype( pmm::detail::kManagerHeaderGranules_t<AT> ), const std::uint64_t>::value,
-        "kManagerHeaderGranules_t<LargeAddressTraits> must have type const uint64_t (AT::index_type)" );
+    static_assert( std::is_same<decltype( pmm::detail::kManagerHeaderGranules_t<AT> ), const std::uint64_t>::value,
+                   "kManagerHeaderGranules_t<LargeAddressTraits> must have type const uint64_t (AT::index_type)" );
 
     static_assert( pmm::detail::kManagerHeaderGranules_t<AT> >= 1,
                    "kManagerHeaderGranules_t<LargeAddressTraits> must be >= 1" );
@@ -196,15 +193,12 @@ static bool test_i175_kBlockHeaderGranules_index_type()
     using SAT = pmm::SmallAddressTraits;
     using LAT = pmm::LargeAddressTraits;
 
-    static_assert(
-        std::is_same<decltype( pmm::detail::kBlockHeaderGranules_t<DAT> ), const std::uint32_t>::value,
-        "kBlockHeaderGranules_t<DefaultAddressTraits> must have type const uint32_t (AT::index_type)" );
-    static_assert(
-        std::is_same<decltype( pmm::detail::kBlockHeaderGranules_t<SAT> ), const std::uint16_t>::value,
-        "kBlockHeaderGranules_t<SmallAddressTraits> must have type const uint16_t (AT::index_type)" );
-    static_assert(
-        std::is_same<decltype( pmm::detail::kBlockHeaderGranules_t<LAT> ), const std::uint64_t>::value,
-        "kBlockHeaderGranules_t<LargeAddressTraits> must have type const uint64_t (AT::index_type)" );
+    static_assert( std::is_same<decltype( pmm::detail::kBlockHeaderGranules_t<DAT> ), const std::uint32_t>::value,
+                   "kBlockHeaderGranules_t<DefaultAddressTraits> must have type const uint32_t (AT::index_type)" );
+    static_assert( std::is_same<decltype( pmm::detail::kBlockHeaderGranules_t<SAT> ), const std::uint16_t>::value,
+                   "kBlockHeaderGranules_t<SmallAddressTraits> must have type const uint16_t (AT::index_type)" );
+    static_assert( std::is_same<decltype( pmm::detail::kBlockHeaderGranules_t<LAT> ), const std::uint64_t>::value,
+                   "kBlockHeaderGranules_t<LargeAddressTraits> must have type const uint64_t (AT::index_type)" );
     return true;
 }
 
@@ -293,7 +287,7 @@ static bool test_i175_small_heap_counter_correctness()
 
     PMM_TEST( SESH::create( 512 ) );
 
-    std::size_t initial_free = SESH::free_block_count();
+    std::size_t initial_free  = SESH::free_block_count();
     std::size_t initial_alloc = SESH::alloc_block_count();
 
     void* p1 = SESH::allocate( 32 );
@@ -324,8 +318,7 @@ static bool test_i175_small_heap_typed_pptr()
     PMM_TEST( SESH::create( 512 ) );
 
     // pptr<int> with uint16_t index is 2 bytes
-    static_assert( sizeof( SESH::pptr<int> ) == 2,
-                   "SmallEmbeddedStaticHeap pptr<int> must be 2 bytes (16-bit index)" );
+    static_assert( sizeof( SESH::pptr<int> ) == 2, "SmallEmbeddedStaticHeap pptr<int> must be 2 bytes (16-bit index)" );
 
     SESH::pptr<std::uint32_t> p = SESH::allocate_typed<std::uint32_t>();
     PMM_TEST( !p.is_null() );
@@ -383,8 +376,7 @@ static bool test_i175_large_heap_typed_pptr()
     PMM_TEST( LDB::create( 4096 ) );
 
     // pptr<int> with uint64_t index is 8 bytes
-    static_assert( sizeof( LDB::pptr<int> ) == 8,
-                   "LargeDBHeap pptr<int> must be 8 bytes (64-bit index)" );
+    static_assert( sizeof( LDB::pptr<int> ) == 8, "LargeDBHeap pptr<int> must be 8 bytes (64-bit index)" );
 
     LDB::pptr<std::uint64_t> p = LDB::allocate_typed<std::uint64_t>();
     PMM_TEST( !p.is_null() );
@@ -473,10 +465,8 @@ int main()
     std::cout << "\n--- I175-E: LargeAddressTraits (uint64_t indexes) runtime ---\n";
     PMM_RUN( "I175-E1: LargeAddressTraits::no_block == 0xFFFFFFFFFFFFFFFF (correct 64-bit sentinel)",
              test_i175_large_no_block_sentinel );
-    PMM_RUN( "I175-E2: LargeDBHeap lifecycle with uint64_t indexes",
-             test_i175_large_heap_lifecycle_correctness );
-    PMM_RUN( "I175-E3: LargeDBHeap typed pptr<T> with uint64_t index (8-byte pptr)",
-             test_i175_large_heap_typed_pptr );
+    PMM_RUN( "I175-E2: LargeDBHeap lifecycle with uint64_t indexes", test_i175_large_heap_lifecycle_correctness );
+    PMM_RUN( "I175-E3: LargeDBHeap typed pptr<T> with uint64_t index (8-byte pptr)", test_i175_large_heap_typed_pptr );
     PMM_RUN( "I175-E4: LargeDBHeap multiple alloc/dealloc with uint64_t indexes",
              test_i175_large_heap_multiple_allocs );
 

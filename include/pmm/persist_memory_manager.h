@@ -849,10 +849,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized )
             return false;
-        const std::uint8_t*                          base = _backend.base_ptr();
-        using BlockState                                  = BlockStateBase<address_traits>;
-        const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
-        index_type                                   idx  = hdr->first_block_offset;
+        const std::uint8_t* base                         = _backend.base_ptr();
+        using BlockState                                 = BlockStateBase<address_traits>;
+        const detail::ManagerHeader<address_traits>* hdr = get_header_c( base );
+        index_type                                   idx = hdr->first_block_offset;
         // Issue #146: use address_traits::granule_size for correct byte offset computations.
         static constexpr std::size_t kGranSz = address_traits::granule_size;
         while ( idx != address_traits::no_block )
@@ -900,7 +900,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized )
             return false;
-        const std::uint8_t*          base = _backend.base_ptr();
+        const std::uint8_t*                          base = _backend.base_ptr();
         const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
         for_each_free_block_inorder( base, hdr, hdr->free_tree_root, 0, callback );
         return true;
@@ -927,9 +927,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     /// @brief Recursive in-order traversal of the AVL free block tree.
     template <typename Callback>
-    static void for_each_free_block_inorder( const std::uint8_t*                          base,
-                                             const detail::ManagerHeader<address_traits>* hdr, index_type node_idx,
-                                             int depth, Callback&& callback ) noexcept
+    static void for_each_free_block_inorder( const std::uint8_t* base, const detail::ManagerHeader<address_traits>* hdr,
+                                             index_type node_idx, int depth, Callback&& callback ) noexcept
     {
         using BlockState = BlockStateBase<address_traits>;
         // Issue #146: use address_traits::granule_size for correct byte offset computations.
@@ -1005,10 +1004,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static bool init_layout( std::uint8_t* base, std::size_t size ) noexcept
     {
-        using BlockState                           = BlockStateBase<address_traits>;
-        static constexpr index_type kHdrBlkIdx  = 0;
-        static constexpr index_type kFreeBlkIdx = kFreeBlkIdxLayout;
-        static constexpr std::size_t   kGranSz     = address_traits::granule_size;
+        using BlockState                         = BlockStateBase<address_traits>;
+        static constexpr index_type  kHdrBlkIdx  = 0;
+        static constexpr index_type  kFreeBlkIdx = kFreeBlkIdxLayout;
+        static constexpr std::size_t kGranSz     = address_traits::granule_size;
 
         // Minimum size check: Block_0 + ManagerHeader + Block_1 + at least 1 data granule
         static constexpr std::size_t kMinBlockDataSize = kGranSz; // 1 data granule
@@ -1066,7 +1065,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         std::size_t                            old_size = hdr->total_size;
 
         // Issue #146: use AddressTraitsT-specific granule size for all computations.
-        static constexpr std::size_t kGranSz       = address_traits::granule_size;
+        static constexpr std::size_t kGranSz        = address_traits::granule_size;
         index_type                   data_gran_need = detail::bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran_need == 0 )
             data_gran_need = 1;
@@ -1088,8 +1087,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         hdr = get_header( new_base );
 
         // Issue #146: compute extra_idx using address_traits::granule_size.
-        index_type extra_idx = detail::byte_off_to_idx_t<address_traits>( old_size );
-        std::size_t   extra_size = new_size - old_size;
+        index_type  extra_idx  = detail::byte_off_to_idx_t<address_traits>( old_size );
+        std::size_t extra_size = new_size - old_size;
 
         void* last_blk_raw =
             ( hdr->last_block_offset != address_traits::no_block )

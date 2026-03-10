@@ -226,8 +226,7 @@ class AllocatorPolicy
                 FreeBlockTreeT::remove( base, hdr, nxt_idx );
 
                 // CoalescingBlock::coalesce_with_next (also updates nxt_nxt_blk->prev_offset internally)
-                coalescing->coalesce_with_next( detail::block_at<AddressTraitsT>( base, nxt_idx ), nxt_nxt_blk,
-                                                b_idx );
+                coalescing->coalesce_with_next( detail::block_at<AddressTraitsT>( base, nxt_idx ), nxt_nxt_blk, b_idx );
 
                 if ( nxt_nxt_blk == nullptr )
                     hdr->last_block_offset = b_idx;

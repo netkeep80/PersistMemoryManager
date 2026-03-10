@@ -53,13 +53,12 @@ namespace pmm
  * @tparam AddressTraitsT Traits адресного пространства (определяет типы индексов).
  */
 template <typename Policy, typename AddressTraitsT>
-concept FreeBlockTreePolicyForTraitsConcept =
-    requires( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
-              typename AddressTraitsT::index_type idx ) {
-        { Policy::insert( base, hdr, idx ) };
-        { Policy::remove( base, hdr, idx ) };
-        { Policy::find_best_fit( base, hdr, idx ) } -> std::convertible_to<typename AddressTraitsT::index_type>;
-    };
+concept FreeBlockTreePolicyForTraitsConcept = requires( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
+                                                        typename AddressTraitsT::index_type idx ) {
+    { Policy::insert( base, hdr, idx ) };
+    { Policy::remove( base, hdr, idx ) };
+    { Policy::find_best_fit( base, hdr, idx ) } -> std::convertible_to<typename AddressTraitsT::index_type>;
+};
 
 /**
  * @brief C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков.
@@ -123,16 +122,16 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
         // Issue #146: use AddressTraitsT::granule_size for correct byte→granule conversion.
         index_type total_gran = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
         index_type blk_next   = BlockState::get_next_offset( blk );
-        index_type blk_gran   = ( blk_next != AddressTraitsT::no_block ) ? ( blk_next - blk_idx )
-                                                                         : ( total_gran - blk_idx );
+        index_type blk_gran =
+            ( blk_next != AddressTraitsT::no_block ) ? ( blk_next - blk_idx ) : ( total_gran - blk_idx );
         index_type cur = hdr->free_tree_root, parent = AddressTraitsT::no_block;
         bool       go_left = false;
         while ( cur != AddressTraitsT::no_block )
         {
-            parent             = cur;
-            const void* n      = detail::block_at<AddressTraitsT>( base, cur );
-            index_type  n_next = BlockState::get_next_offset( n );
-            index_type  n_gran = ( n_next != AddressTraitsT::no_block ) ? ( n_next - cur ) : ( total_gran - cur );
+            parent              = cur;
+            const void* n       = detail::block_at<AddressTraitsT>( base, cur );
+            index_type  n_next  = BlockState::get_next_offset( n );
+            index_type  n_gran  = ( n_next != AddressTraitsT::no_block ) ? ( n_next - cur ) : ( total_gran - cur );
             bool        smaller = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx < cur );
             go_left             = smaller;
             cur                 = smaller ? BlockState::get_left_offset( n ) : BlockState::get_right_offset( n );
@@ -214,8 +213,8 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             index_type  node_next = BlockState::get_next_offset( node );
             // Issue #146: compare against AddressTraitsT::no_block (not detail::kNoBlock)
             // to correctly handle SmallAddressTraits (uint16_t) sentinel 0xFFFF.
-            index_type cur_gran = ( node_next != AddressTraitsT::no_block ) ? ( node_next - cur )
-                                                                             : ( total_gran - cur );
+            index_type cur_gran =
+                ( node_next != AddressTraitsT::no_block ) ? ( node_next - cur ) : ( total_gran - cur );
             if ( cur_gran >= needed_granules )
             {
                 result = cur;
@@ -232,18 +231,16 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
   private:
     static std::int32_t height( std::uint8_t* base, index_type idx )
     {
-        return ( idx == AddressTraitsT::no_block )
-                   ? 0
-                   : static_cast<std::int32_t>(
-                         BlockState::get_avl_height( detail::block_at<AddressTraitsT>( base, idx ) ) );
+        return ( idx == AddressTraitsT::no_block ) ? 0
+                                                   : static_cast<std::int32_t>( BlockState::get_avl_height(
+                                                         detail::block_at<AddressTraitsT>( base, idx ) ) );
     }
 
     static void update_height( std::uint8_t* base, index_type node_idx )
     {
         void*        node = detail::block_at<AddressTraitsT>( base, node_idx );
-        std::int32_t h =
-            1 + ( std::max )( height( base, BlockState::get_left_offset( node ) ),
-                              height( base, BlockState::get_right_offset( node ) ) );
+        std::int32_t h    = 1 + ( std::max )( height( base, BlockState::get_left_offset( node ) ),
+                                           height( base, BlockState::get_right_offset( node ) ) );
         assert( h <= std::numeric_limits<std::int16_t>::max() ); // tree height must fit in int16_t
         BlockState::set_avl_height_of( node, static_cast<std::int16_t>( h ) );
     }

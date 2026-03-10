@@ -56,12 +56,11 @@ static_assert( pmm::kGranuleSize == 16, "#83-R1: kGranuleSize must equal 16" );
 static_assert( pmm::detail::kMinBlockSize == sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::kGranuleSize,
                "#83-R2: kMinBlockSize must equal sizeof(Block<A>) + kGranuleSize" );
 // Issue #175: ManagerHeader<AT> is now templated; DefaultAddressTraits variant keeps same size.
-static_assert(
-    pmm::detail::kMinMemorySize ==
-        sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
-            sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) +
-            sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::detail::kMinBlockSize,
-    "#83-R2: kMinMemorySize must be computed from struct sizes (Issue #175)" );
+static_assert( pmm::detail::kMinMemorySize == sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
+                                                  sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) +
+                                                  sizeof( pmm::Block<pmm::DefaultAddressTraits> ) +
+                                                  pmm::detail::kMinBlockSize,
+               "#83-R2: kMinMemorySize must be computed from struct sizes (Issue #175)" );
 
 // ─── #83-R3: kDefaultGrowNumerator / kDefaultGrowDenominator ─────────────────
 

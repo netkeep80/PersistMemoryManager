@@ -1659,16 +1659,14 @@ template <typename AddressTraitsT> inline typename AddressTraitsT::index_type by
 
 /// @brief Get byte offset from granule index using AddressTraitsT::granule_size.
 /// Issue #175: parameter changed from uint32_t to index_type for 64-bit support.
-template <typename AddressTraitsT>
-inline std::size_t idx_to_byte_off_t( typename AddressTraitsT::index_type idx )
+template <typename AddressTraitsT> inline std::size_t idx_to_byte_off_t( typename AddressTraitsT::index_type idx )
 {
     return static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
 }
 
 /// @brief Get granule index from byte offset using AddressTraitsT::granule_size.
 /// Issue #175: return type changed from uint32_t to index_type for 64-bit support.
-template <typename AddressTraitsT>
-inline typename AddressTraitsT::index_type byte_off_to_idx_t( std::size_t byte_off )
+template <typename AddressTraitsT> inline typename AddressTraitsT::index_type byte_off_to_idx_t( std::size_t byte_off )
 {
     using IndexT = typename AddressTraitsT::index_type;
     assert( byte_off % AddressTraitsT::granule_size == 0 );
@@ -1791,9 +1789,9 @@ inline typename AddressTraitsT::index_type from_u32_idx( typename AddressTraitsT
 /// Issue #160: Single templated implementation; non-templated overload delegates here.
 /// Issue #175: ManagerHeader parameter is now ManagerHeader<AddressTraitsT>*.
 template <typename AddressTraitsT>
-inline typename AddressTraitsT::index_type block_total_granules( const std::uint8_t*               base,
-                                                                  const ManagerHeader<AddressTraitsT>* hdr,
-                                                                  const pmm::Block<AddressTraitsT>*    blk )
+inline typename AddressTraitsT::index_type block_total_granules( const std::uint8_t*                  base,
+                                                                 const ManagerHeader<AddressTraitsT>* hdr,
+                                                                 const pmm::Block<AddressTraitsT>*    blk )
 {
     using BlockState                     = pmm::BlockStateBase<AddressTraitsT>;
     static constexpr std::size_t kGranSz = AddressTraitsT::granule_size;
@@ -1868,8 +1866,7 @@ inline pmm::Block<pmm::DefaultAddressTraits>* header_from_ptr( std::uint8_t* bas
     std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
     // First user data starts after Block_0 + ManagerHeader<DefaultAddressTraits> + Block_1 (Issue #75, #112)
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
-    std::uint8_t*                min_addr =
-        base + kBlockSize + sizeof( ManagerHeader<pmm::DefaultAddressTraits> ) + kBlockSize;
+    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader<pmm::DefaultAddressTraits> ) + kBlockSize;
     if ( raw_ptr < min_addr )
         return nullptr;
     if ( raw_ptr > base + total_size )
@@ -1934,7 +1931,7 @@ inline std::uint32_t required_block_granules( std::size_t user_bytes )
 template <typename AddressTraitsT>
 inline typename AddressTraitsT::index_type required_block_granules_t( std::size_t user_bytes )
 {
-    using index_type             = typename AddressTraitsT::index_type;
+    using index_type         = typename AddressTraitsT::index_type;
     index_type data_granules = bytes_to_granules_t<AddressTraitsT>( user_bytes );
     if ( data_granules == 0 )
         data_granules = 1;
@@ -1970,13 +1967,12 @@ namespace pmm
  * @tparam AddressTraitsT Traits адресного пространства (определяет типы индексов).
  */
 template <typename Policy, typename AddressTraitsT>
-concept FreeBlockTreePolicyForTraitsConcept =
-    requires( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
-              typename AddressTraitsT::index_type idx ) {
-        { Policy::insert( base, hdr, idx ) };
-        { Policy::remove( base, hdr, idx ) };
-        { Policy::find_best_fit( base, hdr, idx ) } -> std::convertible_to<typename AddressTraitsT::index_type>;
-    };
+concept FreeBlockTreePolicyForTraitsConcept = requires( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
+                                                        typename AddressTraitsT::index_type idx ) {
+    { Policy::insert( base, hdr, idx ) };
+    { Policy::remove( base, hdr, idx ) };
+    { Policy::find_best_fit( base, hdr, idx ) } -> std::convertible_to<typename AddressTraitsT::index_type>;
+};
 
 /**
  * @brief C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков.
@@ -2040,16 +2036,16 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
         // Issue #146: use AddressTraitsT::granule_size for correct byte→granule conversion.
         index_type total_gran = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
         index_type blk_next   = BlockState::get_next_offset( blk );
-        index_type blk_gran   = ( blk_next != AddressTraitsT::no_block ) ? ( blk_next - blk_idx )
-                                                                         : ( total_gran - blk_idx );
+        index_type blk_gran =
+            ( blk_next != AddressTraitsT::no_block ) ? ( blk_next - blk_idx ) : ( total_gran - blk_idx );
         index_type cur = hdr->free_tree_root, parent = AddressTraitsT::no_block;
         bool       go_left = false;
         while ( cur != AddressTraitsT::no_block )
         {
-            parent             = cur;
-            const void* n      = detail::block_at<AddressTraitsT>( base, cur );
-            index_type  n_next = BlockState::get_next_offset( n );
-            index_type  n_gran = ( n_next != AddressTraitsT::no_block ) ? ( n_next - cur ) : ( total_gran - cur );
+            parent              = cur;
+            const void* n       = detail::block_at<AddressTraitsT>( base, cur );
+            index_type  n_next  = BlockState::get_next_offset( n );
+            index_type  n_gran  = ( n_next != AddressTraitsT::no_block ) ? ( n_next - cur ) : ( total_gran - cur );
             bool        smaller = ( blk_gran < n_gran ) || ( blk_gran == n_gran && blk_idx < cur );
             go_left             = smaller;
             cur                 = smaller ? BlockState::get_left_offset( n ) : BlockState::get_right_offset( n );
@@ -2131,8 +2127,8 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             index_type  node_next = BlockState::get_next_offset( node );
             // Issue #146: compare against AddressTraitsT::no_block (not detail::kNoBlock)
             // to correctly handle SmallAddressTraits (uint16_t) sentinel 0xFFFF.
-            index_type cur_gran = ( node_next != AddressTraitsT::no_block ) ? ( node_next - cur )
-                                                                             : ( total_gran - cur );
+            index_type cur_gran =
+                ( node_next != AddressTraitsT::no_block ) ? ( node_next - cur ) : ( total_gran - cur );
             if ( cur_gran >= needed_granules )
             {
                 result = cur;
@@ -2149,18 +2145,16 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
   private:
     static std::int32_t height( std::uint8_t* base, index_type idx )
     {
-        return ( idx == AddressTraitsT::no_block )
-                   ? 0
-                   : static_cast<std::int32_t>(
-                         BlockState::get_avl_height( detail::block_at<AddressTraitsT>( base, idx ) ) );
+        return ( idx == AddressTraitsT::no_block ) ? 0
+                                                   : static_cast<std::int32_t>( BlockState::get_avl_height(
+                                                         detail::block_at<AddressTraitsT>( base, idx ) ) );
     }
 
     static void update_height( std::uint8_t* base, index_type node_idx )
     {
         void*        node = detail::block_at<AddressTraitsT>( base, node_idx );
-        std::int32_t h =
-            1 + ( std::max )( height( base, BlockState::get_left_offset( node ) ),
-                              height( base, BlockState::get_right_offset( node ) ) );
+        std::int32_t h    = 1 + ( std::max )( height( base, BlockState::get_left_offset( node ) ),
+                                           height( base, BlockState::get_right_offset( node ) ) );
         assert( h <= std::numeric_limits<std::int16_t>::max() ); // tree height must fit in int16_t
         BlockState::set_avl_height_of( node, static_cast<std::int16_t>( h ) );
     }
@@ -3101,8 +3095,7 @@ class AllocatorPolicy
                 FreeBlockTreeT::remove( base, hdr, nxt_idx );
 
                 // CoalescingBlock::coalesce_with_next (also updates nxt_nxt_blk->prev_offset internally)
-                coalescing->coalesce_with_next( detail::block_at<AddressTraitsT>( base, nxt_idx ), nxt_nxt_blk,
-                                                b_idx );
+                coalescing->coalesce_with_next( detail::block_at<AddressTraitsT>( base, nxt_idx ), nxt_nxt_blk, b_idx );
 
                 if ( nxt_nxt_blk == nullptr )
                     hdr->last_block_offset = b_idx;
@@ -5082,10 +5075,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized )
             return false;
-        const std::uint8_t*                          base = _backend.base_ptr();
-        using BlockState                                  = BlockStateBase<address_traits>;
-        const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
-        index_type                                   idx  = hdr->first_block_offset;
+        const std::uint8_t* base                         = _backend.base_ptr();
+        using BlockState                                 = BlockStateBase<address_traits>;
+        const detail::ManagerHeader<address_traits>* hdr = get_header_c( base );
+        index_type                                   idx = hdr->first_block_offset;
         // Issue #146: use address_traits::granule_size for correct byte offset computations.
         static constexpr std::size_t kGranSz = address_traits::granule_size;
         while ( idx != address_traits::no_block )
@@ -5133,7 +5126,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized )
             return false;
-        const std::uint8_t*          base = _backend.base_ptr();
+        const std::uint8_t*                          base = _backend.base_ptr();
         const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
         for_each_free_block_inorder( base, hdr, hdr->free_tree_root, 0, callback );
         return true;
@@ -5160,9 +5153,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     /// @brief Recursive in-order traversal of the AVL free block tree.
     template <typename Callback>
-    static void for_each_free_block_inorder( const std::uint8_t*                          base,
-                                             const detail::ManagerHeader<address_traits>* hdr, index_type node_idx,
-                                             int depth, Callback&& callback ) noexcept
+    static void for_each_free_block_inorder( const std::uint8_t* base, const detail::ManagerHeader<address_traits>* hdr,
+                                             index_type node_idx, int depth, Callback&& callback ) noexcept
     {
         using BlockState = BlockStateBase<address_traits>;
         // Issue #146: use address_traits::granule_size for correct byte offset computations.
@@ -5238,10 +5230,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static bool init_layout( std::uint8_t* base, std::size_t size ) noexcept
     {
-        using BlockState                           = BlockStateBase<address_traits>;
-        static constexpr index_type kHdrBlkIdx  = 0;
-        static constexpr index_type kFreeBlkIdx = kFreeBlkIdxLayout;
-        static constexpr std::size_t   kGranSz     = address_traits::granule_size;
+        using BlockState                         = BlockStateBase<address_traits>;
+        static constexpr index_type  kHdrBlkIdx  = 0;
+        static constexpr index_type  kFreeBlkIdx = kFreeBlkIdxLayout;
+        static constexpr std::size_t kGranSz     = address_traits::granule_size;
 
         // Minimum size check: Block_0 + ManagerHeader + Block_1 + at least 1 data granule
         static constexpr std::size_t kMinBlockDataSize = kGranSz; // 1 data granule
@@ -5299,7 +5291,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         std::size_t                            old_size = hdr->total_size;
 
         // Issue #146: use AddressTraitsT-specific granule size for all computations.
-        static constexpr std::size_t kGranSz       = address_traits::granule_size;
+        static constexpr std::size_t kGranSz        = address_traits::granule_size;
         index_type                   data_gran_need = detail::bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran_need == 0 )
             data_gran_need = 1;
@@ -5321,8 +5313,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         hdr = get_header( new_base );
 
         // Issue #146: compute extra_idx using address_traits::granule_size.
-        index_type extra_idx = detail::byte_off_to_idx_t<address_traits>( old_size );
-        std::size_t   extra_size = new_size - old_size;
+        index_type  extra_idx  = detail::byte_off_to_idx_t<address_traits>( old_size );
+        std::size_t extra_size = new_size - old_size;
 
         void* last_blk_raw =
             ( hdr->last_block_offset != address_traits::no_block )
