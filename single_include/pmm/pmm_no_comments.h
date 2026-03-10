@@ -1553,12 +1553,12 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
 
 } 
 
-#if defined(_MSVC_LANG)
-#  if _MSVC_LANG < 202002L
-#    error "pmm.h requires C++20 or later. Please compile with /std:c++20 on MSVC."
-#  endif
+#if defined( _MSVC_LANG )
+#if _MSVC_LANG < 202002L
+#error "pmm.h requires C++20 or later. Please compile with /std:c++20 on MSVC."
+#endif
 #elif __cplusplus < 202002L
-#  error "pmm.h requires C++20 or later. Please compile with -std=c++20."
+#error "pmm.h requires C++20 or later. Please compile with -std=c++20."
 #endif
 
 #include <cassert>
