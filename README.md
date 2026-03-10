@@ -5,7 +5,7 @@ A header-only C++20 library for persistent memory management with a static API, 
 [![CI](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml/badge.svg)](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/std/the-standard)
-[![Version](https://img.shields.io/badge/version-0.6.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.13.0-green.svg)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/docs-Doxygen-informational)](https://netkeep80.github.io/PersistMemoryManager/)
 
 ## Overview
@@ -21,16 +21,17 @@ PersistMemoryManager (PMM) is a block-based memory allocator that stores all met
 - **Configurable** — swap storage backend, lock policy, and address width independently
 - **Persistent** — save/load heap image to a file; all internal links are offset-based
 - **Best-fit allocation** — AVL-tree backed free block management with coalescing
-- **16-byte granularity** — 4-byte `pptr<T>` indexes up to 64 GB
+- **Persistent data types** — built-in `pstringview` (interned strings) and `pmap<K,V>` (AVL dictionary)
 
 ## Quick Start
 
 ### Option 1: Single-header (recommended)
 
-Download one file and start using the chosen preset — no other headers needed:
+Download `single_include/pmm/pmm.h` — the full library without any preset — and use any configuration:
 
 ```cpp
-#include "pmm_single_threaded_heap.h"   // single-threaded, heap storage
+#include "pmm.h"
+#include "pmm/pmm_presets.h"
 
 using Mgr = pmm::presets::SingleThreadedHeap;
 
@@ -46,14 +47,26 @@ int main() {
 }
 ```
 
-Available single-header presets:
+Or use a preset single-header file (includes full library + preset alias in one file):
 
-| File | Preset | Thread Safety | Use Case |
-|------|--------|--------------|----------|
-| `pmm_single_threaded_heap.h` | `SingleThreadedHeap` | None | Caches, single-threaded tools |
-| `pmm_multi_threaded_heap.h` | `MultiThreadedHeap` | `shared_mutex` | Concurrent services |
-| `pmm_embedded_heap.h` | `EmbeddedHeap` | None | Embedded / memory-constrained |
-| `pmm_industrial_db_heap.h` | `IndustrialDBHeap` | `shared_mutex` | High-load databases |
+```cpp
+#include "pmm_single_threaded_heap.h"
+
+using Mgr = pmm::presets::SingleThreadedHeap;
+```
+
+Available single-header files in `single_include/pmm/`:
+
+| File | Preset | Index | Thread Safety | Use Case |
+|------|--------|-------|--------------|----------|
+| `pmm.h` | *(none — full library)* | any | any | Custom configs |
+| `pmm_small_embedded_static_heap.h` | `SmallEmbeddedStaticHeap<N>` | `uint16_t` (2 B) | None | ARM Cortex-M, AVR, ESP32 |
+| `pmm_embedded_static_heap.h` | `EmbeddedStaticHeap<N>` | `uint32_t` (4 B) | None | Bare-metal, RTOS, no heap |
+| `pmm_embedded_heap.h` | `EmbeddedHeap` | `uint32_t` (4 B) | None | Embedded with dynamic heap |
+| `pmm_single_threaded_heap.h` | `SingleThreadedHeap` | `uint32_t` (4 B) | None | Caches, single-threaded tools |
+| `pmm_multi_threaded_heap.h` | `MultiThreadedHeap` | `uint32_t` (4 B) | `shared_mutex` | Concurrent services |
+| `pmm_industrial_db_heap.h` | `IndustrialDBHeap` | `uint32_t` (4 B) | `shared_mutex` | High-load databases |
+| `pmm_large_db_heap.h` | `LargeDBHeap` | `uint64_t` (8 B) | `shared_mutex` | Petabyte-scale databases |
 
 ### Option 2: Multi-header
 
@@ -186,7 +199,7 @@ Mgr::destroy();
 
 ### Permanent block locking
 
-A block can be marked read-only to prevent accidental deallocation:
+A block can be marked read-only to prevent accidental deallocation. This is used internally by `pstringview` to ensure interned strings are never freed:
 
 ```cpp
 Mgr::lock_block_permanent(p);           // prevent deallocate()
@@ -195,7 +208,7 @@ bool ro = Mgr::is_permanently_locked(p);
 
 ## Persistent Pointer — pptr\<T\>
 
-`pptr<T, ManagerT>` stores a 32-bit granule index (4 bytes) instead of a raw pointer. It is address-independent: the heap image can be mapped at any base address and `pptr` values remain valid.
+`pptr<T, ManagerT>` stores a granule index (2, 4, or 8 bytes depending on address traits) instead of a raw pointer. It is address-independent: the heap image can be mapped at any base address and `pptr` values remain valid.
 
 ```cpp
 Mgr::pptr<int> p = Mgr::allocate_typed<int>();
@@ -229,7 +242,89 @@ std::int16_t get_tree_height() const noexcept;
 void         set_tree_height(std::int16_t h) noexcept;
 ```
 
-> **Warning:** `set_tree_weight()` should only be called on blocks locked with `lock_block_permanent()`.
+## Persistent String — pstringview
+
+`pstringview<ManagerT>` is an interned, read-only persistent string. Equal strings are always stored once in the heap and return the same `pptr` — deduplication is guaranteed.
+
+```cpp
+using Mgr = pmm::presets::SingleThreadedHeap;
+Mgr::create(64 * 1024);
+
+// Intern a string — creates it in PAP on first call
+Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("hello");
+if (p) {
+    const char* s = p->c_str();   // "hello"
+    std::size_t n = p->size();    // 5
+}
+
+// Interning the same string again returns the same pptr
+Mgr::pptr<Mgr::pstringview> p2 = Mgr::pstringview("hello");
+assert(p == p2);  // identical granule index
+
+Mgr::destroy();
+```
+
+**API:**
+
+```cpp
+const char* c_str()  const noexcept;  // null-terminated string
+std::size_t size()   const noexcept;  // length without null terminator
+bool        empty()  const noexcept;
+
+bool operator==(const pstringview& o) const noexcept;
+bool operator!=(const pstringview& o) const noexcept;
+bool operator< (const pstringview& o) const noexcept;
+
+// Explicit interning (same as Mgr::pstringview("..."))
+static Mgr::pptr<pstringview> intern(const char* s) noexcept;
+
+// Reset interning dictionary (for test isolation)
+static void reset() noexcept;
+```
+
+**Notes:**
+- All `pstringview` and char blocks are permanently locked via `lock_block_permanent()` — they cannot be freed.
+- Deduplication uses a built-in AVL tree whose links live in each block's `TreeNode` fields.
+- Requires `persist_memory_manager.h` (auto-included via `Mgr::pstringview`).
+
+## Persistent Map — pmap\<K, V\>
+
+`pmap<_K, _V, ManagerT>` is a persistent AVL dictionary stored entirely inside the managed region. Key-value nodes use the built-in `TreeNode` fields for AVL links — no separate tree allocation is needed.
+
+```cpp
+using Mgr = pmm::presets::SingleThreadedHeap;
+Mgr::create(64 * 1024);
+
+using MyMap = Mgr::pmap<int, int>;
+
+MyMap map;
+map.insert(42, 100);
+map.insert(10, 200);
+
+auto p = map.find(42);
+if (!p.is_null()) {
+    int val = p->value;  // 100
+}
+
+map.insert(42, 300);  // duplicate key — updates value to 300
+
+Mgr::destroy();
+```
+
+Using `pstringview` keys:
+
+```cpp
+using StrIntMap = Mgr::pmap<Mgr::pstringview, int>;
+StrIntMap dict;
+auto key = static_cast<Mgr::pptr<Mgr::pstringview>>(Mgr::pstringview("hello"));
+dict.insert(*key.resolve(), 42);
+```
+
+**Notes:**
+- O(log n) insert, find, and contains.
+- Duplicate key on `insert` updates the stored value.
+- Nodes are **not** permanently locked (unlike `pstringview` — they can be freed).
+- Key type `_K` must support `operator<` and `operator==`.
 
 ## Configuration
 
@@ -239,19 +334,36 @@ void         set_tree_height(std::int16_t h) noexcept;
 #include "pmm/pmm_presets.h"
 
 namespace pmm::presets {
-    using SingleThreadedHeap = PersistMemoryManager<CacheManagerConfig, 0>;
-    using MultiThreadedHeap  = PersistMemoryManager<PersistentDataConfig, 0>;
-    using EmbeddedHeap       = PersistMemoryManager<EmbeddedManagerConfig, 0>;
-    using IndustrialDBHeap   = PersistMemoryManager<IndustrialDBConfig, 0>;
+    // Embedded — static buffer, no dynamic heap
+    template <std::size_t N = 1024>
+    using SmallEmbeddedStaticHeap = PersistMemoryManager<SmallEmbeddedStaticConfig<N>, 0>;  // 16-bit index
+
+    template <std::size_t N = 4096>
+    using EmbeddedStaticHeap = PersistMemoryManager<EmbeddedStaticConfig<N>, 0>;           // 32-bit, static
+
+    using EmbeddedHeap        = PersistMemoryManager<EmbeddedManagerConfig, 0>;            // 32-bit, dynamic
+
+    // Desktop / server
+    using SingleThreadedHeap  = PersistMemoryManager<CacheManagerConfig, 0>;
+    using MultiThreadedHeap   = PersistMemoryManager<PersistentDataConfig, 0>;
+
+    // Industrial DB
+    using IndustrialDBHeap    = PersistMemoryManager<IndustrialDBConfig, 0>;
+
+    // Large DB — 64-bit index
+    using LargeDBHeap         = PersistMemoryManager<LargeDBConfig, 0>;
 }
 ```
 
-| Preset | Lock policy | Growth | Intended for |
-|--------|-------------|--------|--------------|
-| `SingleThreadedHeap` | `NoLock` | 25% | Caches, offline tools |
-| `MultiThreadedHeap` | `SharedMutexLock` | 25% | Concurrent services |
-| `EmbeddedHeap` | `NoLock` | 50% | Memory-constrained devices |
-| `IndustrialDBHeap` | `SharedMutexLock` | 100% | High-throughput databases |
+| Preset | Index | pptr size | Lock policy | Growth | Max heap | Intended for |
+|--------|-------|-----------|-------------|--------|----------|--------------|
+| `SmallEmbeddedStaticHeap<N>` | `uint16_t` | 2 B | `NoLock` | none | ~1 MB | ARM Cortex-M, AVR, ESP32 |
+| `EmbeddedStaticHeap<N>` | `uint32_t` | 4 B | `NoLock` | none | 64 GB | Bare-metal, RTOS |
+| `EmbeddedHeap` | `uint32_t` | 4 B | `NoLock` | 50% | 64 GB | Embedded with dynamic heap |
+| `SingleThreadedHeap` | `uint32_t` | 4 B | `NoLock` | 25% | 64 GB | Caches, offline tools |
+| `MultiThreadedHeap` | `uint32_t` | 4 B | `SharedMutexLock` | 25% | 64 GB | Concurrent services |
+| `IndustrialDBHeap` | `uint32_t` | 4 B | `SharedMutexLock` | 100% | 64 GB | High-throughput databases |
+| `LargeDBHeap` | `uint64_t` | 8 B | `SharedMutexLock` | 100% | petabyte | Large-scale databases |
 
 ### Custom configuration
 
@@ -295,12 +407,12 @@ Cache1::pptr<int> p1 = Cache1::allocate_typed<int>();
 
 ### Address traits
 
-| Type | Index | Granule | Max addressable |
-|------|-------|---------|-----------------|
-| `TinyAddressTraits` | `uint8_t` | 8 B | 2 KB |
-| `SmallAddressTraits` | `uint16_t` | 16 B | 1 MB |
-| `DefaultAddressTraits` | `uint32_t` | 16 B | 64 GB |
-| `LargeAddressTraits` | `uint64_t` | 64 B | huge |
+| Type | Index | Granule | pptr size | Max addressable |
+|------|-------|---------|-----------|-----------------|
+| `TinyAddressTraits` | `uint8_t` | 8 B | 1 B | 2 KB |
+| `SmallAddressTraits` | `uint16_t` | 16 B | 2 B | ~1 MB |
+| `DefaultAddressTraits` | `uint32_t` | 16 B | 4 B | 64 GB |
+| `LargeAddressTraits` | `uint64_t` | 64 B | 8 B | petabyte |
 
 ### Storage backends
 
@@ -308,7 +420,7 @@ Cache1::pptr<int> p1 = Cache1::allocate_typed<int>();
 |-------|-------------|
 | `HeapStorage<A>` | Dynamic allocation via `malloc` / `realloc` |
 | `MMapStorage<A>` | File-mapped memory (`mmap` / `MapViewOfFile`) — persistent across restarts |
-| `StaticStorage<Size>` | Fixed-size static array — no dynamic allocation, suitable for embedded |
+| `StaticStorage<Size, A>` | Fixed-size static array — no dynamic allocation, suitable for embedded |
 
 ### Lock policies
 
@@ -342,6 +454,7 @@ static_assert(pmm::StorageBackendConcept<MyStorage>);
 ┌─────────────────────────────────────────────────────┐
 │                     Public API                       │
 │  create / load / destroy / allocate / deallocate    │
+│  pptr<T> / pstringview / pmap<K,V>                  │
 ├─────────────────────────────────────────────────────┤
 │              AllocatorPolicy                         │
 │  best-fit search · block splitting · coalescing     │
@@ -349,7 +462,7 @@ static_assert(pmm::StorageBackendConcept<MyStorage>);
 ├─────────────────────────────────────────────────────┤
 │               Raw Memory Layer                       │
 │  StorageBackend → contiguous byte buffer            │
-│  BlockHeader (LinkedList + AVL node, 32 bytes)      │
+│  Block<AT> (TreeNode + prev/next offsets, 32 bytes) │
 │  ManagerHeader (magic, sizes, counters, root ptr)   │
 └─────────────────────────────────────────────────────┘
 ```
@@ -357,11 +470,11 @@ static_assert(pmm::StorageBackendConcept<MyStorage>);
 **Memory layout inside the managed region:**
 
 ```
-[ManagerHeader][BlockHeader_0][data_0][BlockHeader_1][data_1] ...
+[ManagerHeader][Block_0][data_0][Block_1][data_1] ...
 ```
 
 - `ManagerHeader` is stored at offset 0 inside the managed region
-- Every block carries a 32-byte header (LinkedListNode + TreeNode)
+- Every block carries a 32-byte header (`TreeNode` fields 0–23 bytes, `prev`/`next` offsets 24–31 bytes)
 - All cross-block references are granule indices (offsets), never raw pointers
 - On `load()` the linked list is repaired and the AVL free-tree is rebuilt from the block chain
 
@@ -380,32 +493,40 @@ Measured on a single core (Release build, Linux x86-64, GCC 13):
 ```
 PersistMemoryManager/
 ├── include/
-│   ├── pmm/                        # Modular headers
-│   │   ├── persist_memory_manager.h  # Main manager class
-│   │   ├── pptr.h                    # Persistent pointer
-│   │   ├── pmm_presets.h             # Ready-made aliases
-│   │   ├── manager_configs.h         # Config structs
-│   │   ├── address_traits.h          # Address space traits
-│   │   ├── config.h                  # Lock policies
-│   │   ├── heap_storage.h            # malloc-based backend
-│   │   ├── mmap_storage.h            # file-mapped backend
-│   │   ├── static_storage.h          # static-array backend
-│   │   ├── storage_backend.h         # StorageBackend concept
-│   │   ├── allocator_policy.h        # Alloc/dealloc algorithms
-│   │   ├── block_state.h             # Block state machine
-│   │   ├── free_block_tree.h         # AVL tree policy
-│   │   ├── types.h                   # ManagerInfo, MemoryStats
-│   │   ├── io.h                      # save/load utilities
-│   │   └── manager_concept.h         # C++20 concepts
-│   └── manager_concept.h             # C++20 concepts (continued)
-├── single_include/                   # Self-contained single-header presets (Issue #138)
-│   └── pmm/
-│       ├── pmm_single_threaded_heap.h    # Single-header preset
-│       ├── pmm_multi_threaded_heap.h     # Single-header preset
-│       ├── pmm_embedded_heap.h           # Single-header preset
-│       └── pmm_industrial_db_heap.h      # Single-header preset
+│   └── pmm/                          # Modular headers
+│       ├── persist_memory_manager.h  # Main manager class (pptr, pstringview, pmap aliases)
+│       ├── pptr.h                    # Persistent pointer
+│       ├── pstringview.h             # Interned persistent string (v0.11.0)
+│       ├── pmap.h                    # Persistent AVL dictionary (v0.12.0)
+│       ├── avl_tree_mixin.h          # Shared AVL tree helpers (v0.13.0)
+│       ├── pmm_presets.h             # Ready-made preset aliases
+│       ├── manager_configs.h         # Config structs (including embedded/large DB)
+│       ├── address_traits.h          # Address space traits (Tiny/Small/Default/Large)
+│       ├── config.h                  # Lock policies
+│       ├── heap_storage.h            # malloc-based backend
+│       ├── mmap_storage.h            # file-mapped backend
+│       ├── static_storage.h          # static-array backend (for embedded)
+│       ├── storage_backend.h         # StorageBackend concept
+│       ├── allocator_policy.h        # Alloc/dealloc algorithms
+│       ├── block.h                   # Block layout (TreeNode + linked list)
+│       ├── block_state.h             # Block state machine
+│       ├── free_block_tree.h         # AVL free-tree policy
+│       ├── tree_node.h               # AVL node fields
+│       ├── types.h                   # ManagerInfo, MemoryStats, constants
+│       ├── io.h                      # save/load utilities
+│       └── manager_concept.h         # C++20 concepts
+├── single_include/
+│   └── pmm/                          # Self-contained single-header files
+│       ├── pmm.h                     # Full library, no preset (v0.10.0)
+│       ├── pmm_small_embedded_static_heap.h  # SmallEmbeddedStaticHeap<N> (v0.9.0)
+│       ├── pmm_embedded_static_heap.h        # EmbeddedStaticHeap<N> (v0.8.0)
+│       ├── pmm_embedded_heap.h               # EmbeddedHeap
+│       ├── pmm_single_threaded_heap.h        # SingleThreadedHeap
+│       ├── pmm_multi_threaded_heap.h         # MultiThreadedHeap
+│       ├── pmm_industrial_db_heap.h          # IndustrialDBHeap
+│       └── pmm_large_db_heap.h               # LargeDBHeap (v0.9.0)
 ├── examples/                         # Usage examples
-├── tests/                            # 40+ test files
+├── tests/                            # Test suite
 ├── demo/                             # Visual ImGui/OpenGL demo
 ├── docs/                             # Architecture, API docs
 ├── scripts/                          # Release helpers
