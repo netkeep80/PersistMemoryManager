@@ -129,10 +129,13 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a537df6e8ba0bf2831199d3b12bb1a838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить гранульный индекс (для сохранения/восстановления).  <br /></td></tr>
 <tr class="separator:a537df6e8ba0bf2831199d3b12bb1a838"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ed0ce34d7c191c07f5eebb3cc54bae9" id="r_a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a0ed0ce34d7c191c07f5eebb3cc54bae9">operator==</a> (const <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;other) const noexcept</td></tr>
-<tr class="memdesc:a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сравнение персистентных указателей одного типа.  <br /></td></tr>
+<tr class="memdesc:a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сравнение персистентных указателей одного типа по индексу.  <br /></td></tr>
 <tr class="separator:a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d32271a6705486f1e690ec4ac24339a" id="r_a0d32271a6705486f1e690ec4ac24339a"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a0d32271a6705486f1e690ec4ac24339a">operator!=</a> (const <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;other) const noexcept</td></tr>
 <tr class="separator:a0d32271a6705486f1e690ec4ac24339a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a708712be67f31f497b8afa696f37b70a" id="r_a708712be67f31f497b8afa696f37b70a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a708712be67f31f497b8afa696f37b70a">operator&lt;</a> (const <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;other) const noexcept</td></tr>
+<tr class="memdesc:a708712be67f31f497b8afa696f37b70a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Упорядочивание персистентных указателей для использования как ключ в pmap (Issue #184).  <br /></td></tr>
+<tr class="separator:a708712be67f31f497b8afa696f37b70a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6cb94453f12e106b13c75d39f5771c0e" id="r_a6cb94453f12e106b13c75d39f5771c0e"><td class="memItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a6cb94453f12e106b13c75d39f5771c0e">operator*</a> () const noexcept</td></tr>
 <tr class="memdesc:a6cb94453f12e106b13c75d39f5771c0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменование указателя (статическая модель).  <br /></td></tr>
 <tr class="separator:a6cb94453f12e106b13c75d39f5771c0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -493,7 +496,7 @@ template&lt;class T , class ManagerT &gt; </div>
 <p>Вызывает <code>ManagerT::resolve&lt;T&gt;(*this)</code> без аргументов. Доступно только для менеджеров со статическим API (например, <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Унифицированный статический менеджер персистентной памяти (Issue #110).">PersistMemoryManager</a>).</p>
 <dl class="section return"><dt>Returns</dt><dd>T&amp; — ссылка на данные. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00138">138</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00160">160</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -636,7 +639,42 @@ template&lt;class T , class ManagerT &gt; </div>
 <p>Вызывает <code>ManagerT::resolve&lt;T&gt;(*this)</code> без аргументов. Доступно только для менеджеров со статическим API.</p>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на данные. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00148">148</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00170">170</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+
+</div>
+</div>
+<a id="a708712be67f31f497b8afa696f37b70a" name="a708712be67f31f497b8afa696f37b70a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a708712be67f31f497b8afa696f37b70a">&#9670;&#160;</a></span>operator&lt;()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T , class ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classpmm_1_1pptr.html">pmm::pptr</a>&lt; T, ManagerT &gt;::operator&lt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classpmm_1_1pptr.html">pptr</a>&lt; T, ManagerT &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Упорядочивание персистентных указателей для использования как ключ в pmap (Issue #184). </p>
+<p>Сравнивает указываемые объекты через <code>*this &lt; *other</code>, если оба указателя не null. Null pptr считается меньше любого ненулевого указателя.</p>
+<dl class="section note"><dt>Note</dt><dd>Требует, чтобы тип T поддерживал <code>operator&lt;</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>true если <code>*this</code> должен быть перед <code>other</code> в упорядоченной последовательности. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00137">137</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -694,7 +732,7 @@ template&lt;class T , class ManagerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Сравнение персистентных указателей одного типа. </p>
+<p>Сравнение персистентных указателей одного типа по индексу. </p>
 
 <p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00125">125</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
@@ -730,7 +768,7 @@ template&lt;class T , class ManagerT &gt; </div>
 <dl class="section warning"><dt>Warning</dt><dd>Сырой указатель действителен только пока менеджер инициализирован и блок не освобождён. Не храните его дольше необходимого.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>T* — указатель на данные или nullptr если <a class="el" href="classpmm_1_1pptr.html#a2cb78c12fac91ef44774308b0a7fc952" title="Проверить, является ли указатель нулевым.">is_null()</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00162">162</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00184">184</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>
@@ -767,7 +805,7 @@ template&lt;class T , class ManagerT &gt; </div>
 </div><!-- fragment --><dl class="section warning"><dt>Warning</dt><dd>Ссылка действительна только пока менеджер инициализирован и блок не освобождён.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>&amp; — ссылка на узел AVL-дерева в заголовке выделенного блока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00184">184</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pptr_8h_source.html#l00206">206</a> of file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
 
 </div>
 </div>

@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['largest_5ffree_0',['largest_free',['../structpmm_1_1MemoryStats.html#af04f85408e3c8518f4cab238be67d6e8',1,'pmm::MemoryStats']]],
-  ['last_5fblock_5foffset_1',['last_block_offset',['../structpmm_1_1detail_1_1ManagerHeader.html#ac506fd403b8f6b2761177bfb13821204',1,'pmm::detail::ManagerHeader']]],
-  ['left_5foffset_2',['left_offset',['../structpmm_1_1TreeNode.html#a7ef6c85c74806fb9e9558b72d267a92c',1,'pmm::TreeNode::left_offset'],['../structpmm_1_1FreeBlockView.html#a7016b91ed1e6775949a50d003bc297bf',1,'pmm::FreeBlockView::left_offset']]],
-  ['length_3',['length',['../structpmm_1_1pstringview.html#aa8535e226c5c2e70338e44356d6c1d44',1,'pmm::pstringview']]]
+  ['magic_0',['magic',['../structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9',1,'pmm::ManagerInfo::magic'],['../structpmm_1_1detail_1_1ManagerHeader.html#a942739e4796800acfdf773a17ca51758',1,'pmm::detail::ManagerHeader::magic']]],
+  ['manager_5fheader_5fsize_1',['manager_header_size',['../structpmm_1_1ManagerInfo.html#a1a91c550f4030d535209fed061b903e4',1,'pmm::ManagerInfo']]],
+  ['max_5fmemory_5fgb_2',['max_memory_gb',['../structpmm_1_1BasicConfig.html#adb44307f0b6f8e5b6eb4f3153eb918f9',1,'pmm::BasicConfig::max_memory_gb'],['../structpmm_1_1SmallEmbeddedStaticConfig.html#acb06ca843f1e86fa1384f06a0329d4c1',1,'pmm::SmallEmbeddedStaticConfig::max_memory_gb'],['../structpmm_1_1EmbeddedStaticConfig.html#a4335c12336bad3be346f17ba0ff14696',1,'pmm::EmbeddedStaticConfig::max_memory_gb']]]
 ];

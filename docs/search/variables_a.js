@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['magic_0',['magic',['../structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9',1,'pmm::ManagerInfo::magic'],['../structpmm_1_1detail_1_1ManagerHeader.html#a942739e4796800acfdf773a17ca51758',1,'pmm::detail::ManagerHeader::magic']]],
-  ['manager_5fheader_5fsize_1',['manager_header_size',['../structpmm_1_1ManagerInfo.html#a1a91c550f4030d535209fed061b903e4',1,'pmm::ManagerInfo']]],
-  ['max_5fmemory_5fgb_2',['max_memory_gb',['../structpmm_1_1BasicConfig.html#adb44307f0b6f8e5b6eb4f3153eb918f9',1,'pmm::BasicConfig::max_memory_gb'],['../structpmm_1_1SmallEmbeddedStaticConfig.html#acb06ca843f1e86fa1384f06a0329d4c1',1,'pmm::SmallEmbeddedStaticConfig::max_memory_gb'],['../structpmm_1_1EmbeddedStaticConfig.html#a4335c12336bad3be346f17ba0ff14696',1,'pmm::EmbeddedStaticConfig::max_memory_gb']]]
+  ['next_5foffset_0',['next_offset',['../structpmm_1_1Block.html#aab975af03a107ec6e6bad3af1b4187ef',1,'pmm::Block']]],
+  ['no_5fblock_1',['no_block',['../structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc',1,'pmm::AddressTraits']]],
+  ['node_5ftype_2',['node_type',['../structpmm_1_1TreeNode.html#a036af7961dcc42d6e9adb84e37d85d02',1,'pmm::TreeNode']]]
 ];

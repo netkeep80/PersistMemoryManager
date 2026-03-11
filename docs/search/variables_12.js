@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['value_0',['value',['../structpmm_1_1pmap__node.html#a9bf0fa400dab525be4256ad650bd975b',1,'pmm::pmap_node']]]
+  ['weight_0',['weight',['../structpmm_1_1TreeNode.html#a054b227ed3133233acb113deef6070c0',1,'pmm::TreeNode']]]
 ];
