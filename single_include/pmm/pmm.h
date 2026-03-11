@@ -3937,9 +3937,31 @@ class pptr
     /// @brief Получить гранульный индекс (для сохранения/восстановления).
     constexpr index_type offset() const noexcept { return _idx; }
 
-    /// @brief Сравнение персистентных указателей одного типа.
+    /// @brief Сравнение персистентных указателей одного типа по индексу.
     constexpr bool operator==( const pptr& other ) const noexcept { return _idx == other._idx; }
     constexpr bool operator!=( const pptr& other ) const noexcept { return _idx != other._idx; }
+
+    /**
+     * @brief Упорядочивание персистентных указателей для использования как ключ в pmap (Issue #184).
+     *
+     * Сравнивает указываемые объекты через `*this < *other`, если оба указателя не null.
+     * Null pptr считается меньше любого ненулевого указателя.
+     *
+     * @note Требует, чтобы тип T поддерживал `operator<`.
+     * @return true если `*this` должен быть перед `other` в упорядоченной последовательности.
+     */
+    bool operator<( const pptr& other ) const noexcept
+    {
+        // Null pptr меньше любого ненулевого
+        if ( is_null() && !other.is_null() )
+            return true;
+        if ( !is_null() && other.is_null() )
+            return false;
+        if ( is_null() && other.is_null() )
+            return false;
+        // Оба ненулевые — сравниваем указываемые объекты
+        return **this < *other;
+    }
 
     // ─── Разыменование через статический менеджер (статическая модель) ────────
 
@@ -4008,7 +4030,7 @@ class pptr
 
 /**
  * @file pmm/pstringview.h
- * @brief pstringview<ManagerT> — персистентная строка только для чтения с интернированием (Issue #151).
+ * @brief pstringview<ManagerT> — персистентная строка только для чтения с интернированием (Issue #151, #184).
  *
  * Реализует хранение строк в персистентном адресном пространстве (ПАП) с гарантией
  * уникальности: одна и та же строка хранится в ПАП ровно один раз.
@@ -4016,9 +4038,12 @@ class pptr
  * Ключевые особенности:
  *   - Read-only: символьные данные никогда не изменяются после создания.
  *   - Интернирование: одинаковые строки используют одно и то же хранилище.
- *     Два pstringview с одинаковым содержимым указывают на один chars_idx.
- *   - Блокировка блоков: блоки с символьными данными и блоки pstringview блокируются через
- *     lock_block_permanent() — они не могут быть освобождены через deallocate().
+ *     Два pstringview с одинаковым содержимым указывают на один и тот же блок.
+ *   - Оптимизированное хранение (Issue #184): длина и строковые данные хранятся
+ *     в одном блоке ПАП вместо двух. Это существенно экономит память и ускоряет
+ *     работу pmap<pptr<pstringview>, _Tvalue>.
+ *   - Блокировка блоков: блоки pstringview блокируются через lock_block_permanent() —
+ *     они не могут быть освобождены через deallocate().
  *   - Словарь: AVL-дерево pstringview-узлов растёт в течение жизни менеджера,
  *     экономя память за счёт дедупликации строковых констант.
  *   - Встроенный AVL: каждый pstringview-блок использует встроенные поля TreeNode
@@ -4050,7 +4075,7 @@ class pptr
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока, Issue #87, #138)
- * @version 0.6 (Issue #162 — дедупликация _avl_find через detail::avl_find())
+ * @version 0.7 (Issue #184 — оптимизация: строка хранится в одном блоке вместо двух)
  */
 
 #include <cstddef>
@@ -4067,9 +4092,13 @@ template <typename ManagerT> struct pstringview;
 // ─── pstringview ─────────────────────────────────────────────────────────────
 
 /**
- * @brief Персистентная интернированная read-only строка (Issue #151).
+ * @brief Персистентная интернированная read-only строка (Issue #151, #184).
  *
- * Хранит granule-индекс символьного массива (chars_idx) и длину строки.
+ * Хранит длину и строковые данные непосредственно в блоке (Issue #184).
+ * Оптимизация: вместо двух блоков (pstringview + char[]) используется один блок,
+ * содержащий длину и строку. Это существенно экономит память и ускоряет
+ * работу pmap<pptr<pstringview>, _Tvalue>.
+ *
  * Объекты pstringview живут в ПАП и не могут быть созданы на стеке напрямую.
  *
  * Простой API (рекомендуемый способ):
@@ -4085,7 +4114,7 @@ template <typename ManagerT> struct pstringview;
  * словаря интернирования. Это является частью "леса AVL-деревьев" ПАП.
  *
  * Инварианты:
- *   - chars_idx указывает на null-terminated char[], заблокированный навечно.
+ *   - str[] содержит null-terminated строку, расположенную сразу за полем length.
  *   - Два pstringview с одинаковым содержимым — это один объект (один granule-индекс).
  *
  * @tparam ManagerT Тип менеджера памяти (PersistMemoryManager<ConfigT, InstanceId>).
@@ -4095,10 +4124,9 @@ template <typename ManagerT> struct pstringview
     using manager_type = ManagerT;
     using index_type   = typename ManagerT::index_type;
     using psview_pptr  = typename ManagerT::template pptr<pstringview>;
-    using char_pptr    = typename ManagerT::template pptr<char>;
 
-    index_type    chars_idx; ///< Granule-индекс массива char в ПАП; 0 = пустая строка
-    std::uint32_t length;    ///< Длина строки (без нулевого терминатора)
+    std::uint32_t length; ///< Длина строки (без нулевого терминатора)
+    char          str[1]; ///< Строковые данные (flexible array member pattern)
 
     // ─── Простой API: конструктор-хелпер + implicit conversion ───────────────
 
@@ -4113,7 +4141,7 @@ template <typename ManagerT> struct pstringview
      *
      * @param s C-строка для интернирования (nullptr обрабатывается как "").
      */
-    explicit pstringview( const char* s ) noexcept : chars_idx( 0 ), length( 0 ) { _interned = _intern( s ); }
+    explicit pstringview( const char* s ) noexcept : length( 0 ), str{ '\0' } { _interned = _intern( s ); }
 
     /**
      * @brief Implicit conversion к pptr<pstringview<ManagerT>>.
@@ -4126,14 +4154,8 @@ template <typename ManagerT> struct pstringview
     // ─── Методы доступа ──────────────────────────────────────────────────────
 
     /// @brief Получить raw C-строку. Действителен, пока менеджер инициализирован.
-    const char* c_str() const noexcept
-    {
-        if ( chars_idx == 0 )
-            return "";
-        char_pptr   p( chars_idx );
-        const char* raw = ManagerT::template resolve<char>( p );
-        return ( raw != nullptr ) ? raw : "";
-    }
+    /// Issue #184: строка хранится непосредственно в блоке после поля length.
+    const char* c_str() const noexcept { return str; }
 
     /// @brief Длина строки (без нулевого терминатора).
     std::size_t size() const noexcept { return static_cast<std::size_t>( length ); }
@@ -4151,8 +4173,18 @@ template <typename ManagerT> struct pstringview
 
     /// @brief Равенство двух pstringview.
     ///
-    /// Интернирование гарантирует: одинаковые строки → одинаковый chars_idx.
-    bool operator==( const pstringview& other ) const noexcept { return chars_idx == other.chars_idx; }
+    /// Интернирование гарантирует: одинаковые строки → один и тот же блок.
+    /// Однако при копировании (например, как ключ в pmap_node) сравниваем по содержимому.
+    bool operator==( const pstringview& other ) const noexcept
+    {
+        // Быстрая проверка: если это один и тот же объект, они равны
+        if ( this == &other )
+            return true;
+        // Сравниваем по длине и содержимому строки
+        if ( length != other.length )
+            return false;
+        return std::strcmp( str, other.str ) == 0;
+    }
 
     /// @brief Неравенство с C-строкой.
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
@@ -4195,9 +4227,6 @@ template <typename ManagerT> struct pstringview
   private:
     psview_pptr _interned; ///< pptr, полученный при конструировании через intern
 
-    // Default constructor for creating objects in PAP (without interning).
-    pstringview() noexcept : chars_idx( 0 ), length( 0 ) {}
-
     // ─── Реализация интернирования ────────────────────────────────────────────
 
     static psview_pptr _intern( const char* s ) noexcept
@@ -4213,21 +4242,26 @@ template <typename ManagerT> struct pstringview
         // Не найдено — создаём новый объект pstringview.
         auto len = static_cast<std::uint32_t>( std::strlen( s ) );
 
-        // Создаём char[] в ПАП и блокируем навечно.
-        index_type new_chars = _create_chars( s, len );
-        if ( new_chars == static_cast<index_type>( 0 ) && len > 0 )
+        // Issue #184: выделяем один блок для pstringview + строковых данных.
+        // Размер = offsetof(pstringview, str) + len + 1 (null-terminator).
+        // Используем offsetof для корректного вычисления без учёта str[1].
+        std::size_t alloc_size = offsetof( pstringview, str ) + static_cast<std::size_t>( len ) + 1;
+
+        // Выделяем память через allocate() напрямую, т.к. размер переменный.
+        void* raw = ManagerT::allocate( alloc_size );
+        if ( raw == nullptr )
             return psview_pptr();
 
-        // Создаём объект pstringview в ПАП.
-        psview_pptr new_node = ManagerT::template allocate_typed<pstringview>();
-        if ( new_node.is_null() )
-            return psview_pptr();
+        // Создаём pptr вручную из raw указателя.
+        std::uint8_t* base     = ManagerT::backend().base_ptr();
+        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
+        psview_pptr   new_node(
+            static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size ) );
 
-        pstringview* obj = ManagerT::template resolve<pstringview>( new_node );
-        if ( obj == nullptr )
-            return psview_pptr();
-        obj->chars_idx = new_chars;
-        obj->length    = len;
+        pstringview* obj = static_cast<pstringview*>( raw );
+        obj->length      = len;
+        // Копируем строку включая null-terminator.
+        std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
 
         // Инициализируем AVL-поля нового узла (пустые ссылки, высота 1).
         auto& tn = new_node.tree_node();
@@ -4243,36 +4277,6 @@ template <typename ManagerT> struct pstringview
         _avl_insert( new_node );
 
         return new_node;
-    }
-
-    // ─── Вспомогательные методы ────────────────────────────────────────────────
-
-    /// @brief Создать массив char в ПАП и заблокировать навечно.
-    static index_type _create_chars( const char* s, std::uint32_t len ) noexcept
-    {
-        if ( len == 0 )
-        {
-            // Пустая строка: выделяем один байт для нулевого терминатора.
-            char_pptr arr = ManagerT::template allocate_typed<char>( 1 );
-            if ( arr.is_null() )
-                return static_cast<index_type>( 0 );
-            char* dst = ManagerT::template resolve<char>( arr );
-            if ( dst != nullptr )
-                dst[0] = '\0';
-            if ( dst != nullptr )
-                ManagerT::lock_block_permanent( dst );
-            return arr.offset();
-        }
-
-        char_pptr arr = ManagerT::template allocate_typed<char>( static_cast<std::size_t>( len + 1 ) );
-        if ( arr.is_null() )
-            return static_cast<index_type>( 0 );
-        char* dst = ManagerT::template resolve<char>( arr );
-        if ( dst != nullptr )
-            std::memcpy( dst, s, static_cast<std::size_t>( len + 1 ) );
-        if ( dst != nullptr )
-            ManagerT::lock_block_permanent( dst );
-        return arr.offset();
     }
 
     // ─── AVL-дерево (использует встроенные TreeNode-поля каждого pstringview-блока) ─

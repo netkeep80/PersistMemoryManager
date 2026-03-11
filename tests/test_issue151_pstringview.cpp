@@ -187,7 +187,8 @@ static bool test_i151_different_strings_different_pptrs()
     return true;
 }
 
-/// @brief pstringview equality uses interning guarantee (chars_idx comparison).
+/// @brief pstringview equality uses interning guarantee (same block comparison).
+/// Issue #184: now compares by address since strings are stored in the same block.
 static bool test_i151_equality_via_interning()
 {
     TestMgr::destroy();
@@ -205,7 +206,7 @@ static bool test_i151_equality_via_interning()
     const TestPsv* c = pc.resolve();
     PMM_TEST( a != nullptr && b != nullptr && c != nullptr );
 
-    // Interning: same string → same chars_idx → equal
+    // Interning: same string → same block → equal (Issue #184: address comparison)
     PMM_TEST( *a == *b );
     PMM_TEST( !( *a == *c ) );
     PMM_TEST( *a != *c );
@@ -219,8 +220,10 @@ static bool test_i151_equality_via_interning()
 // I151-C: Block locking — intern() locks blocks permanently (key requirement #1)
 // =============================================================================
 
-/// @brief After intern(), the chars block is permanently locked (cannot be freed).
-static bool test_i151_chars_block_permanently_locked()
+/// @brief After intern(), the pstringview block (with embedded string) is permanently locked.
+/// Issue #184: Now string data is stored in the same block as pstringview, so only one block
+/// needs to be checked. The c_str() method returns pointer to embedded string data.
+static bool test_i151_embedded_string_block_locked()
 {
     TestMgr::destroy();
     TestPsv::reset();
@@ -232,18 +235,17 @@ static bool test_i151_chars_block_permanently_locked()
     const TestPsv* psv = p.resolve();
     PMM_TEST( psv != nullptr );
 
-    // Get the chars pointer from pstringview
-    using char_pptr_t = TestMgr::pptr<char>;
-    char_pptr_t cp( psv->chars_idx );
-    char*       chars = TestMgr::resolve<char>( cp );
-    PMM_TEST( chars != nullptr );
+    // Issue #184: Verify the string is embedded directly in the pstringview block
+    const char* str = psv->c_str();
+    PMM_TEST( str != nullptr );
+    PMM_TEST( std::strcmp( str, "locked_test" ) == 0 );
 
-    // The chars block must be permanently locked (Issue #151, Issue #126)
-    PMM_TEST( TestMgr::is_permanently_locked( chars ) == true );
+    // The pstringview block (containing embedded string) must be permanently locked
+    PMM_TEST( TestMgr::is_permanently_locked( psv ) == true );
 
     // Verify we cannot free it (deallocate is a no-op for locked blocks)
     std::size_t alloc_before = TestMgr::alloc_block_count();
-    TestMgr::deallocate( chars );
+    TestMgr::deallocate( const_cast<TestPsv*>( psv ) );
     std::size_t alloc_after = TestMgr::alloc_block_count();
     PMM_TEST( alloc_before == alloc_after ); // Block not freed
 
@@ -489,13 +491,16 @@ static bool test_i151_reset_clears_singleton()
 // =============================================================================
 
 /// @brief pstringview<ManagerT> has expected field layout.
+/// Issue #184: pstringview now stores length + flexible array member str[1].
 static bool test_i151_layout()
 {
-    // pstringview<ManagerT> has two data fields: chars_idx (index_type) and length (uint32_t).
+    // pstringview<ManagerT> has: length (uint32_t) and str[1] (flexible array member).
     // Plus _interned (psview_pptr) which is used only in the stack-helper constructor path.
-    using index_type = TestMgr::index_type;
-    // sizeof should be at least sizeof(index_type) + sizeof(uint32_t).
-    PMM_TEST( sizeof( TestPsv ) >= sizeof( index_type ) + sizeof( std::uint32_t ) );
+    // The actual string data is stored after the fixed-size portion using the flexible array pattern.
+    // sizeof should be at least sizeof(uint32_t) + 1 (for str[1]).
+    PMM_TEST( sizeof( TestPsv ) >= sizeof( std::uint32_t ) + 1 );
+    // Verify offsetof(pstringview, str) is at least sizeof(uint32_t)
+    PMM_TEST( offsetof( TestPsv, str ) >= sizeof( std::uint32_t ) );
     return true;
 }
 
@@ -830,8 +835,8 @@ int main()
     PMM_RUN( "    different strings → different pptrs", test_i151_different_strings_different_pptrs );
     PMM_RUN( "    equality via interning guarantee", test_i151_equality_via_interning );
 
-    std::cout << "  I151-C: Block locking (Issue #126)\n";
-    PMM_RUN( "    chars block permanently locked", test_i151_chars_block_permanently_locked );
+    std::cout << "  I151-C: Block locking (Issue #126, #184)\n";
+    PMM_RUN( "    embedded string block permanently locked", test_i151_embedded_string_block_locked );
     PMM_RUN( "    pstringview block permanently locked", test_i151_psview_block_permanently_locked );
 
     std::cout << "  I151-D: Built-in AVL tree structure (no separate PAP structures)\n";

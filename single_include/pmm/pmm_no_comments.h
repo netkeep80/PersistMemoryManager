@@ -2155,6 +2155,19 @@ class pptr
     constexpr bool operator==( const pptr& other ) const noexcept { return _idx == other._idx; }
     constexpr bool operator!=( const pptr& other ) const noexcept { return _idx != other._idx; }
 
+    bool operator<( const pptr& other ) const noexcept
+    {
+        
+        if ( is_null() && !other.is_null() )
+            return true;
+        if ( !is_null() && other.is_null() )
+            return false;
+        if ( is_null() && other.is_null() )
+            return false;
+        
+        return **this < *other;
+    }
+
     T& operator*() const noexcept { return *ManagerT::template resolve<T>( *this ); }
 
     T* operator->() const noexcept { return ManagerT::template resolve<T>( *this ); }
@@ -2181,23 +2194,15 @@ template <typename ManagerT> struct pstringview
     using manager_type = ManagerT;
     using index_type   = typename ManagerT::index_type;
     using psview_pptr  = typename ManagerT::template pptr<pstringview>;
-    using char_pptr    = typename ManagerT::template pptr<char>;
 
-    index_type    chars_idx; 
-    std::uint32_t length;    
+    std::uint32_t length; 
+    char          str[1]; 
 
-    explicit pstringview( const char* s ) noexcept : chars_idx( 0 ), length( 0 ) { _interned = _intern( s ); }
+    explicit pstringview( const char* s ) noexcept : length( 0 ), str{ '\0' } { _interned = _intern( s ); }
 
     operator psview_pptr() const noexcept { return _interned; }
 
-    const char* c_str() const noexcept
-    {
-        if ( chars_idx == 0 )
-            return "";
-        char_pptr   p( chars_idx );
-        const char* raw = ManagerT::template resolve<char>( p );
-        return ( raw != nullptr ) ? raw : "";
-    }
+    const char* c_str() const noexcept { return str; }
 
     std::size_t size() const noexcept { return static_cast<std::size_t>( length ); }
 
@@ -2210,7 +2215,16 @@ template <typename ManagerT> struct pstringview
         return std::strcmp( c_str(), s ) == 0;
     }
 
-    bool operator==( const pstringview& other ) const noexcept { return chars_idx == other.chars_idx; }
+    bool operator==( const pstringview& other ) const noexcept
+    {
+        
+        if ( this == &other )
+            return true;
+        
+        if ( length != other.length )
+            return false;
+        return std::strcmp( str, other.str ) == 0;
+    }
 
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
 
@@ -2229,8 +2243,6 @@ template <typename ManagerT> struct pstringview
   private:
     psview_pptr _interned; 
 
-    pstringview() noexcept : chars_idx( 0 ), length( 0 ) {}
-
     static psview_pptr _intern( const char* s ) noexcept
     {
         if ( s == nullptr )
@@ -2242,19 +2254,21 @@ template <typename ManagerT> struct pstringview
 
         auto len = static_cast<std::uint32_t>( std::strlen( s ) );
 
-        index_type new_chars = _create_chars( s, len );
-        if ( new_chars == static_cast<index_type>( 0 ) && len > 0 )
+        std::size_t alloc_size = offsetof( pstringview, str ) + static_cast<std::size_t>( len ) + 1;
+
+        void* raw = ManagerT::allocate( alloc_size );
+        if ( raw == nullptr )
             return psview_pptr();
 
-        psview_pptr new_node = ManagerT::template allocate_typed<pstringview>();
-        if ( new_node.is_null() )
-            return psview_pptr();
+        std::uint8_t* base     = ManagerT::backend().base_ptr();
+        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
+        psview_pptr   new_node(
+            static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size ) );
 
-        pstringview* obj = ManagerT::template resolve<pstringview>( new_node );
-        if ( obj == nullptr )
-            return psview_pptr();
-        obj->chars_idx = new_chars;
-        obj->length    = len;
+        pstringview* obj = static_cast<pstringview*>( raw );
+        obj->length      = len;
+        
+        std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
 
         auto& tn = new_node.tree_node();
         tn.set_left( static_cast<index_type>( 0 ) );
@@ -2267,33 +2281,6 @@ template <typename ManagerT> struct pstringview
         _avl_insert( new_node );
 
         return new_node;
-    }
-
-    static index_type _create_chars( const char* s, std::uint32_t len ) noexcept
-    {
-        if ( len == 0 )
-        {
-            
-            char_pptr arr = ManagerT::template allocate_typed<char>( 1 );
-            if ( arr.is_null() )
-                return static_cast<index_type>( 0 );
-            char* dst = ManagerT::template resolve<char>( arr );
-            if ( dst != nullptr )
-                dst[0] = '\0';
-            if ( dst != nullptr )
-                ManagerT::lock_block_permanent( dst );
-            return arr.offset();
-        }
-
-        char_pptr arr = ManagerT::template allocate_typed<char>( static_cast<std::size_t>( len + 1 ) );
-        if ( arr.is_null() )
-            return static_cast<index_type>( 0 );
-        char* dst = ManagerT::template resolve<char>( arr );
-        if ( dst != nullptr )
-            std::memcpy( dst, s, static_cast<std::size_t>( len + 1 ) );
-        if ( dst != nullptr )
-            ManagerT::lock_block_permanent( dst );
-        return arr.offset();
     }
 
     static psview_pptr _avl_find( const char* s ) noexcept

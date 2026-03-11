@@ -121,9 +121,31 @@ class pptr
     /// @brief Получить гранульный индекс (для сохранения/восстановления).
     constexpr index_type offset() const noexcept { return _idx; }
 
-    /// @brief Сравнение персистентных указателей одного типа.
+    /// @brief Сравнение персистентных указателей одного типа по индексу.
     constexpr bool operator==( const pptr& other ) const noexcept { return _idx == other._idx; }
     constexpr bool operator!=( const pptr& other ) const noexcept { return _idx != other._idx; }
+
+    /**
+     * @brief Упорядочивание персистентных указателей для использования как ключ в pmap (Issue #184).
+     *
+     * Сравнивает указываемые объекты через `*this < *other`, если оба указателя не null.
+     * Null pptr считается меньше любого ненулевого указателя.
+     *
+     * @note Требует, чтобы тип T поддерживал `operator<`.
+     * @return true если `*this` должен быть перед `other` в упорядоченной последовательности.
+     */
+    bool operator<( const pptr& other ) const noexcept
+    {
+        // Null pptr меньше любого ненулевого
+        if ( is_null() && !other.is_null() )
+            return true;
+        if ( !is_null() && other.is_null() )
+            return false;
+        if ( is_null() && other.is_null() )
+            return false;
+        // Оба ненулевые — сравниваем указываемые объекты
+        return **this < *other;
+    }
 
     // ─── Разыменование через статический менеджер (статическая модель) ────────
 
