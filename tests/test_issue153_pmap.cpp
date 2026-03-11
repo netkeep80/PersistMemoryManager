@@ -364,50 +364,50 @@ static bool test_i153_reset()
 // I153-H: pmap with pstringview keys
 // =============================================================================
 
-/// @brief pmap<pstringview, int> works as a named persistent object dictionary.
-static bool test_i153_pstringview_key()
+/// @brief pmap<pptr<pstringview>, int> works as a named persistent object dictionary.
+/// Issue #184: Uses pptr<pstringview> as key (instead of copying pstringview by value)
+/// because pstringview now has embedded string data that cannot be safely copied.
+static bool test_i153_pstringview_pptr_key()
 {
     TestMgr::destroy();
     TestMgr::pstringview::reset();
     PMM_TEST( TestMgr::create( 256 * 1024 ) );
 
-    // Intern keys
+    // Intern keys — returns pptr<pstringview>
     auto pk1 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview( "alpha" ) );
     auto pk2 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview( "beta" ) );
     auto pk3 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview( "gamma" ) );
 
     PMM_TEST( !pk1.is_null() && !pk2.is_null() && !pk3.is_null() );
 
-    const TestMgr::pstringview* k1 = pk1.resolve();
-    const TestMgr::pstringview* k2 = pk2.resolve();
-    const TestMgr::pstringview* k3 = pk3.resolve();
+    // Use pptr<pstringview> as key type (Issue #184)
+    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> map;
+    map.insert( pk1, 1 );
+    map.insert( pk2, 2 );
+    map.insert( pk3, 3 );
 
-    PMM_TEST( k1 != nullptr && k2 != nullptr && k3 != nullptr );
-
-    TestMgr::pmap<TestMgr::pstringview, int> map;
-    map.insert( *k1, 1 );
-    map.insert( *k2, 2 );
-    map.insert( *k3, 3 );
-
-    // Find by value (uses operator< and operator== of pstringview)
-    auto found1 = map.find( *k1 );
-    auto found2 = map.find( *k2 );
-    auto found3 = map.find( *k3 );
+    // Find by pptr (uses operator< and operator== of pptr<pstringview>)
+    auto found1 = map.find( pk1 );
+    auto found2 = map.find( pk2 );
+    auto found3 = map.find( pk3 );
 
     PMM_TEST( !found1.is_null() && !found2.is_null() && !found3.is_null() );
     PMM_TEST( found1->value == 1 );
     PMM_TEST( found2->value == 2 );
     PMM_TEST( found3->value == 3 );
 
-    // Re-intern same strings → same key objects → same values found
+    // Re-intern same strings → same pptr (deduplication) → same values found
     auto pk1b = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview( "alpha" ) );
     PMM_TEST( pk1b == pk1 ); // same pptr (deduplication)
 
-    const TestMgr::pstringview* k1b = pk1b.resolve();
-    PMM_TEST( k1b != nullptr );
-    auto found1b = map.find( *k1b );
+    auto found1b = map.find( pk1b );
     PMM_TEST( !found1b.is_null() );
     PMM_TEST( found1b->value == 1 );
+
+    // Verify key comparison works correctly (pptr<pstringview>::operator< dereferences and compares)
+    PMM_TEST( pk1 < pk2 );      // "alpha" < "beta"
+    PMM_TEST( pk2 < pk3 );      // "beta" < "gamma"
+    PMM_TEST( !( pk2 < pk1 ) ); // not "beta" < "alpha"
 
     TestMgr::destroy();
     TestMgr::pstringview::reset();
@@ -522,8 +522,8 @@ int main()
     std::cout << "  I153-G: reset()\n";
     PMM_RUN( "    reset() clears root for test isolation", test_i153_reset );
 
-    std::cout << "  I153-H: pmap with pstringview keys\n";
-    PMM_RUN( "    pmap<pstringview, int> for named persistent objects", test_i153_pstringview_key );
+    std::cout << "  I153-H: pmap with pptr<pstringview> keys (Issue #184)\n";
+    PMM_RUN( "    pmap<pptr<pstringview>, int> for named persistent objects", test_i153_pstringview_pptr_key );
 
     std::cout << "  I153-I: pmap layout\n";
     PMM_RUN( "    pmap_node<int,int> size check", test_i153_layout );
