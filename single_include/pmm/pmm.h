@@ -4255,8 +4255,7 @@ template <typename ManagerT> struct pstringview
         // Создаём pptr вручную из raw указателя.
         std::uint8_t* base     = ManagerT::backend().base_ptr();
         std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        psview_pptr   new_node(
-            static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size ) );
+        psview_pptr   new_node( static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size ) );
 
         pstringview* obj = static_cast<pstringview*>( raw );
         obj->length      = len;
