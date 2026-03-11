@@ -21,7 +21,7 @@ PersistMemoryManager (PMM) is a block-based memory allocator that stores all met
 - **Configurable** — swap storage backend, lock policy, and address width independently
 - **Persistent** — save/load heap image to a file; all internal links are offset-based
 - **Best-fit allocation** — AVL-tree backed free block management with coalescing
-- **Persistent data types** — built-in `pstringview` (interned strings) and `pmap<K,V>` (AVL dictionary)
+- **Persistent data types** — built-in `pstringview` (interned strings), `pmap<K,V>` (AVL dictionary), and `pvector<T>` (vector)
 
 ## Quick Start
 
@@ -330,6 +330,43 @@ dict.insert(*key.resolve(), 42);
 - Nodes are **not** permanently locked (unlike `pstringview` — they can be freed).
 - Key type `_K` must support `operator<` and `operator==`.
 
+## Persistent Vector — pvector\<T\>
+
+`pvector<T, ManagerT>` is a persistent sequential container stored in the managed region. Elements are linked using the built-in `TreeNode` fields to form a doubly-linked list with O(1) push_back.
+
+```cpp
+using Mgr = pmm::presets::SingleThreadedHeap;
+Mgr::create(64 * 1024);
+
+using MyVec = Mgr::pvector<int>;
+
+MyVec vec;
+vec.push_back(10);
+vec.push_back(20);
+vec.push_back(30);
+
+auto p = vec.at(1);
+if (!p.is_null()) {
+    int val = p->value;  // 20
+}
+
+// Iteration
+for (auto it = vec.begin(); it != vec.end(); ++it) {
+    auto node = *it;
+    // node->value is the element
+}
+
+vec.pop_back();  // removes 30
+vec.clear();     // removes all elements
+
+Mgr::destroy();
+```
+
+**Notes:**
+- O(1) push_back, front, back, pop_back (tail pointer maintained).
+- O(n) at(i) — linear traversal from head.
+- Nodes are **not** permanently locked — they can be freed via `pop_back()` or `clear()`.
+
 ## Configuration
 
 ### Built-in presets
@@ -502,6 +539,7 @@ PersistMemoryManager/
 │       ├── pptr.h                    # Persistent pointer
 │       ├── pstringview.h             # Interned persistent string (v0.11.0)
 │       ├── pmap.h                    # Persistent AVL dictionary (v0.12.0)
+│       ├── pvector.h                 # Persistent vector (v0.21.0)
 │       ├── avl_tree_mixin.h          # Shared AVL tree helpers (v0.13.0)
 │       ├── pmm_presets.h             # Ready-made preset aliases
 │       ├── manager_configs.h         # Config structs (including embedded/large DB)

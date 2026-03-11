@@ -76,6 +76,10 @@ using pstringview = pmm::pstringview<PersistMemoryManager>;
 // Persistent AVL tree dictionary
 template <typename _K, typename _V>
 using pmap = pmm::pmap<_K, _V, PersistMemoryManager>;
+
+// Persistent vector
+template <typename T>
+using pvector = pmm::pvector<T, PersistMemoryManager>;
 ```
 
 ### Lifecycle
@@ -734,6 +738,125 @@ assert(!p.is_null() && p->value == 42);
 
 Mgr::destroy();
 ```
+
+---
+
+## Class `pvector<T, ManagerT>`
+
+```cpp
+namespace pmm {
+    template <typename T, typename ManagerT>
+    struct pvector;
+}
+```
+
+A persistent sequential container (vector) for PAP. Each element is stored in a separate
+PAP block. Elements are linked using the built-in `TreeNode` fields to form a doubly-linked
+list, enabling O(1) push_back with a tail pointer.
+
+**Accessed via manager nested alias:**
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+Mgr::pvector<int> vec;
+vec.push_back(42);
+```
+
+### Data fields
+
+```cpp
+index_type _head_idx;  // granule index of first element; 0 = empty vector
+index_type _tail_idx;  // granule index of last element; 0 = empty vector
+index_type _size;      // cached element count
+```
+
+### Constructors
+
+```cpp
+pvector() noexcept;  // creates an empty vector
+```
+
+### Methods
+
+```cpp
+bool      empty()                   const noexcept;
+std::size_t size()                  const noexcept;  // O(1) cached size
+node_pptr push_back(const T& val)   noexcept;        // O(1) append; returns node pptr
+node_pptr at(std::size_t index)     const noexcept;  // O(n) access; null pptr if out of range
+node_pptr front()                   const noexcept;  // O(1) first element
+node_pptr back()                    const noexcept;  // O(1) last element
+bool      pop_back()                noexcept;        // O(1) remove last; returns false if empty
+void      clear()                   noexcept;        // O(n) remove all elements
+void      reset()                   noexcept;        // reset indices for test isolation
+```
+
+### `pvector_node<T>`
+
+```cpp
+template <typename T>
+struct pvector_node {
+    T value;
+};
+```
+
+Each node is a separate PAP block. Access via the returned `pptr`:
+```cpp
+auto p = vec.at(0);
+if (!p.is_null()) {
+    int val = p->value;  // 42
+}
+```
+
+### Iterator
+
+```cpp
+struct iterator {
+    bool operator==(const iterator& other) const noexcept;
+    bool operator!=(const iterator& other) const noexcept;
+    node_pptr operator*() const noexcept;  // returns pptr to current node
+    iterator& operator++() noexcept;       // advance to next element
+};
+
+iterator begin() const noexcept;
+iterator end()   const noexcept;  // sentinel (null)
+```
+
+### Example
+
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+Mgr::create(64 * 1024);
+
+Mgr::pvector<int> vec;
+vec.push_back(10);
+vec.push_back(20);
+vec.push_back(30);
+
+assert(vec.size() == 3);
+assert(vec.front()->value == 10);
+assert(vec.back()->value == 30);
+
+auto p = vec.at(1);
+assert(!p.is_null() && p->value == 20);
+
+// Iteration
+for (auto it = vec.begin(); it != vec.end(); ++it) {
+    auto node = *it;
+    std::cout << node->value << "\n";
+}
+
+vec.pop_back();
+assert(vec.size() == 2);
+
+vec.clear();
+assert(vec.empty());
+
+Mgr::destroy();
+```
+
+**Notes:**
+- Nodes are **not** permanently locked — they can be freed via `pop_back()` or `clear()`.
+- `at(i)` is O(i) — linear traversal from head.
+- `push_back()`, `front()`, `back()`, `pop_back()` are O(1).
 
 ---
 

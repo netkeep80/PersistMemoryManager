@@ -130,6 +130,9 @@ pmm_add_test(test_issue151_pstringview test_issue151_pstringview.cpp)
 # ─── Тесты pmap — персистентного словаря на AVL-дереве (Issue #153) ──────────
 pmm_add_test(test_issue153_pmap test_issue153_pmap.cpp)
 
+# ─── Тесты pvector — персистентного вектора (Issue #186) ──────────────────────
+pmm_add_test(test_issue186_pvector test_issue186_pvector.cpp)
+
 # ─── Тесты дедупликации функциональности (Issue #160) ─────────────────────────
 pmm_add_test(test_issue160_deduplication test_issue160_deduplication.cpp)
 
