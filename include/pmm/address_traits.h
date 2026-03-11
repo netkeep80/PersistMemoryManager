@@ -1,18 +1,37 @@
 /**
  * @file pmm/address_traits.h
- * @brief AddressTraits — адресное пространство ПАП (Issue #87 Phase 1).
+ * @brief AddressTraits — адресное пространство ПАП (Issue #87 Phase 1, #146).
  *
  * Параметризует три взаимосвязанные характеристики адресного пространства:
- *   - `index_type`   — тип гранульного индекса (uint8_t / uint16_t / uint32_t / uint64_t)
- *   - `granule_size` — размер гранулы в байтах (степень двойки, 1..N)
+ *   - `index_type`   — тип гранульного индекса (uint16_t / uint32_t / uint64_t)
+ *   - `granule_size` — размер гранулы в байтах (степень двойки, минимум 4)
  *   - `no_block`     — sentinel «нет блока» = максимальное значение index_type
+ *
+ * Поддерживаемые размеры индекса (Issue #146):
+ *   - uint16_t (SmallAddressTraits,   16B гранула) — до ~1 МБ, малые embedded-системы.
+ *   - uint32_t (DefaultAddressTraits, 16B гранула) — до 64 ГБ, основной вариант.
+ *   - uint64_t (LargeAddressTraits,   64B гранула) — до петабайт, крупные БД.
+ *
+ * Правила выбора конфигурации (Issue #146):
+ *   1. granule_size >= 4 (минимальный размер слова архитектуры = kMinGranuleSize в manager_configs.h).
+ *   2. granule_size — степень двойки.
+ *   3. Для минимального расхода памяти выбирайте конфигурации без потерь:
+ *      DefaultAddressTraits (Block=32B, granule=16B, 0 байт потерь на блок),
+ *      LargeAddressTraits   (Block=64B, granule=64B, 0 байт потерь на блок).
+ *      SmallAddressTraits допустима, но с потерями (Block=18B, granule=16B,
+ *      ceil(18/16)=2 гранулы выделяется под заголовок = 14 байт потерь на блок).
+ *
+ * Недопустимые конфигурации (Issue #146):
+ *   - uint8_t индекс (TinyAddressTraits удалена): максимум 255 гранул — практически
+ *     непригодно для реальных сценариев использования менеджера ПАП.
  *
  * Обратная совместимость:
  *   pmm::kGranuleSize и pmm::detail::kNoBlock остаются в persist_memory_types.h,
  *   но теперь выводятся из DefaultAddressTraits через static_assert.
  *
+ * @see manager_configs.h — ValidPmmAddressTraits концепт и правила конфигурации
  * @see plan_issue87.md §5 «Фаза 1: AddressTraits»
- * @version 0.1 (Issue #87 Phase 1)
+ * @version 0.2 (Issue #146 — removed TinyAddressTraits; documented valid index types and granule rules)
  */
 
 #pragma once
@@ -29,18 +48,21 @@ namespace pmm
 /**
  * @brief Traits адресного пространства ПАП.
  *
- * @tparam IndexT     Тип гранульного индекса (uint8_t, uint16_t, uint32_t, uint64_t).
- * @tparam GranuleSz  Размер гранулы в байтах (степень двойки ≥ 1).
+ * @tparam IndexT     Тип гранульного индекса (uint16_t, uint32_t, uint64_t).
+ *                    Определяет максимально адресуемое пространство (2^bits * granule_size).
+ *                    Рекомендуемые типы: uint16_t (embedded), uint32_t (desktop), uint64_t (large DB).
+ * @tparam GranuleSz  Размер гранулы в байтах (степень двойки ≥ 4).
+ *                    Минимальная единица адресации ПАП-менеджера.
  *
  * Статические проверки (static_assert):
  *  - IndexT — беззнаковый целый тип.
  *  - GranuleSz — степень двойки (GranuleSz & (GranuleSz-1) == 0).
- *  - GranuleSz ≥ 1.
+ *  - GranuleSz ≥ 4 (минимальный размер слова архитектуры).
  */
 template <typename IndexT, std::size_t GranuleSz> struct AddressTraits
 {
     static_assert( std::is_unsigned<IndexT>::value, "AddressTraits: IndexT must be an unsigned integer type" );
-    static_assert( GranuleSz >= 1, "AddressTraits: GranuleSz must be >= 1" );
+    static_assert( GranuleSz >= 4, "AddressTraits: GranuleSz must be >= 4 (minimum architecture word size)" );
     static_assert( ( GranuleSz & ( GranuleSz - 1 ) ) == 0, "AddressTraits: GranuleSz must be a power of 2" );
 
     /// Тип гранульного индекса.
@@ -99,18 +121,25 @@ template <typename IndexT, std::size_t GranuleSz> struct AddressTraits
     }
 };
 
-// ─── Стандартные алиасы ────────────────────────────────────────────────────────
-
-/// Минимальный 8-bit вариант (до 255 гранул по 8 байт = 2040 байт, embedded).
-using TinyAddressTraits = AddressTraits<std::uint8_t, 8>;
+// ─── Стандартные алиасы (Issue #146) ──────────────────────────────────────────
+//
+// Допустимые конфигурации для менеджеров ПАП (Issue #146):
+//   - SmallAddressTraits   — uint16_t, 16B гранула: до ~1 МБ, малые embedded-системы.
+//   - DefaultAddressTraits — uint32_t, 16B гранула: до 64 ГБ, основной вариант (без потерь).
+//   - LargeAddressTraits   — uint64_t, 64B гранула: петабайтный масштаб (без потерь).
+//
+// Удалено (Issue #146):
+//   - TinyAddressTraits (uint8_t, 8B): максимум 255 гранул — практически
+//     непригодно; uint8_t-индекс не поддерживается менеджерами ПАП.
 
 /// 16-bit вариант (до 65535 гранул по 16 байт = ~1 МБ, small embedded).
+/// Допустима с потерями: Block<SmallAddressTraits>=18B, ceil(18/16)=2 гранулы на заголовок.
 using SmallAddressTraits = AddressTraits<std::uint16_t, 16>;
 
-/// 32-bit вариант, 16-байтная гранула — текущий дефолт.
+/// 32-bit вариант, 16-байтная гранула — текущий дефолт (без потерь: Block=32B=2*16B).
 using DefaultAddressTraits = AddressTraits<std::uint32_t, 16>;
 
-/// 64-bit вариант, 64-байтная гранула (для крупных промышленных БД).
+/// 64-bit вариант, 64-байтная гранула (без потерь: Block=64B=1*64B; для крупных БД).
 using LargeAddressTraits = AddressTraits<std::uint64_t, 64>;
 
 } // namespace pmm

@@ -88,7 +88,7 @@ static bool test_p2_list_node_default_types()
 static bool test_p2_list_node_various_traits()
 {
     // 8-bit: TreeNode(10+) + 2*1 = at least 12 bytes
-    using Block8 = pmm::Block<pmm::TinyAddressTraits>;
+    using Block8 = pmm::Block<pmm::AddressTraits<std::uint8_t, 8>>;
     static_assert( std::is_same<Block8::index_type, std::uint8_t>::value );
     static_assert( sizeof( Block8 ) >= 12, "Block<Tiny> must be at least 12 bytes" );
 
@@ -181,7 +181,7 @@ static bool test_p2_tree_node_default_types()
 static bool test_p2_tree_node_various_traits()
 {
     // 8-bit: 3*1 + 2+2 + 1+1 = 10 байт (может быть паддинг из-за выравнивания int16_t)
-    using Node8 = pmm::TreeNode<pmm::TinyAddressTraits>;
+    using Node8 = pmm::TreeNode<pmm::AddressTraits<std::uint8_t, 8>>;
     static_assert( std::is_same<Node8::index_type, std::uint8_t>::value );
     static_assert( sizeof( Node8 ) >= 10, "TreeNode<Tiny> must be at least 10 bytes" );
 
@@ -326,12 +326,12 @@ static bool test_p2_tree_node_runtime_init()
     return true;
 }
 
-/// @brief Проверяем TinyAddressTraits: LinkedListNode и TreeNode с 8-bit индексами.
-/// Phase 2 v0.2: включает поля weight и root_offset (8-bit для TinyAddressTraits).
-/// Issue #120: доступ через BlockStateBase<TinyAddressTraits>.
+/// @brief Проверяем AddressTraits<uint8_t, 8>: LinkedListNode и TreeNode с 8-bit индексами.
+/// Phase 2 v0.2: включает поля weight и root_offset (8-bit для AddressTraits<uint8_t, 8>).
+/// Issue #120: доступ через BlockStateBase<AddressTraits<uint8_t, 8>>.
 static bool test_p2_tiny_traits_nodes()
 {
-    using A          = pmm::TinyAddressTraits;
+    using A          = pmm::AddressTraits<std::uint8_t, 8>;
     using BlockState = pmm::BlockStateBase<A>;
 
     alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
@@ -378,7 +378,7 @@ int main()
     PMM_RUN( "P2-C1: Block prev/next runtime init via state machine (Issue #138)", test_p2_list_node_runtime_init );
     PMM_RUN( "P2-C2: TreeNode runtime init via state machine (incl. weight+root_offset)",
              test_p2_tree_node_runtime_init );
-    PMM_RUN( "P2-C3: TinyAddressTraits nodes (8-bit indices) via state machine", test_p2_tiny_traits_nodes );
+    PMM_RUN( "P2-C3: AddressTraits<uint8_t, 8> nodes (8-bit indices) via state machine", test_p2_tiny_traits_nodes );
 
     std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
     return all_passed ? 0 : 1;

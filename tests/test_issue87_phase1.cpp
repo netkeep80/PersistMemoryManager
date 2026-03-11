@@ -7,7 +7,7 @@
  *  - Конвертационные функции bytes_to_granules/granules_to_bytes/idx_to_byte_off/byte_off_to_idx.
  *  - static_assert'ы: степень двойки, беззнаковый тип.
  *  - DefaultAddressTraits идентичен текущим константам (обратная совместимость).
- *  - Стандартные алиасы: TinyAddressTraits, SmallAddressTraits, LargeAddressTraits.
+ *  - Стандартные алиасы: SmallAddressTraits, LargeAddressTraits.
  *
  * @see include/pmm/address_traits.h
  * @see plan_issue87.md §5 «Фаза 1: AddressTraits»
@@ -55,7 +55,7 @@
 
 // ─── P1-A: Статические поля и типы ──────────────────────────────────────────
 
-/// @brief Проверяем 8-bit адресацию с 8-байтной гранулой (TinyAddressTraits).
+/// @brief Проверяем 8-bit адресацию с 8-байтной гранулой (AddressTraits<uint8_t, 8>).
 static bool test_p1_tiny_address_traits()
 {
     using A = pmm::AddressTraits<std::uint8_t, 8>;
@@ -69,10 +69,6 @@ static bool test_p1_tiny_address_traits()
     // no_block = max(uint8_t) = 0xFF
     static_assert( A::no_block == 0xFFU, "no_block must be 0xFF for uint8_t" );
     static_assert( A::no_block == std::numeric_limits<std::uint8_t>::max(), "no_block must be max(index_type)" );
-
-    // Стандартный алиас
-    static_assert( std::is_same<pmm::TinyAddressTraits, A>::value,
-                   "TinyAddressTraits must be AddressTraits<uint8_t,8>" );
 
     return true;
 }
@@ -134,7 +130,7 @@ static bool test_p1_large_address_traits()
 /// @brief Проверяем bytes_to_granules для 8-bit адресации (8-байтная гранула).
 static bool test_p1_bytes_to_granules_tiny()
 {
-    using A = pmm::TinyAddressTraits;
+    using A = pmm::AddressTraits<std::uint8_t, 8>;
 
     // Основные случаи
     PMM_TEST( A::bytes_to_granules( 0 ) == 0 );
@@ -175,7 +171,7 @@ static bool test_p1_bytes_to_granules_default()
 /// @brief Проверяем granules_to_bytes для разных AddressTraits.
 static bool test_p1_granules_to_bytes()
 {
-    using A8  = pmm::TinyAddressTraits;
+    using A8  = pmm::AddressTraits<std::uint8_t, 8>;
     using A32 = pmm::DefaultAddressTraits;
 
     // 8-байтная гранула
@@ -198,7 +194,7 @@ static bool test_p1_granules_to_bytes()
 /// @brief Проверяем idx_to_byte_off и byte_off_to_idx (обратность).
 static bool test_p1_idx_byte_off_roundtrip()
 {
-    using A8  = pmm::TinyAddressTraits;
+    using A8  = pmm::AddressTraits<std::uint8_t, 8>;
     using A16 = pmm::SmallAddressTraits;
     using A32 = pmm::DefaultAddressTraits;
 
@@ -259,16 +255,10 @@ static bool test_p1_backward_compatibility()
 
 // ─── P1-F: Разнообразные размеры гранул ─────────────────────────────────────
 
-/// @brief Проверяем, что AddressTraits работает с разными степенями двойки.
+/// @brief Проверяем, что AddressTraits работает с разными степенями двойки (Issue #146: min 4 bytes).
 static bool test_p1_various_granule_sizes()
 {
-    // 1-байтная гранула
-    using A1 = pmm::AddressTraits<std::uint32_t, 1>;
-    static_assert( A1::granule_size == 1 );
-    PMM_TEST( A1::bytes_to_granules( 100 ) == 100 );
-    PMM_TEST( A1::granules_to_bytes( 100 ) == 100 );
-
-    // 4-байтная гранула
+    // 4-байтная гранула — минимальный допустимый размер (Issue #146: kMinGranuleSize = 4)
     using A4 = pmm::AddressTraits<std::uint32_t, 4>;
     static_assert( A4::granule_size == 4 );
     PMM_TEST( A4::bytes_to_granules( 4 ) == 1 );
@@ -300,7 +290,7 @@ int main()
     bool all_passed = true;
 
     std::cout << "--- P1-A: Static fields and types ---\n";
-    PMM_RUN( "P1-A1: TinyAddressTraits (uint8_t, 8)", test_p1_tiny_address_traits );
+    PMM_RUN( "P1-A1: AddressTraits<uint8_t, 8>", test_p1_tiny_address_traits );
     PMM_RUN( "P1-A2: SmallAddressTraits (uint16_t, 16)", test_p1_small_address_traits );
     PMM_RUN( "P1-A3: DefaultAddressTraits (uint32_t, 16)", test_p1_default_address_traits );
     PMM_RUN( "P1-A4: LargeAddressTraits (uint64_t, 64)", test_p1_large_address_traits );

@@ -13,7 +13,7 @@ namespace pmm
 template <typename IndexT, std::size_t GranuleSz> struct AddressTraits
 {
     static_assert( std::is_unsigned<IndexT>::value, "AddressTraits: IndexT must be an unsigned integer type" );
-    static_assert( GranuleSz >= 1, "AddressTraits: GranuleSz must be >= 1" );
+    static_assert( GranuleSz >= 4, "AddressTraits: GranuleSz must be >= 4 (minimum architecture word size)" );
     static_assert( ( GranuleSz & ( GranuleSz - 1 ) ) == 0, "AddressTraits: GranuleSz must be a power of 2" );
 
     using index_type = IndexT;
@@ -52,8 +52,6 @@ template <typename IndexT, std::size_t GranuleSz> struct AddressTraits
         return static_cast<index_type>( byte_off / granule_size );
     }
 };
-
-using TinyAddressTraits = AddressTraits<std::uint8_t, 8>;
 
 using SmallAddressTraits = AddressTraits<std::uint16_t, 16>;
 

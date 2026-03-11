@@ -6,7 +6,7 @@
  * конфигураций менеджера персистентной памяти:
  *
  *   --- Embedded (статические, однопоточные) ---
- *   - `SmallEmbeddedStaticHeap<N>` — 16-bit, NoLock, StaticStorage<N> (до ~1 МБ, tiny embedded)
+ *   - `SmallEmbeddedStaticHeap<N>` — 16-bit, NoLock, StaticStorage<N> (до ~1 МБ, small embedded)
  *   - `EmbeddedStaticHeap<N>`      — 32-bit, NoLock, StaticStorage<N> (без heap, фиксированный пул)
  *   - `EmbeddedHeap`               — 32-bit, NoLock, HeapStorage, рост 50% (embedded с heap)
  *

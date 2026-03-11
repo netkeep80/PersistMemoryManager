@@ -220,11 +220,11 @@ static bool test_phase2_list_and_tree_nodes()
     static_assert( std::is_same<pmm::BlockStateBase<A>::index_type, typename A::index_type>::value,
                    "BlockStateBase::index_type must match A::index_type" );
 
-    using A8 = pmm::TinyAddressTraits;
+    using A8 = pmm::AddressTraits<std::uint8_t, 8>;
     static_assert( std::is_same<pmm::Block<A8>::index_type, std::uint8_t>::value,
-                   "Block<TinyAddressTraits>::index_type must be uint8_t (Issue #138)" );
+                   "Block<AddressTraits<uint8_t, 8>>::index_type must be uint8_t (Issue #138)" );
     static_assert( std::is_same<pmm::TreeNode<A8>::index_type, std::uint8_t>::value,
-                   "TreeNode<TinyAddressTraits>::index_type must be uint8_t" );
+                   "TreeNode<AddressTraits<uint8_t, 8>>::index_type must be uint8_t" );
 
     return true;
 }

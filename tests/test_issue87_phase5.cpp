@@ -116,14 +116,15 @@ static bool test_p5_static_storage_alignment()
     return true;
 }
 
-/// @brief StaticStorage с TinyAddressTraits (8-byte granula).
+/// @brief StaticStorage с AddressTraits<uint8_t, 8> (8-byte granula).
 static bool test_p5_static_storage_tiny_traits()
 {
-    pmm::StaticStorage<512, pmm::TinyAddressTraits> storage;
+    using AT8 = pmm::AddressTraits<std::uint8_t, 8>;
+    pmm::StaticStorage<512, AT8> storage;
     PMM_TEST( storage.base_ptr() != nullptr );
     PMM_TEST( storage.total_size() == 512 );
     std::uintptr_t addr = reinterpret_cast<std::uintptr_t>( storage.base_ptr() );
-    PMM_TEST( addr % pmm::TinyAddressTraits::granule_size == 0 );
+    PMM_TEST( addr % AT8::granule_size == 0 );
     return true;
 }
 
@@ -223,7 +224,7 @@ int main()
     std::cout << "\n--- P5-B: StaticStorage functional ---\n";
     PMM_RUN( "P5-B1: StaticStorage<4096> interface methods", test_p5_static_storage_interface );
     PMM_RUN( "P5-B2: StaticStorage<4096> buffer alignment", test_p5_static_storage_alignment );
-    PMM_RUN( "P5-B3: StaticStorage<512, TinyAddressTraits>", test_p5_static_storage_tiny_traits );
+    PMM_RUN( "P5-B3: StaticStorage<512, AddressTraits<uint8_t, 8>>", test_p5_static_storage_tiny_traits );
 
     std::cout << "\n--- P5-C: HeapStorage functional ---\n";
     PMM_RUN( "P5-C1: HeapStorage<> initial state (empty)", test_p5_heap_storage_initial_state );

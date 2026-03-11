@@ -121,7 +121,7 @@ static bool test_p3_block_various_traits()
     //   TreeNode<Tiny> = 3*1 + [1 pad] + 2 + 2 + 1 + 1 = 10 bytes (int16_t alignment)
     //   Block own fields: prev_offset(1) + next_offset(1) = 2 bytes
     //   Block = 10 + 2 = 12 bytes (Issue #138: TreeNode first, then Block own fields)
-    using Block8 = pmm::Block<pmm::TinyAddressTraits>;
+    using Block8 = pmm::Block<pmm::AddressTraits<std::uint8_t, 8>>;
     static_assert( std::is_same<Block8::index_type, std::uint8_t>::value );
     static_assert( sizeof( Block8 ) >= 12, "Block<Tiny> must be at least 12 bytes" );
 
@@ -243,11 +243,11 @@ static bool test_p3_block_treenode_fields_runtime()
     return true;
 }
 
-/// @brief Block<TinyAddressTraits> с 8-bit полями weight и root_offset (через BlockStateBase API).
+/// @brief Block<AddressTraits<uint8_t, 8>> с 8-bit полями weight и root_offset (через BlockStateBase API).
 /// Phase 3 v0.4: Fields are protected (Issue #120); use BlockStateBase static API.
 static bool test_p3_block_tiny_traits()
 {
-    using A          = pmm::TinyAddressTraits;
+    using A          = pmm::AddressTraits<std::uint8_t, 8>;
     using BlockState = pmm::BlockStateBase<A>;
 
     static_assert( std::is_same<BlockState::index_type, std::uint8_t>::value );
@@ -338,7 +338,7 @@ int main()
 
     std::cout << "\n--- P3-D: Block — TreeNode fields (weight+root_offset) ---\n";
     PMM_RUN( "P3-D1: Block weight+root_offset (from TreeNode) runtime via API", test_p3_block_treenode_fields_runtime );
-    PMM_RUN( "P3-D2: Block<TinyAddressTraits> 8-bit fields via BlockStateBase API", test_p3_block_tiny_traits );
+    PMM_RUN( "P3-D2: Block<AddressTraits<uint8_t, 8>> 8-bit fields via BlockStateBase API", test_p3_block_tiny_traits );
 
     std::cout << "\n--- P3-E: Block — field types (Issue #112, #120) ---\n";
     PMM_RUN( "P3-E1: Block index_type is uint32_t (Issue #112, #120)", test_p3_block_weight_type_matches_blockheader );
