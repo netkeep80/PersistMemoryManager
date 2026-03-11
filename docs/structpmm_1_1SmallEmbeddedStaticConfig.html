@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Конфигурация tiny-embedded-менеджера со статическим буфером и 16-bit индексом.  
+<p>Конфигурация small-embedded-менеджера со статическим буфером и 16-bit индексом.  
  <a href="structpmm_1_1SmallEmbeddedStaticConfig.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>&gt;</code></p>
@@ -111,8 +111,8 @@ Static Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;std::size_t BufferSize = 1024&gt;<br />
-struct pmm::SmallEmbeddedStaticConfig&lt; BufferSize &gt;</div><p>Конфигурация tiny-embedded-менеджера со статическим буфером и 16-bit индексом. </p>
-<p>Предназначена для сверхмалых систем без heap (микроконтроллеры, RTOS, bare-metal) с ограничением памяти до ~1 МБ:</p><ul>
+struct pmm::SmallEmbeddedStaticConfig&lt; BufferSize &gt;</div><p>Конфигурация small-embedded-менеджера со статическим буфером и 16-bit индексом. </p>
+<p>Предназначена для малых систем без heap (микроконтроллеры, RTOS, bare-metal) с ограничением памяти до ~1 МБ (Issue #146):</p><ul>
 <li>uint16_t индекс (SmallAddressTraits), 16-байтная гранула</li>
 <li>pptr&lt;T&gt; хранит 2-байтный индекс (вместо 4 байт у DefaultAddressTraits)</li>
 <li>StaticStorage&lt;BufferSize, SmallAddressTraits&gt; — фиксированный буфер, нет malloc</li>
@@ -120,6 +120,7 @@ struct pmm::SmallEmbeddedStaticConfig&lt; BufferSize &gt;</div><p>Конфигу
 <li>Нет блокировок (NoLock) — только однопоточный контекст</li>
 <li>Не расширяется (<a class="el" href="classpmm_1_1StaticStorage.html#a298e7f86b667f5d6b17f01c058da0e5d" title="Расширить хранилище — невозможно для статического буфера.">StaticStorage::expand()</a> всегда false)</li>
 </ul>
+<p>Замечание (Issue #146): SmallAddressTraits допустима с потерями: Block&lt;uint16_t&gt;=18B, ceil(18/16)=2 гранулы выделяется под заголовок = 14 байт/блок потерь.</p>
 <p>Статические проверки:</p><ul>
 <li>granule_size &gt;= kMinGranuleSize (16 &gt;= 4) ✓</li>
 <li>granule_size — степень двойки ✓</li>
@@ -132,13 +133,13 @@ struct pmm::SmallEmbeddedStaticConfig&lt; BufferSize &gt;</div><p>Конфигу
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><span class="keyword">using </span>TinyMgr = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::SmallEmbeddedStaticConfig&lt;1024&gt;</a>&gt;;</div>
-<div class="line">TinyMgr::create(1024);</div>
-<div class="line"><span class="keywordtype">void</span>* ptr = TinyMgr::allocate(32);</div>
-<div class="line"><span class="comment">// sizeof(TinyMgr::pptr&lt;int&gt;) == 2  (16-bit индекс)</span></div>
+<div class="fragment"><div class="line"><span class="keyword">using </span>SmallMgr = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::SmallEmbeddedStaticConfig&lt;1024&gt;</a>&gt;;</div>
+<div class="line">SmallMgr::create(1024);</div>
+<div class="line"><span class="keywordtype">void</span>* ptr = SmallMgr::allocate(32);</div>
+<div class="line"><span class="comment">// sizeof(SmallMgr::pptr&lt;int&gt;) == 2  (16-bit индекс)</span></div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00106">persist_memory_manager.h:107</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00203">203</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00222">222</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="afc95192f443647f4da4ec7b0d0f82899" name="afc95192f443647f4da4ec7b0d0f82899"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afc95192f443647f4da4ec7b0d0f82899">&#9670;&#160;</a></span>address_traits</h2>
@@ -154,7 +155,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00208">208</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00227">227</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -172,7 +173,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00210">210</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00229">229</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -190,7 +191,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00211">211</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00230">230</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -208,7 +209,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00209">209</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00228">228</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -235,7 +236,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00212">212</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00231">231</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -261,7 +262,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00215">215</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00234">234</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -287,7 +288,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00214">214</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00233">233</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -313,7 +314,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00213">213</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00232">232</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

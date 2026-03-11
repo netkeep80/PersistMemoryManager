@@ -163,7 +163,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Персистентная интернированная read-only строка (Issue #151).  <a href="structpmm_1_1pstringview.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1SmallEmbeddedStaticConfig.html">SmallEmbeddedStaticConfig</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация tiny-embedded-менеджера со статическим буфером и 16-bit индексом.  <a href="structpmm_1_1SmallEmbeddedStaticConfig.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация small-embedded-менеджера со статическим буфером и 16-bit индексом.  <a href="structpmm_1_1SmallEmbeddedStaticConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1SplittingBlock.html">SplittingBlock</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два.">SplittingBlock</a> — блок в процессе разбиения на два.  <a href="classpmm_1_1SplittingBlock.html#details">More...</a><br /></td></tr>
@@ -194,17 +194,13 @@ Concepts</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:abb45c05352727cde1c45f1d73c0dad3b" id="r_abb45c05352727cde1c45f1d73c0dad3b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">TinyAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint8_t, 8 &gt;</td></tr>
-<tr class="memdesc:abb45c05352727cde1c45f1d73c0dad3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Минимальный 8-bit вариант (до 255 гранул по 8 байт = 2040 байт, embedded).  <br /></td></tr>
-<tr class="separator:abb45c05352727cde1c45f1d73c0dad3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b844fd7256d6a2706303a0281dfbea2" id="r_a0b844fd7256d6a2706303a0281dfbea2"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">SmallAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint16_t, 16 &gt;</td></tr>
-<tr class="memdesc:a0b844fd7256d6a2706303a0281dfbea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">16-bit вариант (до 65535 гранул по 16 байт = ~1 МБ, small embedded).  <br /></td></tr>
 <tr class="separator:a0b844fd7256d6a2706303a0281dfbea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9ca69087900283384dda68352be048bb" id="r_a9ca69087900283384dda68352be048bb"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint32_t, 16 &gt;</td></tr>
-<tr class="memdesc:a9ca69087900283384dda68352be048bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">32-bit вариант, 16-байтная гранула — текущий дефолт.  <br /></td></tr>
+<tr class="memdesc:a9ca69087900283384dda68352be048bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">32-bit вариант, 16-байтная гранула — текущий дефолт (без потерь: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>=32B=2*16B).  <br /></td></tr>
 <tr class="separator:a9ca69087900283384dda68352be048bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fdf4565dee15a7a4ee46b0680df33f8" id="r_a0fdf4565dee15a7a4ee46b0680df33f8"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a0fdf4565dee15a7a4ee46b0680df33f8">LargeAddressTraits</a> = <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt; std::uint64_t, 64 &gt;</td></tr>
-<tr class="memdesc:a0fdf4565dee15a7a4ee46b0680df33f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">64-bit вариант, 64-байтная гранула (для крупных промышленных БД).  <br /></td></tr>
+<tr class="memdesc:a0fdf4565dee15a7a4ee46b0680df33f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">64-bit вариант, 64-байтная гранула (без потерь: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>=64B=1*64B; для крупных БД).  <br /></td></tr>
 <tr class="separator:a0fdf4565dee15a7a4ee46b0680df33f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7d4ff01179dde67748d6bb997ce50e7" id="r_ab7d4ff01179dde67748d6bb997ce50e7"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7">DefaultAllocatorPolicy</a> = <a class="el" href="classpmm_1_1AllocatorPolicy.html">AllocatorPolicy</a>&lt; <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;, <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
 <tr class="memdesc:ab7d4ff01179dde67748d6bb997ce50e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Псевдоним <a class="el" href="classpmm_1_1AllocatorPolicy.html" title="Политика выделения и освобождения памяти для ПАП-менеджера.">AllocatorPolicy</a> с настройками по умолчанию.  <br /></td></tr>
@@ -301,7 +297,7 @@ Variables</h2></td></tr>
 </ul>
 <p>Типичный сценарий: кеш вычислений, временные буферы в однопоточном коде. </p>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00273">273</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00292">292</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -317,9 +313,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>32-bit вариант, 16-байтная гранула — текущий дефолт. </p>
+<p>32-bit вариант, 16-байтная гранула — текущий дефолт (без потерь: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>=32B=2*16B). </p>
 
-<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00111">111</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00140">140</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
 
 </div>
 </div>
@@ -362,7 +358,7 @@ Variables</h2></td></tr>
 </ul>
 <p>Типичный сценарий: Linux embedded (RPi, etc.), системы с ограниченной памятью. </p>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00301">301</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00320">320</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -387,7 +383,7 @@ Variables</h2></td></tr>
 </ul>
 <p>Типичный сценарий: промышленные базы данных, time-series хранилища (до 64 ГБ). </p>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00316">316</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00335">335</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -403,9 +399,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>64-bit вариант, 64-байтная гранула (для крупных промышленных БД). </p>
+<p>64-bit вариант, 64-байтная гранула (без потерь: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>=64B=1*64B; для крупных БД). </p>
 
-<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00114">114</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00143">143</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
 
 </div>
 </div>
@@ -437,7 +433,7 @@ Variables</h2></td></tr>
 <div class="line"><span class="comment">// sizeof(BigDB::pptr&lt;int&gt;) == 8  (64-bit индекс)</span></div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00106">persist_memory_manager.h:107</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00347">347</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00366">366</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -480,7 +476,7 @@ Variables</h2></td></tr>
 </ul>
 <p>Типичный сценарий: долговременное хранение данных, файловые менеджеры. </p>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00287">287</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00306">306</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -495,28 +491,9 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>16-bit вариант (до 65535 гранул по 16 байт = ~1 МБ, small embedded). Допустима с потерями: Block&lt;SmallAddressTraits&gt;=18B, ceil(18/16)=2 гранулы на заголовок. </p>
 
-<p>16-bit вариант (до 65535 гранул по 16 байт = ~1 МБ, small embedded). </p>
-
-<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00108">108</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
-
-</div>
-</div>
-<a id="abb45c05352727cde1c45f1d73c0dad3b" name="abb45c05352727cde1c45f1d73c0dad3b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abb45c05352727cde1c45f1d73c0dad3b">&#9670;&#160;</a></span>TinyAddressTraits</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">using <a class="el" href="namespacepmm.html#abb45c05352727cde1c45f1d73c0dad3b">pmm::TinyAddressTraits</a> = typedef <a class="el" href="structpmm_1_1AddressTraits.html">AddressTraits</a>&lt;std::uint8_t, 8&gt;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Минимальный 8-bit вариант (до 255 гранул по 8 байт = 2040 байт, embedded). </p>
-
-<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00105">105</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="address__traits_8h_source.html#l00137">137</a> of file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
 
 </div>
 </div>
@@ -536,7 +513,7 @@ Variables</h2></td></tr>
 <p>Узел AVL-дерева для адресного пространства ПАП, использование только через наследование. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства (из <a class="el" href="address__traits_8h.html" title="AddressTraits — адресное пространство ПАП (Issue #87 Phase 1).">address_traits.h</a>). Определяет тип индексных полей.</td></tr>
+    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства (из <a class="el" href="address__traits_8h.html" title="AddressTraits — адресное пространство ПАП (Issue #87 Phase 1, #146).">address_traits.h</a>). Определяет тип индексных полей.</td></tr>
   </table>
   </dd>
 </dl>
@@ -943,7 +920,7 @@ template&lt;typename Backend &gt; </div>
 
 <p>Минимальный допустимый размер гранулы (размер слова архитектуры = 4 байта). </p>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00108">108</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00118">118</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

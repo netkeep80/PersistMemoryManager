@@ -125,7 +125,7 @@ Typedefs</h2></td></tr>
 <div class="textblock"><p>pmm_presets — готовые инстанции PersistMemoryManager (Issue #87 Phase 8, #110, #123, #146). </p>
 <p>Предоставляет набор готовых псевдонимов для наиболее распространённых конфигураций менеджера персистентной памяти:</p>
 <p>&mdash; Embedded (статические, однопоточные) &mdash;</p><ul>
-<li><code>SmallEmbeddedStaticHeap&lt;N&gt;</code> — 16-bit, NoLock, StaticStorage&lt;N&gt; (до ~1 МБ, tiny embedded)</li>
+<li><code>SmallEmbeddedStaticHeap&lt;N&gt;</code> — 16-bit, NoLock, StaticStorage&lt;N&gt; (до ~1 МБ, small embedded)</li>
 <li><code>EmbeddedStaticHeap&lt;N&gt;</code> — 32-bit, NoLock, StaticStorage&lt;N&gt; (без heap, фиксированный пул)</li>
 <li><code>EmbeddedHeap</code> — 32-bit, NoLock, HeapStorage, рост 50% (embedded с heap)</li>
 </ul>

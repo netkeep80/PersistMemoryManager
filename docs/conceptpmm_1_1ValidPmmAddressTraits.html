@@ -86,17 +86,22 @@ $(function() {
 <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> AT&gt;</div>
 <div class="line"><span class="keyword">concept </span><a class="code hl_concept" href="conceptpmm_1_1ValidPmmAddressTraits.html">pmm::ValidPmmAddressTraits</a> = </div>
 <div class="line">    ( AT::granule_size &gt;= <a class="code hl_variable" href="namespacepmm.html#ad7ae412e928bca11f0e3687e2acf680d">kMinGranuleSize</a> ) &amp;&amp; ( ( AT::granule_size &amp; ( AT::granule_size - 1 ) ) == 0 )</div>
-<div class="ttc" id="aconceptpmm_1_1ValidPmmAddressTraits_html"><div class="ttname"><a href="conceptpmm_1_1ValidPmmAddressTraits.html">pmm::ValidPmmAddressTraits</a></div><div class="ttdoc">C++20 концепт: проверяет, что AddressTraitsT имеет допустимые параметры гранулы.</div><div class="ttdef"><b>Definition</b> <a href="manager__configs_8h_source.html#l00120">manager_configs.h:120</a></div></div>
-<div class="ttc" id="anamespacepmm_html_ad7ae412e928bca11f0e3687e2acf680d"><div class="ttname"><a href="namespacepmm.html#ad7ae412e928bca11f0e3687e2acf680d">pmm::kMinGranuleSize</a></div><div class="ttdeci">constexpr std::size_t kMinGranuleSize</div><div class="ttdoc">Минимальный допустимый размер гранулы (размер слова архитектуры = 4 байта).</div><div class="ttdef"><b>Definition</b> <a href="manager__configs_8h_source.html#l00108">manager_configs.h:108</a></div></div>
+<div class="ttc" id="aconceptpmm_1_1ValidPmmAddressTraits_html"><div class="ttname"><a href="conceptpmm_1_1ValidPmmAddressTraits.html">pmm::ValidPmmAddressTraits</a></div><div class="ttdoc">C++20 концепт: проверяет, что AddressTraitsT имеет допустимые параметры гранулы.</div><div class="ttdef"><b>Definition</b> <a href="manager__configs_8h_source.html#l00136">manager_configs.h:136</a></div></div>
+<div class="ttc" id="anamespacepmm_html_ad7ae412e928bca11f0e3687e2acf680d"><div class="ttname"><a href="namespacepmm.html#ad7ae412e928bca11f0e3687e2acf680d">pmm::kMinGranuleSize</a></div><div class="ttdeci">constexpr std::size_t kMinGranuleSize</div><div class="ttdoc">Минимальный допустимый размер гранулы (размер слова архитектуры = 4 байта).</div><div class="ttdef"><b>Definition</b> <a href="manager__configs_8h_source.html#l00118">manager_configs.h:118</a></div></div>
 </div><!-- fragment --><a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>C++20 концепт: проверяет, что AddressTraitsT имеет допустимые параметры гранулы. </p>
-<p>Заменяет повторяющиеся пары <code>static_assert</code> в каждой конфигурационной структуре (Issue #155).</p>
+<p>Заменяет повторяющиеся пары <code>static_assert</code> в каждой конфигурационной структуре (Issue #155). Обновлён в Issue #146 для согласования с правилами выбора конфигурации.</p>
 <p>Требования:</p><ul>
 <li><code>AT::granule_size &gt;= kMinGranuleSize</code> (минимум 4 байта — размер машинного слова).</li>
-<li><code>AT::granule_size</code> — степень двойки. </li>
+<li><code>AT::granule_size</code> — степень двойки.</li>
+</ul>
+<p>Допустимые стандартные алиасы (Issue #146):</p><ul>
+<li>SmallAddressTraits (uint16_t, granule=16) — 16 &gt;= 4, степень двойки ✓</li>
+<li>DefaultAddressTraits (uint32_t, granule=16) — 16 &gt;= 4, степень двойки ✓</li>
+<li>LargeAddressTraits (uint64_t, granule=64) — 64 &gt;= 4, степень двойки ✓ </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00120">120</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00136">136</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
