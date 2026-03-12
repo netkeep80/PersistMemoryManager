@@ -1858,7 +1858,13 @@ static void avl_set_child( PPtr parent, PPtr old_child, PPtr new_child, IndexTyp
         pptr_set_right( parent, new_child );
 }
 
-template <typename PPtr, typename IndexType> static PPtr avl_rotate_right( PPtr y, IndexType& root_idx ) noexcept
+struct AvlUpdateHeightOnly
+{
+    template <typename PPtr> void operator()( PPtr p ) const noexcept { avl_update_height( p ); }
+};
+
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static PPtr avl_rotate_right( PPtr y, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
 {
     PPtr x     = pptr_get_left( y );
     PPtr b     = pptr_get_right( x );
@@ -1875,12 +1881,13 @@ template <typename PPtr, typename IndexType> static PPtr avl_rotate_right( PPtr 
 
     avl_set_child( y_par, y, x, root_idx );
 
-    avl_update_height( y );
-    avl_update_height( x );
+    update_node( y );
+    update_node( x );
     return x;
 }
 
-template <typename PPtr, typename IndexType> static PPtr avl_rotate_left( PPtr x, IndexType& root_idx ) noexcept
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static PPtr avl_rotate_left( PPtr x, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
 {
     PPtr y     = pptr_get_right( x );
     PPtr b     = pptr_get_left( y );
@@ -1897,32 +1904,135 @@ template <typename PPtr, typename IndexType> static PPtr avl_rotate_left( PPtr x
 
     avl_set_child( x_par, x, y, root_idx );
 
-    avl_update_height( x );
-    avl_update_height( y );
+    update_node( x );
+    update_node( y );
     return y;
 }
 
-template <typename PPtr, typename IndexType> static void avl_rebalance_up( PPtr p, IndexType& root_idx ) noexcept
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_rebalance_up( PPtr p, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
 {
     while ( !p.is_null() )
     {
-        avl_update_height( p );
+        update_node( p );
         std::int16_t bf = avl_balance_factor( p );
         if ( bf > 1 )
         {
             PPtr left = pptr_get_left( p );
             if ( avl_balance_factor( left ) < 0 )
-                avl_rotate_left( left, root_idx );
-            p = avl_rotate_right( p, root_idx );
+                avl_rotate_left( left, root_idx, update_node );
+            p = avl_rotate_right( p, root_idx, update_node );
         }
         else if ( bf < -1 )
         {
             PPtr right = pptr_get_right( p );
             if ( avl_balance_factor( right ) > 0 )
-                avl_rotate_right( right, root_idx );
-            p = avl_rotate_left( p, root_idx );
+                avl_rotate_right( right, root_idx, update_node );
+            p = avl_rotate_left( p, root_idx, update_node );
         }
         p = pptr_get_parent( p );
+    }
+}
+
+template <typename PPtr> static PPtr avl_min_node( PPtr p ) noexcept
+{
+    while ( !p.is_null() )
+    {
+        PPtr left = pptr_get_left( p );
+        if ( left.is_null() )
+            break;
+        p = left;
+    }
+    return p;
+}
+
+template <typename PPtr> static PPtr avl_max_node( PPtr p ) noexcept
+{
+    while ( !p.is_null() )
+    {
+        PPtr right = pptr_get_right( p );
+        if ( right.is_null() )
+            break;
+        p = right;
+    }
+    return p;
+}
+
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_remove( PPtr target, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
+{
+    PPtr left_p  = pptr_get_left( target );
+    PPtr right_p = pptr_get_right( target );
+    PPtr par_p   = pptr_get_parent( target );
+
+    if ( left_p.is_null() && right_p.is_null() )
+    {
+        
+        avl_set_child( par_p, target, PPtr(), root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+    }
+    else if ( left_p.is_null() )
+    {
+        
+        pptr_set_parent( right_p, par_p );
+        avl_set_child( par_p, target, right_p, root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+        else
+            update_node( right_p );
+    }
+    else if ( right_p.is_null() )
+    {
+        
+        pptr_set_parent( left_p, par_p );
+        avl_set_child( par_p, target, left_p, root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+        else
+            update_node( left_p );
+    }
+    else
+    {
+        
+        PPtr successor = avl_min_node( right_p );
+
+        auto succ_par_idx = successor.tree_node().get_parent();
+        PPtr succ_rgt     = pptr_get_right( successor );
+
+        if ( succ_par_idx == target.offset() )
+        {
+            
+            pptr_set_left( successor, left_p );
+            pptr_set_parent( left_p, successor );
+            
+            pptr_set_parent( successor, par_p );
+            avl_set_child( par_p, target, successor, root_idx );
+            avl_rebalance_up( successor, root_idx, update_node );
+        }
+        else
+        {
+            
+            PPtr succ_par( succ_par_idx );
+            if ( !succ_rgt.is_null() )
+            {
+                pptr_set_parent( succ_rgt, succ_par );
+                pptr_set_left( succ_par, succ_rgt );
+            }
+            else
+            {
+                pptr_set_left( succ_par, PPtr() );
+            }
+
+            pptr_set_left( successor, left_p );
+            pptr_set_parent( left_p, successor );
+            pptr_set_right( successor, right_p );
+            pptr_set_parent( right_p, successor );
+            pptr_set_parent( successor, par_p );
+            avl_set_child( par_p, target, successor, root_idx );
+
+            avl_rebalance_up( succ_par, root_idx, update_node );
+        }
     }
 }
 
@@ -1945,8 +2055,10 @@ static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way,
     return PPtr(); 
 }
 
-template <typename PPtr, typename IndexType, typename GoLeftFn, typename ResolveFn>
-static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, ResolveFn&& resolve ) noexcept
+template <typename PPtr, typename IndexType, typename GoLeftFn, typename ResolveFn,
+          typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, ResolveFn&& resolve,
+                         NodeUpdateFn update_node = {} ) noexcept
 {
     if ( new_node.is_null() )
         return;
@@ -1985,7 +2097,7 @@ static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, 
     else
         pptr_set_right( parent, new_node );
 
-    avl_rebalance_up( parent, root_idx );
+    avl_rebalance_up( parent, root_idx, update_node );
 }
 
 } 
@@ -2407,179 +2519,35 @@ template <typename T, typename ManagerT> struct pvector
         return p.tree_node().get_weight();
     }
 
-    static std::int16_t _height( node_pptr p ) noexcept
+    struct _WeightUpdateFn
     {
-        if ( p.is_null() )
-            return 0;
-        auto idx = p.offset();
-        if ( idx == no_block )
-            return 0;
-        return p.tree_node().get_height();
-    }
-
-    static void _update_node( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return;
-        auto& tn = p.tree_node();
-
-        auto left_idx  = tn.get_left();
-        auto right_idx = tn.get_right();
-
-        node_pptr left_p  = ( left_idx != no_block ) ? node_pptr( left_idx ) : node_pptr();
-        node_pptr right_p = ( right_idx != no_block ) ? node_pptr( right_idx ) : node_pptr();
-
-        std::int16_t lh = _height( left_p );
-        std::int16_t rh = _height( right_p );
-        tn.set_height( static_cast<std::int16_t>( 1 + ( lh > rh ? lh : rh ) ) );
-
-        index_type lw = _subtree_size( left_p );
-        index_type rw = _subtree_size( right_p );
-        tn.set_weight( static_cast<index_type>( 1 + lw + rw ) );
-    }
-
-    void _set_child( node_pptr parent, node_pptr old_child, node_pptr new_child ) noexcept
-    {
-        if ( parent.is_null() )
+        void operator()( node_pptr p ) const noexcept
         {
-            _root_idx = new_child.offset();
-            return;
-        }
-        auto& ptn      = parent.tree_node();
-        auto  left_idx = ptn.get_left();
-        if ( left_idx == old_child.offset() )
-            ptn.set_left( new_child.is_null() ? no_block : new_child.offset() );
-        else
-            ptn.set_right( new_child.is_null() ? no_block : new_child.offset() );
-    }
-
-    void _rotate_right( node_pptr y ) noexcept
-    {
-        auto& y_tn    = y.tree_node();
-        auto  x_idx   = y_tn.get_left();
-        auto  y_par   = y_tn.get_parent();
-        auto  y_p_idx = y_par;
-
-        node_pptr x( x_idx );
-        node_pptr y_par_p = ( y_p_idx != no_block ) ? node_pptr( y_p_idx ) : node_pptr();
-
-        auto& x_tn  = x.tree_node();
-        auto  b_idx = x_tn.get_right();
-
-        x_tn.set_right( y.offset() );
-        y_tn.set_parent( x_idx );
-
-        y_tn.set_left( b_idx );
-        if ( b_idx != no_block )
-            node_pptr( b_idx ).tree_node().set_parent( y.offset() );
-
-        x_tn.set_parent( y_p_idx );
-
-        _set_child( y_par_p, y, x );
-
-        _update_node( y );
-        _update_node( x );
-    }
-
-    void _rotate_left( node_pptr x ) noexcept
-    {
-        auto& x_tn    = x.tree_node();
-        auto  y_idx   = x_tn.get_right();
-        auto  x_p_idx = x_tn.get_parent();
-
-        node_pptr y( y_idx );
-        node_pptr x_par_p = ( x_p_idx != no_block ) ? node_pptr( x_p_idx ) : node_pptr();
-
-        auto& y_tn  = y.tree_node();
-        auto  b_idx = y_tn.get_left();
-
-        y_tn.set_left( x.offset() );
-        x_tn.set_parent( y_idx );
-
-        x_tn.set_right( b_idx );
-        if ( b_idx != no_block )
-            node_pptr( b_idx ).tree_node().set_parent( x.offset() );
-
-        y_tn.set_parent( x_p_idx );
-
-        _set_child( x_par_p, x, y );
-
-        _update_node( x );
-        _update_node( y );
-    }
-
-    void _rebalance_up( node_pptr p ) noexcept
-    {
-        while ( !p.is_null() )
-        {
-            _update_node( p );
-
+            if ( p.is_null() )
+                return;
+            
+            detail::avl_update_height( p );
+            
             auto& tn = p.tree_node();
 
-            auto left_idx  = tn.get_left();
-            auto right_idx = tn.get_right();
-
-            node_pptr left_p  = ( left_idx != no_block ) ? node_pptr( left_idx ) : node_pptr();
-            node_pptr right_p = ( right_idx != no_block ) ? node_pptr( right_idx ) : node_pptr();
-
-            std::int16_t bf = static_cast<std::int16_t>( _height( left_p ) - _height( right_p ) );
-
-            if ( bf > 1 )
-            {
-                
-                auto ll_idx = left_p.tree_node().get_left();
-                auto lr_idx = left_p.tree_node().get_right();
-                auto ll_h   = ( ll_idx != no_block ) ? _height( node_pptr( ll_idx ) ) : std::int16_t( 0 );
-                auto lr_h   = ( lr_idx != no_block ) ? _height( node_pptr( lr_idx ) ) : std::int16_t( 0 );
-                if ( lr_h > ll_h )
-                    _rotate_left( left_p );
-                _rotate_right( p );
-                
-                auto p_par = p.tree_node().get_parent();
-                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
-            }
-            else if ( bf < -1 )
-            {
-                
-                auto rl_idx = right_p.tree_node().get_left();
-                auto rr_idx = right_p.tree_node().get_right();
-                auto rl_h   = ( rl_idx != no_block ) ? _height( node_pptr( rl_idx ) ) : std::int16_t( 0 );
-                auto rr_h   = ( rr_idx != no_block ) ? _height( node_pptr( rr_idx ) ) : std::int16_t( 0 );
-                if ( rl_h > rr_h )
-                    _rotate_right( right_p );
-                _rotate_left( p );
-                auto p_par = p.tree_node().get_parent();
-                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
-            }
-            else
-            {
-                auto p_par = tn.get_parent();
-                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
-            }
+            auto       left_idx = tn.get_left();
+            auto       right_idx = tn.get_right();
+            node_pptr  left_p  = ( left_idx != no_block ) ? node_pptr( left_idx ) : node_pptr();
+            node_pptr  right_p = ( right_idx != no_block ) ? node_pptr( right_idx ) : node_pptr();
+            index_type lw      = _subtree_size( left_p );
+            index_type rw      = _subtree_size( right_p );
+            tn.set_weight( static_cast<index_type>( 1 + lw + rw ) );
         }
-    }
+    };
 
     void _avl_insert_rightmost( node_pptr new_node ) noexcept
     {
-        if ( _root_idx == static_cast<index_type>( 0 ) )
-        {
-            _root_idx = new_node.offset();
-            return;
-        }
-
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx == no_block )
-                break;
-            cur = node_pptr( right_idx );
-        }
-
-        cur.tree_node().set_right( new_node.offset() );
-        new_node.tree_node().set_parent( cur.offset() );
-
-        _rebalance_up( cur );
+        
+        detail::avl_insert(
+            new_node, _root_idx,
+            []( node_pptr ) -> bool { return false; }, 
+            []( node_pptr p ) -> node_type* { return manager_type::template resolve<node_type>( p ); },
+            _WeightUpdateFn{} );
     }
 
     static node_pptr _avl_find_by_index( node_pptr p, std::size_t index ) noexcept
@@ -2617,104 +2585,7 @@ template <typename T, typename ManagerT> struct pvector
 
     void _avl_remove( node_pptr target ) noexcept
     {
-        auto& tn        = target.tree_node();
-        auto  left_idx  = tn.get_left();
-        auto  right_idx = tn.get_right();
-        auto  par_idx   = tn.get_parent();
-
-        node_pptr par_p = ( par_idx != no_block ) ? node_pptr( par_idx ) : node_pptr();
-
-        if ( left_idx == no_block && right_idx == no_block )
-        {
-            
-            _set_child( par_p, target, node_pptr() );
-            if ( !par_p.is_null() )
-                _rebalance_up( par_p );
-        }
-        else if ( left_idx == no_block )
-        {
-            
-            node_pptr right_p( right_idx );
-            right_p.tree_node().set_parent( par_idx );
-            _set_child( par_p, target, right_p );
-            if ( !par_p.is_null() )
-                _rebalance_up( par_p );
-            else
-                _update_node( right_p );
-        }
-        else if ( right_idx == no_block )
-        {
-            
-            node_pptr left_p( left_idx );
-            left_p.tree_node().set_parent( par_idx );
-            _set_child( par_p, target, left_p );
-            if ( !par_p.is_null() )
-                _rebalance_up( par_p );
-            else
-                _update_node( left_p );
-        }
-        else
-        {
-            
-            node_pptr successor( right_idx );
-            while ( true )
-            {
-                auto sl = successor.tree_node().get_left();
-                if ( sl == no_block )
-                    break;
-                successor = node_pptr( sl );
-            }
-
-            auto  succ_par_idx = successor.tree_node().get_parent();
-            auto  succ_rgt_idx = successor.tree_node().get_right();
-            auto& succ_tn      = successor.tree_node();
-
-            node_pptr succ_par_p = ( succ_par_idx != static_cast<index_type>( target.offset() ) )
-                                       ? node_pptr( succ_par_idx )
-                                       : node_pptr();
-
-            if ( succ_par_idx == target.offset() )
-            {
-                
-            }
-            else
-            {
-                
-                node_pptr succ_parent( succ_par_idx );
-                if ( succ_rgt_idx != no_block )
-                {
-                    node_pptr succ_rgt( succ_rgt_idx );
-                    succ_rgt.tree_node().set_parent( succ_par_idx );
-                    succ_parent.tree_node().set_left( succ_rgt_idx );
-                }
-                else
-                {
-                    succ_parent.tree_node().set_left( no_block );
-                }
-            }
-
-            succ_tn.set_left( left_idx );
-            node_pptr( left_idx ).tree_node().set_parent( successor.offset() );
-
-            if ( succ_par_idx == target.offset() )
-            {
-                
-                succ_tn.set_right( succ_rgt_idx );
-                if ( succ_rgt_idx != no_block )
-                    node_pptr( succ_rgt_idx ).tree_node().set_parent( successor.offset() );
-            }
-            else
-            {
-                succ_tn.set_right( right_idx );
-                node_pptr( right_idx ).tree_node().set_parent( successor.offset() );
-            }
-
-            succ_tn.set_parent( par_idx );
-            _set_child( par_p, target, successor );
-
-            node_pptr rebalance_start = ( succ_par_idx == target.offset() ) ? successor : node_pptr( succ_par_idx );
-            _rebalance_up( rebalance_start );
-        }
+        detail::avl_remove( target, _root_idx, _WeightUpdateFn{} );
     }
 };
 

@@ -42,13 +42,15 @@
  * @endcode
  *
  * @see pmap.h — аналогичный персистентный контейнер (Issue #153)
- * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
+ * @see avl_tree_mixin.h — общие AVL-операции (Issue #155, #188)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see tree_node.h — TreeNode<AT> (встроенные поля каждого блока)
- * @version 0.2 (Issue #186 — O(log n) at() via order-statistic AVL tree)
+ * @version 0.3 (Issue #188 — deduplicate AVL ops via avl_tree_mixin.h NodeUpdateFn hook)
  */
 
 #pragma once
+
+#include "pmm/avl_tree_mixin.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -378,7 +380,7 @@ template <typename T, typename ManagerT> struct pvector
     iterator end() const noexcept { return iterator( static_cast<index_type>( 0 ) ); }
 
   private:
-    // ─── AVL order-statistic tree (использует встроенные TreeNode-поля) ────────
+    // ─── AVL order-statistic tree via avl_tree_mixin.h (Issue #188) ───────────
 
     /// @brief Получить размер поддерева (weight), или 0 если узел нулевой.
     static index_type _subtree_size( node_pptr p ) noexcept
@@ -391,212 +393,37 @@ template <typename T, typename ManagerT> struct pvector
         return p.tree_node().get_weight();
     }
 
-    /// @brief Получить высоту поддерева, или 0 если узел нулевой.
-    static std::int16_t _height( node_pptr p ) noexcept
+    /// @brief Node-update functor: updates both height and weight (Issue #188).
+    /// Used as NodeUpdateFn parameter for avl_tree_mixin rotation/rebalance functions.
+    struct _WeightUpdateFn
     {
-        if ( p.is_null() )
-            return 0;
-        auto idx = p.offset();
-        if ( idx == no_block )
-            return 0;
-        return p.tree_node().get_height();
-    }
-
-    /// @brief Обновить height и weight узла из его детей.
-    static void _update_node( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return;
-        auto& tn = p.tree_node();
-
-        auto left_idx  = tn.get_left();
-        auto right_idx = tn.get_right();
-
-        node_pptr left_p  = ( left_idx != no_block ) ? node_pptr( left_idx ) : node_pptr();
-        node_pptr right_p = ( right_idx != no_block ) ? node_pptr( right_idx ) : node_pptr();
-
-        std::int16_t lh = _height( left_p );
-        std::int16_t rh = _height( right_p );
-        tn.set_height( static_cast<std::int16_t>( 1 + ( lh > rh ? lh : rh ) ) );
-
-        index_type lw = _subtree_size( left_p );
-        index_type rw = _subtree_size( right_p );
-        tn.set_weight( static_cast<index_type>( 1 + lw + rw ) );
-    }
-
-    /// @brief Обновить связь parent → child (или root если parent нулевой).
-    void _set_child( node_pptr parent, node_pptr old_child, node_pptr new_child ) noexcept
-    {
-        if ( parent.is_null() )
+        void operator()( node_pptr p ) const noexcept
         {
-            _root_idx = new_child.offset();
-            return;
-        }
-        auto& ptn      = parent.tree_node();
-        auto  left_idx = ptn.get_left();
-        if ( left_idx == old_child.offset() )
-            ptn.set_left( new_child.is_null() ? no_block : new_child.offset() );
-        else
-            ptn.set_right( new_child.is_null() ? no_block : new_child.offset() );
-    }
-
-    /**
-     * @brief Правый поворот вокруг y; обновляет height, weight и parent-ссылки.
-     *
-     *     y            x
-     *    / \          / \
-     *   x   C  -->  A    y
-     *  / \               / \
-     * A   B             B   C
-     */
-    void _rotate_right( node_pptr y ) noexcept
-    {
-        auto& y_tn    = y.tree_node();
-        auto  x_idx   = y_tn.get_left();
-        auto  y_par   = y_tn.get_parent();
-        auto  y_p_idx = y_par;
-
-        node_pptr x( x_idx );
-        node_pptr y_par_p = ( y_p_idx != no_block ) ? node_pptr( y_p_idx ) : node_pptr();
-
-        auto& x_tn  = x.tree_node();
-        auto  b_idx = x_tn.get_right();
-
-        // x.right = y
-        x_tn.set_right( y.offset() );
-        y_tn.set_parent( x_idx );
-
-        // y.left = B
-        y_tn.set_left( b_idx );
-        if ( b_idx != no_block )
-            node_pptr( b_idx ).tree_node().set_parent( y.offset() );
-
-        // x.parent = y.parent
-        x_tn.set_parent( y_p_idx );
-
-        _set_child( y_par_p, y, x );
-
-        _update_node( y );
-        _update_node( x );
-    }
-
-    /**
-     * @brief Левый поворот вокруг x; обновляет height, weight и parent-ссылки.
-     *
-     *   x               y
-     *  / \             / \
-     * A   y   -->    x    C
-     *    / \        / \
-     *   B   C      A   B
-     */
-    void _rotate_left( node_pptr x ) noexcept
-    {
-        auto& x_tn    = x.tree_node();
-        auto  y_idx   = x_tn.get_right();
-        auto  x_p_idx = x_tn.get_parent();
-
-        node_pptr y( y_idx );
-        node_pptr x_par_p = ( x_p_idx != no_block ) ? node_pptr( x_p_idx ) : node_pptr();
-
-        auto& y_tn  = y.tree_node();
-        auto  b_idx = y_tn.get_left();
-
-        // y.left = x
-        y_tn.set_left( x.offset() );
-        x_tn.set_parent( y_idx );
-
-        // x.right = B
-        x_tn.set_right( b_idx );
-        if ( b_idx != no_block )
-            node_pptr( b_idx ).tree_node().set_parent( x.offset() );
-
-        // y.parent = x.parent
-        y_tn.set_parent( x_p_idx );
-
-        _set_child( x_par_p, x, y );
-
-        _update_node( x );
-        _update_node( y );
-    }
-
-    /// @brief Перебалансировать дерево снизу вверх от узла p до корня.
-    void _rebalance_up( node_pptr p ) noexcept
-    {
-        while ( !p.is_null() )
-        {
-            _update_node( p );
-
+            if ( p.is_null() )
+                return;
+            // Update height via shared helper.
+            detail::avl_update_height( p );
+            // Update weight (subtree size) = 1 + left_weight + right_weight.
             auto& tn = p.tree_node();
 
-            auto left_idx  = tn.get_left();
-            auto right_idx = tn.get_right();
-
-            node_pptr left_p  = ( left_idx != no_block ) ? node_pptr( left_idx ) : node_pptr();
-            node_pptr right_p = ( right_idx != no_block ) ? node_pptr( right_idx ) : node_pptr();
-
-            std::int16_t bf = static_cast<std::int16_t>( _height( left_p ) - _height( right_p ) );
-
-            if ( bf > 1 )
-            {
-                // Левый перевес
-                auto ll_idx = left_p.tree_node().get_left();
-                auto lr_idx = left_p.tree_node().get_right();
-                auto ll_h   = ( ll_idx != no_block ) ? _height( node_pptr( ll_idx ) ) : std::int16_t( 0 );
-                auto lr_h   = ( lr_idx != no_block ) ? _height( node_pptr( lr_idx ) ) : std::int16_t( 0 );
-                if ( lr_h > ll_h )
-                    _rotate_left( left_p );
-                _rotate_right( p );
-                // После поворота p переместился вниз; его новый родитель — это тот, кто сейчас на его месте.
-                // Продолжаем снизу вверх от нового положения p.
-                auto p_par = p.tree_node().get_parent();
-                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
-            }
-            else if ( bf < -1 )
-            {
-                // Правый перевес
-                auto rl_idx = right_p.tree_node().get_left();
-                auto rr_idx = right_p.tree_node().get_right();
-                auto rl_h   = ( rl_idx != no_block ) ? _height( node_pptr( rl_idx ) ) : std::int16_t( 0 );
-                auto rr_h   = ( rr_idx != no_block ) ? _height( node_pptr( rr_idx ) ) : std::int16_t( 0 );
-                if ( rl_h > rr_h )
-                    _rotate_right( right_p );
-                _rotate_left( p );
-                auto p_par = p.tree_node().get_parent();
-                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
-            }
-            else
-            {
-                auto p_par = tn.get_parent();
-                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
-            }
+            auto       left_idx  = tn.get_left();
+            auto       right_idx = tn.get_right();
+            node_pptr  left_p    = ( left_idx != no_block ) ? node_pptr( left_idx ) : node_pptr();
+            node_pptr  right_p   = ( right_idx != no_block ) ? node_pptr( right_idx ) : node_pptr();
+            index_type lw        = _subtree_size( left_p );
+            index_type rw        = _subtree_size( right_p );
+            tn.set_weight( static_cast<index_type>( 1 + lw + rw ) );
         }
-    }
+    };
 
     /// @brief Вставить new_node в крайнюю правую позицию (конец последовательности).
     void _avl_insert_rightmost( node_pptr new_node ) noexcept
     {
-        if ( _root_idx == static_cast<index_type>( 0 ) )
-        {
-            _root_idx = new_node.offset();
-            return;
-        }
-
-        // Идём всегда вправо до листа.
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx == no_block )
-                break;
-            cur = node_pptr( right_idx );
-        }
-
-        // Вставляем new_node как правый потомок cur.
-        cur.tree_node().set_right( new_node.offset() );
-        new_node.tree_node().set_parent( cur.offset() );
-
-        // Перебалансируем снизу вверх.
-        _rebalance_up( cur );
+        // Use shared avl_insert with "always go right" comparator (Issue #188).
+        detail::avl_insert(
+            new_node, _root_idx, []( node_pptr ) -> bool { return false; }, // never go left — always rightmost
+            []( node_pptr p ) -> node_type* { return manager_type::template resolve<node_type>( p ); },
+            _WeightUpdateFn{} );
     }
 
     /**
@@ -641,118 +468,9 @@ template <typename T, typename ManagerT> struct pvector
         return node_pptr();
     }
 
-    /**
-     * @brief Удалить узел target из AVL-дерева и перебалансировать.
-     *
-     * Реализует стандартное удаление из BST с последующей AVL-балансировкой.
-     * Для узла с двумя детьми использует in-order successor (крайний левый в правом поддереве).
-     */
-    void _avl_remove( node_pptr target ) noexcept
-    {
-        auto& tn        = target.tree_node();
-        auto  left_idx  = tn.get_left();
-        auto  right_idx = tn.get_right();
-        auto  par_idx   = tn.get_parent();
-
-        node_pptr par_p = ( par_idx != no_block ) ? node_pptr( par_idx ) : node_pptr();
-
-        if ( left_idx == no_block && right_idx == no_block )
-        {
-            // Листовой узел — просто удаляем.
-            _set_child( par_p, target, node_pptr() );
-            if ( !par_p.is_null() )
-                _rebalance_up( par_p );
-        }
-        else if ( left_idx == no_block )
-        {
-            // Только правый потомок.
-            node_pptr right_p( right_idx );
-            right_p.tree_node().set_parent( par_idx );
-            _set_child( par_p, target, right_p );
-            if ( !par_p.is_null() )
-                _rebalance_up( par_p );
-            else
-                _update_node( right_p );
-        }
-        else if ( right_idx == no_block )
-        {
-            // Только левый потомок.
-            node_pptr left_p( left_idx );
-            left_p.tree_node().set_parent( par_idx );
-            _set_child( par_p, target, left_p );
-            if ( !par_p.is_null() )
-                _rebalance_up( par_p );
-            else
-                _update_node( left_p );
-        }
-        else
-        {
-            // Два потомка — ищем in-order successor (крайний левый в правом поддереве).
-            node_pptr successor( right_idx );
-            while ( true )
-            {
-                auto sl = successor.tree_node().get_left();
-                if ( sl == no_block )
-                    break;
-                successor = node_pptr( sl );
-            }
-
-            // Запоминаем родителя successor'а до перестановки.
-            auto  succ_par_idx = successor.tree_node().get_parent();
-            auto  succ_rgt_idx = successor.tree_node().get_right();
-            auto& succ_tn      = successor.tree_node();
-
-            node_pptr succ_par_p = ( succ_par_idx != static_cast<index_type>( target.offset() ) )
-                                       ? node_pptr( succ_par_idx )
-                                       : node_pptr();
-
-            // Отсоединяем successor от его текущего места.
-            if ( succ_par_idx == target.offset() )
-            {
-                // Successor — прямой правый потомок target.
-                // ничего не делаем — reconnect ниже
-            }
-            else
-            {
-                // Правый потомок successor'а становится левым потомком его родителя.
-                node_pptr succ_parent( succ_par_idx );
-                if ( succ_rgt_idx != no_block )
-                {
-                    node_pptr succ_rgt( succ_rgt_idx );
-                    succ_rgt.tree_node().set_parent( succ_par_idx );
-                    succ_parent.tree_node().set_left( succ_rgt_idx );
-                }
-                else
-                {
-                    succ_parent.tree_node().set_left( no_block );
-                }
-            }
-
-            // Ставим successor на место target.
-            succ_tn.set_left( left_idx );
-            node_pptr( left_idx ).tree_node().set_parent( successor.offset() );
-
-            if ( succ_par_idx == target.offset() )
-            {
-                // Правый потомок successor'а остаётся как есть.
-                succ_tn.set_right( succ_rgt_idx );
-                if ( succ_rgt_idx != no_block )
-                    node_pptr( succ_rgt_idx ).tree_node().set_parent( successor.offset() );
-            }
-            else
-            {
-                succ_tn.set_right( right_idx );
-                node_pptr( right_idx ).tree_node().set_parent( successor.offset() );
-            }
-
-            succ_tn.set_parent( par_idx );
-            _set_child( par_p, target, successor );
-
-            // Перебалансируем от нижней точки изменений.
-            node_pptr rebalance_start = ( succ_par_idx == target.offset() ) ? successor : node_pptr( succ_par_idx );
-            _rebalance_up( rebalance_start );
-        }
-    }
+    /// @brief Удалить узел target из AVL-дерева и перебалансировать (Issue #188).
+    /// Delegates to detail::avl_remove with _WeightUpdateFn.
+    void _avl_remove( node_pptr target ) noexcept { detail::avl_remove( target, _root_idx, _WeightUpdateFn{} ); }
 };
 
 } // namespace pmm

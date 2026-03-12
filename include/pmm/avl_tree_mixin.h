@@ -1,14 +1,16 @@
 /**
  * @file pmm/avl_tree_mixin.h
- * @brief Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162).
+ * @brief Shared AVL tree helper functions for pmap, pstringview and pvector (Issue #155, #162, #188).
  *
  * Provides a set of free static template functions implementing the core AVL
- * tree operations (height, balance factor, rotations, rebalancing, insert, find)
- * that are shared between pmap<_K,_V,ManagerT> and pstringview<ManagerT>.
+ * tree operations (height, balance factor, rotations, rebalancing, insert, find,
+ * remove) that are shared between pmap<_K,_V,ManagerT>, pstringview<ManagerT>
+ * and pvector<T,ManagerT>.
  *
- * Both pmap and pstringview use the same AVL logic via pptr<T,ManagerT> — the
- * only difference is the pptr type and the comparison key. This header factors
- * out the common tree structure code, eliminating ~130 lines of duplication.
+ * All rotation and rebalance functions accept an optional NodeUpdateFn callback
+ * that is invoked after structural changes to update derived node attributes.
+ * By default avl_update_height is used (height-only). pvector passes a custom
+ * callback that also updates the order-statistic weight field (Issue #188).
  *
  * Template parameter PPtr must support:
  *   - is_null()
@@ -19,7 +21,8 @@
  *
  * @see pmap.h — pmap<_K,_V,ManagerT> (Issue #153)
  * @see pstringview.h — pstringview<ManagerT> (Issue #151)
- * @version 0.3 (Issue #164 — use tree_node() API instead of removed pptr tree methods)
+ * @see pvector.h — pvector<T,ManagerT> (Issue #186, #188)
+ * @version 0.4 (Issue #188 — NodeUpdateFn hook, avl_remove, avl_min_node for pvector deduplication)
  */
 
 #pragma once
@@ -127,6 +130,12 @@ static void avl_set_child( PPtr parent, PPtr old_child, PPtr new_child, IndexTyp
         pptr_set_right( parent, new_child );
 }
 
+/// @brief Default node-update functor: updates height only (used by pmap, pstringview).
+struct AvlUpdateHeightOnly
+{
+    template <typename PPtr> void operator()( PPtr p ) const noexcept { avl_update_height( p ); }
+};
+
 /**
  * @brief Right rotation around y; returns new subtree root (x).
  *
@@ -135,8 +144,12 @@ static void avl_set_child( PPtr parent, PPtr old_child, PPtr new_child, IndexTyp
  *   x   C  -->  A    y
  *  / \               / \
  * A   B             B   C
+ *
+ * @param update_node  Callable(PPtr) invoked on y then x after structural change.
+ *                     Default: AvlUpdateHeightOnly (updates height only).
  */
-template <typename PPtr, typename IndexType> static PPtr avl_rotate_right( PPtr y, IndexType& root_idx ) noexcept
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static PPtr avl_rotate_right( PPtr y, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
 {
     PPtr x     = pptr_get_left( y );
     PPtr b     = pptr_get_right( x );
@@ -153,8 +166,8 @@ template <typename PPtr, typename IndexType> static PPtr avl_rotate_right( PPtr 
 
     avl_set_child( y_par, y, x, root_idx );
 
-    avl_update_height( y );
-    avl_update_height( x );
+    update_node( y );
+    update_node( x );
     return x;
 }
 
@@ -166,8 +179,12 @@ template <typename PPtr, typename IndexType> static PPtr avl_rotate_right( PPtr 
  * A   y   -->    x    C
  *    / \        / \
  *   B   C      A   B
+ *
+ * @param update_node  Callable(PPtr) invoked on x then y after structural change.
+ *                     Default: AvlUpdateHeightOnly (updates height only).
  */
-template <typename PPtr, typename IndexType> static PPtr avl_rotate_left( PPtr x, IndexType& root_idx ) noexcept
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static PPtr avl_rotate_left( PPtr x, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
 {
     PPtr y     = pptr_get_right( x );
     PPtr b     = pptr_get_left( y );
@@ -184,33 +201,150 @@ template <typename PPtr, typename IndexType> static PPtr avl_rotate_left( PPtr x
 
     avl_set_child( x_par, x, y, root_idx );
 
-    avl_update_height( x );
-    avl_update_height( y );
+    update_node( x );
+    update_node( y );
     return y;
 }
 
 /// @brief Rebalance from node p upward to root.
-template <typename PPtr, typename IndexType> static void avl_rebalance_up( PPtr p, IndexType& root_idx ) noexcept
+/// @param update_node  Callable(PPtr) for node attribute update after rotations.
+///                     Default: AvlUpdateHeightOnly (height only).
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_rebalance_up( PPtr p, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
 {
     while ( !p.is_null() )
     {
-        avl_update_height( p );
+        update_node( p );
         std::int16_t bf = avl_balance_factor( p );
         if ( bf > 1 )
         {
             PPtr left = pptr_get_left( p );
             if ( avl_balance_factor( left ) < 0 )
-                avl_rotate_left( left, root_idx );
-            p = avl_rotate_right( p, root_idx );
+                avl_rotate_left( left, root_idx, update_node );
+            p = avl_rotate_right( p, root_idx, update_node );
         }
         else if ( bf < -1 )
         {
             PPtr right = pptr_get_right( p );
             if ( avl_balance_factor( right ) > 0 )
-                avl_rotate_right( right, root_idx );
-            p = avl_rotate_left( p, root_idx );
+                avl_rotate_right( right, root_idx, update_node );
+            p = avl_rotate_left( p, root_idx, update_node );
         }
         p = pptr_get_parent( p );
+    }
+}
+
+/// @brief Find the minimum (leftmost) node in the subtree rooted at p (Issue #188).
+template <typename PPtr> static PPtr avl_min_node( PPtr p ) noexcept
+{
+    while ( !p.is_null() )
+    {
+        PPtr left = pptr_get_left( p );
+        if ( left.is_null() )
+            break;
+        p = left;
+    }
+    return p;
+}
+
+/// @brief Find the maximum (rightmost) node in the subtree rooted at p (Issue #188).
+template <typename PPtr> static PPtr avl_max_node( PPtr p ) noexcept
+{
+    while ( !p.is_null() )
+    {
+        PPtr right = pptr_get_right( p );
+        if ( right.is_null() )
+            break;
+        p = right;
+    }
+    return p;
+}
+
+/// @brief Remove target node from AVL tree and rebalance (Issue #188).
+///
+/// Standard BST removal with in-order successor replacement, followed by
+/// AVL rebalancing from the lowest affected node upward.
+///
+/// @param target      The node to remove (must be in the tree).
+/// @param root_idx    Reference to the tree root index.
+/// @param update_node Callable(PPtr) for node attribute update after rotations.
+///                    Default: AvlUpdateHeightOnly (height only).
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_remove( PPtr target, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
+{
+    PPtr left_p  = pptr_get_left( target );
+    PPtr right_p = pptr_get_right( target );
+    PPtr par_p   = pptr_get_parent( target );
+
+    if ( left_p.is_null() && right_p.is_null() )
+    {
+        // Leaf node — just detach.
+        avl_set_child( par_p, target, PPtr(), root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+    }
+    else if ( left_p.is_null() )
+    {
+        // Only right child.
+        pptr_set_parent( right_p, par_p );
+        avl_set_child( par_p, target, right_p, root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+        else
+            update_node( right_p );
+    }
+    else if ( right_p.is_null() )
+    {
+        // Only left child.
+        pptr_set_parent( left_p, par_p );
+        avl_set_child( par_p, target, left_p, root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+        else
+            update_node( left_p );
+    }
+    else
+    {
+        // Two children — replace with in-order successor.
+        PPtr successor = avl_min_node( right_p );
+
+        auto succ_par_idx = successor.tree_node().get_parent();
+        PPtr succ_rgt     = pptr_get_right( successor );
+
+        if ( succ_par_idx == target.offset() )
+        {
+            // Successor is direct right child of target.
+            pptr_set_left( successor, left_p );
+            pptr_set_parent( left_p, successor );
+            // successor keeps its right subtree
+            pptr_set_parent( successor, par_p );
+            avl_set_child( par_p, target, successor, root_idx );
+            avl_rebalance_up( successor, root_idx, update_node );
+        }
+        else
+        {
+            // Successor is deeper — detach it first.
+            PPtr succ_par( succ_par_idx );
+            if ( !succ_rgt.is_null() )
+            {
+                pptr_set_parent( succ_rgt, succ_par );
+                pptr_set_left( succ_par, succ_rgt );
+            }
+            else
+            {
+                pptr_set_left( succ_par, PPtr() );
+            }
+
+            // Put successor in target's place.
+            pptr_set_left( successor, left_p );
+            pptr_set_parent( left_p, successor );
+            pptr_set_right( successor, right_p );
+            pptr_set_parent( right_p, successor );
+            pptr_set_parent( successor, par_p );
+            avl_set_child( par_p, target, successor, root_idx );
+
+            avl_rebalance_up( succ_par, root_idx, update_node );
+        }
     }
 }
 
@@ -248,12 +382,16 @@ static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way,
 
 /// @brief Insert new_node into the AVL tree with the given root.
 /// The caller must resolve the comparison ordering via go_left callback.
-/// @param new_node  The node to insert (must not be null, not already in tree).
-/// @param root_idx  Reference to the tree root index.
-/// @param go_left   Callable(cur_node_ptr) -> bool: returns true if new_node < cur.
-/// @param resolve   Callable(pptr) -> NodeObjPtr: resolves pptr to raw object pointer.
-template <typename PPtr, typename IndexType, typename GoLeftFn, typename ResolveFn>
-static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, ResolveFn&& resolve ) noexcept
+/// @param new_node    The node to insert (must not be null, not already in tree).
+/// @param root_idx    Reference to the tree root index.
+/// @param go_left     Callable(cur_node_ptr) -> bool: returns true if new_node < cur.
+/// @param resolve     Callable(pptr) -> NodeObjPtr: resolves pptr to raw object pointer.
+/// @param update_node Callable(PPtr) for node attribute update after rotations (Issue #188).
+///                    Default: AvlUpdateHeightOnly (height only).
+template <typename PPtr, typename IndexType, typename GoLeftFn, typename ResolveFn,
+          typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, ResolveFn&& resolve,
+                        NodeUpdateFn update_node = {} ) noexcept
 {
     if ( new_node.is_null() )
         return;
@@ -292,7 +430,7 @@ static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, 
     else
         pptr_set_right( parent, new_node );
 
-    avl_rebalance_up( parent, root_idx );
+    avl_rebalance_up( parent, root_idx, update_node );
 }
 
 /// @endcond
