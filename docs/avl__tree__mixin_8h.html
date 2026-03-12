@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162).  
+<p>Shared AVL tree helper functions for pmap, pstringview and pvector (Issue #155, #162, #188).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cstdint&gt;</code><br />
 </div>
@@ -94,9 +94,9 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162). </p>
-<p>Provides a set of free static template functions implementing the core AVL tree operations (height, balance factor, rotations, rebalancing, insert, find) that are shared between pmap&lt;_K,_V,ManagerT&gt; and pstringview&lt;ManagerT&gt;.</p>
-<p>Both pmap and pstringview use the same AVL logic via pptr&lt;T,ManagerT&gt; — the only difference is the pptr type and the comparison key. This header factors out the common tree structure code, eliminating ~130 lines of duplication.</p>
+<div class="textblock"><p>Shared AVL tree helper functions for pmap, pstringview and pvector (Issue #155, #162, #188). </p>
+<p>Provides a set of free static template functions implementing the core AVL tree operations (height, balance factor, rotations, rebalancing, insert, find, remove) that are shared between pmap&lt;_K,_V,ManagerT&gt;, pstringview&lt;ManagerT&gt; and pvector&lt;T,ManagerT&gt;.</p>
+<p>All rotation and rebalance functions accept an optional NodeUpdateFn callback that is invoked after structural changes to update derived node attributes. By default avl_update_height is used (height-only). pvector passes a custom callback that also updates the order-statistic weight field (Issue #188).</p>
 <p>Template parameter PPtr must support:</p><ul>
 <li>is_null()</li>
 <li>tree_node() returning a TreeNode&amp; with get_left/set_left/get_right/set_right/ get_parent/set_parent/get_height/set_height</li>
@@ -105,8 +105,10 @@ Namespaces</h2></td></tr>
 </ul>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="pmap_8h.html" title="pmap&lt;_K,_V,ManagerT&gt; — персистентный словарь на основе AVL-дерева (Issue #153).">pmap.h</a> — pmap&lt;_K,_V,ManagerT&gt; (Issue #153) </dd>
 <dd>
-<a class="el" href="pstringview_8h.html" title="pstringview&lt;ManagerT&gt; — персистентная строка только для чтения с интернированием (Issue #151,...">pstringview.h</a> — pstringview&lt;ManagerT&gt; (Issue #151) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.3 (Issue #164 — use tree_node() API instead of removed pptr tree methods) </dd></dl>
+<a class="el" href="pstringview_8h.html" title="pstringview&lt;ManagerT&gt; — персистентная строка только для чтения с интернированием (Issue #151,...">pstringview.h</a> — pstringview&lt;ManagerT&gt; (Issue #151) </dd>
+<dd>
+<a class="el" href="pvector_8h.html" title="pvector&lt;T,ManagerT&gt; — персистентный вектор для менеджера ПАП (Issue #186).">pvector.h</a> — pvector&lt;T,ManagerT&gt; (Issue #186, #188) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.4 (Issue #188 — NodeUpdateFn hook, avl_remove, avl_min_node for pvector deduplication) </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="avl__tree__mixin_8h_source.html">avl_tree_mixin.h</a>.</p>
 </div></div><!-- contents -->
