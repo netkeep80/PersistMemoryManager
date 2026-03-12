@@ -539,35 +539,35 @@ template <typename T, typename ManagerT> struct pvector
             if ( bf > 1 )
             {
                 // Левый перевес
-                auto  ll_idx = left_p.tree_node().get_left();
-                auto  lr_idx = left_p.tree_node().get_right();
-                auto  ll_h   = ( ll_idx != no_block ) ? _height( node_pptr( ll_idx ) ) : std::int16_t( 0 );
-                auto  lr_h   = ( lr_idx != no_block ) ? _height( node_pptr( lr_idx ) ) : std::int16_t( 0 );
+                auto ll_idx = left_p.tree_node().get_left();
+                auto lr_idx = left_p.tree_node().get_right();
+                auto ll_h   = ( ll_idx != no_block ) ? _height( node_pptr( ll_idx ) ) : std::int16_t( 0 );
+                auto lr_h   = ( lr_idx != no_block ) ? _height( node_pptr( lr_idx ) ) : std::int16_t( 0 );
                 if ( lr_h > ll_h )
                     _rotate_left( left_p );
                 _rotate_right( p );
                 // После поворота p переместился вниз; его новый родитель — это тот, кто сейчас на его месте.
                 // Продолжаем снизу вверх от нового положения p.
                 auto p_par = p.tree_node().get_parent();
-                p           = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
+                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
             }
             else if ( bf < -1 )
             {
                 // Правый перевес
-                auto  rl_idx = right_p.tree_node().get_left();
-                auto  rr_idx = right_p.tree_node().get_right();
-                auto  rl_h   = ( rl_idx != no_block ) ? _height( node_pptr( rl_idx ) ) : std::int16_t( 0 );
-                auto  rr_h   = ( rr_idx != no_block ) ? _height( node_pptr( rr_idx ) ) : std::int16_t( 0 );
+                auto rl_idx = right_p.tree_node().get_left();
+                auto rr_idx = right_p.tree_node().get_right();
+                auto rl_h   = ( rl_idx != no_block ) ? _height( node_pptr( rl_idx ) ) : std::int16_t( 0 );
+                auto rr_h   = ( rr_idx != no_block ) ? _height( node_pptr( rr_idx ) ) : std::int16_t( 0 );
                 if ( rl_h > rr_h )
                     _rotate_right( right_p );
                 _rotate_left( p );
                 auto p_par = p.tree_node().get_parent();
-                p           = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
+                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
             }
             else
             {
                 auto p_par = tn.get_parent();
-                p           = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
+                p          = ( p_par != no_block ) ? node_pptr( p_par ) : node_pptr();
             }
         }
     }
@@ -615,9 +615,8 @@ template <typename T, typename ManagerT> struct pvector
             auto& tn       = p.tree_node();
             auto  left_idx = tn.get_left();
 
-            index_type left_size =
-                ( left_idx != no_block ) ? node_pptr( left_idx ).tree_node().get_weight()
-                                         : static_cast<index_type>( 0 );
+            index_type left_size = ( left_idx != no_block ) ? node_pptr( left_idx ).tree_node().get_weight()
+                                                            : static_cast<index_type>( 0 );
 
             if ( index < static_cast<std::size_t>( left_size ) )
             {
@@ -703,10 +702,9 @@ template <typename T, typename ManagerT> struct pvector
             auto  succ_rgt_idx = successor.tree_node().get_right();
             auto& succ_tn      = successor.tree_node();
 
-            node_pptr succ_par_p =
-                ( succ_par_idx != static_cast<index_type>( target.offset() ) )
-                    ? node_pptr( succ_par_idx )
-                    : node_pptr();
+            node_pptr succ_par_p = ( succ_par_idx != static_cast<index_type>( target.offset() ) )
+                                       ? node_pptr( succ_par_idx )
+                                       : node_pptr();
 
             // Отсоединяем successor от его текущего места.
             if ( succ_par_idx == target.offset() )
@@ -751,8 +749,7 @@ template <typename T, typename ManagerT> struct pvector
             _set_child( par_p, target, successor );
 
             // Перебалансируем от нижней точки изменений.
-            node_pptr rebalance_start =
-                ( succ_par_idx == target.offset() ) ? successor : node_pptr( succ_par_idx );
+            node_pptr rebalance_start = ( succ_par_idx == target.offset() ) ? successor : node_pptr( succ_par_idx );
             _rebalance_up( rebalance_start );
         }
     }

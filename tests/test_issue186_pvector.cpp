@@ -506,7 +506,7 @@ static int verify_avl_node( TestMgr::pvector<int>::node_pptr p )
     if ( p.is_null() )
         return 0;
 
-    using index_type = TestMgr::index_type;
+    using index_type                     = TestMgr::index_type;
     static constexpr index_type no_block = TestMgr::address_traits::no_block;
 
     auto& tn        = p.tree_node();
@@ -559,7 +559,7 @@ static bool test_i186_avl_structure()
     PMM_TEST( total == N );
 
     // Высота дерева должна быть O(log n): не более 2 * ceil(log2(N+1)).
-    int height        = static_cast<int>( root.tree_node().get_height() );
+    int height         = static_cast<int>( root.tree_node().get_height() );
     int max_avl_height = 2 * 8; // log2(100) ~ 6.6, AVL допускает ~1.44*log2(n); 16 — с запасом
     PMM_TEST( height <= max_avl_height );
 
