@@ -32,7 +32,7 @@ var searchData=
   ['shared_5flock_5ftype_29',['shared_lock_type',['../structpmm_1_1config_1_1SharedMutexLock.html#a20ea6e87c15bb6d14898d8c4e5c236f7',1,'pmm::config::SharedMutexLock::shared_lock_type'],['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html#ab3272189682b98943a4eb3acea887ce6',1,'pmm::config::NoLock::shared_lock_type::shared_lock_type()'],['../structpmm_1_1config_1_1NoLock_1_1shared__lock__type.html',1,'pmm::config::NoLock::shared_lock_type']]],
   ['sharedmutexlock_30',['SharedMutexLock',['../structpmm_1_1config_1_1SharedMutexLock.html',1,'pmm::config']]],
   ['singlethreadedheap_31',['SingleThreadedHeap',['../namespacepmm_1_1presets.html#a26c22130e79e20183d2df7c4bec45b00',1,'pmm::presets']]],
-  ['size_32',['size',['../structpmm_1_1pstringview.html#a70f3a14e91b85683aca994354b86d7d5',1,'pmm::pstringview']]],
+  ['size_32',['size',['../structpmm_1_1pstringview.html#a70f3a14e91b85683aca994354b86d7d5',1,'pmm::pstringview::size()'],['../structpmm_1_1pvector.html#a3a14cc3b06a08759121de24529dca4c1',1,'pmm::pvector::size()']]],
   ['smalladdresstraits_33',['SmallAddressTraits',['../namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2',1,'pmm']]],
   ['smallembeddedstaticconfig_34',['SmallEmbeddedStaticConfig',['../structpmm_1_1SmallEmbeddedStaticConfig.html',1,'pmm']]],
   ['smallembeddedstaticheap_35',['SmallEmbeddedStaticHeap',['../namespacepmm_1_1presets.html#ade25fcb828ded3abc954f5a7196bf4fd',1,'pmm::presets']]],

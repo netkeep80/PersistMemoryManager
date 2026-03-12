@@ -14,5 +14,6 @@ var searchData=
   ['is_5fopen_11',['is_open',['../classpmm_1_1MMapStorage.html#a7b6756bbf0a7929a36a227d59f098890',1,'pmm::MMapStorage']]],
   ['is_5fpermanently_5flocked_12',['is_permanently_locked',['../classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda',1,'pmm::BlockStateBase::is_permanently_locked()'],['../classpmm_1_1PersistMemoryManager.html#ab3d073c0cdff0cf27816432777c01053',1,'pmm::PersistMemoryManager::is_permanently_locked()']]],
   ['is_5fvalid_5falignment_13',['is_valid_alignment',['../namespacepmm_1_1detail.html#a570c97994ec416915edafdbb1ed080b6',1,'pmm::detail']]],
-  ['is_5fvalid_5fblock_14',['is_valid_block',['../namespacepmm_1_1detail.html#a691ef48013a7a305e4c467028432cd2a',1,'pmm::detail']]]
+  ['is_5fvalid_5fblock_14',['is_valid_block',['../namespacepmm_1_1detail.html#a691ef48013a7a305e4c467028432cd2a',1,'pmm::detail']]],
+  ['iterator_15',['iterator',['../structpmm_1_1pvector_1_1iterator.html#a1a93d1af9b6cf6e5dd6b1a185c90589c',1,'pmm::pvector::iterator::iterator() noexcept'],['../structpmm_1_1pvector_1_1iterator.html#a83350205893038583588d84ac212d5f1',1,'pmm::pvector::iterator::iterator(index_type idx) noexcept']]]
 ];

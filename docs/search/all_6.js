@@ -19,5 +19,6 @@ var searchData=
   ['freeblocknotinavl_16',['FreeBlockNotInAVL',['../classpmm_1_1FreeBlockNotInAVL.html',1,'pmm']]],
   ['freeblockremovedavl_17',['FreeBlockRemovedAVL',['../classpmm_1_1FreeBlockRemovedAVL.html',1,'pmm']]],
   ['freeblockview_18',['FreeBlockView',['../structpmm_1_1FreeBlockView.html',1,'pmm']]],
-  ['from_5fu32_5fidx_19',['from_u32_idx',['../namespacepmm_1_1detail.html#ad4a291437e5155ad28954d355946ff9f',1,'pmm::detail']]]
+  ['from_5fu32_5fidx_19',['from_u32_idx',['../namespacepmm_1_1detail.html#ad4a291437e5155ad28954d355946ff9f',1,'pmm::detail']]],
+  ['front_20',['front',['../structpmm_1_1pvector.html#a89a3682abdf25a420f12917765a0ef0b',1,'pmm::pvector']]]
 ];
