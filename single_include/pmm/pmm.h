@@ -1052,19 +1052,33 @@ template <typename AddressTraitsT> class FreeBlock : public BlockStateBase<Addre
      * @note В debug-режиме (NDEBUG не определён) проверяет инварианты FreeBlock
      *       через assert: weight==0 и root_offset==0.
      */
+    /**
+     * @brief Интерпретировать сырые байты как FreeBlock.
+     *
+     * Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds
+     * if block is not in FreeBlock state, instead of relying on assert only.
+     */
     static FreeBlock* cast_from_raw( void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() &&
-                "cast_from_raw<FreeBlock>: block is not in FreeBlock state (weight!=0 or root_offset!=0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        {
+            assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
+            return nullptr;
+        }
         return reinterpret_cast<FreeBlock*>( raw );
     }
 
     static const FreeBlock* cast_from_raw( const void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() &&
-                "cast_from_raw<FreeBlock>: block is not in FreeBlock state (weight!=0 or root_offset!=0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        {
+            assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
+            return nullptr;
+        }
         return reinterpret_cast<const FreeBlock*>( raw );
     }
 
@@ -1250,19 +1264,33 @@ template <typename AddressTraitsT> class AllocatedBlock : public BlockStateBase<
      *       (минимальное условие AllocatedBlock). Полная проверка (root_offset == own_idx)
      *       доступна через verify_invariants(own_idx).
      */
+    /**
+     * @brief Интерпретировать сырые байты как AllocatedBlock.
+     *
+     * Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds
+     * if block is not allocated, instead of relying on assert only.
+     */
     static AllocatedBlock* cast_from_raw( void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() > 0 &&
-                "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        {
+            assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+            return nullptr;
+        }
         return reinterpret_cast<AllocatedBlock*>( raw );
     }
 
     static const AllocatedBlock* cast_from_raw( const void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() > 0 &&
-                "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        {
+            assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+            return nullptr;
+        }
         return reinterpret_cast<const AllocatedBlock*>( raw );
     }
 
@@ -2944,6 +2972,7 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 
 namespace pmm
 {
@@ -3010,10 +3039,19 @@ class AllocatorPolicy
 
         index_type blk_total_gran =
             detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, blk_idx ) );
-        index_type data_gran    = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+        index_type data_gran = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+
+        // Issue #43 Phase 1.3: Overflow protection for needed_gran computation.
+        if ( data_gran > std::numeric_limits<index_type>::max() - kBlkHdrGran )
+            return nullptr; // overflow: request too large
+
         index_type needed_gran  = kBlkHdrGran + data_gran;
         index_type min_rem_gran = kBlkHdrGran + 1;
-        bool       can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
+
+        // Issue #43 Phase 1.3: Overflow protection for split check (needed_gran + min_rem_gran).
+        bool can_split = false;
+        if ( needed_gran <= std::numeric_limits<index_type>::max() - min_rem_gran )
+            can_split = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {
@@ -5140,6 +5178,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         index_type data_gran = detail::bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran == 0 )
             data_gran = 1;
+        // Issue #43 Phase 1.3: Overflow protection — check before adding header granules.
+        if ( data_gran > std::numeric_limits<index_type>::max() - kBlockHdrGranules )
+            return nullptr;
         index_type needed = kBlockHdrGranules + data_gran;
         index_type idx    = free_block_tree::find_best_fit( base, hdr, needed );
 
@@ -5308,12 +5349,16 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      */
     template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
     {
+        // Issue #43 Phase 1.1: Enforce noexcept constructibility at compile time.
+        // create_typed is noexcept, so the constructor must not throw — otherwise
+        // an exception would leak the allocated memory block.
+        static_assert( std::is_nothrow_constructible_v<T, Args...>,
+                       "create_typed<T>: T must be nothrow-constructible from Args. "
+                       "Use allocate_typed<T>() + manual placement new for throwing constructors." );
+
         void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
-        // Placement new — конструирует T в выделенной области.
-        // noexcept: если конструктор T бросает исключение, память утечёт,
-        // но pmm API является полностью noexcept. Используйте только для noexcept-конструкторов.
         ::new ( raw ) T( static_cast<Args&&>( args )... );
         return make_pptr_from_raw<T>( raw );
     }
@@ -5332,11 +5377,14 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      */
     template <typename T> static void destroy_typed( pptr<T> p ) noexcept
     {
+        // Issue #43 Phase 1.1: Enforce noexcept destructibility at compile time.
+        static_assert( std::is_nothrow_destructible_v<T>,
+                       "destroy_typed<T>: T must be nothrow-destructible." );
+
         if ( p.is_null() || !_initialized )
             return;
         std::uint8_t* base = _backend.base_ptr();
         void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
-        // Явный вызов деструктора T перед освобождением памяти.
         reinterpret_cast<T*>( raw )->~T();
         deallocate( raw );
     }
@@ -5355,7 +5403,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( p.is_null() || !_initialized )
             return nullptr;
         std::uint8_t* base = _backend.base_ptr();
-        return reinterpret_cast<T*>( base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size );
+        // Issue #43 Phase 1.2: Bounds check — verify offset is within the managed region.
+        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        assert( byte_off + sizeof( T ) <= _backend.total_size() &&
+                "resolve(): pptr offset out of bounds" );
+        return reinterpret_cast<T*>( base + byte_off );
     }
 
     /**
@@ -5370,6 +5422,24 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         T* base_elem = resolve( p );
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
+    }
+
+    /**
+     * @brief Проверить, что pptr указывает на валидную область внутри кучи (Issue #43 Phase 1.2).
+     *
+     * Выполняет runtime-проверку: смещение не выходит за границы управляемой области
+     * и достаточно места для sizeof(T). Не проверяет, что блок действительно выделен.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель.
+     * @return true если pptr валиден (в пределах кучи), false если null или вне границ.
+     */
+    template <typename T> static bool is_valid_ptr( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return false;
+        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        return byte_off + sizeof( T ) <= _backend.total_size();
     }
 
     // ─── Методы доступа к полям AVL-узла блока (Issue #125) ─────────────────

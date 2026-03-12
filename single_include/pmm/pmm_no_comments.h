@@ -429,17 +429,25 @@ template <typename AddressTraitsT> class FreeBlock : public BlockStateBase<Addre
 
     static FreeBlock* cast_from_raw( void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() &&
-                "cast_from_raw<FreeBlock>: block is not in FreeBlock state (weight!=0 or root_offset!=0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        {
+            assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
+            return nullptr;
+        }
         return reinterpret_cast<FreeBlock*>( raw );
     }
 
     static const FreeBlock* cast_from_raw( const void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() &&
-                "cast_from_raw<FreeBlock>: block is not in FreeBlock state (weight!=0 or root_offset!=0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        {
+            assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
+            return nullptr;
+        }
         return reinterpret_cast<const FreeBlock*>( raw );
     }
 
@@ -529,17 +537,25 @@ template <typename AddressTraitsT> class AllocatedBlock : public BlockStateBase<
 
     static AllocatedBlock* cast_from_raw( void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() > 0 &&
-                "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        {
+            assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+            return nullptr;
+        }
         return reinterpret_cast<AllocatedBlock*>( raw );
     }
 
     static const AllocatedBlock* cast_from_raw( const void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() > 0 &&
-                "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        {
+            assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+            return nullptr;
+        }
         return reinterpret_cast<const AllocatedBlock*>( raw );
     }
 
@@ -1532,6 +1548,7 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 
 namespace pmm
 {
@@ -1568,10 +1585,17 @@ class AllocatorPolicy
 
         index_type blk_total_gran =
             detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, blk_idx ) );
-        index_type data_gran    = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+        index_type data_gran = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+
+        if ( data_gran > std::numeric_limits<index_type>::max() - kBlkHdrGran )
+            return nullptr; 
+
         index_type needed_gran  = kBlkHdrGran + data_gran;
         index_type min_rem_gran = kBlkHdrGran + 1;
-        bool       can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
+
+        bool can_split = false;
+        if ( needed_gran <= std::numeric_limits<index_type>::max() - min_rem_gran )
+            can_split = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {
@@ -2830,6 +2854,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         index_type data_gran = detail::bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran == 0 )
             data_gran = 1;
+        
+        if ( data_gran > std::numeric_limits<index_type>::max() - kBlockHdrGranules )
+            return nullptr;
         index_type needed = kBlockHdrGranules + data_gran;
         index_type idx    = free_block_tree::find_best_fit( base, hdr, needed );
 
@@ -2934,21 +2961,28 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
     {
+        
+        static_assert( std::is_nothrow_constructible_v<T, Args...>,
+                       "create_typed<T>: T must be nothrow-constructible from Args. "
+                       "Use allocate_typed<T>() + manual placement new for throwing constructors." );
+
         void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
-        
         ::new ( raw ) T( static_cast<Args&&>( args )... );
         return make_pptr_from_raw<T>( raw );
     }
 
     template <typename T> static void destroy_typed( pptr<T> p ) noexcept
     {
+        
+        static_assert( std::is_nothrow_destructible_v<T>,
+                       "destroy_typed<T>: T must be nothrow-destructible." );
+
         if ( p.is_null() || !_initialized )
             return;
         std::uint8_t* base = _backend.base_ptr();
         void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
-        
         reinterpret_cast<T*>( raw )->~T();
         deallocate( raw );
     }
@@ -2958,13 +2992,25 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( p.is_null() || !_initialized )
             return nullptr;
         std::uint8_t* base = _backend.base_ptr();
-        return reinterpret_cast<T*>( base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size );
+        
+        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        assert( byte_off + sizeof( T ) <= _backend.total_size() &&
+                "resolve(): pptr offset out of bounds" );
+        return reinterpret_cast<T*>( base + byte_off );
     }
 
     template <typename T> static T* resolve_at( pptr<T> p, std::size_t i ) noexcept
     {
         T* base_elem = resolve( p );
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
+    }
+
+    template <typename T> static bool is_valid_ptr( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return false;
+        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        return byte_off + sizeof( T ) <= _backend.total_size();
     }
 
     template <typename T> static index_type get_tree_left_offset( pptr<T> p ) noexcept
