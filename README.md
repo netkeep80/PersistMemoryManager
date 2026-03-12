@@ -137,10 +137,22 @@ static pptr<T> allocate_typed(std::size_t count = 1) noexcept;
 template <typename T>
 static void deallocate_typed(pptr<T> p) noexcept;
 
+// Allocate + construct a single object of type T with given constructor arguments
+// IMPORTANT: T(args...) must be noexcept — enforced via static_assert
+template <typename T, typename... Args>
+static pptr<T> create_typed(Args&&... args) noexcept;
+
+// Destruct + deallocate an object created via create_typed
+// IMPORTANT: ~T() must be noexcept — enforced via static_assert
+template <typename T>
+static void destroy_typed(pptr<T> p) noexcept;
+
 // Raw allocation / deallocation (size in bytes)
 static void* allocate(std::size_t size) noexcept;
 static void  deallocate(void* ptr) noexcept;
 ```
+
+**Note:** `create_typed<T>(args...)` and `destroy_typed<T>(p)` require the type `T` to have `noexcept` constructors and destructors respectively. This is enforced at compile time via `static_assert`. Using a type with a potentially-throwing constructor or destructor will result in a clear compile-time error. See [docs/phase1_safety.md](docs/phase1_safety.md) for details.
 
 ### Statistics
 

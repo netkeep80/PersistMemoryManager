@@ -2727,6 +2727,7 @@ template <typename ManagerT> struct pstringview
 #include <cstring>
 #include <limits>
 #include <new>
+#include <type_traits>
 
 namespace pmm
 {
@@ -2934,6 +2935,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
     {
+        
+        static_assert( std::is_nothrow_constructible_v<T, Args...>,
+                       "create_typed<T>(args...) requires T(args...) to be noexcept. "
+                       "A throwing constructor would cause a memory leak because create_typed is noexcept." );
+
         void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
@@ -2944,6 +2950,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     template <typename T> static void destroy_typed( pptr<T> p ) noexcept
     {
+        
+        static_assert( std::is_nothrow_destructible_v<T>,
+                       "destroy_typed<T>(p) requires ~T() to be noexcept. "
+                       "A throwing destructor would cause std::terminate because destroy_typed is noexcept." );
+
         if ( p.is_null() || !_initialized )
             return;
         std::uint8_t* base = _backend.base_ptr();
