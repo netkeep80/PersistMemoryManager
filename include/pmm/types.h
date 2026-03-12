@@ -104,6 +104,25 @@ struct FreeBlockView
 namespace detail
 {
 
+// ─── CRC32 utility (Issue #43 Phase 2.1) ────────────────────────────────────
+//
+// Software CRC32 (ISO 3309 / ITU-T V.42 polynomial 0xEDB88320).
+// Header-only, no external dependencies.  Used by io.h save/load functions.
+
+/// @brief Compute CRC32 over a byte range.
+/// Uses the standard Ethernet/zlib polynomial (0xEDB88320, reflected).
+inline std::uint32_t compute_crc32( const std::uint8_t* data, std::size_t length ) noexcept
+{
+    std::uint32_t crc = 0xFFFFFFFFU;
+    for ( std::size_t i = 0; i < length; ++i )
+    {
+        crc ^= data[i];
+        for ( int bit = 0; bit < 8; ++bit )
+            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    }
+    return crc ^ 0xFFFFFFFFU;
+}
+
 // Issue #112: BlockHeader struct removed — Block<DefaultAddressTraits> is the sole block type.
 // All block metadata is stored in Block<AddressTraitsT> (prev/next + TreeNode, Issue #138).
 
@@ -163,13 +182,54 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
     std::uint8_t  _pad;               ///< Reserved padding byte (Issue #176: was prev_owns_memory)
     std::uint16_t granule_size;       ///< Issue #83: kGranuleSize at creation time; validated on load
     std::uint64_t prev_total_size;    ///< Previous buffer size in bytes (runtime-only)
-    std::uint8_t  _reserved[8];       ///< Reserved bytes (Issue #176: was prev_base_ptr)
+    std::uint32_t crc32;              ///< Issue #43 Phase 2.1: CRC32 checksum of the persisted image
+    std::uint8_t  _reserved[4];       ///< Reserved bytes (Issue #176: was prev_base_ptr; 4 bytes used for crc32)
 };
 
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
                "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #59, #73 FR-03, #175)" );
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) % kGranuleSize == 0,
                "ManagerHeader<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
+
+/// @brief Compute CRC32 of the full persisted image, treating the crc32 field as zero.
+/// @tparam AddressTraitsT Address traits type (determines ManagerHeader layout).
+/// @param data   Pointer to the start of the managed region.
+/// @param length Total size of the managed region in bytes.
+/// @return CRC32 checksum.
+template <typename AddressTraitsT>
+inline std::uint32_t compute_image_crc32( const std::uint8_t* data, std::size_t length ) noexcept
+{
+    // Offset of the crc32 field within ManagerHeader, which itself is located
+    // after Block_0 (sizeof(Block<AT>) bytes from base).
+    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<AddressTraitsT> );
+    constexpr std::size_t kCrcOffset = kHdrOffset + offsetof( ManagerHeader<AddressTraitsT>, crc32 );
+    constexpr std::size_t kCrcSize   = sizeof( std::uint32_t );
+    constexpr std::size_t kAfterCrc  = kCrcOffset + kCrcSize;
+
+    // CRC everything before the crc32 field
+    std::uint32_t crc = 0xFFFFFFFFU;
+    for ( std::size_t i = 0; i < kCrcOffset && i < length; ++i )
+    {
+        crc ^= data[i];
+        for ( int bit = 0; bit < 8; ++bit )
+            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    }
+    // Skip the crc32 field (treat as 4 zero bytes)
+    for ( std::size_t i = 0; i < kCrcSize; ++i )
+    {
+        crc ^= 0x00U;
+        for ( int bit = 0; bit < 8; ++bit )
+            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    }
+    // CRC everything after the crc32 field
+    for ( std::size_t i = kAfterCrc; i < length; ++i )
+    {
+        crc ^= data[i];
+        for ( int bit = 0; bit < 8; ++bit )
+            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    }
+    return crc ^ 0xFFFFFFFFU;
+}
 
 /// @brief Number of granules in ManagerHeader<DefaultAddressTraits>
 inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader<DefaultAddressTraits> ) / kGranuleSize;

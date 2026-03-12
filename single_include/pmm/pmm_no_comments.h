@@ -429,17 +429,25 @@ template <typename AddressTraitsT> class FreeBlock : public BlockStateBase<Addre
 
     static FreeBlock* cast_from_raw( void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() &&
-                "cast_from_raw<FreeBlock>: block is not in FreeBlock state (weight!=0 or root_offset!=0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        {
+            assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
+            return nullptr;
+        }
         return reinterpret_cast<FreeBlock*>( raw );
     }
 
     static const FreeBlock* cast_from_raw( const void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() &&
-                "cast_from_raw<FreeBlock>: block is not in FreeBlock state (weight!=0 or root_offset!=0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        {
+            assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
+            return nullptr;
+        }
         return reinterpret_cast<const FreeBlock*>( raw );
     }
 
@@ -529,17 +537,25 @@ template <typename AddressTraitsT> class AllocatedBlock : public BlockStateBase<
 
     static AllocatedBlock* cast_from_raw( void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() > 0 &&
-                "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        {
+            assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+            return nullptr;
+        }
         return reinterpret_cast<AllocatedBlock*>( raw );
     }
 
     static const AllocatedBlock* cast_from_raw( const void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() > 0 &&
-                "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        {
+            assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+            return nullptr;
+        }
         return reinterpret_cast<const AllocatedBlock*>( raw );
     }
 
@@ -714,6 +730,18 @@ struct FreeBlockView
 namespace detail
 {
 
+inline std::uint32_t compute_crc32( const std::uint8_t* data, std::size_t length ) noexcept
+{
+    std::uint32_t crc = 0xFFFFFFFFU;
+    for ( std::size_t i = 0; i < length; ++i )
+    {
+        crc ^= data[i];
+        for ( int bit = 0; bit < 8; ++bit )
+            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    }
+    return crc ^ 0xFFFFFFFFU;
+}
+
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
                "Block<DefaultAddressTraits> must be 32 bytes (Issue #87, #112)" );
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) % kGranuleSize == 0,
@@ -750,13 +778,47 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
     std::uint8_t  _pad;               
     std::uint16_t granule_size;       
     std::uint64_t prev_total_size;    
-    std::uint8_t  _reserved[8];       
+    std::uint32_t crc32;              
+    std::uint8_t  _reserved[4];       
 };
 
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
                "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #59, #73 FR-03, #175)" );
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) % kGranuleSize == 0,
                "ManagerHeader<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
+
+template <typename AddressTraitsT>
+inline std::uint32_t compute_image_crc32( const std::uint8_t* data, std::size_t length ) noexcept
+{
+    
+    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<AddressTraitsT> );
+    constexpr std::size_t kCrcOffset = kHdrOffset + offsetof( ManagerHeader<AddressTraitsT>, crc32 );
+    constexpr std::size_t kCrcSize   = sizeof( std::uint32_t );
+    constexpr std::size_t kAfterCrc  = kCrcOffset + kCrcSize;
+
+    std::uint32_t crc = 0xFFFFFFFFU;
+    for ( std::size_t i = 0; i < kCrcOffset && i < length; ++i )
+    {
+        crc ^= data[i];
+        for ( int bit = 0; bit < 8; ++bit )
+            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    }
+    
+    for ( std::size_t i = 0; i < kCrcSize; ++i )
+    {
+        crc ^= 0x00U;
+        for ( int bit = 0; bit < 8; ++bit )
+            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    }
+    
+    for ( std::size_t i = kAfterCrc; i < length; ++i )
+    {
+        crc ^= data[i];
+        for ( int bit = 0; bit < 8; ++bit )
+            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    }
+    return crc ^ 0xFFFFFFFFU;
+}
 
 inline constexpr std::uint32_t kManagerHeaderGranules = sizeof( ManagerHeader<DefaultAddressTraits> ) / kGranuleSize;
 
@@ -1532,6 +1594,7 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 
 namespace pmm
 {
@@ -1568,10 +1631,17 @@ class AllocatorPolicy
 
         index_type blk_total_gran =
             detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, blk_idx ) );
-        index_type data_gran    = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+        index_type data_gran = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+
+        if ( data_gran > std::numeric_limits<index_type>::max() - kBlkHdrGran )
+            return nullptr; 
+
         index_type needed_gran  = kBlkHdrGran + data_gran;
         index_type min_rem_gran = kBlkHdrGran + 1;
-        bool       can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
+
+        bool can_split = false;
+        if ( needed_gran <= std::numeric_limits<index_type>::max() - min_rem_gran )
+            can_split = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {
@@ -2830,6 +2900,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         index_type data_gran = detail::bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran == 0 )
             data_gran = 1;
+        
+        if ( data_gran > std::numeric_limits<index_type>::max() - kBlockHdrGranules )
+            return nullptr;
         index_type needed = kBlockHdrGranules + data_gran;
         index_type idx    = free_block_tree::find_best_fit( base, hdr, needed );
 
@@ -2934,21 +3007,27 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
     {
+        
+        static_assert( std::is_nothrow_constructible_v<T, Args...>,
+                       "create_typed<T>: T must be nothrow-constructible from Args. "
+                       "Use allocate_typed<T>() + manual placement new for throwing constructors." );
+
         void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
-        
         ::new ( raw ) T( static_cast<Args&&>( args )... );
         return make_pptr_from_raw<T>( raw );
     }
 
     template <typename T> static void destroy_typed( pptr<T> p ) noexcept
     {
+        
+        static_assert( std::is_nothrow_destructible_v<T>, "destroy_typed<T>: T must be nothrow-destructible." );
+
         if ( p.is_null() || !_initialized )
             return;
         std::uint8_t* base = _backend.base_ptr();
         void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
-        
         reinterpret_cast<T*>( raw )->~T();
         deallocate( raw );
     }
@@ -2958,13 +3037,24 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( p.is_null() || !_initialized )
             return nullptr;
         std::uint8_t* base = _backend.base_ptr();
-        return reinterpret_cast<T*>( base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size );
+        
+        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        assert( byte_off + sizeof( T ) <= _backend.total_size() && "resolve(): pptr offset out of bounds" );
+        return reinterpret_cast<T*>( base + byte_off );
     }
 
     template <typename T> static T* resolve_at( pptr<T> p, std::size_t i ) noexcept
     {
         T* base_elem = resolve( p );
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
+    }
+
+    template <typename T> static bool is_valid_ptr( pptr<T> p ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return false;
+        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        return byte_off + sizeof( T ) <= _backend.total_size();
     }
 
     template <typename T> static index_type get_tree_left_offset( pptr<T> p ) noexcept
@@ -3410,28 +3500,86 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
+#include <string>
+
+#if defined( _WIN32 ) || defined( _WIN64 )
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#include <cstdlib> 
+#endif
 
 namespace pmm
 {
 
+namespace detail
+{
+
+inline bool atomic_rename( const char* tmp_path, const char* final_path ) noexcept
+{
+#if defined( _WIN32 ) || defined( _WIN64 )
+    return MoveFileExA( tmp_path, final_path, MOVEFILE_REPLACE_EXISTING ) != 0;
+#else
+    return std::rename( tmp_path, final_path ) == 0;
+#endif
+}
+
+} 
+
 template <typename MgrT> inline bool save_manager( const char* filename )
 {
+    using address_traits = typename MgrT::address_traits;
+
     if ( filename == nullptr || !MgrT::is_initialized() )
         return false;
-    const std::uint8_t* data  = MgrT::backend().base_ptr();
-    std::size_t         total = MgrT::backend().total_size();
+    std::uint8_t* data  = MgrT::backend().base_ptr();
+    std::size_t   total = MgrT::backend().total_size();
     if ( data == nullptr || total == 0 )
         return false;
-    std::FILE* f = std::fopen( filename, "wb" );
+
+    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
+    auto*                 hdr        = reinterpret_cast<detail::ManagerHeader<address_traits>*>( data + kHdrOffset );
+    hdr->crc32                       = 0; 
+    hdr->crc32                       = detail::compute_image_crc32<address_traits>( data, total );
+
+    std::string tmp_path = std::string( filename ) + ".tmp";
+
+    std::FILE* f = std::fopen( tmp_path.c_str(), "wb" );
     if ( f == nullptr )
         return false;
     std::size_t written = std::fwrite( data, 1, total, f );
+    if ( std::fflush( f ) != 0 )
+    {
+        std::fclose( f );
+        std::remove( tmp_path.c_str() );
+        return false;
+    }
     std::fclose( f );
-    return written == total;
+
+    if ( written != total )
+    {
+        std::remove( tmp_path.c_str() );
+        return false;
+    }
+
+    if ( !detail::atomic_rename( tmp_path.c_str(), filename ) )
+    {
+        std::remove( tmp_path.c_str() );
+        return false;
+    }
+    return true;
 }
 
 template <typename MgrT> inline bool load_manager_from_file( const char* filename )
 {
+    using address_traits = typename MgrT::address_traits;
+
     if ( filename == nullptr )
         return false;
 
@@ -3469,6 +3617,17 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
 
     if ( read_bytes != file_size )
         return false;
+
+    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
+    if ( file_size >= kHdrOffset + sizeof( detail::ManagerHeader<address_traits> ) )
+    {
+        auto*         hdr          = reinterpret_cast<detail::ManagerHeader<address_traits>*>( buf + kHdrOffset );
+        std::uint32_t stored_crc   = hdr->crc32;
+        std::uint32_t computed_crc = detail::compute_image_crc32<address_traits>( buf, file_size );
+        if ( stored_crc != 0 && stored_crc != computed_crc )
+            return false;
+        
+    }
 
     return MgrT::load();
 }
@@ -3559,7 +3718,20 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
 
     std::size_t total_size() const noexcept { return _size; }
 
-    bool expand( std::size_t  ) noexcept { return false; }
+    bool expand( std::size_t additional_bytes ) noexcept
+    {
+        if ( !_mapped || additional_bytes == 0 )
+            return _mapped && additional_bytes == 0;
+        
+        std::size_t growth   = _size / 4 + additional_bytes;
+        std::size_t new_size = _size + growth;
+        
+        new_size = ( ( new_size + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size ) *
+                   AddressTraitsT::granule_size;
+        if ( new_size <= _size )
+            return false;
+        return expand_impl( new_size );
+    }
 
     bool owns_memory() const noexcept { return false; }
 
@@ -3643,6 +3815,57 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
         }
     }
 
+    bool expand_impl( std::size_t new_size ) noexcept
+    {
+        
+        if ( _base != nullptr )
+        {
+            FlushViewOfFile( _base, _size );
+            UnmapViewOfFile( _base );
+            _base = nullptr;
+        }
+        if ( _map_handle != nullptr )
+        {
+            CloseHandle( _map_handle );
+            _map_handle = nullptr;
+        }
+
+        LARGE_INTEGER new_size_li{};
+        new_size_li.QuadPart = static_cast<LONGLONG>( new_size );
+        if ( !SetFilePointerEx( _file_handle, new_size_li, nullptr, FILE_BEGIN ) || !SetEndOfFile( _file_handle ) )
+        {
+            
+            DWORD hi    = static_cast<DWORD>( _size >> 32 );
+            DWORD lo    = static_cast<DWORD>( _size & 0xFFFFFFFF );
+            _map_handle = CreateFileMappingA( _file_handle, nullptr, PAGE_READWRITE, hi, lo, nullptr );
+            if ( _map_handle != nullptr )
+            {
+                void* view = MapViewOfFile( _map_handle, FILE_MAP_ALL_ACCESS, 0, 0, _size );
+                if ( view != nullptr )
+                    _base = static_cast<std::uint8_t*>( view );
+            }
+            return false;
+        }
+
+        DWORD size_hi = static_cast<DWORD>( new_size >> 32 );
+        DWORD size_lo = static_cast<DWORD>( new_size & 0xFFFFFFFF );
+        _map_handle   = CreateFileMappingA( _file_handle, nullptr, PAGE_READWRITE, size_hi, size_lo, nullptr );
+        if ( _map_handle == nullptr )
+            return false;
+
+        void* view = MapViewOfFile( _map_handle, FILE_MAP_ALL_ACCESS, 0, 0, new_size );
+        if ( view == nullptr )
+        {
+            CloseHandle( _map_handle );
+            _map_handle = nullptr;
+            return false;
+        }
+
+        _base = static_cast<std::uint8_t*>( view );
+        _size = new_size;
+        return true;
+    }
+
 #else  
 
     std::uint8_t* _base   = nullptr;
@@ -3699,6 +3922,33 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
             ::close( _fd );
             _fd = -1;
         }
+    }
+
+    bool expand_impl( std::size_t new_size ) noexcept
+    {
+        
+        if ( _base != nullptr )
+        {
+            ::munmap( _base, _size );
+            _base = nullptr;
+        }
+
+        if ( ::ftruncate( _fd, static_cast<off_t>( new_size ) ) != 0 )
+        {
+            
+            void* addr = ::mmap( nullptr, _size, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0 );
+            if ( addr != MAP_FAILED )
+                _base = static_cast<std::uint8_t*>( addr );
+            return false;
+        }
+
+        void* addr = ::mmap( nullptr, new_size, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0 );
+        if ( addr == MAP_FAILED )
+            return false;
+
+        _base = static_cast<std::uint8_t*>( addr );
+        _size = new_size;
+        return true;
     }
 #endif 
 };

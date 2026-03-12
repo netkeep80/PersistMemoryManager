@@ -99,7 +99,13 @@ static_assert( has_pad<pmm::detail::ManagerHeader<>>::value, "#176-R3: _pad fiel
 static_assert( has_reserved<pmm::detail::ManagerHeader<>>::value,
                "#176-R3: _reserved field must be present in ManagerHeader" );
 
-static_assert( sizeof( pmm::detail::ManagerHeader<>::_reserved ) == 8, "#176-R3: _reserved must be exactly 8 bytes" );
+// Issue #43 Phase 2.1: 4 bytes of _reserved were repurposed for crc32 field.
+// _reserved is now 4 bytes, crc32 is 4 bytes — total 8 bytes preserved.
+static_assert( sizeof( pmm::detail::ManagerHeader<>::_reserved ) == 4,
+               "#176-R3/#43-P2.1: _reserved is 4 bytes (4 bytes used for crc32)" );
+static_assert( sizeof( pmm::detail::ManagerHeader<>::crc32 ) == 4, "#43-P2.1: crc32 must be exactly 4 bytes" );
+static_assert( sizeof( pmm::detail::ManagerHeader<>::crc32 ) + sizeof( pmm::detail::ManagerHeader<>::_reserved ) == 8,
+               "#176-R3/#43-P2.1: crc32 + _reserved must total 8 bytes" );
 
 // ─── Manager alias for runtime tests ──────────────────────────────────────────
 

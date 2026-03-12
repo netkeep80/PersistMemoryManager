@@ -59,6 +59,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 
 namespace pmm
 {
@@ -125,10 +126,19 @@ class AllocatorPolicy
 
         index_type blk_total_gran =
             detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, blk_idx ) );
-        index_type data_gran    = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+        index_type data_gran = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
+
+        // Issue #43 Phase 1.3: Overflow protection for needed_gran computation.
+        if ( data_gran > std::numeric_limits<index_type>::max() - kBlkHdrGran )
+            return nullptr; // overflow: request too large
+
         index_type needed_gran  = kBlkHdrGran + data_gran;
         index_type min_rem_gran = kBlkHdrGran + 1;
-        bool       can_split    = ( blk_total_gran >= needed_gran + min_rem_gran );
+
+        // Issue #43 Phase 1.3: Overflow protection for split check (needed_gran + min_rem_gran).
+        bool can_split = false;
+        if ( needed_gran <= std::numeric_limits<index_type>::max() - min_rem_gran )
+            can_split = ( blk_total_gran >= needed_gran + min_rem_gran );
 
         if ( can_split )
         {

@@ -5,7 +5,7 @@ A header-only C++20 library for persistent memory management with a static API, 
 [![CI](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml/badge.svg)](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/std/the-standard)
-[![Version](https://img.shields.io/badge/version-0.13.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.25.0-green.svg)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/docs-Doxygen-informational)](https://netkeep80.github.io/PersistMemoryManager/)
 
 ## Overview

@@ -420,26 +420,33 @@ template <typename AddressTraitsT> class FreeBlock : public BlockStateBase<Addre
      * @brief Интерпретировать сырые байты как FreeBlock.
      *
      * @param raw Указатель на Block<A>.
-     * @return Указатель на FreeBlock.
+     * @return Указатель на FreeBlock, или nullptr если raw==nullptr или блок не свободен.
      *
-     * @warning Вызывающий код должен гарантировать, что блок действительно свободен.
-     *
-     * @note В debug-режиме (NDEBUG не определён) проверяет инварианты FreeBlock
-     *       через assert: weight==0 и root_offset==0.
+     * Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds
+     * if block is not in FreeBlock state, instead of relying on assert only.
+     * В debug-режиме дополнительно срабатывает assert для диагностики.
      */
     static FreeBlock* cast_from_raw( void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() &&
-                "cast_from_raw<FreeBlock>: block is not in FreeBlock state (weight!=0 or root_offset!=0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        {
+            assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
+            return nullptr;
+        }
         return reinterpret_cast<FreeBlock*>( raw );
     }
 
     static const FreeBlock* cast_from_raw( const void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() &&
-                "cast_from_raw<FreeBlock>: block is not in FreeBlock state (weight!=0 or root_offset!=0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        {
+            assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
+            return nullptr;
+        }
         return reinterpret_cast<const FreeBlock*>( raw );
     }
 
@@ -621,23 +628,34 @@ template <typename AddressTraitsT> class AllocatedBlock : public BlockStateBase<
     /**
      * @brief Интерпретировать сырые байты как AllocatedBlock.
      *
-     * @note В debug-режиме (NDEBUG не определён) проверяет, что weight > 0
-     *       (минимальное условие AllocatedBlock). Полная проверка (root_offset == own_idx)
-     *       доступна через verify_invariants(own_idx).
+     * @return Указатель на AllocatedBlock, или nullptr если raw==nullptr или weight==0.
+     *
+     * Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds
+     * if block is not allocated, instead of relying on assert only.
+     * В debug-режиме дополнительно срабатывает assert для диагностики.
+     * Полная проверка (root_offset == own_idx) доступна через verify_invariants(own_idx).
      */
     static AllocatedBlock* cast_from_raw( void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() > 0 &&
-                "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        {
+            assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+            return nullptr;
+        }
         return reinterpret_cast<AllocatedBlock*>( raw );
     }
 
     static const AllocatedBlock* cast_from_raw( const void* raw ) noexcept
     {
-        assert( raw != nullptr );
-        assert( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() > 0 &&
-                "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+        if ( raw == nullptr )
+            return nullptr;
+        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        {
+            assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
+            return nullptr;
+        }
         return reinterpret_cast<const AllocatedBlock*>( raw );
     }
 

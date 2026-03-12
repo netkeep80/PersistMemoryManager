@@ -127,10 +127,29 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
     std::size_t total_size() const noexcept { return _size; }
 
     /**
-     * @brief Расширение не поддерживается в базовой реализации.
-     * @return Всегда false.
+     * @brief Расширить отображённый файл на additional_bytes (Issue #43 Phase 2.3).
+     *
+     * Расширяет файл через ftruncate/SetEndOfFile, затем пересоздаёт отображение.
+     * После expand() base_ptr() возвращает новый адрес — все ранее полученные
+     * указатели на данные становятся невалидными.
+     *
+     * @param additional_bytes Минимальный прирост в байтах.
+     * @return true при успехе, false при ошибке (отображение остаётся в прежнем состоянии).
      */
-    bool expand( std::size_t /*additional_bytes*/ ) noexcept { return false; }
+    bool expand( std::size_t additional_bytes ) noexcept
+    {
+        if ( !_mapped || additional_bytes == 0 )
+            return _mapped && additional_bytes == 0;
+        // Grow by 25% or by additional_bytes, whichever is larger
+        std::size_t growth   = _size / 4 + additional_bytes;
+        std::size_t new_size = _size + growth;
+        // Align to granule_size
+        new_size = ( ( new_size + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size ) *
+                   AddressTraitsT::granule_size;
+        if ( new_size <= _size )
+            return false;
+        return expand_impl( new_size );
+    }
 
     /**
      * @brief MMapStorage не владеет памятью в смысле malloc/free
@@ -219,6 +238,60 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
         }
     }
 
+    /// Issue #43 Phase 2.3: expand the mapped file to new_size bytes.
+    bool expand_impl( std::size_t new_size ) noexcept
+    {
+        // Flush and unmap current view
+        if ( _base != nullptr )
+        {
+            FlushViewOfFile( _base, _size );
+            UnmapViewOfFile( _base );
+            _base = nullptr;
+        }
+        if ( _map_handle != nullptr )
+        {
+            CloseHandle( _map_handle );
+            _map_handle = nullptr;
+        }
+
+        // Resize file
+        LARGE_INTEGER new_size_li{};
+        new_size_li.QuadPart = static_cast<LONGLONG>( new_size );
+        if ( !SetFilePointerEx( _file_handle, new_size_li, nullptr, FILE_BEGIN ) || !SetEndOfFile( _file_handle ) )
+        {
+            // Cannot resize — try to remap at old size
+            DWORD hi    = static_cast<DWORD>( _size >> 32 );
+            DWORD lo    = static_cast<DWORD>( _size & 0xFFFFFFFF );
+            _map_handle = CreateFileMappingA( _file_handle, nullptr, PAGE_READWRITE, hi, lo, nullptr );
+            if ( _map_handle != nullptr )
+            {
+                void* view = MapViewOfFile( _map_handle, FILE_MAP_ALL_ACCESS, 0, 0, _size );
+                if ( view != nullptr )
+                    _base = static_cast<std::uint8_t*>( view );
+            }
+            return false;
+        }
+
+        // Create new mapping at new size
+        DWORD size_hi = static_cast<DWORD>( new_size >> 32 );
+        DWORD size_lo = static_cast<DWORD>( new_size & 0xFFFFFFFF );
+        _map_handle   = CreateFileMappingA( _file_handle, nullptr, PAGE_READWRITE, size_hi, size_lo, nullptr );
+        if ( _map_handle == nullptr )
+            return false;
+
+        void* view = MapViewOfFile( _map_handle, FILE_MAP_ALL_ACCESS, 0, 0, new_size );
+        if ( view == nullptr )
+        {
+            CloseHandle( _map_handle );
+            _map_handle = nullptr;
+            return false;
+        }
+
+        _base = static_cast<std::uint8_t*>( view );
+        _size = new_size;
+        return true;
+    }
+
 #else  // POSIX
 
     std::uint8_t* _base   = nullptr;
@@ -276,6 +349,36 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
             ::close( _fd );
             _fd = -1;
         }
+    }
+
+    /// Issue #43 Phase 2.3: expand the mapped file to new_size bytes.
+    bool expand_impl( std::size_t new_size ) noexcept
+    {
+        // Unmap current mapping
+        if ( _base != nullptr )
+        {
+            ::munmap( _base, _size );
+            _base = nullptr;
+        }
+
+        // Extend the file
+        if ( ::ftruncate( _fd, static_cast<off_t>( new_size ) ) != 0 )
+        {
+            // Remap at old size on failure
+            void* addr = ::mmap( nullptr, _size, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0 );
+            if ( addr != MAP_FAILED )
+                _base = static_cast<std::uint8_t*>( addr );
+            return false;
+        }
+
+        // Remap at new size
+        void* addr = ::mmap( nullptr, new_size, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0 );
+        if ( addr == MAP_FAILED )
+            return false;
+
+        _base = static_cast<std::uint8_t*>( addr );
+        _size = new_size;
+        return true;
     }
 #endif // _WIN32
 };
