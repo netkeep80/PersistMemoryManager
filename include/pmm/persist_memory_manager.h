@@ -78,6 +78,7 @@
 #include <cstring>
 #include <limits>
 #include <new>
+#include <type_traits>
 
 namespace pmm
 {
@@ -442,23 +443,33 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * передавая аргументы в его конструктор. Это делает поведение аналогичным
      * оператору new T(args...).
      *
-     * @tparam T    Тип создаваемого объекта.
+     * @tparam T    Тип создаваемого объекта. Конструктор T(Args...) должен быть noexcept.
      * @tparam Args Типы аргументов конструктора T.
      * @param args  Аргументы, передаваемые в конструктор T.
      * @return pptr<T> — персистентный указатель или pptr<T>() при ошибке.
      *
      * @note Для освобождения используйте destroy_typed<T>(p).
+     * @note Issue #44/Plan 1.1: Конструктор T(Args...) должен быть noexcept, иначе
+     *       при исключении выделенная память утечёт. Компилятор выдаст ошибку
+     *       static_assert, если конструктор не является noexcept.
      *
      * @see destroy_typed
      */
     template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
     {
+        // Issue #44/Plan 1.1: Enforce noexcept constructor to prevent memory leaks.
+        // If T(Args...) can throw, the allocated memory would leak because we cannot
+        // catch exceptions in a noexcept function. This static_assert catches such
+        // misuse at compile time.
+        static_assert( std::is_nothrow_constructible_v<T, Args...>,
+                       "create_typed<T>(args...) requires T(args...) to be noexcept. "
+                       "A throwing constructor would cause a memory leak because create_typed is noexcept." );
+
         void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
         // Placement new — конструирует T в выделенной области.
-        // noexcept: если конструктор T бросает исключение, память утечёт,
-        // но pmm API является полностью noexcept. Используйте только для noexcept-конструкторов.
+        // Безопасность гарантирована static_assert выше.
         ::new ( raw ) T( static_cast<Args&&>( args )... );
         return make_pptr_from_raw<T>( raw );
     }
@@ -470,13 +481,24 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * перед освобождением блока. Это необходимо для типов с нетривиальными
      * деструкторами (RAII, строки, контейнеры и т.д.).
      *
-     * @tparam T Тип уничтожаемого объекта.
+     * @tparam T Тип уничтожаемого объекта. Деструктор ~T() должен быть noexcept.
      * @param p  Персистентный указатель на объект (должен быть создан через create_typed).
+     *
+     * @note Issue #44/Plan 1.1: Деструктор ~T() должен быть noexcept. В C++11+ деструкторы
+     *       неявно noexcept, если явно не указано иначе. Компилятор выдаст ошибку
+     *       static_assert, если деструктор может бросать исключения.
      *
      * @see create_typed
      */
     template <typename T> static void destroy_typed( pptr<T> p ) noexcept
     {
+        // Issue #44/Plan 1.1: Enforce noexcept destructor for safety.
+        // In C++11+, destructors are implicitly noexcept unless explicitly marked otherwise.
+        // This static_assert catches rare cases where a destructor is marked noexcept(false).
+        static_assert( std::is_nothrow_destructible_v<T>,
+                       "destroy_typed<T>(p) requires ~T() to be noexcept. "
+                       "A throwing destructor would cause std::terminate because destroy_typed is noexcept." );
+
         if ( p.is_null() || !_initialized )
             return;
         std::uint8_t* base = _backend.base_ptr();

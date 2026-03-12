@@ -113,6 +113,9 @@ pmm_add_test(test_issue144_code_review test_issue144_code_review.cpp)
 # ─── Тесты исправлений по code review (Issue #172) ────────────────────────────
 pmm_add_test(test_issue172_code_review test_issue172_code_review.cpp)
 
+# ─── Тесты Plan Phase 1.1: Exception safety in create_typed<T> (Issue #44) ────
+pmm_add_test(test_plan_phase1_1 test_plan_phase1_1.cpp)
+
 # ─── Тесты удаления устаревших полей ManagerHeader (Issue #176) ───────────────
 pmm_add_test(test_issue176_manager_header test_issue176_manager_header.cpp)
 
