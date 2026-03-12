@@ -101,7 +101,10 @@ struct TrackedNoexcept
     bool* was_destroyed;
     int   magic;
 
-    TrackedNoexcept( int v, bool* destroyed_flag ) noexcept : value( v ), was_destroyed( destroyed_flag ), magic( 0xDEADBEEF ) {}
+    TrackedNoexcept( int v, bool* destroyed_flag ) noexcept
+        : value( v ), was_destroyed( destroyed_flag ), magic( 0xDEADBEEF )
+    {
+    }
 
     ~TrackedNoexcept() noexcept
     {
@@ -122,23 +125,16 @@ static_assert( std::is_nothrow_default_constructible_v<NoexceptDefault>,
                "NoexceptDefault must have noexcept default constructor" );
 static_assert( std::is_nothrow_constructible_v<NoexceptWithArgs, int, float>,
                "NoexceptWithArgs must have noexcept constructor(int, float)" );
-static_assert( std::is_nothrow_copy_constructible_v<NoexceptCopy>,
-               "NoexceptCopy must have noexcept copy constructor" );
-static_assert( std::is_nothrow_move_constructible_v<NoexceptMove>,
-               "NoexceptMove must have noexcept move constructor" );
+static_assert( std::is_nothrow_copy_constructible_v<NoexceptCopy>, "NoexceptCopy must have noexcept copy constructor" );
+static_assert( std::is_nothrow_move_constructible_v<NoexceptMove>, "NoexceptMove must have noexcept move constructor" );
 static_assert( std::is_nothrow_constructible_v<TrackedNoexcept, int, bool*>,
                "TrackedNoexcept must have noexcept constructor(int, bool*)" );
 
-static_assert( std::is_nothrow_destructible_v<NoexceptDefault>,
-               "NoexceptDefault must have noexcept destructor" );
-static_assert( std::is_nothrow_destructible_v<NoexceptWithArgs>,
-               "NoexceptWithArgs must have noexcept destructor" );
-static_assert( std::is_nothrow_destructible_v<NoexceptCopy>,
-               "NoexceptCopy must have noexcept destructor" );
-static_assert( std::is_nothrow_destructible_v<NoexceptMove>,
-               "NoexceptMove must have noexcept destructor" );
-static_assert( std::is_nothrow_destructible_v<TrackedNoexcept>,
-               "TrackedNoexcept must have noexcept destructor" );
+static_assert( std::is_nothrow_destructible_v<NoexceptDefault>, "NoexceptDefault must have noexcept destructor" );
+static_assert( std::is_nothrow_destructible_v<NoexceptWithArgs>, "NoexceptWithArgs must have noexcept destructor" );
+static_assert( std::is_nothrow_destructible_v<NoexceptCopy>, "NoexceptCopy must have noexcept destructor" );
+static_assert( std::is_nothrow_destructible_v<NoexceptMove>, "NoexceptMove must have noexcept destructor" );
+static_assert( std::is_nothrow_destructible_v<TrackedNoexcept>, "TrackedNoexcept must have noexcept destructor" );
 
 // =============================================================================
 // Runtime tests
@@ -212,7 +208,7 @@ static bool test_p1_1_noexcept_move_constructor()
 
     NoexceptMove* obj = Mgr::resolve( p );
     PMM_TEST( obj != nullptr );
-    PMM_TEST( obj->value == 777 ); // move constructor was called
+    PMM_TEST( obj->value == 777 );  // move constructor was called
     PMM_TEST( movable.value == 0 ); // original was moved from
 
     Mgr::destroy_typed( p );
@@ -377,20 +373,14 @@ int main()
     std::cout << "Test suite: Plan Phase 1.1 — Exception safety in create_typed<T>\n";
     bool all_passed = true;
 
-    PMM_RUN( "P1.1-A: create_typed<T>() with noexcept default constructor",
-             test_p1_1_noexcept_default_constructor );
+    PMM_RUN( "P1.1-A: create_typed<T>() with noexcept default constructor", test_p1_1_noexcept_default_constructor );
     PMM_RUN( "P1.1-B: create_typed<T>(args...) with noexcept constructor with args",
              test_p1_1_noexcept_constructor_with_args );
-    PMM_RUN( "P1.1-C: create_typed<T>(const T&) with noexcept copy constructor",
-             test_p1_1_noexcept_copy_constructor );
-    PMM_RUN( "P1.1-D: create_typed<T>(T&&) with noexcept move constructor",
-             test_p1_1_noexcept_move_constructor );
-    PMM_RUN( "P1.1-E: destroy_typed<T>() calls destructor correctly",
-             test_p1_1_destroy_typed_calls_destructor );
-    PMM_RUN( "P1.1-F: Primitive types (int, double) work with create_typed",
-             test_p1_1_primitive_types );
-    PMM_RUN( "P1.1-G: POD types work with create_typed",
-             test_p1_1_pod_types );
+    PMM_RUN( "P1.1-C: create_typed<T>(const T&) with noexcept copy constructor", test_p1_1_noexcept_copy_constructor );
+    PMM_RUN( "P1.1-D: create_typed<T>(T&&) with noexcept move constructor", test_p1_1_noexcept_move_constructor );
+    PMM_RUN( "P1.1-E: destroy_typed<T>() calls destructor correctly", test_p1_1_destroy_typed_calls_destructor );
+    PMM_RUN( "P1.1-F: Primitive types (int, double) work with create_typed", test_p1_1_primitive_types );
+    PMM_RUN( "P1.1-G: POD types work with create_typed", test_p1_1_pod_types );
 
     if ( all_passed )
     {
