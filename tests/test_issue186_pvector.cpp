@@ -496,6 +496,95 @@ static bool test_i186_struct_type()
 }
 
 // =============================================================================
+// I186-N: AVL tree structure — O(log n) height and correct weight fields
+// =============================================================================
+
+/// @brief Recursively verify AVL tree invariants: weight == subtree size and |bf| <= 1.
+/// Returns the subtree size, or -1 on error.
+static int verify_avl_node( TestMgr::pvector<int>::node_pptr p )
+{
+    if ( p.is_null() )
+        return 0;
+
+    using index_type = TestMgr::index_type;
+    static constexpr index_type no_block = TestMgr::address_traits::no_block;
+
+    auto& tn        = p.tree_node();
+    auto  left_idx  = tn.get_left();
+    auto  right_idx = tn.get_right();
+
+    // Рекурсивно проверяем поддеревья.
+    int left_size  = ( left_idx != no_block ) ? verify_avl_node( TestMgr::pvector<int>::node_pptr( left_idx ) ) : 0;
+    int right_size = ( right_idx != no_block ) ? verify_avl_node( TestMgr::pvector<int>::node_pptr( right_idx ) ) : 0;
+
+    if ( left_size < 0 || right_size < 0 )
+        return -1;
+
+    // Проверяем weight == размер поддерева.
+    int expected_weight = 1 + left_size + right_size;
+    if ( static_cast<int>( tn.get_weight() ) != expected_weight )
+        return -1;
+
+    // Проверяем баланс (|bf| <= 1).
+    int lh = ( left_idx != no_block )
+                 ? static_cast<int>( TestMgr::pvector<int>::node_pptr( left_idx ).tree_node().get_height() )
+                 : 0;
+    int rh = ( right_idx != no_block )
+                 ? static_cast<int>( TestMgr::pvector<int>::node_pptr( right_idx ).tree_node().get_height() )
+                 : 0;
+    int bf = lh - rh;
+    if ( bf < -1 || bf > 1 )
+        return -1;
+
+    return expected_weight;
+}
+
+/// @brief AVL tree structure: weight fields correct, balanced, height is O(log n).
+static bool test_i186_avl_structure()
+{
+    TestMgr::destroy();
+    PMM_TEST( TestMgr::create( 512 * 1024 ) );
+
+    TestMgr::pvector<int> vec;
+    const int             N = 100;
+
+    for ( int i = 0; i < N; i++ )
+        vec.push_back( i );
+
+    PMM_TEST( static_cast<int>( vec.size() ) == N );
+
+    // Проверяем структуру AVL-дерева.
+    TestMgr::pvector<int>::node_pptr root( vec._root_idx );
+    int                              total = verify_avl_node( root );
+    PMM_TEST( total == N );
+
+    // Высота дерева должна быть O(log n): не более 2 * ceil(log2(N+1)).
+    int height        = static_cast<int>( root.tree_node().get_height() );
+    int max_avl_height = 2 * 8; // log2(100) ~ 6.6, AVL допускает ~1.44*log2(n); 16 — с запасом
+    PMM_TEST( height <= max_avl_height );
+
+    // Проверяем корректность at() для всех элементов.
+    for ( int i = 0; i < N; i++ )
+    {
+        auto p = vec.at( static_cast<std::size_t>( i ) );
+        PMM_TEST( !p.is_null() );
+        PMM_TEST( p->value == i );
+    }
+
+    // Проверяем структуру после нескольких pop_back.
+    for ( int i = 0; i < 30; i++ )
+        vec.pop_back();
+
+    PMM_TEST( static_cast<int>( vec.size() ) == N - 30 );
+    TestMgr::pvector<int>::node_pptr root2( vec._root_idx );
+    int                              total2 = verify_avl_node( root2 );
+    PMM_TEST( total2 == N - 30 );
+
+    TestMgr::destroy();
+    return true;
+}
+
+// =============================================================================
 // main
 // =============================================================================
 
@@ -546,6 +635,9 @@ int main()
 
     std::cout << "  I186-M: Struct type\n";
     PMM_RUN( "    pvector works with struct types", test_i186_struct_type );
+
+    std::cout << "  I186-N: AVL tree structure\n";
+    PMM_RUN( "    AVL invariants: weight correct, height O(log n)", test_i186_avl_structure );
 
     std::cout << "\n";
     if ( all_passed )
