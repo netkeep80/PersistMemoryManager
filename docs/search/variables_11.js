@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['value_0',['value',['../structpmm_1_1pmap__node.html#a9bf0fa400dab525be4256ad650bd975b',1,'pmm::pmap_node::value'],['../structpmm_1_1pvector__node.html#af0b1f61d0075477dff130dd6f2e60398',1,'pmm::pvector_node::value']]]
+  ['used_0',['used',['../structpmm_1_1BlockView.html#a72b31f6664325495e0ef5203a60e4671',1,'pmm::BlockView']]],
+  ['used_5fsize_1',['used_size',['../structpmm_1_1ManagerInfo.html#abeac45d57b420a1c7933d36b435ca8b8',1,'pmm::ManagerInfo::used_size'],['../structpmm_1_1detail_1_1ManagerHeader.html#a9011ca5c186c9c974833ee9437d47a2d',1,'pmm::detail::ManagerHeader::used_size']]],
+  ['user_5fsize_2',['user_size',['../structpmm_1_1BlockView.html#ae1d45dcd73d208eb83e07d326c3e77a4',1,'pmm::BlockView']]]
 ];

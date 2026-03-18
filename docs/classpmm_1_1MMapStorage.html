@@ -121,9 +121,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a360a6769ab5fe0434c4a96e1db45470e" id="r_a360a6769ab5fe0434c4a96e1db45470e"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1MMapStorage.html#a360a6769ab5fe0434c4a96e1db45470e">total_size</a> () const noexcept</td></tr>
 <tr class="memdesc:a360a6769ab5fe0434c4a96e1db45470e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Размер отображения в байтах.  <br /></td></tr>
 <tr class="separator:a360a6769ab5fe0434c4a96e1db45470e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a31f4cdc687c88e1e798af18ee279c1d9" id="r_a31f4cdc687c88e1e798af18ee279c1d9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1MMapStorage.html#a31f4cdc687c88e1e798af18ee279c1d9">expand</a> (std::size_t) noexcept</td></tr>
-<tr class="memdesc:a31f4cdc687c88e1e798af18ee279c1d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Расширение не поддерживается в базовой реализации.  <br /></td></tr>
-<tr class="separator:a31f4cdc687c88e1e798af18ee279c1d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a883dce8df040c99586d086c84918cfc5" id="r_a883dce8df040c99586d086c84918cfc5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1MMapStorage.html#a883dce8df040c99586d086c84918cfc5">expand</a> (std::size_t additional_bytes) noexcept</td></tr>
+<tr class="memdesc:a883dce8df040c99586d086c84918cfc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Расширить отображённый файл на additional_bytes (Issue #43 Phase 2.3).  <br /></td></tr>
+<tr class="separator:a883dce8df040c99586d086c84918cfc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0e187de88081c6f0b576c781d0a0e3b" id="r_af0e187de88081c6f0b576c781d0a0e3b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1MMapStorage.html#af0e187de88081c6f0b576c781d0a0e3b">owns_memory</a> () const noexcept</td></tr>
 <tr class="memdesc:af0e187de88081c6f0b576c781d0a0e3b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1MMapStorage.html" title="Бэкенд хранилища через отображение файла в память.">MMapStorage</a> не владеет памятью в смысле malloc/free (отображение управляется ОС).  <br /></td></tr>
 <tr class="separator:af0e187de88081c6f0b576c781d0a0e3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -366,8 +366,8 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
 
 </div>
 </div>
-<a id="a31f4cdc687c88e1e798af18ee279c1d9" name="a31f4cdc687c88e1e798af18ee279c1d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a31f4cdc687c88e1e798af18ee279c1d9">&#9670;&#160;</a></span>expand()</h2>
+<a id="a883dce8df040c99586d086c84918cfc5" name="a883dce8df040c99586d086c84918cfc5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a883dce8df040c99586d086c84918cfc5">&#9670;&#160;</a></span>expand()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -381,7 +381,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
           <td class="memname">bool <a class="el" href="classpmm_1_1MMapStorage.html">pmm::MMapStorage</a>&lt; AddressTraitsT &gt;::expand </td>
           <td>(</td>
           <td class="paramtype">std::size_t&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramname"><em>additional_bytes</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -392,10 +392,17 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Расширение не поддерживается в базовой реализации. </p>
-<dl class="section return"><dt>Returns</dt><dd>Всегда false. </dd></dl>
+<p>Расширить отображённый файл на additional_bytes (Issue #43 Phase 2.3). </p>
+<p>Расширяет файл через ftruncate/SetEndOfFile, затем пересоздаёт отображение. После <a class="el" href="classpmm_1_1MMapStorage.html#a883dce8df040c99586d086c84918cfc5" title="Расширить отображённый файл на additional_bytes (Issue #43 Phase 2.3).">expand()</a> <a class="el" href="classpmm_1_1MMapStorage.html#a5a6f277fdd4186bde1244f4b61c75d03" title="Указатель на начало отображения.">base_ptr()</a> возвращает новый адрес — все ранее полученные указатели на данные становятся невалидными.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">additional_bytes</td><td>Минимальный прирост в байтах. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true при успехе, false при ошибке (отображение остаётся в прежнем состоянии). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="mmap__storage_8h_source.html#l00133">133</a> of file <a class="el" href="mmap__storage_8h_source.html">mmap_storage.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="mmap__storage_8h_source.html#l00139">139</a> of file <a class="el" href="mmap__storage_8h_source.html">mmap_storage.h</a>.</p>
 
 </div>
 </div>
@@ -536,7 +543,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
 <p><a class="el" href="classpmm_1_1MMapStorage.html" title="Бэкенд хранилища через отображение файла в память.">MMapStorage</a> не владеет памятью в смысле malloc/free (отображение управляется ОС). </p>
 <dl class="section return"><dt>Returns</dt><dd>false (отображение освобождается через munmap/UnmapViewOfFile в <a class="el" href="classpmm_1_1MMapStorage.html#a6e20811680162e59d9227d1965152377" title="Закрыть отображение и файл.">close()</a>). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="mmap__storage_8h_source.html#l00140">140</a> of file <a class="el" href="mmap__storage_8h_source.html">mmap_storage.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="mmap__storage_8h_source.html#l00159">159</a> of file <a class="el" href="mmap__storage_8h_source.html">mmap_storage.h</a>.</p>
 
 </div>
 </div>

@@ -15,9 +15,10 @@ var searchData=
   ['allocator_5fpolicy_2eh_12',['allocator_policy.h',['../allocator__policy_8h.html',1,'']]],
   ['allocatorpolicy_13',['allocatorpolicy',['../classpmm_1_1AllocatorPolicy.html',1,'pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;'],['../classpmm_1_1AllocatorPolicy.html#a7b9dae10356ce145bdd78921d50a8386',1,'pmm::AllocatorPolicy::AllocatorPolicy()=delete'],['../classpmm_1_1AllocatorPolicy.html#a66b39f43c432c0cdb17475c31946e4e4',1,'pmm::AllocatorPolicy::AllocatorPolicy(const AllocatorPolicy &amp;)=delete']]],
   ['at_14',['at',['../structpmm_1_1pvector.html#ada658763c5f4215853c70549b1ede6f4',1,'pmm::pvector']]],
-  ['attach_15',['attach',['../classpmm_1_1HeapStorage.html#a61d1dc39749ecf7a1298712f3ae39732',1,'pmm::HeapStorage']]],
-  ['avl_5fdepth_16',['avl_depth',['../structpmm_1_1FreeBlockView.html#a562fc75f273f514d80eb8cf52d2d732d',1,'pmm::FreeBlockView']]],
-  ['avl_5fheight_17',['avl_height',['../structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4',1,'pmm::TreeNode::avl_height'],['../structpmm_1_1FreeBlockView.html#a16a9cde93981ff6b070813ea7fde9174',1,'pmm::FreeBlockView::avl_height'],['../classpmm_1_1BlockStateBase.html#a7a62a48f6d969274d898b7f4575d4aa6',1,'pmm::BlockStateBase::avl_height()']]],
-  ['avl_5ftree_5fmixin_2eh_18',['avl_tree_mixin.h',['../avl__tree__mixin_8h.html',1,'']]],
-  ['avlfreetree_19',['avlfreetree',['../structpmm_1_1AvlFreeTree.html',1,'pmm::AvlFreeTree&lt; AddressTraitsT &gt;'],['../structpmm_1_1AvlFreeTree.html#ae47c7c6edaf82e954196c62aaa1bd638',1,'pmm::AvlFreeTree::AvlFreeTree()=delete'],['../structpmm_1_1AvlFreeTree.html#af7bc5f6093df1001d08143e0fe0e0e57',1,'pmm::AvlFreeTree::AvlFreeTree(const AvlFreeTree &amp;)=delete']]]
+  ['atomic_5frename_15',['atomic_rename',['../namespacepmm_1_1detail.html#a02099bcb0dd9e581347c38d4ac4d9671',1,'pmm::detail']]],
+  ['attach_16',['attach',['../classpmm_1_1HeapStorage.html#a61d1dc39749ecf7a1298712f3ae39732',1,'pmm::HeapStorage']]],
+  ['avl_5fdepth_17',['avl_depth',['../structpmm_1_1FreeBlockView.html#a562fc75f273f514d80eb8cf52d2d732d',1,'pmm::FreeBlockView']]],
+  ['avl_5fheight_18',['avl_height',['../structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4',1,'pmm::TreeNode::avl_height'],['../structpmm_1_1FreeBlockView.html#a16a9cde93981ff6b070813ea7fde9174',1,'pmm::FreeBlockView::avl_height'],['../classpmm_1_1BlockStateBase.html#a7a62a48f6d969274d898b7f4575d4aa6',1,'pmm::BlockStateBase::avl_height()']]],
+  ['avl_5ftree_5fmixin_2eh_19',['avl_tree_mixin.h',['../avl__tree__mixin_8h.html',1,'']]],
+  ['avlfreetree_20',['avlfreetree',['../structpmm_1_1AvlFreeTree.html',1,'pmm::AvlFreeTree&lt; AddressTraitsT &gt;'],['../structpmm_1_1AvlFreeTree.html#ae47c7c6edaf82e954196c62aaa1bd638',1,'pmm::AvlFreeTree::AvlFreeTree()=delete'],['../structpmm_1_1AvlFreeTree.html#af7bc5f6093df1001d08143e0fe0e0e57',1,'pmm::AvlFreeTree::AvlFreeTree(const AvlFreeTree &amp;)=delete']]]
 ];

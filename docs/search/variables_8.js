@@ -1,7 +1,25 @@
 var searchData=
 [
-  ['largest_5ffree_0',['largest_free',['../structpmm_1_1MemoryStats.html#af04f85408e3c8518f4cab238be67d6e8',1,'pmm::MemoryStats']]],
-  ['last_5fblock_5foffset_1',['last_block_offset',['../structpmm_1_1detail_1_1ManagerHeader.html#ac506fd403b8f6b2761177bfb13821204',1,'pmm::detail::ManagerHeader']]],
-  ['left_5foffset_2',['left_offset',['../structpmm_1_1TreeNode.html#a7ef6c85c74806fb9e9558b72d267a92c',1,'pmm::TreeNode::left_offset'],['../structpmm_1_1FreeBlockView.html#a7016b91ed1e6775949a50d003bc297bf',1,'pmm::FreeBlockView::left_offset']]],
-  ['length_3',['length',['../structpmm_1_1pstringview.html#aa8535e226c5c2e70338e44356d6c1d44',1,'pmm::pstringview']]]
+  ['kblockheadergranules_5ft_0',['kBlockHeaderGranules_t',['../namespacepmm_1_1detail.html#ad506c89331162025826cda06431e2f01',1,'pmm::detail']]],
+  ['kdefaultgrowdenominator_1',['kDefaultGrowDenominator',['../namespacepmm_1_1config.html#a297ab6aca4139ac9f66a8e759ba9c70a',1,'pmm::config']]],
+  ['kdefaultgrownumerator_2',['kDefaultGrowNumerator',['../namespacepmm_1_1config.html#a5eac9bf59cd079fa117844df64d89284',1,'pmm::config']]],
+  ['key_3',['key',['../structpmm_1_1pmap__node.html#adf165ebd9dce20059153e77f33420809',1,'pmm::pmap_node']]],
+  ['kgranulesize_4',['kGranuleSize',['../namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac',1,'pmm']]],
+  ['kmagic_5',['kMagic',['../namespacepmm.html#a716afdc66bf1abf5f0f7feec75d0c1e8',1,'pmm']]],
+  ['kmanagerheadergranules_6',['kManagerHeaderGranules',['../namespacepmm_1_1detail.html#adda9afd5ae768545d32151ed800eb699',1,'pmm::detail']]],
+  ['kmanagerheadergranules_5ft_7',['kManagerHeaderGranules_t',['../namespacepmm_1_1detail.html#aad88b724ee045e7a9ccba9f270a7a5e8',1,'pmm::detail']]],
+  ['kminblocksize_8',['kMinBlockSize',['../namespacepmm_1_1detail.html#a65f43ab4cb1daf08535e6a3b2591cbc6',1,'pmm::detail']]],
+  ['kmingranulesize_9',['kMinGranuleSize',['../namespacepmm.html#ad7ae412e928bca11f0e3687e2acf680d',1,'pmm']]],
+  ['kminmemorysize_10',['kMinMemorySize',['../namespacepmm_1_1detail.html#a049a972c096254cddb69b417750c54da',1,'pmm::detail']]],
+  ['knoblock_11',['kNoBlock',['../namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e',1,'pmm::detail']]],
+  ['knoblock_5fv_12',['kNoBlock_v',['../namespacepmm_1_1detail.html#ac8238d730b912b3d2ea95864aa3fa3de',1,'pmm::detail']]],
+  ['koffsetavlheight_13',['kOffsetAvlHeight',['../classpmm_1_1BlockStateBase.html#af4e69f6da12c1e0dc674a5d3e8683911',1,'pmm::BlockStateBase']]],
+  ['koffsetleftoffset_14',['kOffsetLeftOffset',['../classpmm_1_1BlockStateBase.html#a9136f988103a51137c2b8426973a7f68',1,'pmm::BlockStateBase']]],
+  ['koffsetnextoffset_15',['kOffsetNextOffset',['../classpmm_1_1BlockStateBase.html#a00e9b10610fac2190098bffadb06acb8',1,'pmm::BlockStateBase']]],
+  ['koffsetnodetype_16',['kOffsetNodeType',['../classpmm_1_1BlockStateBase.html#a07dbf77c3aac828bb413349fc84bb275',1,'pmm::BlockStateBase']]],
+  ['koffsetparentoffset_17',['kOffsetParentOffset',['../classpmm_1_1BlockStateBase.html#af907b101dce0282573ecd77d7edb2318',1,'pmm::BlockStateBase']]],
+  ['koffsetprevoffset_18',['kOffsetPrevOffset',['../classpmm_1_1BlockStateBase.html#a490dc724d1c4303eb66730d8f0122233',1,'pmm::BlockStateBase']]],
+  ['koffsetrightoffset_19',['kOffsetRightOffset',['../classpmm_1_1BlockStateBase.html#adc2e9f1fef6dabd8606f7fc0d9d35fd1',1,'pmm::BlockStateBase']]],
+  ['koffsetrootoffset_20',['kOffsetRootOffset',['../classpmm_1_1BlockStateBase.html#ac34402bb25d700c343c1c38fa367f4a3',1,'pmm::BlockStateBase']]],
+  ['koffsetweight_21',['kOffsetWeight',['../classpmm_1_1BlockStateBase.html#a62f751f73050ee88505271cb7fbe67aa',1,'pmm::BlockStateBase']]]
 ];

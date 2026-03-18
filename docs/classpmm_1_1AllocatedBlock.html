@@ -296,7 +296,7 @@ class pmm::AllocatedBlock&lt; AddressTraitsT &gt;</div><p><a class="el" href="cl
 <li><a class="el" href="classpmm_1_1AllocatedBlock.html#a782a4e71731bf970050c1e21cda76d74" title="Получить указатель на пользовательские данные.">user_ptr()</a> — получить указатель на пользовательские данные </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00615">615</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00622">622</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a071ea70dcde9d1ef914d403bb943df8a" name="a071ea70dcde9d1ef914d403bb943df8a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a071ea70dcde9d1ef914d403bb943df8a">&#9670;&#160;</a></span>Base</h2>
@@ -312,7 +312,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00618">618</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00625">625</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -330,7 +330,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00619">619</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00626">626</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -361,7 +361,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00636">636</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00650">650</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -392,9 +392,10 @@ template&lt;typename AddressTraitsT &gt; </div>
 </div><div class="memdoc">
 
 <p>Интерпретировать сырые байты как <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>. </p>
-<dl class="section note"><dt>Note</dt><dd>В debug-режиме (NDEBUG не определён) проверяет, что weight &gt; 0 (минимальное условие <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>). Полная проверка (root_offset == own_idx) доступна через verify_invariants(own_idx). </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Указатель на <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>, или nullptr если raw==nullptr или weight==0.</dd></dl>
+<p>Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds if block is not allocated, instead of relying on assert only. В debug-режиме дополнительно срабатывает assert для диагностики. Полная проверка (root_offset == own_idx) доступна через verify_invariants(own_idx). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00628">628</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00638">638</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -426,7 +427,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <p>Пометить блок как свободный (первый шаг deallocate). </p>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на блок в состоянии <a class="el" href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL.">FreeBlockNotInAVL</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00667">667</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00685">685</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -455,7 +456,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00657">657</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00675">675</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -487,7 +488,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <p>Получить указатель на пользовательские данные. </p>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на данные (после заголовка блока). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00655">655</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00673">673</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -526,7 +527,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если блок в корректном состоянии <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00649">649</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00667">667</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

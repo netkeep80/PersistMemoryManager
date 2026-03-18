@@ -7,7 +7,9 @@ var searchData=
   ['coalesce_4',['coalesce',['../classpmm_1_1AllocatorPolicy.html#ab32a19b815b6ce4858f4833e8e024608',1,'pmm::AllocatorPolicy']]],
   ['coalesce_5fwith_5fnext_5',['coalesce_with_next',['../classpmm_1_1CoalescingBlock.html#ab3e5dcdbe604e041f31559a29b0ef6b4',1,'pmm::CoalescingBlock']]],
   ['coalesce_5fwith_5fprev_6',['coalesce_with_prev',['../classpmm_1_1CoalescingBlock.html#a4b26c1258d705dae31cd4bda1330bdcd',1,'pmm::CoalescingBlock']]],
-  ['contains_7',['contains',['../structpmm_1_1pmap.html#aa48dab6f34fb84746e3f83ee38cc84b5',1,'pmm::pmap']]],
-  ['create_8',['create',['../classpmm_1_1PersistMemoryManager.html#aa013ea3a201ed0b5a7aca5548540e071',1,'pmm::PersistMemoryManager::create(std::size_t initial_size) noexcept'],['../classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033',1,'pmm::PersistMemoryManager::create() noexcept']]],
-  ['create_5ftyped_9',['create_typed',['../classpmm_1_1PersistMemoryManager.html#a3df6aef4d5b95860ebff95be49a67905',1,'pmm::PersistMemoryManager']]]
+  ['compute_5fcrc32_7',['compute_crc32',['../namespacepmm_1_1detail.html#a8e3d57757aa16e8e7861ea21eee6bda9',1,'pmm::detail']]],
+  ['compute_5fimage_5fcrc32_8',['compute_image_crc32',['../namespacepmm_1_1detail.html#ac1cf8e9ae2bc405fa096d1cc343a8d02',1,'pmm::detail']]],
+  ['contains_9',['contains',['../structpmm_1_1pmap.html#aa48dab6f34fb84746e3f83ee38cc84b5',1,'pmm::pmap']]],
+  ['create_10',['create',['../classpmm_1_1PersistMemoryManager.html#aa013ea3a201ed0b5a7aca5548540e071',1,'pmm::PersistMemoryManager::create(std::size_t initial_size) noexcept'],['../classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033',1,'pmm::PersistMemoryManager::create() noexcept']]],
+  ['create_5ftyped_11',['create_typed',['../classpmm_1_1PersistMemoryManager.html#a3df6aef4d5b95860ebff95be49a67905',1,'pmm::PersistMemoryManager']]]
 ];
