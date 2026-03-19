@@ -64,6 +64,7 @@
 #include "pmm/block.h"
 #include "pmm/block_state.h"
 #include "pmm/manager_configs.h"
+#include "pmm/parray.h"
 #include "pmm/pmap.h"
 #include "pmm/pptr.h"
 #include "pmm/pstring.h"
@@ -183,6 +184,21 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * @tparam T Тип элемента.
      */
     template <typename T> using pvector = pmm::pvector<T, manager_type>;
+
+    /**
+     * @brief Алиас для персистентного массива с O(1) индексацией (Issue #195, Phase 3.2).
+     *
+     * Позволяет писать:
+     * @code
+     *   Mgr::parray<int> arr;
+     *   arr.push_back(42);
+     *   int* elem = arr.at(0);
+     * @endcode
+     * вместо `pmm::parray<int, Mgr> arr;`
+     *
+     * @tparam T Тип элемента. Должен быть trivially copyable.
+     */
+    template <typename T> using parray = pmm::parray<T, manager_type>;
 
     // ─── Статические методы управления жизненным циклом ──────────────────────
 

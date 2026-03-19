@@ -154,6 +154,9 @@ pmm_add_test(test_issue188_deduplication test_issue188_deduplication.cpp)
 # ─── Тесты мутабельной персистентной строки pstring (Issue #45, Phase 3.1) ───
 pmm_add_test(test_issue45_pstring test_issue45_pstring.cpp)
 
+# ─── Тесты персистентного массива parray (Issue #195, Phase 3.2) ─────────────
+pmm_add_test(test_issue195_parray test_issue195_parray.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 
