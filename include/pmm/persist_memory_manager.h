@@ -64,6 +64,7 @@
 #include "pmm/block.h"
 #include "pmm/block_state.h"
 #include "pmm/manager_configs.h"
+#include "pmm/pallocator.h"
 #include "pmm/parray.h"
 #include "pmm/pmap.h"
 #include "pmm/pptr.h"
@@ -199,6 +200,20 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * @tparam T Тип элемента. Должен быть trivially copyable.
      */
     template <typename T> using parray = pmm::parray<T, manager_type>;
+
+    /**
+     * @brief Алиас для STL-совместимого аллокатора (Issue #198, Phase 3.5).
+     *
+     * Позволяет писать:
+     * @code
+     *   std::vector<int, Mgr::pallocator<int>> vec;
+     *   vec.push_back(42);
+     * @endcode
+     * вместо `std::vector<int, pmm::pallocator<int, Mgr>> vec;`
+     *
+     * @tparam T Тип элемента.
+     */
+    template <typename T> using pallocator = pmm::pallocator<T, manager_type>;
 
     // ─── Статические методы управления жизненным циклом ──────────────────────
 

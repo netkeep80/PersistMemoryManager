@@ -266,3 +266,68 @@ Mgr::destroy();
 - **Перебалансировка**: `_WeightUpdateFn` обновляет и высоту, и вес (размер поддерева)
   при каждой ротации, что гарантирует корректность order-statistic tree после удаления
 - **Граничные случаи**: возвращает `false` для пустого вектора и для индекса >= size()
+
+## 3.5 STL-совместимый аллокатор `pallocator<T, ManagerT>` ✅
+
+**Issue:** #198
+**Файл:** `include/pmm/pallocator.h`
+**Тесты:** `tests/test_issue198_pallocator.cpp` (18 тестов)
+
+### Описание
+
+`pallocator<T, ManagerT>` — STL-совместимый аллокатор, делегирующий управление памятью
+в PersistMemoryManager. Позволяет использовать STL-контейнеры (`std::vector`, и т.д.)
+с персистентным адресным пространством.
+
+### Архитектура
+
+```
+std::vector<int, Mgr::pallocator<int>>
+         │
+         ▼
+pallocator<int, Mgr>
+  ├── allocate(n)    → Mgr::allocate(n * sizeof(int))  → void* в ПАП
+  └── deallocate(p)  → Mgr::deallocate(p)              → освобождение в ПАП
+```
+
+- **Stateless**: все состояние хранится в статическом ManagerT
+- **Все экземпляры с одним ManagerT равны** (`is_always_equal = true_type`)
+- **Rebind**: поддерживается через converting constructor
+- **Исключения**: `allocate()` бросает `std::bad_alloc` при неудаче (требование STL)
+
+### API
+
+```cpp
+using Mgr = pmm::presets::SingleThreadedHeap;
+Mgr::create(64 * 1024);
+
+// Использование со std::vector
+std::vector<int, Mgr::pallocator<int>> vec;
+vec.push_back(42);
+vec.push_back(100);
+assert(vec[0] == 42);
+
+// Прямое использование аллокатора
+Mgr::pallocator<int> alloc;
+int* p = alloc.allocate(10);      // 10 int'ов в ПАП
+p[0] = 1;
+alloc.deallocate(p, 10);          // освобождение
+
+// Rebinding
+Mgr::pallocator<double> alloc_d(alloc);  // converting constructor
+
+// Сравнение (всегда равны)
+assert(alloc == alloc_d);
+
+Mgr::destroy();
+```
+
+### Отличия от стандартного std::allocator
+
+| Свойство | std::allocator | pallocator |
+|----------|---------------|------------|
+| Хранилище | Системная куча (malloc) | Персистентное адресное пространство (ПАП) |
+| Персистентность | Нет | Данные сохраняются при save/load |
+| Потокобезопасность | Да (через malloc) | Определяется LockPolicy менеджера |
+| Адресная независимость | Нет | Да (через гранульные индексы pmm) |
+| Использование | Общее назначение | STL-контейнеры в ПАП |

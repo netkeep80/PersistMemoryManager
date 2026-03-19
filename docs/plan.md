@@ -115,15 +115,15 @@ BinDiffSynchronizer реализует `pmem_array_pmm` — динамическ
 **Решение:**
 - Добавить `pvector::erase(index)` с перебалансировкой AVL-дерева
 
-### 3.5 STL-совместимый аллокатор `pallocator<T, ManagerT>`
+### 3.5 STL-совместимый аллокатор `pallocator<T, ManagerT>` ✅ ВЫПОЛНЕНО (#198)
 
 **Текущая ситуация:** BinDiffSynchronizer реализует `pallocator_pmm` для использования
 STL-контейнеров с ПАП.
 
 **Решение:**
 - Добавить `include/pmm/pallocator.h` — аллокатор, совместимый с `std::allocator_traits`
-- `allocate(n)` → `ManagerT::allocate_typed<T>(n)`
-- `deallocate(p, n)` → `ManagerT::deallocate_typed(p)`
+- `allocate(n)` → `ManagerT::allocate(n * sizeof(T))`
+- `deallocate(p, n)` → `ManagerT::deallocate(p)`
 - Позволит: `std::vector<T, pmm::pallocator<T, Mgr>>`
 
 ### 3.6 Пул объектов `ppool<T, ManagerT>`
@@ -267,7 +267,7 @@ STL-контейнеров с ПАП.
 | 8 | ~~Массив `parray<T>` с O(1) доступом~~ | 3.2 | ~~Высокий~~ | ~~Средняя~~ | ✅ #195 |
 | 9 | ~~`erase()` для `pmap`~~ | 3.3 | ~~Высокий~~ | ~~Низкая~~ | ✅ #196 |
 | 10 | ~~`erase(index)` для `pvector`~~ | 3.4 | ~~Высокий~~ | ~~Низкая~~ | ✅ #197 |
-| 11 | STL-аллокатор `pallocator<T>` | 3.5 | Высокий | Средняя | |
+| 11 | ~~STL-аллокатор `pallocator<T>`~~ | 3.5 | ~~Высокий~~ | ~~Средняя~~ | ✅ #198 |
 | 12 | Пул объектов `ppool<T>` | 3.6 | Высокий | Средняя | |
 | 13 | Корневой объект в ManagerHeader | 3.7 | Высокий | Низкая | |
 | 14 | Коды ошибок | 4.1 | Средний | Средняя | |
@@ -286,4 +286,4 @@ STL-контейнеров с ПАП.
 
 ---
 
-*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197.*
+*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198.*
