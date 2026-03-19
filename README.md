@@ -1,33 +1,45 @@
 # PersistMemoryManager
 
-A header-only C++20 library for persistent memory management with a static API, configurable storage backends, and thread-safety policies.
+Менеджер Персистентного Адресного Пространства (ПАП) — header-only C++20 библиотека для управления
+персистентной памятью со статическим API, конфигурируемыми бэкендами хранения и политиками потокобезопасности.
 
 [![CI](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml/badge.svg)](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/std/the-standard)
-[![Version](https://img.shields.io/badge/version-0.25.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.26.0-green.svg)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/docs-Doxygen-informational)](https://netkeep80.github.io/PersistMemoryManager/)
 
-## Overview
+## Обзор
 
-PersistMemoryManager (PMM) is a block-based memory allocator that stores all metadata inside the managed region using granule offsets rather than raw pointers. This makes the heap image portable: you can save it to a file, load it at a different base address, and resume where you left off with no pointer fixups.
+PersistMemoryManager (pmm) — блочный аллокатор памяти, хранящий все метаданные внутри управляемой
+области с использованием гранульных смещений вместо сырых указателей. Это делает образ кучи
+переносимым: его можно сохранить в файл, загрузить по другому базовому адресу и продолжить
+работу без корректировки указателей.
 
-**Key properties:**
+pmm является фундаментом для построения персистентных систем хранения данных, таких как
+[BinDiffSynchronizer](https://github.com/netkeep80/BinDiffSynchronizer) (pjson_db_pmm) —
+персистентная JSON-база данных.
 
-- **Header-only** — include and use, no compilation step
-- **C++20** — uses concepts (`requires`) for policy validation
-- **Static API** — no instances, all methods are `static`
-- **Multitoning** — multiple independent managers via `InstanceId` template parameter
-- **Configurable** — swap storage backend, lock policy, and address width independently
-- **Persistent** — save/load heap image to a file; all internal links are offset-based
-- **Best-fit allocation** — AVL-tree backed free block management with coalescing
-- **Persistent data types** — built-in `pstringview` (interned strings), `pmap<K,V>` (AVL dictionary), and `pvector<T>` (vector)
+**Принцип:** pmm — менеджер ПАП и специальные типы объектов для использования в ПАП.
+pmm предоставляет типы и хранилище, а не конкретные прикладные реализации (JSON, базы данных и т.д.).
 
-## Quick Start
+### Ключевые свойства
 
-### Option 1: Single-header (recommended)
+- **Header-only** — подключи и используй, без компиляции
+- **C++20** — использует concepts (`requires`) для валидации политик
+- **Статический API** — без экземпляров, все методы `static`
+- **Мультитон** — несколько независимых менеджеров через шаблонный параметр `InstanceId`
+- **Конфигурируемость** — бэкенд хранения, политика блокировки и разрядность адресов настраиваются независимо
+- **Персистентность** — сохранение/загрузка образа кучи в файл; все внутренние ссылки — смещения
+- **Best-fit аллокация** — AVL-дерево свободных блоков с коалесценцией
+- **Персистентные типы** — встроенные `pstringview` (интернированные строки), `pmap<K,V>` (AVL-словарь), `pvector<T>` (вектор)
+- **Безопасность** — CRC32 контрольные суммы, атомарное сохранение, проверка границ, защита от переполнения
 
-Download `single_include/pmm/pmm.h` — the full library without any preset — and use any configuration:
+## Быстрый старт
+
+### Вариант 1: Single-header (рекомендуется)
+
+Скачайте `single_include/pmm/pmm.h` — полная библиотека без пресетов — и используйте любую конфигурацию:
 
 ```cpp
 #include "pmm.h"
@@ -36,7 +48,7 @@ Download `single_include/pmm/pmm.h` — the full library without any preset — 
 using Mgr = pmm::presets::SingleThreadedHeap;
 
 int main() {
-    Mgr::create(64 * 1024);  // 64 KB heap
+    Mgr::create(64 * 1024);  // 64 КБ куча
 
     Mgr::pptr<int> p = Mgr::allocate_typed<int>();
     *p = 42;
@@ -47,7 +59,7 @@ int main() {
 }
 ```
 
-Or use a preset single-header file (includes full library + preset alias in one file):
+Или используйте single-header файл с пресетом (библиотека + alias пресета в одном файле):
 
 ```cpp
 #include "pmm_single_threaded_heap.h"
@@ -55,22 +67,22 @@ Or use a preset single-header file (includes full library + preset alias in one 
 using Mgr = pmm::presets::SingleThreadedHeap;
 ```
 
-Available single-header files in `single_include/pmm/`:
+Доступные single-header файлы в `single_include/pmm/`:
 
-| File | Preset | Index | Thread Safety | Use Case |
-|------|--------|-------|--------------|----------|
-| `pmm.h` | *(none — full library)* | any | any | Custom configs |
-| `pmm_small_embedded_static_heap.h` | `SmallEmbeddedStaticHeap<N>` | `uint16_t` (2 B) | None | ARM Cortex-M, AVR, ESP32 |
-| `pmm_embedded_static_heap.h` | `EmbeddedStaticHeap<N>` | `uint32_t` (4 B) | None | Bare-metal, RTOS, no heap |
-| `pmm_embedded_heap.h` | `EmbeddedHeap` | `uint32_t` (4 B) | None | Embedded with dynamic heap |
-| `pmm_single_threaded_heap.h` | `SingleThreadedHeap` | `uint32_t` (4 B) | None | Caches, single-threaded tools |
-| `pmm_multi_threaded_heap.h` | `MultiThreadedHeap` | `uint32_t` (4 B) | `shared_mutex` | Concurrent services |
-| `pmm_industrial_db_heap.h` | `IndustrialDBHeap` | `uint32_t` (4 B) | `shared_mutex` | High-load databases |
-| `pmm_large_db_heap.h` | `LargeDBHeap` | `uint64_t` (8 B) | `shared_mutex` | Petabyte-scale databases |
+| Файл | Пресет | Индекс | Потокобезопасность | Применение |
+|------|--------|--------|--------------------|------------|
+| `pmm.h` | *(нет — полная библиотека)* | любой | любая | Свои конфигурации |
+| `pmm_small_embedded_static_heap.h` | `SmallEmbeddedStaticHeap<N>` | `uint16_t` (2 Б) | Нет | ARM Cortex-M, AVR, ESP32 |
+| `pmm_embedded_static_heap.h` | `EmbeddedStaticHeap<N>` | `uint32_t` (4 Б) | Нет | Bare-metal, RTOS |
+| `pmm_embedded_heap.h` | `EmbeddedHeap` | `uint32_t` (4 Б) | Нет | Встраиваемые с heap |
+| `pmm_single_threaded_heap.h` | `SingleThreadedHeap` | `uint32_t` (4 Б) | Нет | Кэши, однопоточные утилиты |
+| `pmm_multi_threaded_heap.h` | `MultiThreadedHeap` | `uint32_t` (4 Б) | `shared_mutex` | Конкурентные сервисы |
+| `pmm_industrial_db_heap.h` | `IndustrialDBHeap` | `uint32_t` (4 Б) | `shared_mutex` | Нагруженные базы данных |
+| `pmm_large_db_heap.h` | `LargeDBHeap` | `uint64_t` (8 Б) | `shared_mutex` | Петабайтные базы данных |
 
-### Option 2: Multi-header
+### Вариант 2: Multi-header
 
-Include the modular headers from `include/pmm/`:
+Подключите модульные заголовки из `include/pmm/`:
 
 ```cpp
 #include "pmm/pmm_presets.h"
@@ -78,9 +90,9 @@ Include the modular headers from `include/pmm/`:
 using Mgr = pmm::presets::MultiThreadedHeap;
 
 int main() {
-    Mgr::create(1024 * 1024);  // 1 MB heap
+    Mgr::create(1024 * 1024);  // 1 МБ куча
 
-    Mgr::pptr<double> p = Mgr::allocate_typed<double>(4);  // array of 4 doubles
+    Mgr::pptr<double> p = Mgr::allocate_typed<double>(4);  // массив из 4 double
     (*p) = 3.14;
 
     Mgr::deallocate_typed(p);
@@ -88,7 +100,7 @@ int main() {
 }
 ```
 
-## Building
+## Сборка
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -96,87 +108,95 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-**Requirements:** CMake 3.16+, a C++20 compiler (GCC 10+, Clang 10+, MSVC 2019 16.3+).
+**Требования:** CMake 3.16+, компилятор C++20 (GCC 10+, Clang 10+, MSVC 2019 16.3+).
 
-Optional demo application (requires OpenGL + GLFW):
+Демо-приложение (требует OpenGL + GLFW):
 
 ```bash
 cmake -B build -DPMM_BUILD_DEMO=ON
 cmake --build build --target pmm_demo
 ```
 
-## API Reference
+## Справочник API
 
-### Lifecycle
+### Жизненный цикл
 
 ```cpp
-// Create a new heap of initial_size bytes
+// Создать новую кучу размером initial_size байт
 static bool create(std::size_t initial_size) noexcept;
 
-// Initialise over an already-populated backend (e.g. MMapStorage)
+// Инициализировать над уже заполненным бэкендом (например, MMapStorage)
 static bool create() noexcept;
 
-// Load state from an existing backend image (validates magic + sizes)
+// Загрузить состояние из существующего образа бэкенда (проверяет magic + размеры + CRC32)
 static bool load() noexcept;
 
-// Reset the manager (does not free the backend buffer)
+// Сбросить менеджер (не освобождает буфер бэкенда)
 static void destroy() noexcept;
 
-// True if the manager has been successfully initialised
+// True, если менеджер успешно инициализирован
 static bool is_initialized() noexcept;
 ```
 
-### Allocation
+### Аллокация
 
 ```cpp
-// Allocate count objects of type T; returns a null pptr on failure
+// Выделить count объектов типа T; вернёт null pptr при неудаче
 template <typename T>
 static pptr<T> allocate_typed(std::size_t count = 1) noexcept;
 
-// Deallocate a block obtained from allocate_typed
+// Освободить блок, полученный от allocate_typed
 template <typename T>
 static void deallocate_typed(pptr<T> p) noexcept;
 
-// Raw allocation / deallocation (size in bytes)
+// Создать объект (allocate + placement new); T должен быть nothrow-constructible
+template <typename T, typename... Args>
+static pptr<T> create_typed(Args&&... args) noexcept;
+
+// Разрушить объект (explicit destructor + deallocate); T должен быть nothrow-destructible
+template <typename T>
+static void destroy_typed(pptr<T> p) noexcept;
+
+// Сырая аллокация / деаллокация (размер в байтах)
 static void* allocate(std::size_t size) noexcept;
 static void  deallocate(void* ptr) noexcept;
 ```
 
-### Statistics
+### Статистика
 
 ```cpp
-static std::size_t total_size()    noexcept;  // total managed bytes
-static std::size_t used_size()     noexcept;  // bytes in live allocations
-static std::size_t free_size()     noexcept;  // bytes available
+static std::size_t total_size()    noexcept;  // всего управляемых байт
+static std::size_t used_size()     noexcept;  // байт в живых аллокациях
+static std::size_t free_size()     noexcept;  // доступно байт
 static double      fragmentation() noexcept;  // 0.0 – 1.0
-static MemoryStats get_stats()     noexcept;  // snapshot of all counters
+static MemoryStats get_stats()     noexcept;  // снимок всех счётчиков
 static ManagerInfo get_manager_info() noexcept;
 ```
 
-### Diagnostics
+### Диагностика
 
 ```cpp
-static bool        validate()     noexcept;  // structural integrity check
-static bool        dump_stats()   noexcept;  // print stats to stdout
-static void*       offset_to_ptr(std::size_t offset) noexcept;
-static std::size_t block_data_size_bytes(void* ptr) noexcept;
+static bool        validate()     noexcept;  // проверка структурной целостности
+static bool        dump_stats()   noexcept;  // вывод статистики в stdout
+template <typename T>
+static bool        is_valid_ptr(pptr<T> p) noexcept;  // валидация указателя
 ```
 
-### Persistence (io.h)
+### Персистентность (io.h)
 
 ```cpp
 #include "pmm/io.h"
 
-// Save the managed region to a file
+// Сохранить управляемую область в файл (CRC32 + атомарная запись)
 template <typename MgrT>
 bool pmm::save_manager(const char* filename);
 
-// Load a previously saved image into an already-allocated backend
+// Загрузить ранее сохранённый образ (с проверкой CRC32)
 template <typename MgrT>
 bool pmm::load_manager_from_file(const char* filename);
 ```
 
-Example:
+Пример:
 
 ```cpp
 using Mgr = pmm::presets::SingleThreadedHeap;
@@ -185,85 +205,90 @@ Mgr::create(64 * 1024);
 Mgr::pptr<int> p = Mgr::allocate_typed<int>();
 *p = 99;
 
-// Save
+// Сохранение
 pmm::save_manager<Mgr>("heap.dat");
 Mgr::destroy();
 
-// Restore in a new process (or after restart)
+// Восстановление в новом процессе (или после перезапуска)
 Mgr::create(64 * 1024);
 pmm::load_manager_from_file<Mgr>("heap.dat");
 
-std::cout << *p;  // 99 — value preserved
+std::cout << *p;  // 99 — значение сохранено
 Mgr::destroy();
 ```
 
-### Permanent block locking
+### Блокировка блоков
 
-A block can be marked read-only to prevent accidental deallocation. This is used internally by `pstringview` to ensure interned strings are never freed:
+Блок можно пометить как read-only для защиты от случайной деаллокации. Используется
+внутри `pstringview` для гарантии, что интернированные строки не будут освобождены:
 
 ```cpp
-Mgr::lock_block_permanent(p);           // prevent deallocate()
+Mgr::lock_block_permanent(p);           // запретить deallocate()
 bool ro = Mgr::is_permanently_locked(p);
 ```
 
-## Persistent Pointer — pptr\<T\>
+## Персистентный указатель — pptr\<T\>
 
-`pptr<T, ManagerT>` stores a granule index (2, 4, or 8 bytes depending on address traits) instead of a raw pointer. It is address-independent: the heap image can be mapped at any base address and `pptr` values remain valid.
+`pptr<T, ManagerT>` хранит гранульный индекс (2, 4 или 8 байт в зависимости от address traits)
+вместо сырого указателя. Он адресно-независим: образ кучи можно маппировать по любому
+базовому адресу, и значения `pptr` останутся валидными.
 
 ```cpp
 Mgr::pptr<int> p = Mgr::allocate_typed<int>();
 
-if (p) {           // explicit bool conversion
-    *p = 42;       // dereference via operator*
-    p->field;      // field access via operator->
-    p.offset();    // underlying granule index
-    p.is_null();   // same as !p
+if (p) {           // явная конверсия в bool
+    *p = 42;       // разыменование через operator*
+    p->field;      // доступ к полям через operator->
+    p.offset();    // гранульный индекс
+    p.is_null();   // то же, что !p
 }
 ```
 
-**Prohibited operations** — pointer arithmetic (`p++`, `p--`) is deleted to enforce safe usage.
+**Запрещённые операции** — арифметика указателей (`p++`, `p--`) удалена для безопасности.
 
-### AVL tree node access (pptr)
+### Доступ к узлу AVL-дерева (pptr)
 
-`pptr` provides direct access to the block's internal `TreeNode` via `tree_node()`, allowing you to build user-level AVL trees on top of PMM blocks:
+`pptr` предоставляет прямой доступ к внутреннему `TreeNode` блока через `tree_node()`,
+позволяя строить пользовательские AVL-деревья поверх блоков pmm:
 
 ```cpp
-auto& tn = p.tree_node();  // reference to TreeNode in block header
+auto& tn = p.tree_node();  // ссылка на TreeNode в заголовке блока
 
-// Read links (return granule index, or no_block if absent)
-tn.get_left();     // index_type — left child granule index
-tn.get_right();    // index_type — right child granule index
-tn.get_parent();   // index_type — parent granule index
-tn.get_weight();   // index_type — node weight (data size in granules)
-tn.get_height();   // std::int16_t — AVL subtree height
+// Чтение связей (возвращают гранульный индекс или no_block)
+tn.get_left();     // index_type — индекс левого потомка
+tn.get_right();    // index_type — индекс правого потомка
+tn.get_parent();   // index_type — индекс родителя
+tn.get_weight();   // index_type — вес узла (размер данных в гранулах)
+tn.get_height();   // std::int16_t — высота поддерева AVL
 
-// Write links (use offset() to convert pptr to granule index)
+// Запись связей
 tn.set_left(child.offset());
 tn.set_right(child.offset());
 tn.set_parent(parent.offset());
 tn.set_height(h);
 ```
 
-> **Note:** Absent links are stored as `address_traits::no_block` sentinel, not as zero.
+> **Примечание:** Отсутствующие связи хранятся как `address_traits::no_block` sentinel, а не как ноль.
 
-## Persistent String — pstringview
+## Персистентная строка — pstringview
 
-`pstringview<ManagerT>` is an interned, read-only persistent string. Equal strings are always stored once in the heap and return the same `pptr` — deduplication is guaranteed.
+`pstringview<ManagerT>` — интернированная, read-only персистентная строка. Равные строки
+всегда хранятся один раз и возвращают один и тот же `pptr` — дедупликация гарантирована.
 
 ```cpp
 using Mgr = pmm::presets::SingleThreadedHeap;
 Mgr::create(64 * 1024);
 
-// Intern a string — creates it in PAP on first call
+// Интернировать строку — создаёт в ПАП при первом вызове
 Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("hello");
 if (p) {
     const char* s = p->c_str();   // "hello"
     std::size_t n = p->size();    // 5
 }
 
-// Interning the same string again returns the same pptr
+// Повторное интернирование возвращает тот же pptr
 Mgr::pptr<Mgr::pstringview> p2 = Mgr::pstringview("hello");
-assert(p == p2);  // identical granule index
+assert(p == p2);  // идентичный гранульный индекс
 
 Mgr::destroy();
 ```
@@ -271,29 +296,26 @@ Mgr::destroy();
 **API:**
 
 ```cpp
-const char* c_str()  const noexcept;  // null-terminated string
-std::size_t size()   const noexcept;  // length without null terminator
+const char* c_str()  const noexcept;  // null-terminated строка
+std::size_t size()   const noexcept;  // длина без нуль-терминатора
 bool        empty()  const noexcept;
 
 bool operator==(const pstringview& o) const noexcept;
 bool operator!=(const pstringview& o) const noexcept;
 bool operator< (const pstringview& o) const noexcept;
 
-// Explicit interning (same as Mgr::pstringview("..."))
 static Mgr::pptr<pstringview> intern(const char* s) noexcept;
-
-// Reset interning dictionary (for test isolation)
 static void reset() noexcept;
 ```
 
-**Notes:**
-- All `pstringview` and char blocks are permanently locked via `lock_block_permanent()` — they cannot be freed.
-- Deduplication uses a built-in AVL tree whose links live in each block's `TreeNode` fields.
-- Requires `persist_memory_manager.h` (auto-included via `Mgr::pstringview`).
+**Особенности:**
+- Все блоки `pstringview` перманентно заблокированы — не могут быть освобождены
+- Дедупликация через встроенное AVL-дерево (поля `TreeNode` в заголовке блока)
 
-## Persistent Map — pmap\<K, V\>
+## Персистентный словарь — pmap\<K, V\>
 
-`pmap<_K, _V, ManagerT>` is a persistent AVL dictionary stored entirely inside the managed region. Key-value nodes use the built-in `TreeNode` fields for AVL links — no separate tree allocation is needed.
+`pmap<_K, _V, ManagerT>` — персистентный AVL-словарь, хранящийся целиком в управляемой области.
+Узлы используют встроенные поля `TreeNode` для AVL-связей.
 
 ```cpp
 using Mgr = pmm::presets::SingleThreadedHeap;
@@ -310,29 +332,21 @@ if (!p.is_null()) {
     int val = p->value;  // 100
 }
 
-map.insert(42, 300);  // duplicate key — updates value to 300
+map.insert(42, 300);  // дублирующий ключ — обновляет значение
 
 Mgr::destroy();
 ```
 
-Using `pstringview` keys:
+**Особенности:**
+- O(log n) insert, find, contains
+- Дублирующий ключ при `insert` обновляет значение
+- Узлы **не** перманентно заблокированы (в отличие от `pstringview`)
+- Тип ключа `_K` должен поддерживать `operator<` и `operator==`
 
-```cpp
-using StrIntMap = Mgr::pmap<Mgr::pstringview, int>;
-StrIntMap dict;
-auto key = static_cast<Mgr::pptr<Mgr::pstringview>>(Mgr::pstringview("hello"));
-dict.insert(*key.resolve(), 42);
-```
+## Персистентный вектор — pvector\<T\>
 
-**Notes:**
-- O(log n) insert, find, and contains.
-- Duplicate key on `insert` updates the stored value.
-- Nodes are **not** permanently locked (unlike `pstringview` — they can be freed).
-- Key type `_K` must support `operator<` and `operator==`.
-
-## Persistent Vector — pvector\<T\>
-
-`pvector<T, ManagerT>` is a persistent sequential container stored in the managed region. Elements are linked using the built-in `TreeNode` fields to form a doubly-linked list with O(1) push_back.
+`pvector<T, ManagerT>` — персистентный последовательный контейнер в управляемой области.
+Реализован как AVL order-statistic дерево для O(log n) доступа по индексу.
 
 ```cpp
 using Mgr = pmm::presets::SingleThreadedHeap;
@@ -350,65 +364,57 @@ if (!p.is_null()) {
     int val = p->value;  // 20
 }
 
-// Iteration
+// Итерация
 for (auto it = vec.begin(); it != vec.end(); ++it) {
     auto node = *it;
-    // node->value is the element
+    // node->value — элемент
 }
 
-vec.pop_back();  // removes 30
-vec.clear();     // removes all elements
+vec.pop_back();  // удаляет 30
+vec.clear();     // удаляет все элементы
 
 Mgr::destroy();
 ```
 
-**Notes:**
-- O(1) push_back, front, back, pop_back (tail pointer maintained).
-- O(n) at(i) — linear traversal from head.
-- Nodes are **not** permanently locked — they can be freed via `pop_back()` or `clear()`.
+**Особенности:**
+- O(log n) push_back, pop_back, at(i)
+- O(1) size, front, back
+- Итератор для range-based for
+- Узлы **не** перманентно заблокированы
 
-## Configuration
+## Конфигурация
 
-### Built-in presets
+### Встроенные пресеты
 
 ```cpp
 #include "pmm/pmm_presets.h"
 
 namespace pmm::presets {
-    // Embedded — static buffer, no dynamic heap
     template <std::size_t N = 1024>
-    using SmallEmbeddedStaticHeap = PersistMemoryManager<SmallEmbeddedStaticConfig<N>, 0>;  // 16-bit index
+    using SmallEmbeddedStaticHeap = ...;  // 16-bit индекс, статический буфер
 
     template <std::size_t N = 4096>
-    using EmbeddedStaticHeap = PersistMemoryManager<EmbeddedStaticConfig<N>, 0>;           // 32-bit, static
+    using EmbeddedStaticHeap = ...;       // 32-bit, статический буфер
 
-    using EmbeddedHeap        = PersistMemoryManager<EmbeddedManagerConfig, 0>;            // 32-bit, dynamic
-
-    // Desktop / server
-    using SingleThreadedHeap  = PersistMemoryManager<CacheManagerConfig, 0>;
-    using MultiThreadedHeap   = PersistMemoryManager<PersistentDataConfig, 0>;
-
-    // Industrial DB
-    using IndustrialDBHeap    = PersistMemoryManager<IndustrialDBConfig, 0>;
-
-    // Large DB — 64-bit index
-    using LargeDBHeap         = PersistMemoryManager<LargeDBConfig, 0>;
+    using EmbeddedHeap        = ...;      // 32-bit, динамический heap
+    using SingleThreadedHeap  = ...;      // 32-bit, однопоточный
+    using MultiThreadedHeap   = ...;      // 32-bit, многопоточный
+    using IndustrialDBHeap    = ...;      // 32-bit, для нагруженных БД
+    using LargeDBHeap         = ...;      // 64-bit, петабайтный масштаб
 }
 ```
 
-| Preset | Index | pptr size | Lock policy | Growth | Max heap | Intended for |
-|--------|-------|-----------|-------------|--------|----------|--------------|
-| `SmallEmbeddedStaticHeap<N>` | `uint16_t` | 2 B | `NoLock` | none | ~1 MB | ARM Cortex-M, AVR, ESP32 |
-| `EmbeddedStaticHeap<N>` | `uint32_t` | 4 B | `NoLock` | none | 64 GB | Bare-metal, RTOS |
-| `EmbeddedHeap` | `uint32_t` | 4 B | `NoLock` | 50% | 64 GB | Embedded with dynamic heap |
-| `SingleThreadedHeap` | `uint32_t` | 4 B | `NoLock` | 25% | 64 GB | Caches, offline tools |
-| `MultiThreadedHeap` | `uint32_t` | 4 B | `SharedMutexLock` | 25% | 64 GB | Concurrent services |
-| `IndustrialDBHeap` | `uint32_t` | 4 B | `SharedMutexLock` | 100% | 64 GB | High-throughput databases |
-| `LargeDBHeap` | `uint64_t` | 8 B | `SharedMutexLock` | 100% | petabyte | Large-scale databases |
+| Пресет | Индекс | pptr | Блокировка | Рост | Макс. куча | Применение |
+|--------|--------|------|------------|------|------------|------------|
+| `SmallEmbeddedStaticHeap<N>` | `uint16_t` | 2 Б | `NoLock` | нет | ~1 МБ | ARM Cortex-M, AVR, ESP32 |
+| `EmbeddedStaticHeap<N>` | `uint32_t` | 4 Б | `NoLock` | нет | 64 ГБ | Bare-metal, RTOS |
+| `EmbeddedHeap` | `uint32_t` | 4 Б | `NoLock` | 50% | 64 ГБ | Встраиваемые с heap |
+| `SingleThreadedHeap` | `uint32_t` | 4 Б | `NoLock` | 25% | 64 ГБ | Кэши, утилиты |
+| `MultiThreadedHeap` | `uint32_t` | 4 Б | `SharedMutexLock` | 25% | 64 ГБ | Конкурентные сервисы |
+| `IndustrialDBHeap` | `uint32_t` | 4 Б | `SharedMutexLock` | 100% | 64 ГБ | Нагруженные БД |
+| `LargeDBHeap` | `uint64_t` | 8 Б | `SharedMutexLock` | 100% | петабайт | Крупные БД |
 
-### Custom configuration
-
-Compose a configuration struct from the available policies:
+### Пользовательская конфигурация
 
 ```cpp
 #include "pmm/address_traits.h"
@@ -418,21 +424,19 @@ Compose a configuration struct from the available policies:
 #include "pmm/free_block_tree.h"
 
 struct MyConfig {
-    using address_traits  = pmm::DefaultAddressTraits;          // uint32_t index, 16-byte granule
-    using storage_backend = pmm::MMapStorage<address_traits>;   // file-mapped persistent storage
-    using free_block_tree = pmm::AvlFreeTree<address_traits>;   // AVL tree (required)
-    using lock_policy     = pmm::config::SharedMutexLock;       // multi-threaded
+    using address_traits  = pmm::DefaultAddressTraits;          // uint32_t индекс, 16-байт гранула
+    using storage_backend = pmm::MMapStorage<address_traits>;   // файл-маппированное хранилище
+    using free_block_tree = pmm::AvlFreeTree<address_traits>;   // AVL-дерево (обязательно)
+    using lock_policy     = pmm::config::SharedMutexLock;       // многопоточность
 
-    static constexpr std::size_t grow_numerator   = 3;  // grow by 50% on expansion
+    static constexpr std::size_t grow_numerator   = 3;  // рост на 50%
     static constexpr std::size_t grow_denominator = 2;
 };
 
 using MyMgr = pmm::PersistMemoryManager<MyConfig, 0>;
 ```
 
-### Multitoning — multiple independent instances
-
-The `InstanceId` template parameter creates separate static state for each value:
+### Мультитон — несколько независимых экземпляров
 
 ```cpp
 using Cache0 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 0>;
@@ -443,167 +447,170 @@ Cache1::create(32 * 1024);
 
 Cache0::pptr<int> p0 = Cache0::allocate_typed<int>();
 Cache1::pptr<int> p1 = Cache1::allocate_typed<int>();
-// p0 and p1 are incompatible types — mixing them is a compile error
+// p0 и p1 — несовместимые типы, смешивание — ошибка компиляции
 ```
 
 ### Address traits
 
-| Type | Index | Granule | pptr size | Max addressable |
-|------|-------|---------|-----------|-----------------|
-| `TinyAddressTraits` | `uint8_t` | 8 B | 1 B | 2 KB |
-| `SmallAddressTraits` | `uint16_t` | 16 B | 2 B | ~1 MB |
-| `DefaultAddressTraits` | `uint32_t` | 16 B | 4 B | 64 GB |
-| `LargeAddressTraits` | `uint64_t` | 64 B | 8 B | petabyte |
+| Тип | Индекс | Гранула | pptr | Макс. адресация |
+|-----|--------|---------|------|-----------------|
+| `SmallAddressTraits` | `uint16_t` | 16 Б | 2 Б | ~1 МБ |
+| `DefaultAddressTraits` | `uint32_t` | 16 Б | 4 Б | 64 ГБ |
+| `LargeAddressTraits` | `uint64_t` | 64 Б | 8 Б | петабайт |
 
-### Storage backends
+### Бэкенды хранения
 
-| Class | Description |
-|-------|-------------|
-| `HeapStorage<A>` | Dynamic allocation via `malloc` / `realloc` |
-| `MMapStorage<A>` | File-mapped memory (`mmap` / `MapViewOfFile`) — persistent across restarts |
-| `StaticStorage<Size, A>` | Fixed-size static array — no dynamic allocation, suitable for embedded |
+| Класс | Описание |
+|-------|----------|
+| `HeapStorage<A>` | Динамическая аллокация через `malloc` / `realloc` |
+| `MMapStorage<A>` | Файл-маппированная память (`mmap` / `MapViewOfFile`) — персистентность между запусками |
+| `StaticStorage<Size, A>` | Статический массив фиксированного размера — для встраиваемых систем |
 
-### Lock policies
+### Политики блокировки
 
-| Policy | Description |
-|--------|-------------|
-| `config::NoLock` | No synchronisation — use in single-threaded code |
-| `config::SharedMutexLock` | `std::shared_mutex` — concurrent reads, exclusive writes |
+| Политика | Описание |
+|----------|----------|
+| `config::NoLock` | Без синхронизации — для однопоточного кода |
+| `config::SharedMutexLock` | `std::shared_mutex` — конкурентное чтение, эксклюзивная запись |
 
 ## C++20 Concepts
 
-PMM provides concepts for compile-time validation of custom types:
+pmm предоставляет concepts для compile-time валидации пользовательских типов:
 
 ```cpp
 #include "pmm/manager_concept.h"
 #include "pmm/storage_backend.h"
 
-// Check that a type satisfies the manager interface
 static_assert(pmm::PersistMemoryManagerConcept<MyMgr>);
-
-// Use in a template constraint
-template <pmm::PersistMemoryManagerConcept MgrT>
-void process_heap() { /* ... */ }
-
-// Validate a custom storage backend
 static_assert(pmm::StorageBackendConcept<MyStorage>);
 ```
 
-## Architecture
+## Архитектура
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                     Public API                       │
-│  create / load / destroy / allocate / deallocate    │
-│  pptr<T> / pstringview / pmap<K,V>                  │
-├─────────────────────────────────────────────────────┤
-│              AllocatorPolicy                         │
-│  best-fit search · block splitting · coalescing     │
-│  auto-expansion · AVL free-tree rebalancing         │
-├─────────────────────────────────────────────────────┤
-│               Raw Memory Layer                       │
-│  StorageBackend → contiguous byte buffer            │
-│  Block<AT> (TreeNode + prev/next offsets, 32 bytes) │
-│  ManagerHeader (magic, sizes, counters, root ptr)   │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                  Публичный API                           │
+│  create / load / destroy / allocate / deallocate        │
+│  pptr<T> / pstringview / pmap<K,V> / pvector<T>        │
+├─────────────────────────────────────────────────────────┤
+│             AllocatorPolicy                              │
+│  best-fit поиск · разделение блоков · коалесценция      │
+│  авто-расширение · AVL-ребалансировка                   │
+├─────────────────────────────────────────────────────────┤
+│              Слой сырой памяти                           │
+│  StorageBackend → непрерывный буфер байтов              │
+│  Block<AT> (TreeNode + prev/next смещения, 32 байта)    │
+│  ManagerHeader (magic, размеры, счётчики, CRC32)        │
+└─────────────────────────────────────────────────────────┘
 ```
 
-**Memory layout inside the managed region:**
+**Схема памяти внутри управляемой области:**
 
 ```
 [ManagerHeader][Block_0][data_0][Block_1][data_1] ...
 ```
 
-- `ManagerHeader` is stored at offset 0 inside the managed region
-- Every block carries a 32-byte header (`TreeNode` fields 0–23 bytes, `prev`/`next` offsets 24–31 bytes)
-- All cross-block references are granule indices (offsets), never raw pointers
-- On `load()` the linked list is repaired and the AVL free-tree is rebuilt from the block chain
+- `ManagerHeader` хранится по смещению 0 в управляемой области
+- Каждый блок имеет 32-байтный заголовок (`TreeNode` поля 0–23, `prev`/`next` 24–31)
+- Все межблочные ссылки — гранульные индексы, не сырые указатели
+- При `load()` связный список восстанавливается, AVL-дерево свободных блоков перестраивается
 
-## Performance
+## Производительность
 
-Measured on a single core (Release build, Linux x86-64, GCC 13):
+Измерено на одном ядре (Release-сборка, Linux x86-64, GCC 13):
 
-| Operation | Count | Time |
-|-----------|-------|------|
-| `allocate` | 100 000 | ~7 ms |
-| `deallocate` | 100 000 | ~0.8 ms |
-| mixed alloc/dealloc | 1 000 000 | ~14 ms (~14 ns/op) |
+| Операция | Количество | Время |
+|----------|-----------|-------|
+| `allocate` | 100 000 | ~7 мс |
+| `deallocate` | 100 000 | ~0.8 мс |
+| смешанный alloc/dealloc | 1 000 000 | ~14 мс (~14 нс/оп) |
 
-## Repository Structure
+## Структура репозитория
 
 ```
 PersistMemoryManager/
 ├── include/
-│   └── pmm/                          # Modular headers
-│       ├── persist_memory_manager.h  # Main manager class (pptr, pstringview, pmap aliases)
-│       ├── pptr.h                    # Persistent pointer
-│       ├── pstringview.h             # Interned persistent string (v0.11.0)
-│       ├── pmap.h                    # Persistent AVL dictionary (v0.12.0)
-│       ├── pvector.h                 # Persistent vector (v0.21.0)
-│       ├── avl_tree_mixin.h          # Shared AVL tree helpers (v0.13.0)
-│       ├── pmm_presets.h             # Ready-made preset aliases
-│       ├── manager_configs.h         # Config structs (including embedded/large DB)
-│       ├── address_traits.h          # Address space traits (Tiny/Small/Default/Large)
-│       ├── config.h                  # Lock policies
-│       ├── heap_storage.h            # malloc-based backend
-│       ├── mmap_storage.h            # file-mapped backend
-│       ├── static_storage.h          # static-array backend (for embedded)
-│       ├── storage_backend.h         # StorageBackend concept
-│       ├── allocator_policy.h        # Alloc/dealloc algorithms
-│       ├── block.h                   # Block layout (TreeNode + linked list)
-│       ├── block_state.h             # Block state machine
-│       ├── free_block_tree.h         # AVL free-tree policy
-│       ├── tree_node.h               # AVL node fields
-│       ├── types.h                   # ManagerInfo, MemoryStats, constants
-│       ├── io.h                      # save/load utilities
+│   └── pmm/                          # Модульные заголовки
+│       ├── persist_memory_manager.h  # Главный класс менеджера
+│       ├── pptr.h                    # Персистентный указатель
+│       ├── pstringview.h             # Интернированная строка (v0.11.0)
+│       ├── pmap.h                    # AVL-словарь (v0.12.0)
+│       ├── pvector.h                 # Вектор на AVL-дереве (v0.21.0)
+│       ├── avl_tree_mixin.h          # Общие AVL-хелперы (v0.13.0)
+│       ├── pmm_presets.h             # Алиасы пресетов
+│       ├── manager_configs.h         # Конфигурации
+│       ├── address_traits.h          # Address traits (Small/Default/Large)
+│       ├── config.h                  # Политики блокировки
+│       ├── heap_storage.h            # malloc-бэкенд
+│       ├── mmap_storage.h            # mmap-бэкенд
+│       ├── static_storage.h          # Статический бэкенд
+│       ├── storage_backend.h         # Concept бэкенда
+│       ├── allocator_policy.h        # Алгоритмы аллокации
+│       ├── block.h                   # Схема блока
+│       ├── block_state.h             # Машина состояний блока
+│       ├── free_block_tree.h         # AVL-дерево свободных блоков
+│       ├── tree_node.h               # Поля AVL-узла
+│       ├── types.h                   # ManagerInfo, MemoryStats, константы
+│       ├── io.h                      # Утилиты save/load
 │       └── manager_concept.h         # C++20 concepts
 ├── single_include/
-│   └── pmm/                          # Self-contained single-header files
-│       ├── pmm.h                     # Full library, no preset (v0.10.0)
-│       ├── pmm_small_embedded_static_heap.h  # SmallEmbeddedStaticHeap<N> (v0.9.0)
-│       ├── pmm_embedded_static_heap.h        # EmbeddedStaticHeap<N> (v0.8.0)
-│       ├── pmm_embedded_heap.h               # EmbeddedHeap
-│       ├── pmm_single_threaded_heap.h        # SingleThreadedHeap
-│       ├── pmm_multi_threaded_heap.h         # MultiThreadedHeap
-│       ├── pmm_industrial_db_heap.h          # IndustrialDBHeap
-│       └── pmm_large_db_heap.h               # LargeDBHeap (v0.9.0)
-├── examples/                         # Usage examples
-├── tests/                            # Test suite
-├── demo/                             # Visual ImGui/OpenGL demo
-├── docs/                             # Architecture, API docs
-├── scripts/                          # Release helpers
+│   └── pmm/                          # Single-header файлы
+│       ├── pmm.h                     # Полная библиотека (v0.10.0)
+│       └── pmm_*.h                   # Файлы пресетов
+├── examples/                         # Примеры использования
+├── tests/                            # Тесты (130+)
+├── demo/                             # Визуальное ImGui/OpenGL демо
+├── docs/                             # Архитектура, API, план развития
+│   ├── plan.md                       # План развития pmm
+│   └── plan4BinDiffSynchronizer.md   # План миграции BinDiffSynchronizer
+├── scripts/                          # Утилиты для релиза
 └── CMakeLists.txt
 ```
 
-## Contributing
+## План развития
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow. Key points:
+Полный план развития: [docs/plan.md](docs/plan.md)
 
-- C++20 required; targets GCC 10+, Clang 10+, MSVC 2019 16.3+
-- Run `pre-commit install` to enable local quality gates (clang-format, cppcheck, secrets scan)
-- Add a [changelog fragment](changelog.d/README.md) to `changelog.d/` for every PR that touches source code
-- File size limit: 1500 lines per source file
-- All new features must include tests
+**Ближайшие приоритеты (Фаза 3)** — типы для [BinDiffSynchronizer](https://github.com/netkeep80/BinDiffSynchronizer):
+
+- `pstring<ManagerT>` — мутабельная персистентная строка
+- `parray<T, ManagerT>` — массив с O(1) индексацией
+- `pmap::erase()` — удаление из словаря
+- `pallocator<T>` — STL-совместимый аллокатор
+- `ppool<T>` — пул объектов
+
+План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
+
+## Контрибьюция
+
+См. [CONTRIBUTING.md](CONTRIBUTING.md). Ключевые моменты:
+
+- C++20; целевые компиляторы: GCC 10+, Clang 10+, MSVC 2019 16.3+
+- `pre-commit install` для локальных проверок (clang-format, cppcheck, secrets scan)
+- Добавляйте [changelog fragment](changelog.d/README.md) в `changelog.d/` для каждого PR
+- Лимит размера файла: 1500 строк
+- Все новые фичи должны включать тесты
 
 ```bash
-# Format code
+# Форматирование
 clang-format -i include/pmm/your_file.h
 
-# Static analysis
+# Статический анализ
 cppcheck --std=c++20 include/
 
-# Run tests
+# Сборка и тесты
 cmake -B build && cmake --build build && ctest --test-dir build
 ```
 
-## Documentation
+## Документация
 
 - [API Reference (Doxygen)](https://netkeep80.github.io/PersistMemoryManager/)
-- [Architecture](docs/architecture.md)
+- [Архитектура](docs/architecture.md)
 - [API Reference (Markdown)](docs/api_reference.md)
-- [Performance](docs/performance.md)
 - [Changelog](CHANGELOG.md)
+- [План развития](docs/plan.md)
+- [План миграции BinDiffSynchronizer](docs/plan4BinDiffSynchronizer.md)
 
-## License
+## Лицензия
 
-This is free and unencumbered software released into the public domain. See [LICENSE](LICENSE) for details.
+Свободное ПО, выпущенное в общественное достояние. См. [LICENSE](LICENSE).
