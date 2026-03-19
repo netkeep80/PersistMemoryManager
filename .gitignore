@@ -15,6 +15,7 @@ build_dbg/
 build_demo/
 build-demo/
 build_local/
+build_release/
 build_log.txt
 test_results.txt
 experiments/
