@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.28.0] - 2026-03-19
+
+### Added
+- `parray<T, ManagerT>` — persistent dynamic array with O(1) random access (Issue #195, Phase 3.2)
+  - `push_back()` / `pop_back()` — add/remove elements (amortized O(1))
+  - `at(i)` / `operator[]` — O(1) indexed access
+  - `set(i, value)` — modify element at index
+  - `reserve(n)` / `resize(n)` — capacity management
+  - `front()` / `back()` / `data()` — element accessors
+  - `clear()` / `free_data()` — reset and deallocation
+  - `operator==` / `operator!=` — equality comparison
+  - POD-structure (`std::is_trivially_copyable_v == true`) for direct serialization in PAP
+  - Manager alias: `Mgr::parray<T>` for concise usage
+- 23 tests for parray covering all API operations
+
+
 ## [0.27.0] - 2026-03-19
 
 ### Added
