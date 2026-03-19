@@ -673,6 +673,23 @@ void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own
 namespace pmm
 {
 
+enum class PmmError : std::uint8_t
+{
+    Ok              = 0,  
+    NotInitialized  = 1,  
+    InvalidSize     = 2,  
+    Overflow        = 3,  
+    OutOfMemory     = 4,  
+    ExpandFailed    = 5,  
+    InvalidMagic    = 6,  
+    CrcMismatch     = 7,  
+    SizeMismatch    = 8,  
+    GranuleMismatch = 9,  
+    BackendError    = 10, 
+    InvalidPointer  = 11, 
+    BlockLocked     = 12, 
+};
+
 inline constexpr std::size_t kGranuleSize = 16;
 static_assert( ( kGranuleSize & ( kGranuleSize - 1 ) ) == 0, "kGranuleSize must be a power of 2 (Issue #83)" );
 static_assert( kGranuleSize == pmm::DefaultAddressTraits::granule_size,
@@ -3574,15 +3591,27 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     template <typename T> using ppool = pmm::ppool<T, manager_type>;
 
+    static PmmError last_error() noexcept { return _last_error; }
+
+    static void clear_error() noexcept { _last_error = PmmError::Ok; }
+
+    static void set_last_error( PmmError err ) noexcept { _last_error = err; }
+
     static bool create( std::size_t initial_size ) noexcept
     {
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( initial_size < detail::kMinMemorySize )
+        {
+            _last_error = PmmError::InvalidSize;
             return false;
+        }
         
         static constexpr std::size_t kGranSzCreate = address_traits::granule_size;
         if ( initial_size > std::numeric_limits<std::size_t>::max() - ( kGranSzCreate - 1 ) )
-            return false; 
+        {
+            _last_error = PmmError::Overflow;
+            return false;
+        }
         std::size_t aligned = ( ( initial_size + kGranSzCreate - 1 ) / kGranSzCreate ) * kGranSzCreate;
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < aligned )
         {
@@ -3590,39 +3619,69 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             std::size_t additional =
                 ( _backend.total_size() < aligned ) ? ( aligned - _backend.total_size() ) : aligned;
             if ( !_backend.expand( additional ) )
+            {
+                _last_error = PmmError::ExpandFailed;
                 return false;
+            }
         }
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < aligned )
+        {
+            _last_error = PmmError::BackendError;
             return false;
-        return init_layout( _backend.base_ptr(), _backend.total_size() );
+        }
+        bool ok = init_layout( _backend.base_ptr(), _backend.total_size() );
+        if ( ok )
+            _last_error = PmmError::Ok;
+        return ok;
     }
 
     static bool create() noexcept
     {
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < detail::kMinMemorySize )
+        {
+            _last_error = ( _backend.base_ptr() == nullptr ) ? PmmError::BackendError : PmmError::InvalidSize;
             return false;
-        return init_layout( _backend.base_ptr(), _backend.total_size() );
+        }
+        bool ok = init_layout( _backend.base_ptr(), _backend.total_size() );
+        if ( ok )
+            _last_error = PmmError::Ok;
+        return ok;
     }
 
     static bool load() noexcept
     {
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < detail::kMinMemorySize )
+        {
+            _last_error = ( _backend.base_ptr() == nullptr ) ? PmmError::BackendError : PmmError::InvalidSize;
             return false;
+        }
         std::uint8_t*                          base = _backend.base_ptr();
         detail::ManagerHeader<address_traits>* hdr  = get_header( base );
-        if ( hdr->magic != kMagic || hdr->total_size != _backend.total_size() )
+        if ( hdr->magic != kMagic )
+        {
+            _last_error = PmmError::InvalidMagic;
             return false;
+        }
+        if ( hdr->total_size != _backend.total_size() )
+        {
+            _last_error = PmmError::SizeMismatch;
+            return false;
+        }
         
         if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
+        {
+            _last_error = PmmError::GranuleMismatch;
             return false;
+        }
         hdr->owns_memory     = false;
         hdr->prev_total_size = 0;
         allocator::repair_linked_list( base, hdr );
         allocator::recompute_counters( base, hdr );
         allocator::rebuild_free_tree( base, hdr );
         _initialized = true;
+        _last_error  = PmmError::Ok;
         return true;
     }
 
@@ -3643,8 +3702,16 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static void* allocate( std::size_t user_size ) noexcept
     {
         typename thread_policy::unique_lock_type lock( _mutex );
-        if ( !_initialized || user_size == 0 )
+        if ( !_initialized )
+        {
+            _last_error = PmmError::NotInitialized;
             return nullptr;
+        }
+        if ( user_size == 0 )
+        {
+            _last_error = PmmError::InvalidSize;
+            return nullptr;
+        }
 
         std::uint8_t*                          base = _backend.base_ptr();
         detail::ManagerHeader<address_traits>* hdr  = get_header( base );
@@ -3654,21 +3721,34 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             data_gran = 1;
         
         if ( data_gran > std::numeric_limits<index_type>::max() - kBlockHdrGranules )
+        {
+            _last_error = PmmError::Overflow;
             return nullptr;
+        }
         index_type needed = kBlockHdrGranules + data_gran;
         index_type idx    = free_block_tree::find_best_fit( base, hdr, needed );
 
         if ( idx != address_traits::no_block )
+        {
+            _last_error = PmmError::Ok;
             return allocator::allocate_from_block( base, hdr, idx, user_size );
+        }
 
         if ( !do_expand( user_size ) )
+        {
+            _last_error = PmmError::OutOfMemory;
             return nullptr;
+        }
 
         base = _backend.base_ptr();
         hdr  = get_header( base );
         idx  = free_block_tree::find_best_fit( base, hdr, needed );
         if ( idx != address_traits::no_block )
+        {
+            _last_error = PmmError::Ok;
             return allocator::allocate_from_block( base, hdr, idx, user_size );
+        }
+        _last_error = PmmError::OutOfMemory;
         return nullptr;
     }
 
@@ -4034,6 +4114,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static inline typename thread_policy::mutex_type _mutex{};
 
+    static inline PmmError _last_error{ PmmError::Ok };
+
     static pmm::Block<address_traits>* find_block_from_user_ptr( void* ptr ) noexcept
     {
         std::uint8_t*                          base = _backend.base_ptr();
@@ -4398,7 +4480,10 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
         std::uint32_t stored_crc   = hdr->crc32;
         std::uint32_t computed_crc = detail::compute_image_crc32<address_traits>( buf, file_size );
         if ( stored_crc != 0 && stored_crc != computed_crc )
+        {
+            MgrT::set_last_error( PmmError::CrcMismatch );
             return false;
+        }
         
     }
 

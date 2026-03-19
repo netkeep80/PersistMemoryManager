@@ -172,6 +172,9 @@ pmm_add_test(test_issue199_ppool test_issue199_ppool.cpp)
 # ─── Тесты корневого объекта в ManagerHeader (Issue #200, Phase 3.7) ───────
 pmm_add_test(test_issue200_root_object test_issue200_root_object.cpp)
 
+# ─── Тесты кодов ошибок PmmError (Issue #201, Phase 4.1) ─────────────────
+pmm_add_test(test_issue201_error_codes test_issue201_error_codes.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 
