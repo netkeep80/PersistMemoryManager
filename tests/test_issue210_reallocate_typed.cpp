@@ -339,7 +339,7 @@ static bool test_overflow_protection()
 
     // Attempt to reallocate with a count that would overflow size_t
     std::size_t                 huge_count = ( std::numeric_limits<std::size_t>::max )() / sizeof( std::uint32_t ) + 1;
-    MgrOvf::pptr<std::uint32_t> p2        = MgrOvf::reallocate_typed( p, 4, huge_count );
+    MgrOvf::pptr<std::uint32_t> p2         = MgrOvf::reallocate_typed( p, 4, huge_count );
     PMM_TEST( p2.is_null() );
     PMM_TEST( MgrOvf::last_error() == pmm::PmmError::Overflow );
 
@@ -371,7 +371,7 @@ static bool test_old_block_preserved_on_failure()
         MgrSafe::resolve( p )[i] = static_cast<std::uint8_t>( 0xDD );
 
     // Try to reallocate with overflow count — should fail
-    std::size_t                  huge = ( std::numeric_limits<std::size_t>::max )() / sizeof( std::uint8_t );
+    std::size_t                 huge = ( std::numeric_limits<std::size_t>::max )() / sizeof( std::uint8_t );
     MgrSafe::pptr<std::uint8_t> p2   = MgrSafe::reallocate_typed( p, 64, huge );
     // This may or may not fail depending on overflow path.
     // Even if it fails, original data should be intact.

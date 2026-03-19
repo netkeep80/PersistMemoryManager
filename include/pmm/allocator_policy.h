@@ -397,6 +397,93 @@ class AllocatorPolicy
         hdr->alloc_count = alloc_count;
         hdr->used_size   = used_gran;
     }
+
+    // ─── Issue #210: reallocate_typed helpers ─────────────────────────────────
+
+    /// @brief In-place shrink: update weight, split remainder into free block + coalesce.
+    static void realloc_shrink( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx,
+                                void* blk_raw, index_type old_data_gran, index_type new_data_gran ) noexcept
+    {
+        static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
+        index_type                  remainder   = old_data_gran - new_data_gran;
+        if ( remainder >= kBlkHdrGran + 1 )
+        {
+            index_type new_free_idx = blk_idx + kBlkHdrGran + new_data_gran;
+            void*      new_free_blk = detail::block_at<AddressTraitsT>( base, new_free_idx );
+            index_type old_next     = BlockState::get_next_offset( blk_raw );
+            auto*      old_next_blk =
+                ( old_next != AddressTraitsT::no_block ) ? detail::block_at<AddressTraitsT>( base, old_next ) : nullptr;
+            std::memset( new_free_blk, 0, sizeof( BlockT ) );
+            BlockState::init_fields( new_free_blk, blk_idx, old_next, 1, 0, 0 );
+            BlockState::set_next_offset_of( blk_raw, new_free_idx );
+            if ( old_next_blk != nullptr )
+                BlockState::set_prev_offset_of( old_next_blk, new_free_idx );
+            else
+                hdr->last_block_offset = new_free_idx;
+            BlockState::set_weight_of( blk_raw, new_data_gran );
+            hdr->block_count++;
+            hdr->free_count++;
+            hdr->used_size += kBlkHdrGran;
+            hdr->used_size -= ( old_data_gran - new_data_gran );
+            coalesce( base, hdr, new_free_idx );
+        }
+        else
+        {
+            BlockState::set_weight_of( blk_raw, new_data_gran );
+            hdr->used_size -= ( old_data_gran - new_data_gran );
+        }
+    }
+
+    /// @brief Try in-place grow by absorbing adjacent free block. Returns true on success.
+    static bool realloc_grow( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx,
+                              void* blk_raw, index_type old_data_gran, index_type new_data_gran ) noexcept
+    {
+        static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
+        index_type                  next_idx    = BlockState::get_next_offset( blk_raw );
+        if ( next_idx == AddressTraitsT::no_block )
+            return false;
+        void* next_blk = detail::block_at<AddressTraitsT>( base, next_idx );
+        if ( BlockState::get_weight( next_blk ) != 0 )
+            return false;
+        index_type next_total =
+            detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, next_idx ) );
+        index_type available = old_data_gran + next_total;
+        if ( available < new_data_gran )
+            return false;
+        FreeBlockTreeT::remove( base, hdr, next_idx );
+        index_type next_next = BlockState::get_next_offset( next_blk );
+        BlockState::set_next_offset_of( blk_raw, next_next );
+        if ( next_next != AddressTraitsT::no_block )
+            BlockState::set_prev_offset_of( detail::block_at<AddressTraitsT>( base, next_next ), blk_idx );
+        else
+            hdr->last_block_offset = blk_idx;
+        std::memset( next_blk, 0, sizeof( BlockT ) );
+        hdr->block_count--;
+        hdr->free_count--;
+        if ( hdr->used_size >= kBlkHdrGran )
+            hdr->used_size -= kBlkHdrGran;
+        index_type rem = available - new_data_gran;
+        if ( rem >= kBlkHdrGran + 1 )
+        {
+            index_type rem_idx      = blk_idx + kBlkHdrGran + new_data_gran;
+            void*      rem_blk      = detail::block_at<AddressTraitsT>( base, rem_idx );
+            index_type blk_new_next = BlockState::get_next_offset( blk_raw );
+            std::memset( rem_blk, 0, sizeof( BlockT ) );
+            BlockState::init_fields( rem_blk, blk_idx, blk_new_next, 1, 0, 0 );
+            BlockState::set_next_offset_of( blk_raw, rem_idx );
+            if ( blk_new_next != AddressTraitsT::no_block )
+                BlockState::set_prev_offset_of( detail::block_at<AddressTraitsT>( base, blk_new_next ), rem_idx );
+            else
+                hdr->last_block_offset = rem_idx;
+            hdr->block_count++;
+            hdr->free_count++;
+            hdr->used_size += kBlkHdrGran;
+            FreeBlockTreeT::insert( base, hdr, rem_idx );
+        }
+        BlockState::set_weight_of( blk_raw, new_data_gran );
+        hdr->used_size += ( new_data_gran - old_data_gran );
+        return true;
+    }
 };
 
 /// @brief Псевдоним AllocatorPolicy с настройками по умолчанию.
