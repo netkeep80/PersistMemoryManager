@@ -2402,11 +2402,20 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     using node_type    = pmap_node<_K, _V>;
     using node_pptr    = typename ManagerT::template pptr<node_type>;
 
+    static constexpr index_type no_block = ManagerT::address_traits::no_block;
+
     index_type _root_idx;
 
     pmap() noexcept : _root_idx( static_cast<index_type>( 0 ) ) {}
 
     bool empty() const noexcept { return _root_idx == static_cast<index_type>( 0 ); }
+
+    std::size_t size() const noexcept
+    {
+        if ( _root_idx == static_cast<index_type>( 0 ) )
+            return 0;
+        return _subtree_count( node_pptr( _root_idx ) );
+    }
 
     node_pptr insert( const _K& key, const _V& val ) noexcept
     {
@@ -2433,9 +2442,9 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         obj->value = val;
 
         auto& tn = new_node.tree_node();
-        tn.set_left( static_cast<index_type>( 0 ) );
-        tn.set_right( static_cast<index_type>( 0 ) );
-        tn.set_parent( static_cast<index_type>( 0 ) );
+        tn.set_left( no_block );
+        tn.set_right( no_block );
+        tn.set_parent( no_block );
         tn.set_height( static_cast<std::int16_t>( 1 ) );
 
         _avl_insert( new_node );
@@ -2447,7 +2456,99 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
 
     bool contains( const _K& key ) const noexcept { return !_avl_find( key ).is_null(); }
 
+    bool erase( const _K& key ) noexcept
+    {
+        node_pptr target = _avl_find( key );
+        if ( target.is_null() )
+            return false;
+
+        detail::avl_remove( target, _root_idx );
+        ManagerT::template deallocate_typed<node_type>( target );
+        return true;
+    }
+
+    void clear() noexcept
+    {
+        if ( _root_idx != static_cast<index_type>( 0 ) )
+            _clear_subtree( node_pptr( _root_idx ) );
+        _root_idx = static_cast<index_type>( 0 );
+    }
+
     void reset() noexcept { _root_idx = static_cast<index_type>( 0 ); }
+
+    struct iterator
+    {
+        using value_type = node_type;
+        using pointer    = node_pptr;
+
+        index_type _current_idx; 
+
+        iterator() noexcept : _current_idx( static_cast<index_type>( 0 ) ) {}
+        explicit iterator( index_type idx ) noexcept : _current_idx( idx ) {}
+
+        bool operator==( const iterator& other ) const noexcept { return _current_idx == other._current_idx; }
+        bool operator!=( const iterator& other ) const noexcept { return _current_idx != other._current_idx; }
+
+        node_pptr operator*() const noexcept
+        {
+            if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
+                return node_pptr();
+            return node_pptr( _current_idx );
+        }
+
+        iterator& operator++() noexcept
+        {
+            if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
+                return *this;
+
+            node_pptr cur( _current_idx );
+
+            auto right_idx = cur.tree_node().get_right();
+            if ( right_idx != no_block )
+            {
+                node_pptr right( right_idx );
+                while ( true )
+                {
+                    auto left_idx = right.tree_node().get_left();
+                    if ( left_idx == no_block )
+                        break;
+                    right = node_pptr( left_idx );
+                }
+                _current_idx = right.offset();
+                return *this;
+            }
+
+            while ( true )
+            {
+                auto parent_idx = cur.tree_node().get_parent();
+                if ( parent_idx == no_block )
+                {
+                    
+                    _current_idx = static_cast<index_type>( 0 );
+                    return *this;
+                }
+                node_pptr parent( parent_idx );
+                auto      parent_left = parent.tree_node().get_left();
+                if ( parent_left == cur.offset() )
+                {
+                    
+                    _current_idx = parent_idx;
+                    return *this;
+                }
+                cur = parent;
+            }
+        }
+    };
+
+    iterator begin() const noexcept
+    {
+        if ( _root_idx == static_cast<index_type>( 0 ) )
+            return iterator();
+        node_pptr min = detail::avl_min_node( node_pptr( _root_idx ) );
+        return iterator( min.offset() );
+    }
+
+    iterator end() const noexcept { return iterator( static_cast<index_type>( 0 ) ); }
 
   private:
     
@@ -2478,6 +2579,29 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
                 return ( obj != nullptr ) && ( new_obj->key < obj->key );
             },
             []( node_pptr p ) -> node_type* { return ManagerT::template resolve<node_type>( p ); } );
+    }
+
+    static std::size_t _subtree_count( node_pptr p ) noexcept
+    {
+        if ( p.is_null() )
+            return 0;
+        std::size_t count   = 1;
+        auto        left_p  = detail::pptr_get_left( p );
+        auto        right_p = detail::pptr_get_right( p );
+        count += _subtree_count( left_p );
+        count += _subtree_count( right_p );
+        return count;
+    }
+
+    static void _clear_subtree( node_pptr p ) noexcept
+    {
+        if ( p.is_null() )
+            return;
+        auto left_p  = detail::pptr_get_left( p );
+        auto right_p = detail::pptr_get_right( p );
+        _clear_subtree( left_p );
+        _clear_subtree( right_p );
+        ManagerT::template deallocate_typed<node_type>( p );
     }
 };
 

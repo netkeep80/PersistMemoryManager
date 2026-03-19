@@ -157,6 +157,9 @@ pmm_add_test(test_issue45_pstring test_issue45_pstring.cpp)
 # ─── Тесты персистентного массива parray (Issue #195, Phase 3.2) ─────────────
 pmm_add_test(test_issue195_parray test_issue195_parray.cpp)
 
+# ─── Тесты pmap erase/size/iterator/clear (Issue #196, Phase 3.3) ──────────
+pmm_add_test(test_issue196_pmap_erase test_issue196_pmap_erase.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 
