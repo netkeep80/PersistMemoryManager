@@ -67,6 +67,7 @@
 #include "pmm/pallocator.h"
 #include "pmm/parray.h"
 #include "pmm/pmap.h"
+#include "pmm/ppool.h"
 #include "pmm/pptr.h"
 #include "pmm/pstring.h"
 #include "pmm/pvector.h"
@@ -214,6 +215,20 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * @tparam T Тип элемента.
      */
     template <typename T> using pallocator = pmm::pallocator<T, manager_type>;
+
+    /**
+     * @brief Алиас для персистентного пула объектов (Issue #199, Phase 3.6).
+     *
+     * Позволяет писать:
+     * @code
+     *   Mgr::pptr<Mgr::ppool<int>> pool = Mgr::create_typed<Mgr::ppool<int>>();
+     *   int* obj = pool->allocate();
+     * @endcode
+     * вместо `Mgr::pptr<pmm::ppool<int, Mgr>> pool = ...;`
+     *
+     * @tparam T Тип объекта. Должен быть trivially copyable.
+     */
+    template <typename T> using ppool = pmm::ppool<T, manager_type>;
 
     // ─── Статические методы управления жизненным циклом ──────────────────────
 

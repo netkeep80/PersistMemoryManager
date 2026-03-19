@@ -126,7 +126,7 @@ STL-контейнеров с ПАП.
 - `deallocate(p, n)` → `ManagerT::deallocate(p)`
 - Позволит: `std::vector<T, pmm::pallocator<T, Mgr>>`
 
-### 3.6 Пул объектов `ppool<T, ManagerT>`
+### 3.6 Пул объектов `ppool<T, ManagerT>` ✅ ВЫПОЛНЕНО (#199)
 
 **Текущая ситуация:** BinDiffSynchronizer реализует `pjson_pool_pmm` для массового
 выделения JSON-узлов.
@@ -268,7 +268,7 @@ STL-контейнеров с ПАП.
 | 9 | ~~`erase()` для `pmap`~~ | 3.3 | ~~Высокий~~ | ~~Низкая~~ | ✅ #196 |
 | 10 | ~~`erase(index)` для `pvector`~~ | 3.4 | ~~Высокий~~ | ~~Низкая~~ | ✅ #197 |
 | 11 | ~~STL-аллокатор `pallocator<T>`~~ | 3.5 | ~~Высокий~~ | ~~Средняя~~ | ✅ #198 |
-| 12 | Пул объектов `ppool<T>` | 3.6 | Высокий | Средняя | |
+| 12 | ~~Пул объектов `ppool<T>`~~ | 3.6 | ~~Высокий~~ | ~~Средняя~~ | ✅ #199 |
 | 13 | Корневой объект в ManagerHeader | 3.7 | Высокий | Низкая | |
 | 14 | Коды ошибок | 4.1 | Средний | Средняя | |
 | 15 | Хуки логирования | 4.2 | Средний | Средняя | |
@@ -286,4 +286,4 @@ STL-контейнеров с ПАП.
 
 ---
 
-*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198.*
+*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199.*

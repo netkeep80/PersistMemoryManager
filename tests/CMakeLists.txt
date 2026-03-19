@@ -166,6 +166,9 @@ pmm_add_test(test_issue197_pvector_erase test_issue197_pvector_erase.cpp)
 # ─── Тесты STL-совместимого аллокатора pallocator (Issue #198, Phase 3.5) ───
 pmm_add_test(test_issue198_pallocator test_issue198_pallocator.cpp)
 
+# ─── Тесты персистентного пула объектов ppool (Issue #199, Phase 3.6) ──────
+pmm_add_test(test_issue199_ppool test_issue199_ppool.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 
