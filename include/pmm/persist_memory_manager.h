@@ -66,6 +66,7 @@
 #include "pmm/manager_configs.h"
 #include "pmm/pmap.h"
 #include "pmm/pptr.h"
+#include "pmm/pstring.h"
 #include "pmm/pvector.h"
 #include "pmm/pstringview.h"
 #include "pmm/types.h"
@@ -139,6 +140,18 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * вместо `Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");`
      */
     using pstringview = pmm::pstringview<manager_type>;
+
+    /**
+     * @brief Псевдоним для мутабельной персистентной строки, привязанной к данному менеджеру.
+     *
+     * Позволяет использовать краткий синтаксис:
+     * @code
+     *   Mgr::pptr<Mgr::pstring> p = Mgr::create_typed<Mgr::pstring>();
+     *   p->assign("hello");
+     * @endcode
+     * вместо `Mgr::pptr<pmm::pstring<Mgr>> p = ...;`
+     */
+    using pstring = pmm::pstring<manager_type>;
 
     /**
      * @brief Псевдоним для персистентного словаря (AVL-дерева), привязанного к данному менеджеру.
