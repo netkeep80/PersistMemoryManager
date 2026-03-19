@@ -267,14 +267,14 @@ static bool test_on_corruption_bad_magic()
 
     using Mgr = pmm::PersistMemoryManager<TestLoggingConfig, 342>;
     Mgr::create( 4096 );
-    pmm::save_manager<Mgr>( "/tmp/test_issue202_mag.dat" );
+    pmm::save_manager<Mgr>( "test_issue202_mag.dat" );
     Mgr::destroy();
 
     // Load valid image into buffer.
     Mgr::create( 4096 );
     std::uint8_t* base     = Mgr::backend().base_ptr();
     std::size_t   buf_size = Mgr::backend().total_size();
-    std::FILE*    f        = std::fopen( "/tmp/test_issue202_mag.dat", "rb" );
+    std::FILE*    f        = std::fopen( "test_issue202_mag.dat", "rb" );
     PMM_TEST( f != nullptr );
     std::fread( base, 1, buf_size, f );
     std::fclose( f );
@@ -292,7 +292,7 @@ static bool test_on_corruption_bad_magic()
     PMM_TEST( TestHookCounters::last_corrupt_err == pmm::PmmError::InvalidMagic );
 
     Mgr::destroy();
-    std::remove( "/tmp/test_issue202_mag.dat" );
+    std::remove( "test_issue202_mag.dat" );
     return true;
 }
 
@@ -303,14 +303,14 @@ static bool test_on_corruption_size_mismatch()
 
     using Mgr = pmm::PersistMemoryManager<TestLoggingConfig, 340>;
     Mgr::create( 4096 );
-    pmm::save_manager<Mgr>( "/tmp/test_issue202_sz.dat" );
+    pmm::save_manager<Mgr>( "test_issue202_sz.dat" );
     Mgr::destroy();
 
     // Load file into buffer via a fresh create.
     Mgr::create( 4096 );
     std::uint8_t* base     = Mgr::backend().base_ptr();
     std::size_t   buf_size = Mgr::backend().total_size();
-    std::FILE*    f        = std::fopen( "/tmp/test_issue202_sz.dat", "rb" );
+    std::FILE*    f        = std::fopen( "test_issue202_sz.dat", "rb" );
     PMM_TEST( f != nullptr );
     std::fread( base, 1, buf_size, f );
     std::fclose( f );
@@ -329,7 +329,7 @@ static bool test_on_corruption_size_mismatch()
     PMM_TEST( TestHookCounters::last_corrupt_err == pmm::PmmError::SizeMismatch );
 
     Mgr::destroy();
-    std::remove( "/tmp/test_issue202_sz.dat" );
+    std::remove( "test_issue202_sz.dat" );
     return true;
 }
 
@@ -340,14 +340,14 @@ static bool test_on_corruption_granule_mismatch()
 
     using Mgr = pmm::PersistMemoryManager<TestLoggingConfig, 341>;
     Mgr::create( 4096 );
-    pmm::save_manager<Mgr>( "/tmp/test_issue202_gr.dat" );
+    pmm::save_manager<Mgr>( "test_issue202_gr.dat" );
     Mgr::destroy();
 
     // Load file into buffer via a fresh create.
     Mgr::create( 4096 );
     std::uint8_t* base     = Mgr::backend().base_ptr();
     std::size_t   buf_size = Mgr::backend().total_size();
-    std::FILE*    f        = std::fopen( "/tmp/test_issue202_gr.dat", "rb" );
+    std::FILE*    f        = std::fopen( "test_issue202_gr.dat", "rb" );
     PMM_TEST( f != nullptr );
     std::fread( base, 1, buf_size, f );
     std::fclose( f );
@@ -364,7 +364,7 @@ static bool test_on_corruption_granule_mismatch()
     PMM_TEST( TestHookCounters::last_corrupt_err == pmm::PmmError::GranuleMismatch );
 
     Mgr::destroy();
-    std::remove( "/tmp/test_issue202_gr.dat" );
+    std::remove( "test_issue202_gr.dat" );
     return true;
 }
 
@@ -375,17 +375,17 @@ static bool test_on_load_hook()
 
     using MgrSave = pmm::PersistMemoryManager<TestLoggingConfig, 330>;
     MgrSave::create( 4096 );
-    pmm::save_manager<MgrSave>( "/tmp/test_issue202_load.dat" );
+    pmm::save_manager<MgrSave>( "test_issue202_load.dat" );
     MgrSave::destroy();
 
     MgrSave::create( 4096 );
     TestHookCounters::reset();
-    bool ok = pmm::load_manager_from_file<MgrSave>( "/tmp/test_issue202_load.dat" );
+    bool ok = pmm::load_manager_from_file<MgrSave>( "test_issue202_load.dat" );
     PMM_TEST( ok );
     PMM_TEST( TestHookCounters::load_count == 1 );
 
     MgrSave::destroy();
-    std::remove( "/tmp/test_issue202_load.dat" );
+    std::remove( "test_issue202_load.dat" );
     return true;
 }
 
@@ -395,11 +395,11 @@ static bool test_on_corruption_crc_mismatch()
     TestHookCounters::reset();
 
     MgrLogCrc::create( 4096 );
-    pmm::save_manager<MgrLogCrc>( "/tmp/test_issue202_crc.dat" );
+    pmm::save_manager<MgrLogCrc>( "test_issue202_crc.dat" );
     MgrLogCrc::destroy();
 
     // Corrupt the file.
-    std::FILE* f = std::fopen( "/tmp/test_issue202_crc.dat", "r+b" );
+    std::FILE* f = std::fopen( "test_issue202_crc.dat", "r+b" );
     PMM_TEST( f != nullptr );
     // Corrupt a byte near the end of the file.
     std::fseek( f, -10, SEEK_END );
@@ -409,13 +409,13 @@ static bool test_on_corruption_crc_mismatch()
 
     MgrLogCrc::create( 4096 );
     TestHookCounters::reset();
-    bool ok = pmm::load_manager_from_file<MgrLogCrc>( "/tmp/test_issue202_crc.dat" );
+    bool ok = pmm::load_manager_from_file<MgrLogCrc>( "test_issue202_crc.dat" );
     PMM_TEST( !ok );
     PMM_TEST( TestHookCounters::corruption_count == 1 );
     PMM_TEST( TestHookCounters::last_corrupt_err == pmm::PmmError::CrcMismatch );
 
     MgrLogCrc::destroy();
-    std::remove( "/tmp/test_issue202_crc.dat" );
+    std::remove( "test_issue202_crc.dat" );
     return true;
 }
 
