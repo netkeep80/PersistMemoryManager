@@ -136,9 +136,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a4be741215a829bfcc3bac0411222c193" id="r_a4be741215a829bfcc3bac0411222c193"><td class="memItemLeft" align="right" valign="top">std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a4be741215a829bfcc3bac0411222c193">crc32</a></td></tr>
 <tr class="memdesc:a4be741215a829bfcc3bac0411222c193"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #43 Phase 2.1: CRC32 checksum of the persisted image.  <br /></td></tr>
 <tr class="separator:a4be741215a829bfcc3bac0411222c193"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aada05c29cf8405a28adb14e44502f929" id="r_aada05c29cf8405a28adb14e44502f929"><td class="memItemLeft" align="right" valign="top">std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#aada05c29cf8405a28adb14e44502f929">_reserved</a> [4]</td></tr>
-<tr class="memdesc:aada05c29cf8405a28adb14e44502f929"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved bytes (Issue #176: was prev_base_ptr; 4 bytes used for crc32)  <br /></td></tr>
-<tr class="separator:aada05c29cf8405a28adb14e44502f929"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad96008f70312466dfde8705f46ba1c9f" id="r_ad96008f70312466dfde8705f46ba1c9f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ad96008f70312466dfde8705f46ba1c9f">root_offset</a></td></tr>
+<tr class="memdesc:ad96008f70312466dfde8705f46ba1c9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #200 Phase 3.7: Root object granule index (no_block = no root set)  <br /></td></tr>
+<tr class="separator:ad96008f70312466dfde8705f46ba1c9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> = DefaultAddressTraits&gt;<br />
@@ -183,26 +183,6 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Reserved padding byte (Issue #176: was prev_owns_memory) </p>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00182">182</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
-
-</div>
-</div>
-<a id="aada05c29cf8405a28adb14e44502f929" name="aada05c29cf8405a28adb14e44502f929"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aada05c29cf8405a28adb14e44502f929">&#9670;&#160;</a></span>_reserved</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">std::uint8_t <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::_reserved[4]</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Reserved bytes (Issue #176: was prev_base_ptr; 4 bytes used for crc32) </p>
-
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00186">186</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -423,6 +403,26 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Previous buffer size in bytes (runtime-only) </p>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00184">184</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="ad96008f70312466dfde8705f46ba1c9f" name="ad96008f70312466dfde8705f46ba1c9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad96008f70312466dfde8705f46ba1c9f">&#9670;&#160;</a></span>root_offset</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = DefaultAddressTraits&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#af9a78db8736e1b359bf614e2cbad739c">index_type</a> <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">pmm::detail::ManagerHeader</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt;::root_offset</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Issue #200 Phase 3.7: Root object granule index (no_block = no root set) </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00186">186</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>

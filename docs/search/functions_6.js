@@ -11,7 +11,7 @@ var searchData=
   ['get_5fprev_5foffset_8',['get_prev_offset',['../classpmm_1_1BlockStateBase.html#a7b9ba4a4375eb002dcec81b03b3dea9a',1,'pmm::BlockStateBase']]],
   ['get_5fright_9',['get_right',['../structpmm_1_1TreeNode.html#aca9131c7b697a9cda5eb464dc1d33042',1,'pmm::TreeNode']]],
   ['get_5fright_5foffset_10',['get_right_offset',['../classpmm_1_1BlockStateBase.html#ab0e22b2ee40844b4e93df60f92991dbc',1,'pmm::BlockStateBase']]],
-  ['get_5froot_11',['get_root',['../structpmm_1_1TreeNode.html#a5f69a6a6e4e8bfff2ee604611771f830',1,'pmm::TreeNode']]],
+  ['get_5froot_11',['get_root',['../classpmm_1_1PersistMemoryManager.html#a1258120c73e4ca3c783b58fda582e4ad',1,'pmm::PersistMemoryManager::get_root()'],['../structpmm_1_1TreeNode.html#a5f69a6a6e4e8bfff2ee604611771f830',1,'pmm::TreeNode::get_root()']]],
   ['get_5froot_5foffset_12',['get_root_offset',['../classpmm_1_1BlockStateBase.html#ae0a29f9d1ad14ecd87218af498e0a202',1,'pmm::BlockStateBase']]],
   ['get_5ftree_5fheight_13',['get_tree_height',['../classpmm_1_1PersistMemoryManager.html#ab7311a297d3aba90523186b5b6b7472f',1,'pmm::PersistMemoryManager']]],
   ['get_5ftree_5fleft_5foffset_14',['get_tree_left_offset',['../classpmm_1_1PersistMemoryManager.html#a21bc7451ded73e225c0183ce68ec41a4',1,'pmm::PersistMemoryManager']]],
