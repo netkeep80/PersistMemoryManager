@@ -205,13 +205,17 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a62ff142221c6e1e54e6aee2b72588d72"><td class="memTemplItemLeft" align="right" valign="top">static T *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a62ff142221c6e1e54e6aee2b72588d72">resolve_at</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p, std::size_t i) noexcept</td></tr>
 <tr class="memdesc:a62ff142221c6e1e54e6aee2b72588d72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменовать pptr&lt;T&gt; и получить указатель на i-й элемент массива.  <br /></td></tr>
 <tr class="separator:a62ff142221c6e1e54e6aee2b72588d72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9e620674b16d3b5395edd976b2210d8" id="r_ae9e620674b16d3b5395edd976b2210d8"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ae9e620674b16d3b5395edd976b2210d8"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#ae9e620674b16d3b5395edd976b2210d8">pptr_from_byte_offset</a> (std::size_t byte_off) noexcept</td></tr>
+<tr class="memdesc:ae9e620674b16d3b5395edd976b2210d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Создать pptr&lt;T&gt; из байтового смещения (Issue #211, Phase 4.4). Обратная операция к <a class="el" href="classpmm_1_1pptr.html#a26dbccf8fd0c7995dcdf12d13deb625e" title="Получить байтовое смещение из гранульного индекса (Issue #211, Phase 4.4).">pptr::byte_offset()</a>. Смещение должно быть кратно granule_size.  <br /></td></tr>
+<tr class="separator:ae9e620674b16d3b5395edd976b2210d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27d4816b2748eeecf20a35c73104784d" id="r_a27d4816b2748eeecf20a35c73104784d"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a27d4816b2748eeecf20a35c73104784d"><td class="memTemplItemLeft" align="right" valign="top">static bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a27d4816b2748eeecf20a35c73104784d">is_valid_ptr</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p) noexcept</td></tr>
 <tr class="memdesc:a27d4816b2748eeecf20a35c73104784d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, что pptr указывает на валидную область внутри кучи (Issue #43 Phase 1.2).  <br /></td></tr>
 <tr class="separator:a27d4816b2748eeecf20a35c73104784d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e382a49a504d23a795f451ef0ed6a32" id="r_a2e382a49a504d23a795f451ef0ed6a32"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a2e382a49a504d23a795f451ef0ed6a32"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a2e382a49a504d23a795f451ef0ed6a32">set_root</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p) noexcept</td></tr>
-<tr class="memdesc:a2e382a49a504d23a795f451ef0ed6a32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить корневой объект в ManagerHeader.  <br /></td></tr>
+<tr class="memdesc:a2e382a49a504d23a795f451ef0ed6a32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить корневой объект в ManagerHeader (Issue #200, Phase 3.7).  <br /></td></tr>
 <tr class="separator:a2e382a49a504d23a795f451ef0ed6a32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1258120c73e4ca3c783b58fda582e4ad" id="r_a1258120c73e4ca3c783b58fda582e4ad"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a1258120c73e4ca3c783b58fda582e4ad"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a1258120c73e4ca3c783b58fda582e4ad">get_root</a> () noexcept</td></tr>
@@ -1387,7 +1391,7 @@ template&lt;typename T &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; — корневой указатель или пустой pptr, если корень не установлен. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00828">828</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00837">837</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1741,7 +1745,7 @@ template&lt;typename T &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если pptr валиден (в пределах кучи), false если null или вне границ. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00788">788</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00810">810</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1845,6 +1849,53 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 <dl class="section return"><dt>Returns</dt><dd>true если блок успешно заблокирован, false если блок не найден или уже свободен. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00471">471</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="ae9e620674b16d3b5395edd976b2210d8" name="ae9e620674b16d3b5395edd976b2210d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9e620674b16d3b5395edd976b2210d8">&#9670;&#160;</a></span>pptr_from_byte_offset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&gt; </div>
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; <a class="el" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a>&lt; ConfigT, InstanceId &gt;::pptr_from_byte_offset </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>byte_off</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Создать pptr&lt;T&gt; из байтового смещения (Issue #211, Phase 4.4). Обратная операция к <a class="el" href="classpmm_1_1pptr.html#a26dbccf8fd0c7995dcdf12d13deb625e" title="Получить байтовое смещение из гранульного индекса (Issue #211, Phase 4.4).">pptr::byte_offset()</a>. Смещение должно быть кратно granule_size. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Тип данных.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">byte_off</td><td>Байтовое смещение. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>pptr&lt;T&gt; или пустой pptr при ошибке (InvalidPointer / Overflow). </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00782">782</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -2065,22 +2116,21 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Установить корневой объект в ManagerHeader. </p>
-<p>Корневой объект — единственный именованный указатель, сохраняемый в заголовке менеджера. Через него пользователь может хранить реестр (например, <code>pmap&lt;pstringview, pptr&lt;void&gt;&gt;</code>) и находить объекты по имени после загрузки.</p>
+<p>Установить корневой объект в ManagerHeader (Issue #200, Phase 3.7). </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">T</td><td>Тип объекта. </td></tr>
+    <tr><td class="paramname">T</td><td>Тип объекта.</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">p</td><td>Персистентный указатель на корневой объект. Пустой pptr сбрасывает корень. </td></tr>
+    <tr><td class="paramname">p</td><td>Персистентный указатель; пустой pptr сбрасывает корень. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00813">813</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00822">822</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>

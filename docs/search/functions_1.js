@@ -14,7 +14,8 @@ var searchData=
   ['blockstatebase_11',['BlockStateBase',['../classpmm_1_1BlockStateBase.html#a92afb6333d9b48753f8660347fa728fc',1,'pmm::BlockStateBase']]],
   ['byte_5foff_5fto_5fidx_12',['byte_off_to_idx',['../structpmm_1_1AddressTraits.html#a02528e5dcadafce324a3e6061eb6182e',1,'pmm::AddressTraits::byte_off_to_idx()'],['../namespacepmm_1_1detail.html#a96fd1e856308cf358d6a9ad0f232ddfc',1,'pmm::detail::byte_off_to_idx(std::size_t byte_off)']]],
   ['byte_5foff_5fto_5fidx_5ft_13',['byte_off_to_idx_t',['../namespacepmm_1_1detail.html#ab1b50cc818611ed5855e68991227fc9c',1,'pmm::detail']]],
-  ['bytes_5fto_5fgranules_14',['bytes_to_granules',['../structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75',1,'pmm::AddressTraits::bytes_to_granules()'],['../namespacepmm_1_1detail.html#ac6f59a24706e7ffd4ed36e1db6795d51',1,'pmm::detail::bytes_to_granules(std::size_t bytes)']]],
-  ['bytes_5fto_5fgranules_5ft_15',['bytes_to_granules_t',['../namespacepmm_1_1detail.html#aa3aa96cf500c4ec013babc7d4ab60389',1,'pmm::detail']]],
-  ['bytes_5fto_5fidx_5ft_16',['bytes_to_idx_t',['../namespacepmm_1_1detail.html#af756650f0f7fad7e9f1f3ce5c28959be',1,'pmm::detail']]]
+  ['byte_5foffset_14',['byte_offset',['../classpmm_1_1pptr.html#a26dbccf8fd0c7995dcdf12d13deb625e',1,'pmm::pptr']]],
+  ['bytes_5fto_5fgranules_15',['bytes_to_granules',['../structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75',1,'pmm::AddressTraits::bytes_to_granules()'],['../namespacepmm_1_1detail.html#ac6f59a24706e7ffd4ed36e1db6795d51',1,'pmm::detail::bytes_to_granules(std::size_t bytes)']]],
+  ['bytes_5fto_5fgranules_5ft_16',['bytes_to_granules_t',['../namespacepmm_1_1detail.html#aa3aa96cf500c4ec013babc7d4ab60389',1,'pmm::detail']]],
+  ['bytes_5fto_5fidx_5ft_17',['bytes_to_idx_t',['../namespacepmm_1_1detail.html#af756650f0f7fad7e9f1f3ce5c28959be',1,'pmm::detail']]]
 ];
