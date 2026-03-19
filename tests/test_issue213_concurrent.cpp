@@ -33,8 +33,8 @@ using Mgr = pmm::presets::MultiThreadedHeap;
 
 TEST_CASE( "concurrent allocation with varying sizes", "[test_issue213_concurrent]" )
 {
-    constexpr std::size_t kMemSize = 64 * 1024 * 1024; // 64 MB
-    constexpr int         kThreads = 8;
+    constexpr std::size_t kMemSize      = 64 * 1024 * 1024; // 64 MB
+    constexpr int         kThreads      = 8;
     constexpr int         kOpsPerThread = 200;
 
     Mgr pmm;
@@ -51,7 +51,7 @@ TEST_CASE( "concurrent allocation with varying sizes", "[test_issue213_concurren
                 unsigned state = static_cast<unsigned>( t * 7654321 + 17 );
                 for ( int i = 0; i < kOpsPerThread; ++i )
                 {
-                    state          = state * 1664525u + 1013904223u;
+                    state = state * 1664525u + 1013904223u;
                     // Sizes from 1 byte to 4 KB.
                     std::size_t sz = 1 + ( ( state >> 16 ) % 4096 );
 
@@ -93,7 +93,7 @@ TEST_CASE( "concurrent LIFO deallocation", "[test_issue213_concurrent]" )
 {
     constexpr std::size_t kMemSize = 32 * 1024 * 1024;
     constexpr int         kThreads = 4;
-    constexpr int         kBlocks = 100;
+    constexpr int         kBlocks  = 100;
 
     Mgr pmm;
     REQUIRE( pmm.create( kMemSize ) );
@@ -142,7 +142,7 @@ TEST_CASE( "concurrent random deallocation order", "[test_issue213_concurrent]" 
 {
     constexpr std::size_t kMemSize = 32 * 1024 * 1024;
     constexpr int         kThreads = 4;
-    constexpr int         kBlocks = 100;
+    constexpr int         kBlocks  = 100;
 
     Mgr pmm;
     REQUIRE( pmm.create( kMemSize ) );
@@ -172,8 +172,8 @@ TEST_CASE( "concurrent random deallocation order", "[test_issue213_concurrent]" 
                 unsigned state = static_cast<unsigned>( t * 999983 + 1 );
                 for ( int i = static_cast<int>( indices.size() ) - 1; i > 0; --i )
                 {
-                    state  = state * 1664525u + 1013904223u;
-                    int j  = static_cast<int>( ( state >> 16 ) % static_cast<unsigned>( i + 1 ) );
+                    state = state * 1664525u + 1013904223u;
+                    int j = static_cast<int>( ( state >> 16 ) % static_cast<unsigned>( i + 1 ) );
                     std::swap( indices[i], indices[j] );
                 }
                 for ( int idx : indices )
@@ -199,7 +199,7 @@ TEST_CASE( "high contention concurrent allocate/deallocate", "[test_issue213_con
 {
     constexpr std::size_t kMemSize = 4 * 1024 * 1024; // Smaller heap = more contention.
     constexpr int         kThreads = 16;
-    constexpr int         kOps = 200;
+    constexpr int         kOps     = 200;
 
     Mgr pmm;
     REQUIRE( pmm.create( kMemSize ) );
@@ -267,7 +267,7 @@ TEST_CASE( "concurrent data integrity under contention", "[test_issue213_concurr
 {
     constexpr std::size_t kMemSize = 32 * 1024 * 1024;
     constexpr int         kThreads = 8;
-    constexpr int         kBlocks = 50;
+    constexpr int         kBlocks  = 50;
 
     Mgr pmm;
     REQUIRE( pmm.create( kMemSize ) );
@@ -332,7 +332,7 @@ TEST_CASE( "concurrent reallocate_typed operations", "[test_issue213_concurrent]
 {
     constexpr std::size_t kMemSize = 64 * 1024 * 1024;
     constexpr int         kThreads = 4;
-    constexpr int         kIter = 30;
+    constexpr int         kIter    = 30;
 
     Mgr pmm;
     REQUIRE( pmm.create( kMemSize ) );

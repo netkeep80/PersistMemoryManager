@@ -46,7 +46,7 @@ extern "C" int LLVMFuzzerTestOneInput( const std::uint8_t* data, std::size_t siz
     std::size_t pos = 0;
     while ( pos + 3 <= size )
     {
-        std::uint8_t cmd = data[pos];
+        std::uint8_t  cmd = data[pos];
         std::uint16_t param =
             static_cast<std::uint16_t>( data[pos + 1] ) | ( static_cast<std::uint16_t>( data[pos + 2] ) << 8 );
         pos += 3;

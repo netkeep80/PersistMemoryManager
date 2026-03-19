@@ -38,10 +38,7 @@ struct Lcg
         return state;
     }
     /// Return a value in [lo, hi] inclusive.
-    std::uint32_t range( std::uint32_t lo, std::uint32_t hi )
-    {
-        return lo + ( next() >> 16 ) % ( hi - lo + 1 );
-    }
+    std::uint32_t range( std::uint32_t lo, std::uint32_t hi ) { return lo + ( next() >> 16 ) % ( hi - lo + 1 ); }
 };
 
 // ─── Manager aliases ─────────────────────────────────────────────────────────
@@ -66,9 +63,9 @@ TEST_CASE( "fuzz: random alloc/dealloc on static storage", "[test_issue213_fuzz]
 
     struct LiveBlock
     {
-        void*         ptr;
-        std::size_t   size;
-        std::uint8_t  pattern;
+        void*        ptr;
+        std::size_t  size;
+        std::uint8_t pattern;
     };
 
     Lcg                    rng( 12345 );
@@ -95,8 +92,8 @@ TEST_CASE( "fuzz: random alloc/dealloc on static storage", "[test_issue213_fuzz]
         else
         {
             // Free a random block and verify its data first.
-            std::size_t idx = rng.range( 0, static_cast<std::uint32_t>( live.size() - 1 ) );
-            auto&       blk = live[idx];
+            std::size_t idx  = rng.range( 0, static_cast<std::uint32_t>( live.size() - 1 ) );
+            auto&       blk  = live[idx];
             auto*       data = static_cast<std::uint8_t*>( blk.ptr );
             for ( std::size_t j = 0; j < blk.size; ++j )
             {
@@ -133,20 +130,20 @@ TEST_CASE( "fuzz: random alloc/dealloc on heap storage", "[test_issue213_fuzz]" 
 
     struct LiveBlock
     {
-        void*         ptr;
-        std::size_t   size;
-        std::uint8_t  pattern;
+        void*        ptr;
+        std::size_t  size;
+        std::uint8_t pattern;
     };
 
     Lcg                    rng( 67890 );
     std::vector<LiveBlock> live;
     live.reserve( 256 );
-    constexpr int          kIterations  = 5000;
-    constexpr std::size_t  kMaxLive     = 200; // Cap live blocks to limit memory.
+    constexpr int         kIterations = 5000;
+    constexpr std::size_t kMaxLive    = 200; // Cap live blocks to limit memory.
 
     for ( int i = 0; i < kIterations; ++i )
     {
-        std::uint32_t action = rng.next() % 10;
+        std::uint32_t action       = rng.next() % 10;
         bool          should_alloc = live.empty() || ( action < 5 && live.size() < kMaxLive );
 
         if ( should_alloc )
@@ -215,8 +212,8 @@ TEST_CASE( "fuzz: mixed alloc/dealloc/reallocate", "[test_issue213_fuzz]" )
     Lcg                    rng( 54321 );
     std::vector<LiveBlock> live;
     live.reserve( 256 );
-    constexpr int          kIterations = 3000;
-    constexpr std::size_t  kMaxLive    = 150;
+    constexpr int         kIterations = 3000;
+    constexpr std::size_t kMaxLive    = 150;
 
     for ( int i = 0; i < kIterations; ++i )
     {
@@ -298,9 +295,9 @@ TEST_CASE( "fuzz: 16-bit index stress", "[test_issue213_fuzz]" )
 
     struct LiveBlock
     {
-        void*         ptr;
-        std::size_t   size;
-        std::uint8_t  pattern;
+        void*        ptr;
+        std::size_t  size;
+        std::uint8_t pattern;
     };
 
     Lcg                    rng( 99999 );
