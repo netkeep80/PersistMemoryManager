@@ -238,3 +238,23 @@ target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include 
 target_compile_features(${target} PRIVATE cxx_std_20)
 target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME ${target} COMMAND ${target})
+
+# ─── Тесты расширенного покрытия (Issue #213, Phase 5.2) ─────────────────────
+
+# 5.2.1: Overflow tests for size calculations
+pmm_add_test(test_issue213_overflow test_issue213_overflow.cpp)
+
+# 5.2.2: Concurrent allocation/deallocation tests
+add_executable(test_issue213_concurrent test_issue213_concurrent.cpp)
+target_link_libraries(test_issue213_concurrent PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
+add_test(NAME test_issue213_concurrent COMMAND test_issue213_concurrent)
+set_tests_properties(test_issue213_concurrent PROPERTIES TIMEOUT 120)
+
+# 5.2.3: Fuzz-style testing of allocator (deterministic, Catch2)
+pmm_add_test(test_issue213_fuzz test_issue213_fuzz.cpp)
+set_tests_properties(test_issue213_fuzz PROPERTIES TIMEOUT 120)
+
+# 5.2.3: libFuzzer harness (built only when fuzzer is available, not part of CTest)
+# Build manually: clang++ -std=c++20 -fsanitize=fuzzer,address -O2 \
+#   -I include -I single_include -I single_include/pmm \
+#   tests/fuzz_allocator.cpp -o fuzz_allocator
