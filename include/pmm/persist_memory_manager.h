@@ -63,6 +63,7 @@
 #include "pmm/allocator_policy.h"
 #include "pmm/block.h"
 #include "pmm/block_state.h"
+#include "pmm/logging_policy.h"
 #include "pmm/manager_configs.h"
 #include "pmm/pallocator.h"
 #include "pmm/parray.h"
@@ -108,6 +109,19 @@ namespace pmm
  *
  * @note Используйте `destroy()` перед повторной инициализацией и между тестами.
  */
+// ─── Issue #202, Phase 4.2: detect logging_policy in config ──────────────────
+namespace detail
+{
+template <typename C, typename = void> struct config_logging_policy
+{
+    using type = logging::NoLogging; ///< Default: no logging (backward compatible).
+};
+template <typename C> struct config_logging_policy<C, std::void_t<typename C::logging_policy>>
+{
+    using type = typename C::logging_policy;
+};
+} // namespace detail
+
 template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> class PersistMemoryManager
 {
   public:
@@ -117,6 +131,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     using storage_backend = typename ConfigT::storage_backend;
     using free_block_tree = typename ConfigT::free_block_tree;
     using thread_policy   = typename ConfigT::lock_policy;
+    using logging_policy  = typename detail::config_logging_policy<ConfigT>::type; ///< Issue #202, Phase 4.2
     using allocator       = AllocatorPolicy<free_block_tree, address_traits>;
     using index_type      = typename address_traits::index_type;
 
@@ -287,7 +302,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         }
         bool ok = init_layout( _backend.base_ptr(), _backend.total_size() );
         if ( ok )
+        {
             _last_error = PmmError::Ok;
+            logging_policy::on_create( _backend.total_size() );
+        }
         return ok;
     }
 
@@ -306,7 +324,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         }
         bool ok = init_layout( _backend.base_ptr(), _backend.total_size() );
         if ( ok )
+        {
             _last_error = PmmError::Ok;
+            logging_policy::on_create( _backend.total_size() );
+        }
         return ok;
     }
 
@@ -328,17 +349,20 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( hdr->magic != kMagic )
         {
             _last_error = PmmError::InvalidMagic;
+            logging_policy::on_corruption_detected( PmmError::InvalidMagic );
             return false;
         }
         if ( hdr->total_size != _backend.total_size() )
         {
             _last_error = PmmError::SizeMismatch;
+            logging_policy::on_corruption_detected( PmmError::SizeMismatch );
             return false;
         }
         // Issue #146: compare stored granule size against address_traits::granule_size.
         if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
         {
             _last_error = PmmError::GranuleMismatch;
+            logging_policy::on_corruption_detected( PmmError::GranuleMismatch );
             return false;
         }
         hdr->owns_memory     = false;
@@ -348,6 +372,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         allocator::rebuild_free_tree( base, hdr );
         _initialized = true;
         _last_error  = PmmError::Ok;
+        logging_policy::on_load();
         return true;
     }
 
@@ -366,6 +391,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( hdr != nullptr )
             hdr->magic = 0;
         _initialized = false;
+        logging_policy::on_destroy();
     }
 
     /// @brief Проверить, инициализирован ли менеджер.
@@ -385,11 +411,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized )
         {
             _last_error = PmmError::NotInitialized;
+            logging_policy::on_allocation_failure( user_size, PmmError::NotInitialized );
             return nullptr;
         }
         if ( user_size == 0 )
         {
             _last_error = PmmError::InvalidSize;
+            logging_policy::on_allocation_failure( user_size, PmmError::InvalidSize );
             return nullptr;
         }
 
@@ -403,6 +431,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( data_gran > std::numeric_limits<index_type>::max() - kBlockHdrGranules )
         {
             _last_error = PmmError::Overflow;
+            logging_policy::on_allocation_failure( user_size, PmmError::Overflow );
             return nullptr;
         }
         index_type needed = kBlockHdrGranules + data_gran;
@@ -418,6 +447,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !do_expand( user_size ) )
         {
             _last_error = PmmError::OutOfMemory;
+            logging_policy::on_allocation_failure( user_size, PmmError::OutOfMemory );
             return nullptr;
         }
 
@@ -430,6 +460,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             return allocator::allocate_from_block( base, hdr, idx, user_size );
         }
         _last_error = PmmError::OutOfMemory;
+        logging_policy::on_allocation_failure( user_size, PmmError::OutOfMemory );
         return nullptr;
     }
 
@@ -1318,6 +1349,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( new_base == nullptr || new_size <= old_size )
             return false;
 
+        logging_policy::on_expand( old_size, new_size );
         hdr = get_header( new_base );
 
         // Issue #146: compute extra_idx using address_traits::granule_size.

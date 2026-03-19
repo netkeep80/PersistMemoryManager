@@ -693,12 +693,14 @@ namespace pmm::presets {
 #include "pmm/heap_storage.h"
 #include "pmm/mmap_storage.h"
 #include "pmm/free_block_tree.h"
+#include "pmm/logging_policy.h"
 
 struct MyConfig {
     using address_traits  = pmm::DefaultAddressTraits;          // uint32_t индекс, 16-байт гранула
     using storage_backend = pmm::MMapStorage<address_traits>;   // файл-маппированное хранилище
     using free_block_tree = pmm::AvlFreeTree<address_traits>;   // AVL-дерево (обязательно)
     using lock_policy     = pmm::config::SharedMutexLock;       // многопоточность
+    using logging_policy  = pmm::logging::StderrLogging;        // логирование в stderr (опционально)
 
     static constexpr std::size_t grow_numerator   = 3;  // рост на 50%
     static constexpr std::size_t grow_denominator = 2;
@@ -706,6 +708,8 @@ struct MyConfig {
 
 using MyMgr = pmm::PersistMemoryManager<MyConfig, 0>;
 ```
+
+> **Примечание:** `logging_policy` опционален. Если не указан, используется `logging::NoLogging`.
 
 ### Мультитон — несколько независимых экземпляров
 
@@ -743,6 +747,19 @@ Cache1::pptr<int> p1 = Cache1::allocate_typed<int>();
 |----------|----------|
 | `config::NoLock` | Без синхронизации — для однопоточного кода |
 | `config::SharedMutexLock` | `std::shared_mutex` — конкурентное чтение, эксклюзивная запись |
+
+### Политики логирования
+
+| Политика | Описание |
+|----------|----------|
+| `logging::NoLogging` | Без логирования — нулевые накладные расходы (по умолчанию) |
+| `logging::StderrLogging` | Логирование событий и ошибок в stderr |
+
+Хуки вызываются менеджером при ключевых событиях:
+- `on_allocation_failure(size, err)` — неудачная аллокация
+- `on_expand(old_size, new_size)` — расширение бэкенда
+- `on_corruption_detected(err)` — повреждение данных при загрузке
+- `on_create(size)` / `on_destroy()` / `on_load()` — жизненный цикл
 
 ## C++20 Concepts
 
@@ -816,6 +833,7 @@ PersistMemoryManager/
 │       ├── manager_configs.h         # Конфигурации
 │       ├── address_traits.h          # Address traits (Small/Default/Large)
 │       ├── config.h                  # Политики блокировки
+│       ├── logging_policy.h          # Политики логирования (v0.35.0)
 │       ├── heap_storage.h            # malloc-бэкенд
 │       ├── mmap_storage.h            # mmap-бэкенд
 │       ├── static_storage.h          # Статический бэкенд
@@ -859,7 +877,7 @@ PersistMemoryManager/
 **Ближайшие приоритеты (Фаза 4)** — API и удобство использования:
 
 - ~~`PmmError` — коды ошибок вместо bool~~ ✅ (#201)
-- Хуки логирования
+- ~~Хуки логирования~~ ✅ (#202)
 - `reallocate_typed<T>()` — нативное перераспределение
 - Конверсия pptr ↔ байтовые смещения
 

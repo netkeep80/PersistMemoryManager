@@ -11,6 +11,7 @@
  *   - `storage_backend`  — бэкенд хранилища (HeapStorage, StaticStorage, MMapStorage)
  *   - `free_block_tree`  — политика дерева свободных блоков (AvlFreeTree)
  *   - `lock_policy`      — политика многопоточности (NoLock, SharedMutexLock)
+ *   - `logging_policy`   — политика логирования (NoLogging, StderrLogging) (Issue #202, Phase 4.2)
  *   - `granule_size`     — размер гранулы в байтах
  *   - `max_memory_gb`    — максимальный объём памяти в ГБ
  *   - `grow_numerator` / `grow_denominator` — коэффициент роста хранилища
@@ -103,6 +104,7 @@
 #include "pmm/config.h"
 #include "pmm/free_block_tree.h"
 #include "pmm/heap_storage.h"
+#include "pmm/logging_policy.h"
 #include "pmm/static_storage.h"
 #include "pmm/storage_backend.h"
 
@@ -154,6 +156,7 @@ static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits mu
  * @tparam GrowNum         Числитель коэффициента роста хранилища (по умолчанию 5)
  * @tparam GrowDen         Знаменатель коэффициента роста хранилища (по умолчанию 4, т.е. рост 25%)
  * @tparam MaxMemoryGB     Максимальный объём памяти в ГБ (0 = без ограничения)
+ * @tparam LoggingPolicyT  Политика логирования (logging::NoLogging по умолчанию) (Issue #202, Phase 4.2)
  *
  * Пример создания собственной конфигурации:
  * @code
@@ -165,11 +168,19 @@ static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits mu
  *       32     // max 32 GB
  *   >;
  *   using MyManager = pmm::PersistMemoryManager<MyConfig>;
+ *
+ *   // Менеджер с логированием в stderr
+ *   using DebugConfig = pmm::BasicConfig<
+ *       pmm::DefaultAddressTraits,
+ *       pmm::config::NoLock,
+ *       5, 4, 64,
+ *       pmm::logging::StderrLogging
+ *   >;
  * @endcode
  */
 template <typename AddressTraitsT = DefaultAddressTraits, typename LockPolicyT = config::NoLock,
           std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator,
-          std::size_t MaxMemoryGB = 64>
+          std::size_t MaxMemoryGB = 64, typename LoggingPolicyT = logging::NoLogging>
 struct BasicConfig
 {
     static_assert( ValidPmmAddressTraits<AddressTraitsT>,
@@ -179,6 +190,7 @@ struct BasicConfig
     using storage_backend                         = HeapStorage<AddressTraitsT>;
     using free_block_tree                         = AvlFreeTree<AddressTraitsT>;
     using lock_policy                             = LockPolicyT;
+    using logging_policy                          = LoggingPolicyT;
     static constexpr std::size_t granule_size     = AddressTraitsT::granule_size;
     static constexpr std::size_t max_memory_gb    = MaxMemoryGB;
     static constexpr std::size_t grow_numerator   = GrowNum;
@@ -228,6 +240,7 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
     using storage_backend                         = StaticStorage<BufferSize, SmallAddressTraits>;
     using free_block_tree                         = AvlFreeTree<SmallAddressTraits>;
     using lock_policy                             = config::NoLock;
+    using logging_policy                          = logging::NoLogging;
     static constexpr std::size_t granule_size     = SmallAddressTraits::granule_size;
     static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
     static constexpr std::size_t grow_numerator   = 3;
@@ -267,6 +280,7 @@ template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
     using storage_backend                         = StaticStorage<BufferSize, DefaultAddressTraits>;
     using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
     using lock_policy                             = config::NoLock;
+    using logging_policy                          = logging::NoLogging;
     static constexpr std::size_t granule_size     = DefaultAddressTraits::granule_size;
     static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
     static constexpr std::size_t grow_numerator   = 3;

@@ -175,6 +175,9 @@ pmm_add_test(test_issue200_root_object test_issue200_root_object.cpp)
 # ─── Тесты кодов ошибок PmmError (Issue #201, Phase 4.1) ─────────────────
 pmm_add_test(test_issue201_error_codes test_issue201_error_codes.cpp)
 
+# ─── Тесты хуков логирования (Issue #202, Phase 4.2) ─────────────────────
+pmm_add_test(test_issue202_logging_hooks test_issue202_logging_hooks.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 

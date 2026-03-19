@@ -51,6 +51,7 @@
  *   - `storage_backend`  — бэкенд хранилища (HeapStorage, StaticStorage, MMapStorage)
  *   - `free_block_tree`  — политика дерева свободных блоков (AvlFreeTree)
  *   - `lock_policy`      — политика многопоточности (NoLock, SharedMutexLock)
+ *   - `logging_policy`   — политика логирования (NoLogging, StderrLogging) (Issue #202, Phase 4.2)
  *   - `granule_size`     — размер гранулы в байтах
  *   - `max_memory_gb`    — максимальный объём памяти в ГБ
  *   - `grow_numerator` / `grow_denominator` — коэффициент роста хранилища
@@ -2598,6 +2599,131 @@ static_assert( is_storage_backend_v<HeapStorage<>>, "HeapStorage must satisfy St
 } // namespace pmm
 
 /**
+ * @file pmm/logging_policy.h
+ * @brief Политики логирования для PersistMemoryManager (Issue #202, Phase 4.2).
+ *
+ * Содержит:
+ *   - pmm::logging::NoLogging       — заглушка без логирования (по умолчанию, нулевые накладные расходы)
+ *   - pmm::logging::StderrLogging   — логирование ошибок и событий в stderr
+ *
+ * Хуки вызываются менеджером при ключевых событиях:
+ *   - on_allocation_failure(user_size, err) — не удалось выделить память
+ *   - on_expand(old_size, new_size)         — бэкенд расширен
+ *   - on_corruption_detected(err)           — обнаружено повреждение данных (InvalidMagic, CrcMismatch и т.д.)
+ *   - on_create(initial_size)               — менеджер успешно создан
+ *   - on_destroy()                          — менеджер сброшен
+ *   - on_load()                             — менеджер загружен из образа
+ *
+ * Все методы — static noexcept. Политика NoLogging полностью оптимизируется
+ * компилятором (все методы пустые inline), обеспечивая нулевые накладные расходы
+ * для конфигураций без логирования.
+ *
+ * Пример пользовательской политики:
+ * @code
+ *   struct MyLogging {
+ *       static void on_allocation_failure(std::size_t user_size, pmm::PmmError err) noexcept {
+ *           spdlog::warn("pmm: allocate({}) failed: {}", user_size, static_cast<int>(err));
+ *       }
+ *       static void on_expand(std::size_t old_size, std::size_t new_size) noexcept {
+ *           spdlog::info("pmm: expanded {} -> {}", old_size, new_size);
+ *       }
+ *       static void on_corruption_detected(pmm::PmmError err) noexcept {
+ *           spdlog::error("pmm: corruption: {}", static_cast<int>(err));
+ *       }
+ *       static void on_create(std::size_t size) noexcept {}
+ *       static void on_destroy() noexcept {}
+ *       static void on_load() noexcept {}
+ *   };
+ * @endcode
+ *
+ * @see config.h — политики блокировок (аналогичный паттерн)
+ * @see persist_memory_manager.h — PersistMemoryManager (вызывает хуки)
+ * @version 1.0 (Issue #202, Phase 4.2)
+ */
+
+#include <cstddef>
+#include <cstdio>
+
+namespace pmm
+{
+namespace logging
+{
+
+/// @brief Политика без логирования (нулевые накладные расходы, по умолчанию).
+///
+/// Все методы — пустые inline, полностью оптимизируются компилятором.
+struct NoLogging
+{
+    /// @brief Вызывается при неудачной аллокации.
+    /// @param user_size Запрошенный размер в байтах.
+    /// @param err Код ошибки (OutOfMemory, Overflow, InvalidSize, NotInitialized).
+    static void on_allocation_failure( std::size_t /*user_size*/, PmmError /*err*/ ) noexcept {}
+
+    /// @brief Вызывается после успешного расширения бэкенда.
+    /// @param old_size Старый размер в байтах.
+    /// @param new_size Новый размер в байтах.
+    static void on_expand( std::size_t /*old_size*/, std::size_t /*new_size*/ ) noexcept {}
+
+    /// @brief Вызывается при обнаружении повреждения данных.
+    /// @param err Код ошибки (InvalidMagic, CrcMismatch, SizeMismatch, GranuleMismatch).
+    static void on_corruption_detected( PmmError /*err*/ ) noexcept {}
+
+    /// @brief Вызывается после успешного создания менеджера.
+    /// @param initial_size Начальный размер в байтах.
+    static void on_create( std::size_t /*initial_size*/ ) noexcept {}
+
+    /// @brief Вызывается при сбросе менеджера (destroy()).
+    static void on_destroy() noexcept {}
+
+    /// @brief Вызывается после успешной загрузки образа (load()).
+    static void on_load() noexcept {}
+};
+
+/// @brief Политика логирования в stderr.
+///
+/// Выводит ошибки и ключевые события менеджера в стандартный поток ошибок.
+/// Полезна для отладки и диагностики.
+///
+/// @code
+///   using MyConfig = pmm::BasicConfig<
+///       pmm::DefaultAddressTraits,
+///       pmm::config::NoLock,
+///       5, 4, 64,
+///       pmm::logging::StderrLogging  // включить логирование в stderr
+///   >;
+///   using MyMgr = pmm::PersistMemoryManager<MyConfig>;
+/// @endcode
+struct StderrLogging
+{
+    static void on_allocation_failure( std::size_t user_size, PmmError err ) noexcept
+    {
+        std::fprintf( stderr, "[pmm] allocation_failure: size=%zu error=%d\n", user_size, static_cast<int>( err ) );
+    }
+
+    static void on_expand( std::size_t old_size, std::size_t new_size ) noexcept
+    {
+        std::fprintf( stderr, "[pmm] expand: %zu -> %zu\n", old_size, new_size );
+    }
+
+    static void on_corruption_detected( PmmError err ) noexcept
+    {
+        std::fprintf( stderr, "[pmm] corruption_detected: error=%d\n", static_cast<int>( err ) );
+    }
+
+    static void on_create( std::size_t initial_size ) noexcept
+    {
+        std::fprintf( stderr, "[pmm] create: size=%zu\n", initial_size );
+    }
+
+    static void on_destroy() noexcept { std::fprintf( stderr, "[pmm] destroy\n" ); }
+
+    static void on_load() noexcept { std::fprintf( stderr, "[pmm] load\n" ); }
+};
+
+} // namespace logging
+} // namespace pmm
+
+/**
  * @file pmm/static_storage.h
  * @brief StaticStorage — статический бэкенд хранилища ПАП (Issue #87 Phase 5).
  *
@@ -2719,6 +2845,7 @@ static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits mu
  * @tparam GrowNum         Числитель коэффициента роста хранилища (по умолчанию 5)
  * @tparam GrowDen         Знаменатель коэффициента роста хранилища (по умолчанию 4, т.е. рост 25%)
  * @tparam MaxMemoryGB     Максимальный объём памяти в ГБ (0 = без ограничения)
+ * @tparam LoggingPolicyT  Политика логирования (logging::NoLogging по умолчанию) (Issue #202, Phase 4.2)
  *
  * Пример создания собственной конфигурации:
  * @code
@@ -2730,11 +2857,19 @@ static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits mu
  *       32     // max 32 GB
  *   >;
  *   using MyManager = pmm::PersistMemoryManager<MyConfig>;
+ *
+ *   // Менеджер с логированием в stderr
+ *   using DebugConfig = pmm::BasicConfig<
+ *       pmm::DefaultAddressTraits,
+ *       pmm::config::NoLock,
+ *       5, 4, 64,
+ *       pmm::logging::StderrLogging
+ *   >;
  * @endcode
  */
 template <typename AddressTraitsT = DefaultAddressTraits, typename LockPolicyT = config::NoLock,
           std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator,
-          std::size_t MaxMemoryGB = 64>
+          std::size_t MaxMemoryGB = 64, typename LoggingPolicyT = logging::NoLogging>
 struct BasicConfig
 {
     static_assert( ValidPmmAddressTraits<AddressTraitsT>,
@@ -2744,6 +2879,7 @@ struct BasicConfig
     using storage_backend                         = HeapStorage<AddressTraitsT>;
     using free_block_tree                         = AvlFreeTree<AddressTraitsT>;
     using lock_policy                             = LockPolicyT;
+    using logging_policy                          = LoggingPolicyT;
     static constexpr std::size_t granule_size     = AddressTraitsT::granule_size;
     static constexpr std::size_t max_memory_gb    = MaxMemoryGB;
     static constexpr std::size_t grow_numerator   = GrowNum;
@@ -2793,6 +2929,7 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
     using storage_backend                         = StaticStorage<BufferSize, SmallAddressTraits>;
     using free_block_tree                         = AvlFreeTree<SmallAddressTraits>;
     using lock_policy                             = config::NoLock;
+    using logging_policy                          = logging::NoLogging;
     static constexpr std::size_t granule_size     = SmallAddressTraits::granule_size;
     static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
     static constexpr std::size_t grow_numerator   = 3;
@@ -2832,6 +2969,7 @@ template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
     using storage_backend                         = StaticStorage<BufferSize, DefaultAddressTraits>;
     using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
     using lock_policy                             = config::NoLock;
+    using logging_policy                          = logging::NoLogging;
     static constexpr std::size_t granule_size     = DefaultAddressTraits::granule_size;
     static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
     static constexpr std::size_t grow_numerator   = 3;
@@ -6498,6 +6636,19 @@ namespace pmm
  *
  * @note Используйте `destroy()` перед повторной инициализацией и между тестами.
  */
+// ─── Issue #202, Phase 4.2: detect logging_policy in config ──────────────────
+namespace detail
+{
+template <typename C, typename = void> struct config_logging_policy
+{
+    using type = logging::NoLogging; ///< Default: no logging (backward compatible).
+};
+template <typename C> struct config_logging_policy<C, std::void_t<typename C::logging_policy>>
+{
+    using type = typename C::logging_policy;
+};
+} // namespace detail
+
 template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> class PersistMemoryManager
 {
   public:
@@ -6507,6 +6658,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     using storage_backend = typename ConfigT::storage_backend;
     using free_block_tree = typename ConfigT::free_block_tree;
     using thread_policy   = typename ConfigT::lock_policy;
+    using logging_policy  = typename detail::config_logging_policy<ConfigT>::type; ///< Issue #202, Phase 4.2
     using allocator       = AllocatorPolicy<free_block_tree, address_traits>;
     using index_type      = typename address_traits::index_type;
 
@@ -6677,7 +6829,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         }
         bool ok = init_layout( _backend.base_ptr(), _backend.total_size() );
         if ( ok )
+        {
             _last_error = PmmError::Ok;
+            logging_policy::on_create( _backend.total_size() );
+        }
         return ok;
     }
 
@@ -6696,7 +6851,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         }
         bool ok = init_layout( _backend.base_ptr(), _backend.total_size() );
         if ( ok )
+        {
             _last_error = PmmError::Ok;
+            logging_policy::on_create( _backend.total_size() );
+        }
         return ok;
     }
 
@@ -6718,17 +6876,20 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( hdr->magic != kMagic )
         {
             _last_error = PmmError::InvalidMagic;
+            logging_policy::on_corruption_detected( PmmError::InvalidMagic );
             return false;
         }
         if ( hdr->total_size != _backend.total_size() )
         {
             _last_error = PmmError::SizeMismatch;
+            logging_policy::on_corruption_detected( PmmError::SizeMismatch );
             return false;
         }
         // Issue #146: compare stored granule size against address_traits::granule_size.
         if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
         {
             _last_error = PmmError::GranuleMismatch;
+            logging_policy::on_corruption_detected( PmmError::GranuleMismatch );
             return false;
         }
         hdr->owns_memory     = false;
@@ -6738,6 +6899,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         allocator::rebuild_free_tree( base, hdr );
         _initialized = true;
         _last_error  = PmmError::Ok;
+        logging_policy::on_load();
         return true;
     }
 
@@ -6756,6 +6918,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( hdr != nullptr )
             hdr->magic = 0;
         _initialized = false;
+        logging_policy::on_destroy();
     }
 
     /// @brief Проверить, инициализирован ли менеджер.
@@ -6775,11 +6938,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized )
         {
             _last_error = PmmError::NotInitialized;
+            logging_policy::on_allocation_failure( user_size, PmmError::NotInitialized );
             return nullptr;
         }
         if ( user_size == 0 )
         {
             _last_error = PmmError::InvalidSize;
+            logging_policy::on_allocation_failure( user_size, PmmError::InvalidSize );
             return nullptr;
         }
 
@@ -6793,6 +6958,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( data_gran > std::numeric_limits<index_type>::max() - kBlockHdrGranules )
         {
             _last_error = PmmError::Overflow;
+            logging_policy::on_allocation_failure( user_size, PmmError::Overflow );
             return nullptr;
         }
         index_type needed = kBlockHdrGranules + data_gran;
@@ -6808,6 +6974,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !do_expand( user_size ) )
         {
             _last_error = PmmError::OutOfMemory;
+            logging_policy::on_allocation_failure( user_size, PmmError::OutOfMemory );
             return nullptr;
         }
 
@@ -6820,6 +6987,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             return allocator::allocate_from_block( base, hdr, idx, user_size );
         }
         _last_error = PmmError::OutOfMemory;
+        logging_policy::on_allocation_failure( user_size, PmmError::OutOfMemory );
         return nullptr;
     }
 
@@ -7708,6 +7876,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( new_base == nullptr || new_size <= old_size )
             return false;
 
+        logging_policy::on_expand( old_size, new_size );
         hdr = get_header( new_base );
 
         // Issue #146: compute extra_idx using address_traits::granule_size.
@@ -7977,6 +8146,7 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
         if ( stored_crc != 0 && stored_crc != computed_crc )
         {
             MgrT::set_last_error( PmmError::CrcMismatch );
+            MgrT::logging_policy::on_corruption_detected( PmmError::CrcMismatch );
             return false;
         }
         // Note: stored_crc==0 is accepted for backward compatibility with images

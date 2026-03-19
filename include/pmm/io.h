@@ -211,6 +211,7 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
         if ( stored_crc != 0 && stored_crc != computed_crc )
         {
             MgrT::set_last_error( PmmError::CrcMismatch );
+            MgrT::logging_policy::on_corruption_detected( PmmError::CrcMismatch );
             return false;
         }
         // Note: stored_crc==0 is accepted for backward compatibility with images
