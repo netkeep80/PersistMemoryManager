@@ -151,6 +151,9 @@ pmm_add_test(test_issue179_deduplication test_issue179_deduplication.cpp)
 # ─── Тесты дедупликации AVL-операций pvector через avl_tree_mixin (Issue #188) ─
 pmm_add_test(test_issue188_deduplication test_issue188_deduplication.cpp)
 
+# ─── Тесты мутабельной персистентной строки pstring (Issue #45, Phase 3.1) ───
+pmm_add_test(test_issue45_pstring test_issue45_pstring.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 
