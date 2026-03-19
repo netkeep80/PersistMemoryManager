@@ -10,11 +10,13 @@ var searchData=
   ['repair_5fprev_5foffset_7',['repair_prev_offset',['../classpmm_1_1BlockStateBase.html#aca43038d550a99ffb447eab09777c93b',1,'pmm::BlockStateBase']]],
   ['required_5fblock_5fgranules_8',['required_block_granules',['../namespacepmm_1_1detail.html#ab890535579b00c765044db90a2f4a642',1,'pmm::detail']]],
   ['required_5fblock_5fgranules_5ft_9',['required_block_granules_t',['../namespacepmm_1_1detail.html#aaa1cc91dd46ee4f2058806edd8007c29',1,'pmm::detail']]],
-  ['reset_10',['reset',['../structpmm_1_1pvector.html#a121d759eaf298126998812055c611576',1,'pmm::pvector::reset()'],['../structpmm_1_1pstringview.html#a900efcbfca8adfab8beea909d3ff8124',1,'pmm::pstringview::reset()'],['../structpmm_1_1pmap.html#a606608889b1f241f01e030095fbd4627',1,'pmm::pmap::reset()']]],
-  ['reset_5favl_5ffields_11',['reset_avl_fields',['../classpmm_1_1BlockStateBase.html#ab043ddadf86501b14fca872e3edbba2d',1,'pmm::BlockStateBase']]],
-  ['reset_5favl_5ffields_5fof_12',['reset_avl_fields_of',['../classpmm_1_1BlockStateBase.html#a2208935a3d222b4564c7c53adf52ed2a',1,'pmm::BlockStateBase']]],
-  ['resolve_13',['resolve',['../classpmm_1_1PersistMemoryManager.html#aa9742dd880c10aef9271a2a71a73d13d',1,'pmm::PersistMemoryManager::resolve()'],['../classpmm_1_1pptr.html#ada7fb7a391b0d6fdf1cbace8f4a6622c',1,'pmm::pptr::resolve()']]],
-  ['resolve_5fat_14',['resolve_at',['../classpmm_1_1PersistMemoryManager.html#a62ff142221c6e1e54e6aee2b72588d72',1,'pmm::PersistMemoryManager']]],
-  ['right_5foffset_15',['right_offset',['../classpmm_1_1BlockStateBase.html#a2ee2e7827cba287df5f39fc001c6527e',1,'pmm::BlockStateBase']]],
-  ['root_5foffset_16',['root_offset',['../classpmm_1_1BlockStateBase.html#a30d0b3a75c8d2cf85be682c75d12703a',1,'pmm::BlockStateBase']]]
+  ['reserve_10',['reserve',['../structpmm_1_1parray.html#ab8443e9eb7b6105ec1c073a0b5faca70',1,'pmm::parray']]],
+  ['reset_11',['reset',['../structpmm_1_1pvector.html#a121d759eaf298126998812055c611576',1,'pmm::pvector::reset()'],['../structpmm_1_1pstringview.html#a900efcbfca8adfab8beea909d3ff8124',1,'pmm::pstringview::reset()'],['../structpmm_1_1pmap.html#a606608889b1f241f01e030095fbd4627',1,'pmm::pmap::reset()']]],
+  ['reset_5favl_5ffields_12',['reset_avl_fields',['../classpmm_1_1BlockStateBase.html#ab043ddadf86501b14fca872e3edbba2d',1,'pmm::BlockStateBase']]],
+  ['reset_5favl_5ffields_5fof_13',['reset_avl_fields_of',['../classpmm_1_1BlockStateBase.html#a2208935a3d222b4564c7c53adf52ed2a',1,'pmm::BlockStateBase']]],
+  ['resize_14',['resize',['../structpmm_1_1parray.html#a6fed4212b4721a5623cc1d80eac3c105',1,'pmm::parray']]],
+  ['resolve_15',['resolve',['../classpmm_1_1PersistMemoryManager.html#aa9742dd880c10aef9271a2a71a73d13d',1,'pmm::PersistMemoryManager::resolve()'],['../classpmm_1_1pptr.html#ada7fb7a391b0d6fdf1cbace8f4a6622c',1,'pmm::pptr::resolve()']]],
+  ['resolve_5fat_16',['resolve_at',['../classpmm_1_1PersistMemoryManager.html#a62ff142221c6e1e54e6aee2b72588d72',1,'pmm::PersistMemoryManager']]],
+  ['right_5foffset_17',['right_offset',['../classpmm_1_1BlockStateBase.html#a2ee2e7827cba287df5f39fc001c6527e',1,'pmm::BlockStateBase']]],
+  ['root_5foffset_18',['root_offset',['../classpmm_1_1BlockStateBase.html#a30d0b3a75c8d2cf85be682c75d12703a',1,'pmm::BlockStateBase']]]
 ];
