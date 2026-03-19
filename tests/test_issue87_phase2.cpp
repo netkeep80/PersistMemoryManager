@@ -24,39 +24,13 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
-#include <cstdlib>
-#include <iostream>
+
 #include <limits>
 #include <type_traits>
 
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // =============================================================================
 // Phase 2 tests: Block prev/next fields (Issue #138: LinkedListNode merged into Block)
@@ -67,7 +41,7 @@
 /// @brief Block<DefaultAddressTraits> — поля prev_offset/next_offset прямо в Block (Issue #138).
 /// Issue #138: LinkedListNode удалена; prev_offset/next_offset теперь прямые поля Block.
 /// Note (Issue #120): Поля protected, тип проверяется через index_type.
-static bool test_p2_list_node_default_types()
+TEST_CASE( "P2-A1: Block<Default> prev/next field types and size (Issue #138)", "[test_issue87_phase2]" )
 {
     using A     = pmm::DefaultAddressTraits;
     using Block = pmm::Block<A>;
@@ -80,12 +54,10 @@ static bool test_p2_list_node_default_types()
     // Issue #138: Block = TreeNode(24) + prev(4) + next(4) = 32 bytes
     static_assert( sizeof( Block ) == sizeof( pmm::TreeNode<A> ) + 2 * sizeof( std::uint32_t ),
                    "Block<Default> must be TreeNode + 2 index_type fields" );
-
-    return true;
 }
 
 /// @brief Block prev/next fields have correct size for разные AddressTraits (Issue #138).
-static bool test_p2_list_node_various_traits()
+TEST_CASE( "P2-A2: Block prev/next with various AddressTraits (8/16/32/64-bit, Issue #138)", "[test_issue87_phase2]" )
 {
     // 8-bit: TreeNode(10+) + 2*1 = at least 12 bytes
     using Block8 = pmm::Block<pmm::AddressTraits<std::uint8_t, 8>>;
@@ -106,14 +78,13 @@ static bool test_p2_list_node_various_traits()
     using Block64 = pmm::Block<pmm::LargeAddressTraits>;
     static_assert( std::is_same<Block64::index_type, std::uint64_t>::value );
     static_assert( sizeof( Block64 ) >= 64, "Block<Large> must be at least 64 bytes (Issue #138)" );
-
-    return true;
 }
 
 /// @brief Смещения полей prev/next в Block<DefaultAddressTraits> (Issue #138).
 /// Issue #120: поля protected, смещения проверяются через BlockStateBase::kOffset*.
 /// Issue #138: prev/next come AFTER TreeNode fields (TreeNode is base class, fields come first).
-static bool test_p2_list_node_offsets()
+TEST_CASE( "P2-A3: Block<Default> prev/next offsets (via BlockStateBase::kOffset*, Issue #138)",
+           "[test_issue87_phase2]" )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
 
@@ -123,13 +94,11 @@ static bool test_p2_list_node_offsets()
                    "prev_offset must be at offset 24 (after TreeNode, Issue #138)" );
     // next_offset follows prev_offset
     static_assert( BlockState::kOffsetNextOffset == 28, "next_offset must be at offset 28 (Issue #138)" );
-
-    return true;
 }
 
 /// @brief Layout Block<DefaultAddressTraits>: prev/next fields after TreeNode (Issue #112, #138).
 /// Issue #120: поля protected, проверяем layout через BlockStateBase::kOffset*.
-static bool test_p2_list_node_blockheader_compat()
+TEST_CASE( "P2-A4: Block<Default> prev/next layout (Issue #112, #138)", "[test_issue87_phase2]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -141,8 +110,6 @@ static bool test_p2_list_node_blockheader_compat()
     // sizeof(TreeNode<Default>) = 24
     static_assert( BlockState::kOffsetPrevOffset == 24, "Block::prev_offset must be at offset 24 (Issue #138)" );
     static_assert( BlockState::kOffsetNextOffset == 28, "Block::next_offset must be at offset 28 (Issue #138)" );
-
-    return true;
 }
 
 // =============================================================================
@@ -154,7 +121,7 @@ static bool test_p2_list_node_blockheader_compat()
 /// @brief TreeNode<DefaultAddressTraits> — типы полей и размер.
 /// Phase 2 v0.2: TreeNode теперь содержит поля weight и root_offset.
 /// Issue #120: Поля protected, тип проверяется через index_type.
-static bool test_p2_tree_node_default_types()
+TEST_CASE( "P2-B1: TreeNode<Default> types and size (incl. weight+root_offset)", "[test_issue87_phase2]" )
 {
     using A    = pmm::DefaultAddressTraits;
     using Node = pmm::TreeNode<A>;
@@ -171,14 +138,12 @@ static bool test_p2_tree_node_default_types()
     //         + sizeof(uint32_t) + sizeof(uint32_t)
     //       = 12 + 2 + 2 + 4 + 4 = 24 байта
     static_assert( sizeof( Node ) == 24, "TreeNode<Default> must be 24 bytes" );
-
-    return true;
 }
 
 /// @brief TreeNode работает с разными AddressTraits.
 /// Phase 2 v0.2: учитывает дополнительные поля weight и root_offset.
 /// Issue #120: Поля protected, тип проверяется через index_type.
-static bool test_p2_tree_node_various_traits()
+TEST_CASE( "P2-B2: TreeNode with various AddressTraits (8/16/32/64-bit)", "[test_issue87_phase2]" )
 {
     // 8-bit: 3*1 + 2+2 + 1+1 = 10 байт (может быть паддинг из-за выравнивания int16_t)
     using Node8 = pmm::TreeNode<pmm::AddressTraits<std::uint8_t, 8>>;
@@ -199,14 +164,12 @@ static bool test_p2_tree_node_various_traits()
     using Node64 = pmm::TreeNode<pmm::LargeAddressTraits>;
     static_assert( std::is_same<Node64::index_type, std::uint64_t>::value );
     static_assert( sizeof( Node64 ) >= 44, "TreeNode<Large> must be at least 44 bytes" );
-
-    return true;
 }
 
 /// @brief Смещения полей TreeNode<DefaultAddressTraits>.
 /// Issue #126: новый порядок полей — weight первым, avl_height/node_type в конце.
 /// Issue #120: поля protected, смещения через BlockStateBase::kOffset*.
-static bool test_p2_tree_node_offsets()
+TEST_CASE( "P2-B3: TreeNode<Default> field offsets (via BlockStateBase::kOffset*)", "[test_issue87_phase2]" )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     using Node       = pmm::TreeNode<pmm::DefaultAddressTraits>;
@@ -231,14 +194,12 @@ static bool test_p2_tree_node_offsets()
 
     // Also verify TreeNode size
     static_assert( sizeof( Node ) == 24, "TreeNode<Default> must be 24 bytes" );
-
-    return true;
 }
 
 /// @brief Layout TreeNode<DefaultAddressTraits> в составе Block<A> (Issue #112).
 /// Issue #120: поля protected, layout через BlockStateBase::kOffset*.
 /// Issue #126: новый порядок полей — weight первым, avl_height/node_type в конце.
-static bool test_p2_tree_node_blockheader_compat()
+TEST_CASE( "P2-B4: TreeNode<Default> layout in Block<A> (Issue #112)", "[test_issue87_phase2]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using Node       = pmm::TreeNode<A>;
@@ -262,8 +223,6 @@ static bool test_p2_tree_node_blockheader_compat()
                    "avl_height position in Block (Issue #138)" );
     static_assert( BlockState::kOffsetNodeType == 5 * sizeof( std::uint32_t ) + 2,
                    "node_type position in Block (Issue #138)" );
-
-    return true;
 }
 
 // =============================================================================
@@ -272,7 +231,7 @@ static bool test_p2_tree_node_blockheader_compat()
 
 /// @brief Проверяем, что поля LinkedListNode инициализируются через state machine.
 /// Issue #120: прямой доступ к полям запрещён, используем BlockStateBase.
-static bool test_p2_list_node_runtime_init()
+TEST_CASE( "P2-C1: Block prev/next runtime init via state machine (Issue #138)", "[test_issue87_phase2]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -281,21 +240,19 @@ static bool test_p2_list_node_runtime_init()
     alignas( pmm::Block<A> ) std::uint8_t buf[sizeof( pmm::Block<A> )] = {};
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0, 0 );
 
-    PMM_TEST( BlockState::get_prev_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_next_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_prev_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_next_offset( buf ) == pmm::detail::kNoBlock );
 
     // Установить конкретные индексы
     BlockState::repair_prev_offset( buf, 10u );
     BlockState::set_next_offset_of( buf, 20u );
-    PMM_TEST( BlockState::get_prev_offset( buf ) == 10u );
-    PMM_TEST( BlockState::get_next_offset( buf ) == 20u );
-
-    return true;
+    REQUIRE( BlockState::get_prev_offset( buf ) == 10u );
+    REQUIRE( BlockState::get_next_offset( buf ) == 20u );
 }
 
 /// @brief Проверяем, что поля TreeNode инициализируются через state machine.
 /// Issue #120: прямой доступ к полям запрещён, используем BlockStateBase.
-static bool test_p2_tree_node_runtime_init()
+TEST_CASE( "P2-C2: TreeNode runtime init via state machine (incl. weight+root_offset)", "[test_issue87_phase2]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -306,30 +263,28 @@ static bool test_p2_tree_node_runtime_init()
     // Свободный блок: weight=0, root_offset=0
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0, 0 );
 
-    PMM_TEST( BlockState::get_left_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_right_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_parent_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_avl_height( buf ) == 0 );
-    PMM_TEST( BlockState::get_weight( buf ) == 0u );
+    REQUIRE( BlockState::get_left_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_right_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_parent_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_avl_height( buf ) == 0 );
+    REQUIRE( BlockState::get_weight( buf ) == 0u );
 
     // Проверка через BlockStateBase instance getters
     auto* bs = reinterpret_cast<BlockState*>( buf );
-    PMM_TEST( bs->weight() == 0u );
-    PMM_TEST( bs->root_offset() == 0u );
-    PMM_TEST( bs->is_free() );
+    REQUIRE( bs->weight() == 0u );
+    REQUIRE( bs->root_offset() == 0u );
+    REQUIRE( bs->is_free() );
 
     // Установить поля через reset_avl_fields_of / set methods
     BlockState::reset_avl_fields_of( buf );
-    PMM_TEST( BlockState::get_left_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_avl_height( buf ) == 0 );
-
-    return true;
+    REQUIRE( BlockState::get_left_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_avl_height( buf ) == 0 );
 }
 
 /// @brief Проверяем AddressTraits<uint8_t, 8>: LinkedListNode и TreeNode с 8-bit индексами.
 /// Phase 2 v0.2: включает поля weight и root_offset (8-bit для AddressTraits<uint8_t, 8>).
 /// Issue #120: доступ через BlockStateBase<AddressTraits<uint8_t, 8>>.
-static bool test_p2_tiny_traits_nodes()
+TEST_CASE( "P2-C3: AddressTraits<uint8_t, 8> nodes (8-bit indices) via state machine", "[test_issue87_phase2]" )
 {
     using A          = pmm::AddressTraits<std::uint8_t, 8>;
     using BlockState = pmm::BlockStateBase<A>;
@@ -339,47 +294,16 @@ static bool test_p2_tiny_traits_nodes()
     // Инициализация через state machine
     BlockState::init_fields( buf, A::no_block, 0u, 1, 0, 0 );
 
-    PMM_TEST( BlockState::get_prev_offset( buf ) == 0xFFU ); // A::no_block
-    PMM_TEST( BlockState::get_next_offset( buf ) == 0U );
-    PMM_TEST( BlockState::get_avl_height( buf ) == 1 );
-    PMM_TEST( BlockState::get_weight( buf ) == 0U );
+    REQUIRE( BlockState::get_prev_offset( buf ) == 0xFFU ); // A::no_block
+    REQUIRE( BlockState::get_next_offset( buf ) == 0U );
+    REQUIRE( BlockState::get_avl_height( buf ) == 1 );
+    REQUIRE( BlockState::get_weight( buf ) == 0U );
 
     auto* bs = reinterpret_cast<BlockState*>( buf );
-    PMM_TEST( bs->root_offset() == 0U );
-    PMM_TEST( bs->is_free() );
-
-    return true;
+    REQUIRE( bs->root_offset() == 0U );
+    REQUIRE( bs->is_free() );
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    std::cout << "=== test_issue87_phase2 (Phase 2: TreeNode + Block prev/next fields, Issue #138) ===\n\n";
-    bool all_passed = true;
-
-    std::cout << "--- P2-A: Block prev/next fields (Issue #138: LinkedListNode merged into Block) ---\n";
-    PMM_RUN( "P2-A1: Block<Default> prev/next field types and size (Issue #138)", test_p2_list_node_default_types );
-    PMM_RUN( "P2-A2: Block prev/next with various AddressTraits (8/16/32/64-bit, Issue #138)",
-             test_p2_list_node_various_traits );
-    PMM_RUN( "P2-A3: Block<Default> prev/next offsets (via BlockStateBase::kOffset*, Issue #138)",
-             test_p2_list_node_offsets );
-    PMM_RUN( "P2-A4: Block<Default> prev/next layout (Issue #112, #138)", test_p2_list_node_blockheader_compat );
-
-    std::cout << "\n--- P2-B: TreeNode ---\n";
-    PMM_RUN( "P2-B1: TreeNode<Default> types and size (incl. weight+root_offset)", test_p2_tree_node_default_types );
-    PMM_RUN( "P2-B2: TreeNode with various AddressTraits (8/16/32/64-bit)", test_p2_tree_node_various_traits );
-    PMM_RUN( "P2-B3: TreeNode<Default> field offsets (via BlockStateBase::kOffset*)", test_p2_tree_node_offsets );
-    PMM_RUN( "P2-B4: TreeNode<Default> layout in Block<A> (Issue #112)", test_p2_tree_node_blockheader_compat );
-
-    std::cout << "\n--- P2-C: Runtime initialization via state machine (Issue #120) ---\n";
-    PMM_RUN( "P2-C1: Block prev/next runtime init via state machine (Issue #138)", test_p2_list_node_runtime_init );
-    PMM_RUN( "P2-C2: TreeNode runtime init via state machine (incl. weight+root_offset)",
-             test_p2_tree_node_runtime_init );
-    PMM_RUN( "P2-C3: AddressTraits<uint8_t, 8> nodes (8-bit indices) via state machine", test_p2_tiny_traits_nodes );
-
-    std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
-    return all_passed ? 0 : 1;
-}

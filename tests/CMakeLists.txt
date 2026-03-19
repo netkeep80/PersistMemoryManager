@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-# ─── Вспомогательная функция для добавления теста ────────────────────────────
+# ─── Вспомогательная функция для добавления теста (Catch2, Phase 5.1) ─────────
 function(pmm_add_test name source)
     add_executable(${name} ${source})
-    target_link_libraries(${name} PRIVATE pmm)
+    target_link_libraries(${name} PRIVATE pmm Catch2::Catch2WithMain)
     add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
@@ -32,12 +32,12 @@ pmm_add_test(test_stress_auto_grow test_stress_auto_grow.cpp)
 
 # ─── Тесты Фазы 9: Потокобезопасность ────────────────────────────────────────
 add_executable(test_thread_safety test_thread_safety.cpp)
-target_link_libraries(test_thread_safety PRIVATE pmm Threads::Threads)
+target_link_libraries(test_thread_safety PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME test_thread_safety COMMAND test_thread_safety)
 
 # ─── Тесты Фазы 10: Разделённые блокировки (shared_mutex) ─────────────────────
 add_executable(test_shared_mutex test_shared_mutex.cpp)
-target_link_libraries(test_shared_mutex PRIVATE pmm Threads::Threads)
+target_link_libraries(test_shared_mutex PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME test_shared_mutex COMMAND test_shared_mutex)
 
 # ─── Нагрузочные и стресс-тесты (Issue #34) ──────────────────────────────────
@@ -90,12 +90,12 @@ pmm_add_test(test_block_state test_block_state.cpp)
 
 # ─── Интеграционные тесты пресетов (Issue #97) ───────────────────────────────
 add_executable(test_issue97_presets test_issue97_presets.cpp)
-target_link_libraries(test_issue97_presets PRIVATE pmm Threads::Threads)
+target_link_libraries(test_issue97_presets PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME test_issue97_presets COMMAND test_issue97_presets)
 
 # ─── Тесты Phase 1: Infrastructure Preparation (Issue #100) ──────────────────
 add_executable(test_issue100 test_issue100.cpp)
-target_link_libraries(test_issue100 PRIVATE pmm Threads::Threads)
+target_link_libraries(test_issue100 PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME test_issue100 COMMAND test_issue100)
 
 # ─── Интеграционные тесты BlockState machine (Issue #106) ─────────────────────
@@ -121,7 +121,7 @@ pmm_add_test(test_issue146_configs test_issue146_configs.cpp)
 
 # ─── Тесты поддержки 16-bit и 64-bit индексов (Issue #146) ───────────────────
 add_executable(test_issue146_index_sizes test_issue146_index_sizes.cpp)
-target_link_libraries(test_issue146_index_sizes PRIVATE pmm Threads::Threads)
+target_link_libraries(test_issue146_index_sizes PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME test_issue146_index_sizes COMMAND test_issue146_index_sizes)
 
 # ─── Тесты pstringview — интернированных read-only строк (Issue #151) ─────────
@@ -192,7 +192,7 @@ pmm_add_test(test_issue43_phase2_persistence test_issue43_phase2_persistence.cpp
 
 # ─── Тесты поддержки 64-bit индексов через ManagerHeader<AT> (Issue #175) ────
 add_executable(test_issue175_64bit_indexes test_issue175_64bit_indexes.cpp)
-target_link_libraries(test_issue175_64bit_indexes PRIVATE pmm Threads::Threads)
+target_link_libraries(test_issue175_64bit_indexes PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME test_issue175_64bit_indexes COMMAND test_issue175_64bit_indexes)
 
 # ─── Тесты самодостаточности single-header файлов (Issue #123) ───────────────
@@ -203,7 +203,7 @@ foreach(preset single_threaded multi_threaded embedded industrial_db)
     add_executable(${target} test_issue123_sh_${preset}.cpp)
     target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
     target_compile_features(${target} PRIVATE cxx_std_20)
-    target_link_libraries(${target} PRIVATE Threads::Threads)
+    target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain Threads::Threads)
     add_test(NAME ${target} COMMAND ${target})
 endforeach()
 
@@ -212,7 +212,7 @@ set(target test_issue146_sh_embedded_static)
 add_executable(${target} test_issue146_sh_embedded_static.cpp)
 target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
 target_compile_features(${target} PRIVATE cxx_std_20)
-target_link_libraries(${target} PRIVATE Threads::Threads)
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME ${target} COMMAND ${target})
 
 # ─── Тест самодостаточности single-header файла для SmallEmbeddedStaticHeap (Issue #146) ─
@@ -220,7 +220,7 @@ set(target test_issue146_sh_small_embedded_static)
 add_executable(${target} test_issue146_sh_small_embedded_static.cpp)
 target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
 target_compile_features(${target} PRIVATE cxx_std_20)
-target_link_libraries(${target} PRIVATE Threads::Threads)
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME ${target} COMMAND ${target})
 
 # ─── Тест самодостаточности single-header файла для LargeDBHeap (Issue #146) ─
@@ -228,7 +228,7 @@ set(target test_issue146_sh_large_db)
 add_executable(${target} test_issue146_sh_large_db.cpp)
 target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
 target_compile_features(${target} PRIVATE cxx_std_20)
-target_link_libraries(${target} PRIVATE Threads::Threads)
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME ${target} COMMAND ${target})
 
 # ─── Тест самодостаточности pmm_no_comments.h — версии без комментариев (Issue #170) ─
@@ -236,5 +236,5 @@ set(target test_issue170_sh_no_comments)
 add_executable(${target} test_issue170_sh_no_comments.cpp)
 target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
 target_compile_features(${target} PRIVATE cxx_std_20)
-target_link_libraries(${target} PRIVATE Threads::Threads)
+target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME ${target} COMMAND ${target})

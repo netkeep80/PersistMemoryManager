@@ -13,37 +13,11 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
-#include <cstdlib>
+#include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <iostream>
+
 #include <limits>
 #include <type_traits>
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 using Mgr = pmm::presets::SingleThreadedHeap;
 
@@ -53,26 +27,24 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 
 // ─── A1: Granule constants ────────────────────────────────────────────────────
 
-static bool test_cr_granule_size_is_hardcoded()
+TEST_CASE( "A1: granule_size constant", "[test_issue87_abstraction]" )
 {
     static_assert( pmm::kGranuleSize == 16, "kGranuleSize must be 16" );
-    PMM_TEST( pmm::detail::bytes_to_granules( 16 ) == 1 );
-    PMM_TEST( pmm::detail::bytes_to_granules( 17 ) == 2 );
-    PMM_TEST( pmm::detail::granules_to_bytes( 1 ) == 16 );
-    return true;
+    REQUIRE( pmm::detail::bytes_to_granules( 16 ) == 1 );
+    REQUIRE( pmm::detail::bytes_to_granules( 17 ) == 2 );
+    REQUIRE( pmm::detail::granules_to_bytes( 1 ) == 16 );
 }
 
-static bool test_cr_no_block_is_max_uint32()
+TEST_CASE( "A2: kNoBlock is max uint32", "[test_issue87_abstraction]" )
 {
     static_assert( pmm::detail::kNoBlock == 0xFFFFFFFFU, "kNoBlock is max uint32_t" );
-    PMM_TEST( pmm::detail::kNoBlock == ( std::numeric_limits<std::uint32_t>::max )() );
-    return true;
+    REQUIRE( pmm::detail::kNoBlock == ( std::numeric_limits<std::uint32_t>::max )() );
 }
 
 // ─── A2: Block<DefaultAddressTraits> layout (Issue #112) ─────────────────────
 // Note: Block fields are protected (Issue #120). Layout verified via BlockStateBase offsets.
 
-static bool test_cr_block_header_combines_list_and_tree()
+TEST_CASE( "A3: Block<A> combines list+tree (Issue #112)", "[test_issue87_abstraction]" )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     // Issue #138: TreeNode fields come FIRST (TreeNode is base class), prev/next come AFTER
@@ -88,93 +60,85 @@ static bool test_cr_block_header_combines_list_and_tree()
     static_assert( BlockState::kOffsetPrevOffset == 24 );
     static_assert( BlockState::kOffsetNextOffset == 28 );
     static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32 );
-    return true;
 }
 
-static bool test_cr_block_header_uses_uint32_indices()
+TEST_CASE( "A4: Block<A> uses uint32 indices (Issue #112)", "[test_issue87_abstraction]" )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     // Fields are protected (Issue #120); verify index_type via BlockStateBase::index_type
     static_assert( std::is_same<BlockState::index_type, std::uint32_t>::value );
-    return true;
 }
 
 // ─── A3: pptr<T, ManagerT> resolves via instance ─────────────────────────────
 
-static bool test_cr_pptr_resolves_via_manager()
+TEST_CASE( "A5: pptr resolves via manager instance", "[test_issue87_abstraction]" )
 {
     static_assert( sizeof( Mgr::pptr<int> ) == 4 );
     static_assert( sizeof( Mgr::pptr<double> ) == 4 );
 
     Mgr::pptr<int> null_ptr;
-    PMM_TEST( null_ptr.is_null() );
-    PMM_TEST( !null_ptr );
+    REQUIRE( null_ptr.is_null() );
+    REQUIRE( !null_ptr );
 
     Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
+    REQUIRE( pmm.create( 64 * 1024 ) );
 
     Mgr::pptr<int> p = pmm.allocate_typed<int>( 1 );
-    PMM_TEST( !p.is_null() );
-    PMM_TEST( p.resolve() != nullptr );
+    REQUIRE( !p.is_null() );
+    REQUIRE( p.resolve() != nullptr );
 
     pmm.deallocate_typed( p );
     pmm.destroy();
-    return true;
 }
 
 // ─── A4: Config constants ─────────────────────────────────────────────────────
 
-static bool test_cr_config_constants()
+TEST_CASE( "A6: config constants", "[test_issue87_abstraction]" )
 {
     static_assert( pmm::config::kDefaultGrowNumerator == 5 );
     static_assert( pmm::config::kDefaultGrowDenominator == 4 );
-    return true;
 }
 
 // ─── A5: PersistentAvlTree is standalone ────────────────────────────────────
 
-static bool test_cr_avl_tree_is_standalone()
+TEST_CASE( "A7: PersistentAvlTree is standalone", "[test_issue87_abstraction]" )
 {
     static_assert( !std::is_constructible<pmm::PersistentAvlTree>::value,
                    "PersistentAvlTree must not be constructible (all-static)" );
 
     Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.create( 64 * 1024 ) );
+    REQUIRE( pmm.is_initialized() );
     pmm.destroy();
-    return true;
 }
 
 // ─── A6: HeapStorage backend exists ─────────────────────────────────────────
 
-static bool test_cr_heap_backend()
+TEST_CASE( "A8: heap backend works", "[test_issue87_abstraction]" )
 {
     Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.create( 64 * 1024 ) );
+    REQUIRE( pmm.is_initialized() );
     pmm.destroy();
-    return true;
 }
 
 // ─── A7: Instance-based manager (no virtual functions) ───────────────────────
 
-static bool test_cr_no_virtual_functions()
+TEST_CASE( "A9: no virtual functions", "[test_issue87_abstraction]" )
 {
     static_assert( !std::is_polymorphic<Mgr>::value, "AbstractPersistMemoryManager must not be polymorphic" );
-    return true;
 }
 
 // ─── A8: Thread policy injection works ───────────────────────────────────────
 
-static bool test_cr_thread_policy_injection()
+TEST_CASE( "A10: thread policy injection", "[test_issue87_abstraction]" )
 {
     using ST = pmm::presets::SingleThreadedHeap;
 
     ST pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.create( 64 * 1024 ) );
+    REQUIRE( pmm.is_initialized() );
     pmm.destroy();
-    return true;
 }
 
 // =============================================================================
@@ -183,7 +147,7 @@ static bool test_cr_thread_policy_injection()
 
 // [Phase 1] AddressTraits
 
-static bool test_phase1_address_traits()
+TEST_CASE( "B1: AddressTraits<> — 8/16/32-bit", "[test_issue87_abstraction]" )
 {
     using A8 = pmm::AddressTraits<std::uint8_t, 8>;
     static_assert( A8::granule_size == 8 );
@@ -199,14 +163,12 @@ static bool test_phase1_address_traits()
     static_assert( A32::granule_size == pmm::kGranuleSize );
 
     static_assert( std::is_same<pmm::DefaultAddressTraits, A32>::value );
-
-    return true;
 }
 
 // [Phase 2] TreeNode + Block prev/next fields (Issue #138: LinkedListNode merged into Block)
 // Note: Fields are protected (Issue #120). Type verified via BlockStateBase::index_type.
 
-static bool test_phase2_list_and_tree_nodes()
+TEST_CASE( "B2: TreeNode<A> + Block prev/next fields (Issue #138)", "[test_issue87_abstraction]" )
 {
     using A = pmm::DefaultAddressTraits;
 
@@ -225,13 +187,11 @@ static bool test_phase2_list_and_tree_nodes()
                    "Block<AddressTraits<uint8_t, 8>>::index_type must be uint8_t (Issue #138)" );
     static_assert( std::is_same<pmm::TreeNode<A8>::index_type, std::uint8_t>::value,
                    "TreeNode<AddressTraits<uint8_t, 8>>::index_type must be uint8_t" );
-
-    return true;
 }
 
 // [Phase 3] Block
 
-static bool test_phase3_block_layout()
+TEST_CASE( "B3: Block<A> inherits TreeNode + has prev/next fields (Issue #138)", "[test_issue87_abstraction]" )
 {
     using A = pmm::DefaultAddressTraits;
 
@@ -240,85 +200,80 @@ static bool test_phase3_block_layout()
     static_assert( std::is_base_of<pmm::TreeNode<A>, pmm::Block<A>>::value );
     // Verify total size is still 32 bytes: TreeNode(24) + prev(4) + next(4)
     static_assert( sizeof( pmm::Block<A> ) == 32, "Block must still be 32 bytes (Issue #138)" );
-
-    return true;
 }
 
 // =============================================================================
 // PART C: Integration — must pass on all phases
 // =============================================================================
 
-static bool test_integration_full_lifecycle()
+TEST_CASE( "C1: full lifecycle allocate/deallocate", "[test_issue87_abstraction]" )
 {
     Mgr pmm;
-    PMM_TEST( pmm.create( 128 * 1024 ) );
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.create( 128 * 1024 ) );
+    REQUIRE( pmm.is_initialized() );
 
     auto p1 = pmm.allocate_typed<std::uint8_t>( 16 );
     auto p2 = pmm.allocate_typed<std::uint32_t>( 32 );
     auto p3 = pmm.allocate_typed<double>( 8 );
-    PMM_TEST( !p1.is_null() && !p2.is_null() && !p3.is_null() );
+    REQUIRE( ( !p1.is_null() && !p2.is_null() && !p3.is_null() ) );
 
     pmm.deallocate_typed( p2 );
     pmm.deallocate_typed( p1 );
     pmm.deallocate_typed( p3 );
 
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.is_initialized() );
 
     pmm.destroy();
-    return true;
 }
 
-static bool test_integration_persistence()
+TEST_CASE( "C2: persistence save/load", "[test_issue87_abstraction]" )
 {
     const char* TEST_FILE = "test_i87_persist.dat";
 
     Mgr pmm1;
-    PMM_TEST( pmm1.create( 64 * 1024 ) );
+    REQUIRE( pmm1.create( 64 * 1024 ) );
     auto p = pmm1.allocate_typed<std::uint64_t>( 1 );
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
     *p.resolve()               = 0xDEADBEEFCAFEBABEULL;
     std::uint32_t saved_offset = p.offset();
 
-    PMM_TEST( pmm::save_manager<decltype( pmm1 )>( TEST_FILE ) );
+    REQUIRE( pmm::save_manager<decltype( pmm1 )>( TEST_FILE ) );
     pmm1.destroy();
 
     Mgr pmm2;
-    PMM_TEST( pmm2.create( 64 * 1024 ) );
-    PMM_TEST( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE ) );
-    PMM_TEST( pmm2.is_initialized() );
+    REQUIRE( pmm2.create( 64 * 1024 ) );
+    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE ) );
+    REQUIRE( pmm2.is_initialized() );
 
     Mgr::pptr<std::uint64_t> p2( saved_offset );
-    PMM_TEST( p2.resolve() != nullptr );
-    PMM_TEST( *p2.resolve() == 0xDEADBEEFCAFEBABEULL );
+    REQUIRE( p2.resolve() != nullptr );
+    REQUIRE( *p2.resolve() == 0xDEADBEEFCAFEBABEULL );
 
     pmm2.destroy();
     std::remove( TEST_FILE );
-    return true;
 }
 
-static bool test_integration_stats()
+TEST_CASE( "C3: stats via block_count methods", "[test_issue87_abstraction]" )
 {
     Mgr pmm;
-    PMM_TEST( pmm.create( 64 * 1024 ) );
+    REQUIRE( pmm.create( 64 * 1024 ) );
 
-    PMM_TEST( pmm.free_block_count() == 1 );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // Block_0 always allocated (Issue #75)
+    REQUIRE( pmm.free_block_count() == 1 );
+    REQUIRE( pmm.alloc_block_count() == 1 ); // Block_0 always allocated (Issue #75)
 
     auto p = pmm.allocate_typed<std::uint8_t>( 128 );
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
-    PMM_TEST( pmm.alloc_block_count() == 2 );
+    REQUIRE( pmm.alloc_block_count() == 2 );
 
     pmm.deallocate_typed( p );
     pmm.destroy();
-    return true;
 }
 
-static bool test_integration_avl_tree_invariants()
+TEST_CASE( "C4: AVL tree invariants under fragmentation", "[test_issue87_abstraction]" )
 {
     Mgr pmm;
-    PMM_TEST( pmm.create( 256 * 1024 ) );
+    REQUIRE( pmm.create( 256 * 1024 ) );
 
     static const int        N = 20;
     Mgr::pptr<std::uint8_t> ptrs[N]{};
@@ -328,49 +283,16 @@ static bool test_integration_avl_tree_invariants()
     for ( int i = 0; i < N; i += 2 )
         pmm.deallocate_typed( ptrs[i] );
 
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.is_initialized() );
 
     for ( int i = 1; i < N; i += 2 )
         pmm.deallocate_typed( ptrs[i] );
 
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.is_initialized() );
 
     pmm.destroy();
-    return true;
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    std::cout << "=== test_issue87_abstraction (updated #102 — new API) ===\n\n";
-    bool all_passed = true;
-
-    std::cout << "--- Part A: Architecture facts ---\n";
-    PMM_RUN( "A1: granule_size constant", test_cr_granule_size_is_hardcoded );
-    PMM_RUN( "A2: kNoBlock is max uint32", test_cr_no_block_is_max_uint32 );
-    PMM_RUN( "A3: Block<A> combines list+tree (Issue #112)", test_cr_block_header_combines_list_and_tree );
-    PMM_RUN( "A4: Block<A> uses uint32 indices (Issue #112)", test_cr_block_header_uses_uint32_indices );
-    PMM_RUN( "A5: pptr resolves via manager instance", test_cr_pptr_resolves_via_manager );
-    PMM_RUN( "A6: config constants", test_cr_config_constants );
-    PMM_RUN( "A7: PersistentAvlTree is standalone", test_cr_avl_tree_is_standalone );
-    PMM_RUN( "A8: heap backend works", test_cr_heap_backend );
-    PMM_RUN( "A9: no virtual functions", test_cr_no_virtual_functions );
-    PMM_RUN( "A10: thread policy injection", test_cr_thread_policy_injection );
-
-    std::cout << "\n--- Part B: Phase beacons ---\n";
-    PMM_RUN( "B1: AddressTraits<> — 8/16/32-bit", test_phase1_address_traits );
-    PMM_RUN( "B2: TreeNode<A> + Block prev/next fields (Issue #138)", test_phase2_list_and_tree_nodes );
-    PMM_RUN( "B3: Block<A> inherits TreeNode + has prev/next fields (Issue #138)", test_phase3_block_layout );
-
-    std::cout << "\n--- Part C: Integration ---\n";
-    PMM_RUN( "C1: full lifecycle allocate/deallocate", test_integration_full_lifecycle );
-    PMM_RUN( "C2: persistence save/load", test_integration_persistence );
-    PMM_RUN( "C3: stats via block_count methods", test_integration_stats );
-    PMM_RUN( "C4: AVL tree invariants under fragmentation", test_integration_avl_tree_invariants );
-
-    std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
-    return all_passed ? 0 : 1;
-}

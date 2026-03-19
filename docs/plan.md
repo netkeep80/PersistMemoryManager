@@ -200,11 +200,20 @@ STL-контейнеров с ПАП.
 
 ## Фаза 5: Тестирование и качество (приоритет: средний)
 
-### 5.1 Миграция на Catch2
+> Начата в Issue #212. Подробности: [docs/phase5_testing.md](phase5_testing.md)
 
-- Мигрировать с собственных макросов `PMM_TEST()` на Catch2
-- `CHECK()` / `REQUIRE()` вместо `PMM_TEST()`
-- `SECTION()` для изоляции тестов
+### 5.1 Миграция на Catch2 ✅ ВЫПОЛНЕНО (#212)
+
+**Текущая ситуация:** Проект использовал собственные макросы `PMM_TEST()` / `PMM_RUN()`,
+определённые локально в каждом тестовом файле, с ручной `main()` логикой.
+
+**Решение:**
+- Мигрированы 73 тестовых файла на Catch2 v3.7.1 (FetchContent)
+- `REQUIRE()` / `CHECK()` вместо `PMM_TEST()`
+- `TEST_CASE()` вместо `static bool test_xxx()` + `PMM_RUN()`
+- Catch2WithMain предоставляет `main()` автоматически
+- Удалено ~4200 строк дублирующегося кода макросов
+- 67 тестов проходят (100% pass rate)
 
 ### 5.2 Расширение покрытия тестами
 
@@ -282,7 +291,7 @@ STL-контейнеров с ПАП.
 | 15 | ~~Хуки логирования~~ | 4.2 | ~~Средний~~ | ~~Средняя~~ | ✅ #202 |
 | 16 | ~~`reallocate_typed<T>`~~ | 4.3 | ~~Средний~~ | ~~Средняя~~ | ✅ #210 |
 | 17 | ~~Конверсия pptr ↔ байтовые смещения~~ | 4.4 | ~~Средний~~ | ~~Низкая~~ | ✅ #211 |
-| 18 | Миграция на Catch2 | 5.1 | Средний | Высокая | |
+| 18 | ~~Миграция на Catch2~~ | 5.1 | ~~Средний~~ | ~~Высокая~~ | ✅ #212 |
 | 19 | Fuzz-тестирование | 5.2 | Средний | Средняя | |
 | 20 | Бенчмарки | 5.3 | Средний | Средняя | |
 | 21 | Документация thread safety | 6.1 | Средний | Низкая | |
@@ -294,4 +303,4 @@ STL-контейнеров с ПАП.
 
 ---
 
-*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210. Phase 4.4 (pptr byte offset conversion) реализована в Issue #211. Фаза 4 полностью завершена.*
+*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210. Phase 4.4 (pptr byte offset conversion) реализована в Issue #211. Фаза 4 полностью завершена. Phase 5.1 (Catch2 migration) реализована в Issue #212.*

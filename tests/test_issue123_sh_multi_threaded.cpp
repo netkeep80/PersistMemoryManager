@@ -14,36 +14,30 @@
 
 #include "pmm_multi_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <iostream>
 
-int main()
+TEST_CASE( "test_issue123_sh_multi_threaded", "[test_issue123_sh_multi_threaded]" )
 {
-    std::cout << "=== test_issue123_sh_multi_threaded (pmm_multi_threaded_heap.h) ===\n";
-
     using MTH = pmm::presets::MultiThreadedHeap;
 
-    assert( !MTH::is_initialized() );
+    REQUIRE( !MTH::is_initialized() );
     bool created = MTH::create( 16 * 1024 );
-    assert( created );
-    assert( MTH::is_initialized() );
-    assert( MTH::total_size() >= 16 * 1024 );
+    REQUIRE( created );
+    REQUIRE( MTH::is_initialized() );
+    REQUIRE( MTH::total_size() >= 16 * 1024 );
 
     void* ptr = MTH::allocate( 128 );
-    assert( ptr != nullptr );
+    REQUIRE( ptr != nullptr );
     std::memset( ptr, 0xBB, 128 );
     MTH::deallocate( ptr );
 
     MTH::pptr<double> p = MTH::allocate_typed<double>();
-    assert( !p.is_null() );
+    REQUIRE( !p.is_null() );
     *p.resolve() = 3.14;
-    assert( *p.resolve() == 3.14 );
+    REQUIRE( *p.resolve() == 3.14 );
     MTH::deallocate_typed( p );
 
     MTH::destroy();
-    assert( !MTH::is_initialized() );
-
-    std::cout << "PASSED\n";
-    return 0;
+    REQUIRE( !MTH::is_initialized() );
 }

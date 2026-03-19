@@ -14,36 +14,30 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <iostream>
 
-int main()
+TEST_CASE( "test_issue123_sh_single_threaded", "[test_issue123_sh_single_threaded]" )
 {
-    std::cout << "=== test_issue123_sh_single_threaded (pmm_single_threaded_heap.h) ===\n";
-
     using STH = pmm::presets::SingleThreadedHeap;
 
-    assert( !STH::is_initialized() );
+    REQUIRE( !STH::is_initialized() );
     bool created = STH::create( 16 * 1024 );
-    assert( created );
-    assert( STH::is_initialized() );
-    assert( STH::total_size() >= 16 * 1024 );
+    REQUIRE( created );
+    REQUIRE( STH::is_initialized() );
+    REQUIRE( STH::total_size() >= 16 * 1024 );
 
     void* ptr = STH::allocate( 128 );
-    assert( ptr != nullptr );
+    REQUIRE( ptr != nullptr );
     std::memset( ptr, 0xAA, 128 );
     STH::deallocate( ptr );
 
     STH::pptr<int> p = STH::allocate_typed<int>();
-    assert( !p.is_null() );
+    REQUIRE( !p.is_null() );
     *p.resolve() = 42;
-    assert( *p.resolve() == 42 );
+    REQUIRE( *p.resolve() == 42 );
     STH::deallocate_typed( p );
 
     STH::destroy();
-    assert( !STH::is_initialized() );
-
-    std::cout << "PASSED\n";
-    return 0;
+    REQUIRE( !STH::is_initialized() );
 }

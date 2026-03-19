@@ -14,38 +14,32 @@
 
 #include "pmm_embedded_static_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <iostream>
 
-int main()
+TEST_CASE( "test_issue146_sh_embedded_static", "[test_issue146_sh_embedded_static]" )
 {
-    std::cout << "=== test_issue146_sh_embedded_static (pmm_embedded_static_heap.h) ===\n";
-
     // EmbeddedStaticHeap uses InstanceId=0 with default 4096-byte buffer.
     // We use a custom manager to avoid conflicts with other tests sharing InstanceId=0.
     using ESH = pmm::PersistMemoryManager<pmm::EmbeddedStaticConfig<4096>, 1465>;
 
-    assert( !ESH::is_initialized() );
+    REQUIRE( !ESH::is_initialized() );
     bool created = ESH::create( 4096 );
-    assert( created );
-    assert( ESH::is_initialized() );
-    assert( ESH::total_size() == 4096 );
+    REQUIRE( created );
+    REQUIRE( ESH::is_initialized() );
+    REQUIRE( ESH::total_size() == 4096 );
 
     void* ptr = ESH::allocate( 128 );
-    assert( ptr != nullptr );
+    REQUIRE( ptr != nullptr );
     std::memset( ptr, 0xCC, 128 );
     ESH::deallocate( ptr );
 
     ESH::pptr<int> p = ESH::allocate_typed<int>();
-    assert( !p.is_null() );
+    REQUIRE( !p.is_null() );
     *p.resolve() = 42;
-    assert( *p.resolve() == 42 );
+    REQUIRE( *p.resolve() == 42 );
     ESH::deallocate_typed( p );
 
     ESH::destroy();
-    assert( !ESH::is_initialized() );
-
-    std::cout << "PASSED\n";
-    return 0;
+    REQUIRE( !ESH::is_initialized() );
 }

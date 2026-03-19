@@ -19,38 +19,11 @@
  */
 
 #include "demo_globals.h"
+#include <catch2/catch_test_macros.hpp>
 #include "mem_map_view.h"
 
-#include <cstdlib>
 #include <iostream>
 #include <vector>
-
-// ─── Test helpers ─────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << ( name ) << " ... " << std::flush;                                                        \
-        if ( (fn)() )                                                                                                  \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
@@ -71,19 +44,18 @@ static void destroy_pmm()
 /**
  * @brief Small PMM: total_bytes() must equal PMM size.
  */
-static bool test_small_pmm_total_bytes()
+TEST_CASE( "small_pmm_total_bytes", "[test_mem_map_view_tile]" )
 {
     constexpr std::size_t kPmmSize = 128 * 1024;
     make_pmm( kPmmSize );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     demo::MemMapView view;
     view.update_snapshot();
 
-    PMM_TEST( view.total_bytes() == kPmmSize );
+    REQUIRE( view.total_bytes() == kPmmSize );
 
     destroy_pmm();
-    return true;
 }
 
 /**
@@ -92,33 +64,31 @@ static bool test_small_pmm_total_bytes()
  * The static backend may allocate slightly more than requested (due to
  * growth headroom), so we verify total_bytes() >= kPmmSize.
  */
-static bool test_large_pmm_total_bytes()
+TEST_CASE( "large_pmm_total_bytes", "[test_mem_map_view_tile]" )
 {
     constexpr std::size_t kPmmSize = 4 * 1024 * 1024; // 4 MiB
     make_pmm( kPmmSize );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     demo::MemMapView view;
     view.update_snapshot();
 
-    PMM_TEST( view.total_bytes() >= kPmmSize );
+    REQUIRE( view.total_bytes() >= kPmmSize );
 
     destroy_pmm();
-    return true;
 }
 
 /**
  * @brief When PMM is inactive, total_bytes() returns 0 after snapshot.
  */
-static bool test_tile_snapshot_inactive_mgr()
+TEST_CASE( "tile_snapshot_inactive_mgr", "[test_mem_map_view_tile]" )
 {
     demo::g_pmm.store( false );
     demo::DemoMgr::destroy();
 
     demo::MemMapView view;
     view.update_snapshot();
-    PMM_TEST( view.total_bytes() == 0 );
-    return true;
+    REQUIRE( view.total_bytes() == 0 );
 }
 
 /**
@@ -127,24 +97,23 @@ static bool test_tile_snapshot_inactive_mgr()
  * The static backend may reuse a larger buffer from a prior create(), so
  * we verify total_bytes() >= kPmmSize rather than exact equality.
  */
-static bool test_used_block_reflected()
+TEST_CASE( "used_block_reflected", "[test_mem_map_view_tile]" )
 {
     constexpr std::size_t kPmmSize = 256 * 1024;
     make_pmm( kPmmSize );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     demo::DemoMgr::pptr<std::uint8_t> p = demo::DemoMgr::allocate_typed<std::uint8_t>( 32 * 1024 );
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     demo::MemMapView view;
     view.update_snapshot();
 
-    PMM_TEST( view.total_bytes() >= kPmmSize );
-    PMM_TEST( demo::DemoMgr::is_initialized() );
+    REQUIRE( view.total_bytes() >= kPmmSize );
+    REQUIRE( demo::DemoMgr::is_initialized() );
 
     demo::DemoMgr::deallocate_typed( p );
     destroy_pmm();
-    return true;
 }
 
 /**
@@ -153,86 +122,60 @@ static bool test_used_block_reflected()
  * The static backend may reuse a larger buffer from a prior create(), so
  * we verify total_bytes() >= kPmmSize rather than exact equality.
  */
-static bool test_freed_blocks_view()
+TEST_CASE( "freed_blocks_view", "[test_mem_map_view_tile]" )
 {
     constexpr std::size_t kPmmSize = 256 * 1024;
     make_pmm( kPmmSize );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     demo::DemoMgr::pptr<std::uint8_t> p = demo::DemoMgr::allocate_typed<std::uint8_t>( 32 * 1024 );
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
     demo::DemoMgr::deallocate_typed( p );
 
     demo::MemMapView view;
     view.update_snapshot();
 
-    PMM_TEST( view.total_bytes() >= kPmmSize );
-    PMM_TEST( demo::DemoMgr::is_initialized() );
+    REQUIRE( view.total_bytes() >= kPmmSize );
+    REQUIRE( demo::DemoMgr::is_initialized() );
 
     destroy_pmm();
-    return true;
 }
 
 /**
  * @brief total_bytes() is non-zero after snapshot of a valid manager.
  */
-static bool test_total_bytes_nonzero()
+TEST_CASE( "total_bytes_nonzero", "[test_mem_map_view_tile]" )
 {
     constexpr std::size_t kPmmSize = 256 * 1024;
     make_pmm( kPmmSize );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     demo::MemMapView view;
     view.update_snapshot();
 
-    PMM_TEST( view.total_bytes() > 0 );
-    PMM_TEST( view.total_bytes() >= kPmmSize );
+    REQUIRE( view.total_bytes() > 0 );
+    REQUIRE( view.total_bytes() >= kPmmSize );
 
     destroy_pmm();
-    return true;
 }
 
 /**
  * @brief Very large PMM: update_snapshot() completes without crash.
  */
-static bool test_very_large_pmm()
+TEST_CASE( "very_large_pmm", "[test_mem_map_view_tile]" )
 {
     constexpr std::size_t kPmmSize = 64 * 1024 * 1024; // 64 MiB
 
     if ( !demo::DemoMgr::create( kPmmSize ) )
     {
         std::cout << "(skipped — PMM create failed) ";
-        return true;
     }
     demo::g_pmm.store( true );
 
     demo::MemMapView view;
     view.update_snapshot();
 
-    PMM_TEST( view.total_bytes() >= kPmmSize );
+    REQUIRE( view.total_bytes() >= kPmmSize );
 
     destroy_pmm();
-    return true;
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "=== test_mem_map_view_tile ===\n";
-    bool all_passed = true;
-
-    // Tests are ordered by increasing PMM size so the static backend (which
-    // retains its capacity after destroy()) never causes a subsequent test to
-    // receive a larger-than-expected backend.
-    PMM_RUN( "small_pmm_total_bytes", test_small_pmm_total_bytes );           // 128 KiB
-    PMM_RUN( "tile_snapshot_inactive_mgr", test_tile_snapshot_inactive_mgr ); // no PMM change
-    PMM_RUN( "used_block_reflected", test_used_block_reflected );             // 256 KiB
-    PMM_RUN( "freed_blocks_view", test_freed_blocks_view );                   // 256 KiB
-    PMM_RUN( "total_bytes_nonzero", test_total_bytes_nonzero );               // 256 KiB
-    PMM_RUN( "large_pmm_total_bytes", test_large_pmm_total_bytes );           // 4 MiB
-    PMM_RUN( "very_large_pmm", test_very_large_pmm );                         // 64 MiB
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

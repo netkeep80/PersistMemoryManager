@@ -23,38 +23,10 @@
 #include "avl_tree_view.h"
 #include "demo_globals.h"
 
-#include <cassert>
-#include <cstdlib>
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
+
 #include <unordered_map>
 #include <vector>
-
-// ─── Test helpers ─────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << ( name ) << " ... " << std::flush;                                                        \
-        if ( (fn)() )                                                                                                  \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
@@ -75,42 +47,40 @@ static void destroy_pmm()
 /**
  * @brief Freshly created PMM: update_snapshot() completes, free_block_count > 0.
  */
-static bool test_empty_pmm_has_free_blocks()
+TEST_CASE( "empty_pmm_has_free_blocks", "[test_avl_tree_view]" )
 {
     make_pmm( 256 * 1024 );
-    PMM_TEST( demo::g_pmm.load() );
-    PMM_TEST( demo::DemoMgr::is_initialized() );
+    REQUIRE( demo::g_pmm.load() );
+    REQUIRE( demo::DemoMgr::is_initialized() );
 
     demo::AvlTreeView view;
     view.update_snapshot();
 
     // Freshly created PMM has one large free block.
-    PMM_TEST( demo::DemoMgr::free_block_count() >= 1 );
+    REQUIRE( demo::DemoMgr::free_block_count() >= 1 );
 
     destroy_pmm();
-    return true;
 }
 
 /**
  * @brief When PMM is inactive, update_snapshot() must not crash.
  */
-static bool test_inactive_mgr_no_crash()
+TEST_CASE( "inactive_mgr_no_crash", "[test_avl_tree_view]" )
 {
     demo::g_pmm.store( false );
     demo::DemoMgr::destroy();
 
     demo::AvlTreeView view;
     view.update_snapshot(); // must not crash (DemoMgr returns 0 for all stats when not initialized)
-    return true;
 }
 
 /**
  * @brief After allocating blocks, used_size increases.
  */
-static bool test_alloc_increases_used_size()
+TEST_CASE( "alloc_increases_used_size", "[test_avl_tree_view]" )
 {
     make_pmm( 256 * 1024 );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     std::size_t used_before = demo::DemoMgr::used_size();
 
@@ -121,27 +91,26 @@ static bool test_alloc_increases_used_size()
     for ( int i = 0; i < 5; ++i )
     {
         demo::DemoMgr::pptr<std::uint8_t> p = demo::DemoMgr::allocate_typed<std::uint8_t>( 1024 );
-        PMM_TEST( !p.is_null() );
+        REQUIRE( !p.is_null() );
         ptrs.push_back( p );
     }
 
     view.update_snapshot();
-    PMM_TEST( demo::DemoMgr::used_size() > used_before );
+    REQUIRE( demo::DemoMgr::used_size() > used_before );
 
     for ( auto& p : ptrs )
         demo::DemoMgr::deallocate_typed( p );
 
     destroy_pmm();
-    return true;
 }
 
 /**
  * @brief After deallocating, free_size recovers.
  */
-static bool test_dealloc_recovers_free_size()
+TEST_CASE( "dealloc_recovers_free_size", "[test_avl_tree_view]" )
 {
     make_pmm( 256 * 1024 );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     std::size_t free_before = demo::DemoMgr::free_size();
 
@@ -160,14 +129,13 @@ static bool test_dealloc_recovers_free_size()
     view.update_snapshot();
 
     // After freeing everything, free_size should be back to original (or close).
-    PMM_TEST( demo::DemoMgr::free_size() > 0 );
+    REQUIRE( demo::DemoMgr::free_size() > 0 );
     // free_size may not equal free_before exactly due to coalescing order,
     // but it should be at least as large.
-    PMM_TEST( demo::DemoMgr::free_size() <= demo::DemoMgr::total_size() );
+    REQUIRE( demo::DemoMgr::free_size() <= demo::DemoMgr::total_size() );
     (void)free_before;
 
     destroy_pmm();
-    return true;
 }
 
 /**
@@ -175,10 +143,10 @@ static bool test_dealloc_recovers_free_size()
  *
  * Verifies that the in-order AVL traversal yields the correct number of free blocks.
  */
-static bool test_for_each_free_block_count()
+TEST_CASE( "for_each_free_block_count", "[test_avl_tree_view]" )
 {
     make_pmm( 256 * 1024 );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     // Allocate some blocks to fragment the heap.
     std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
@@ -200,15 +168,14 @@ static bool test_for_each_free_block_count()
     demo::DemoMgr::for_each_free_block( [&]( const pmm::FreeBlockView& ) { ++iterated; } );
 
     // Must match the manager's free_block_count().
-    PMM_TEST( iterated == demo::DemoMgr::free_block_count() );
-    PMM_TEST( iterated > 0 );
+    REQUIRE( iterated == demo::DemoMgr::free_block_count() );
+    REQUIRE( iterated > 0 );
 
     // Free remaining allocations.
     for ( std::size_t i = 1; i < ptrs.size(); i += 2 )
         demo::DemoMgr::deallocate_typed( ptrs[i] );
 
     destroy_pmm();
-    return true;
 }
 
 /**
@@ -217,10 +184,10 @@ static bool test_for_each_free_block_count()
  * Verifies that among all free blocks exactly one has no parent, which is
  * required for a valid AVL tree and for the tree-rendering code to work.
  */
-static bool test_avl_tree_has_one_root()
+TEST_CASE( "avl_tree_has_one_root", "[test_avl_tree_view]" )
 {
     make_pmm( 256 * 1024 );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     // Create multiple free blocks to get a non-trivial AVL tree.
     std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
@@ -247,14 +214,13 @@ static bool test_avl_tree_has_one_root()
     }
 
     // A valid AVL tree must have exactly one root when it has any nodes.
-    PMM_TEST( blocks.empty() || root_count == 1 );
+    REQUIRE( ( blocks.empty() || root_count == 1 ) );
 
     // Free remaining allocations.
     for ( std::size_t i = 1; i < ptrs.size(); i += 2 )
         demo::DemoMgr::deallocate_typed( ptrs[i] );
 
     destroy_pmm();
-    return true;
 }
 
 /**
@@ -264,10 +230,10 @@ static bool test_avl_tree_has_one_root()
  * must equal the current node's offset.  This validates the data that the
  * tree-rendering code relies on.
  */
-static bool test_avl_child_parent_links_consistent()
+TEST_CASE( "avl_child_parent_links_consistent", "[test_avl_tree_view]" )
 {
     make_pmm( 256 * 1024 );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     // Produce a fragmented heap with several free blocks.
     std::vector<demo::DemoMgr::pptr<std::uint8_t>> ptrs;
@@ -293,14 +259,14 @@ static bool test_avl_child_parent_links_consistent()
         if ( v.left_offset >= 0 )
         {
             auto it = by_offset.find( v.left_offset );
-            PMM_TEST( it != by_offset.end() );
-            PMM_TEST( it->second->parent_offset == v.offset );
+            REQUIRE( it != by_offset.end() );
+            REQUIRE( it->second->parent_offset == v.offset );
         }
         if ( v.right_offset >= 0 )
         {
             auto it = by_offset.find( v.right_offset );
-            PMM_TEST( it != by_offset.end() );
-            PMM_TEST( it->second->parent_offset == v.offset );
+            REQUIRE( it != by_offset.end() );
+            REQUIRE( it->second->parent_offset == v.offset );
         }
     }
 
@@ -309,24 +275,4 @@ static bool test_avl_child_parent_links_consistent()
         demo::DemoMgr::deallocate_typed( ptrs[i] );
 
     destroy_pmm();
-    return true;
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "=== test_avl_tree_view ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "empty_pmm_has_free_blocks", test_empty_pmm_has_free_blocks );
-    PMM_RUN( "inactive_mgr_no_crash", test_inactive_mgr_no_crash );
-    PMM_RUN( "alloc_increases_used_size", test_alloc_increases_used_size );
-    PMM_RUN( "dealloc_recovers_free_size", test_dealloc_recovers_free_size );
-    PMM_RUN( "for_each_free_block_count", test_for_each_free_block_count );
-    PMM_RUN( "avl_tree_has_one_root", test_avl_tree_has_one_root );
-    PMM_RUN( "avl_child_parent_links_consistent", test_avl_child_parent_links_consistent );
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

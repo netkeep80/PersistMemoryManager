@@ -23,55 +23,29 @@
 #include "pmm/persist_memory_manager.h"
 #include "pmm/types.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
+
 #include <type_traits>
 
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // =============================================================================
 // Issue #168 Tests Section A: kBlockHeaderGranules_t<AT> correctness
 // =============================================================================
 
 /// @brief kBlockHeaderGranules_t<DefaultAddressTraits> is correct (2 granules = 32 bytes / 16 bytes).
-static bool test_i168_kBlockHeaderGranules_matches_templated()
+TEST_CASE( "I168-A1: kBlockHeaderGranules_t<DefaultAddressTraits> == 2", "[test_issue168_deduplication]" )
 {
     using AT = pmm::DefaultAddressTraits;
 
     static_assert( pmm::detail::kBlockHeaderGranules_t<AT> == 2,
                    "kBlockHeaderGranules_t<DefaultAddressTraits> must be 2 (32 bytes / 16 bytes, Issue #168)" );
-    return true;
 }
 
 /// @brief kBlockHeaderGranules_t<SmallAddressTraits> is correct (ceiling division).
-static bool test_i168_kBlockHeaderGranules_t_small()
+TEST_CASE( "I168-A2: kBlockHeaderGranules_t<SmallAddressTraits> is correct", "[test_issue168_deduplication]" )
 {
     using AT = pmm::SmallAddressTraits;
 
@@ -80,11 +54,10 @@ static bool test_i168_kBlockHeaderGranules_t_small()
     // ceil(18/16) = 2
     static_assert( pmm::detail::kBlockHeaderGranules_t<AT> == 2,
                    "kBlockHeaderGranules_t<SmallAddressTraits> must be 2 (Issue #168)" );
-    return true;
 }
 
 /// @brief kBlockHeaderGranules_t<LargeAddressTraits> is correct.
-static bool test_i168_kBlockHeaderGranules_t_large()
+TEST_CASE( "I168-A3: kBlockHeaderGranules_t<LargeAddressTraits> is >= 1", "[test_issue168_deduplication]" )
 {
     using AT = pmm::LargeAddressTraits;
 
@@ -94,7 +67,6 @@ static bool test_i168_kBlockHeaderGranules_t_large()
     // ceil(sizeof(Block<Large>) / 64) — at least 1
     static_assert( pmm::detail::kBlockHeaderGranules_t<AT> >= 1,
                    "kBlockHeaderGranules_t<LargeAddressTraits> must be >= 1 (Issue #168)" );
-    return true;
 }
 
 // =============================================================================
@@ -102,7 +74,7 @@ static bool test_i168_kBlockHeaderGranules_t_large()
 // =============================================================================
 
 /// @brief BlockStateBase<AT>::reset_avl_fields_of() correctly resets AVL fields.
-static bool test_i168_BlockStateBase_reset_avl_fields_directly()
+TEST_CASE( "I168-B1: BlockStateBase::reset_avl_fields_of() directly", "[test_issue168_deduplication]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -120,15 +92,14 @@ static bool test_i168_BlockStateBase_reset_avl_fields_directly()
     // Call reset_avl_fields_of directly (as AllocatorPolicy now does after Issue #168)
     BlockState::reset_avl_fields_of( blk );
 
-    PMM_TEST( BlockState::get_left_offset( blk ) == A::no_block );
-    PMM_TEST( BlockState::get_right_offset( blk ) == A::no_block );
-    PMM_TEST( BlockState::get_parent_offset( blk ) == A::no_block );
-    PMM_TEST( BlockState::get_avl_height( blk ) == 0 );
-    return true;
+    REQUIRE( BlockState::get_left_offset( blk ) == A::no_block );
+    REQUIRE( BlockState::get_right_offset( blk ) == A::no_block );
+    REQUIRE( BlockState::get_parent_offset( blk ) == A::no_block );
+    REQUIRE( BlockState::get_avl_height( blk ) == 0 );
 }
 
 /// @brief BlockStateBase<AT>::repair_prev_offset() correctly sets prev_offset.
-static bool test_i168_BlockStateBase_repair_prev_offset_directly()
+TEST_CASE( "I168-B2: BlockStateBase::repair_prev_offset() directly", "[test_issue168_deduplication]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -138,15 +109,14 @@ static bool test_i168_BlockStateBase_repair_prev_offset_directly()
 
     // repair_prev_offset sets prev_offset (as AllocatorPolicy now does after Issue #168)
     BlockState::repair_prev_offset( blk, static_cast<A::index_type>( 7 ) );
-    PMM_TEST( BlockState::get_prev_offset( blk ) == static_cast<A::index_type>( 7 ) );
+    REQUIRE( BlockState::get_prev_offset( blk ) == static_cast<A::index_type>( 7 ) );
 
     BlockState::repair_prev_offset( blk, A::no_block );
-    PMM_TEST( BlockState::get_prev_offset( blk ) == A::no_block );
-    return true;
+    REQUIRE( BlockState::get_prev_offset( blk ) == A::no_block );
 }
 
 /// @brief BlockStateBase<AT>::get_next_offset() returns next_offset correctly.
-static bool test_i168_BlockStateBase_get_next_offset_directly()
+TEST_CASE( "I168-B3: BlockStateBase::get_next_offset() directly", "[test_issue168_deduplication]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -163,15 +133,14 @@ static bool test_i168_BlockStateBase_get_next_offset_directly()
                              /*root_offset*/ 0 );
 
     // get_next_offset is now called directly in AllocatorPolicy (Issue #168)
-    PMM_TEST( BlockState::get_next_offset( blk ) == static_cast<A::index_type>( 42 ) );
+    REQUIRE( BlockState::get_next_offset( blk ) == static_cast<A::index_type>( 42 ) );
 
     BlockState::set_next_offset_of( blk, A::no_block );
-    PMM_TEST( BlockState::get_next_offset( blk ) == A::no_block );
-    return true;
+    REQUIRE( BlockState::get_next_offset( blk ) == A::no_block );
 }
 
 /// @brief BlockStateBase<AT>::get_weight() returns weight correctly.
-static bool test_i168_BlockStateBase_get_weight_directly()
+TEST_CASE( "I168-B4: BlockStateBase::get_weight() directly", "[test_issue168_deduplication]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -180,11 +149,10 @@ static bool test_i168_BlockStateBase_get_weight_directly()
     auto*                      blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
 
     BlockState::init_fields( blk, A::no_block, A::no_block, 0, 0, 0 );
-    PMM_TEST( BlockState::get_weight( blk ) == 0 );
+    REQUIRE( BlockState::get_weight( blk ) == 0 );
 
     BlockState::set_weight_of( blk, static_cast<A::index_type>( 5 ) );
-    PMM_TEST( BlockState::get_weight( blk ) == static_cast<A::index_type>( 5 ) );
-    return true;
+    REQUIRE( BlockState::get_weight( blk ) == static_cast<A::index_type>( 5 ) );
 }
 
 // =============================================================================
@@ -194,14 +162,14 @@ static bool test_i168_BlockStateBase_get_weight_directly()
 using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 168>;
 
 /// @brief rebuild_free_tree() correctly rebuilds the tree (functional test).
-static bool test_i168_rebuild_free_tree_functional()
+TEST_CASE( "I168-C1: rebuild_free_tree() works after wrapper removal", "[test_issue168_deduplication]" )
 {
     TestMgr::create( 64 * 1024 );
 
     void* p1 = TestMgr::allocate( 32 );
     void* p2 = TestMgr::allocate( 64 );
-    PMM_TEST( p1 != nullptr );
-    PMM_TEST( p2 != nullptr );
+    REQUIRE( p1 != nullptr );
+    REQUIRE( p2 != nullptr );
 
     std::size_t free_before = TestMgr::free_block_count();
 
@@ -210,20 +178,19 @@ static bool test_i168_rebuild_free_tree_functional()
     TestMgr::deallocate( p2 );
 
     std::size_t free_after = TestMgr::free_block_count();
-    PMM_TEST( free_after >= free_before );
+    REQUIRE( free_after >= free_before );
 
     // Reload triggers rebuild_free_tree internally (via load path)
     // After reload, can still allocate
     void* p3 = TestMgr::allocate( 32 );
-    PMM_TEST( p3 != nullptr );
+    REQUIRE( p3 != nullptr );
     TestMgr::deallocate( p3 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief repair_linked_list() correctly restores prev_offset links.
-static bool test_i168_repair_linked_list_functional()
+TEST_CASE( "I168-C2: repair_linked_list() works after wrapper removal", "[test_issue168_deduplication]" )
 {
     TestMgr::create( 64 * 1024 );
 
@@ -231,23 +198,22 @@ static bool test_i168_repair_linked_list_functional()
     void* p1 = TestMgr::allocate( 16 );
     void* p2 = TestMgr::allocate( 32 );
     void* p3 = TestMgr::allocate( 48 );
-    PMM_TEST( p1 != nullptr );
-    PMM_TEST( p2 != nullptr );
-    PMM_TEST( p3 != nullptr );
+    REQUIRE( p1 != nullptr );
+    REQUIRE( p2 != nullptr );
+    REQUIRE( p3 != nullptr );
 
     TestMgr::deallocate( p2 );
 
     // Verify counts are consistent (repair_linked_list runs during load)
-    PMM_TEST( TestMgr::block_count() >= 3 );
+    REQUIRE( TestMgr::block_count() >= 3 );
 
     TestMgr::deallocate( p1 );
     TestMgr::deallocate( p3 );
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief recompute_counters() correctly tallies block/free/alloc counts.
-static bool test_i168_recompute_counters_functional()
+TEST_CASE( "I168-C3: recompute_counters() works after wrapper removal", "[test_issue168_deduplication]" )
 {
     TestMgr::create( 64 * 1024 );
 
@@ -255,26 +221,25 @@ static bool test_i168_recompute_counters_functional()
     // Note: block_0 is always counted as allocated (sentinel block)
     std::size_t initial_free  = TestMgr::free_block_count();
     std::size_t initial_alloc = TestMgr::alloc_block_count();
-    PMM_TEST( initial_free > 0 );            // at least one free block
-    PMM_TEST( TestMgr::block_count() >= 2 ); // block_0 + at least one free block
+    REQUIRE( initial_free > 0 );            // at least one free block
+    REQUIRE( TestMgr::block_count() >= 2 ); // block_0 + at least one free block
 
     void* p1 = TestMgr::allocate( 64 );
-    PMM_TEST( p1 != nullptr );
-    PMM_TEST( TestMgr::alloc_block_count() == initial_alloc + 1 );
+    REQUIRE( p1 != nullptr );
+    REQUIRE( TestMgr::alloc_block_count() == initial_alloc + 1 );
 
     void* p2 = TestMgr::allocate( 128 );
-    PMM_TEST( p2 != nullptr );
-    PMM_TEST( TestMgr::alloc_block_count() == initial_alloc + 2 );
+    REQUIRE( p2 != nullptr );
+    REQUIRE( TestMgr::alloc_block_count() == initial_alloc + 2 );
 
     TestMgr::deallocate( p1 );
-    PMM_TEST( TestMgr::alloc_block_count() == initial_alloc + 1 );
-    PMM_TEST( TestMgr::free_block_count() >= initial_free );
+    REQUIRE( TestMgr::alloc_block_count() == initial_alloc + 1 );
+    REQUIRE( TestMgr::free_block_count() >= initial_free );
 
     TestMgr::deallocate( p2 );
-    PMM_TEST( TestMgr::alloc_block_count() == initial_alloc );
+    REQUIRE( TestMgr::alloc_block_count() == initial_alloc );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -282,7 +247,8 @@ static bool test_i168_recompute_counters_functional()
 // =============================================================================
 
 /// @brief BlockStateBase<SmallAddressTraits>::reset_avl_fields_of() uses correct no_block value.
-static bool test_i168_BlockStateBase_small_at_reset_avl_fields()
+TEST_CASE( "I168-D1: BlockStateBase<SmallAddressTraits>::reset_avl_fields_of() uses 0xFFFF no_block",
+           "[test_issue168_deduplication]" )
 {
     using A          = pmm::SmallAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -298,19 +264,19 @@ static bool test_i168_BlockStateBase_small_at_reset_avl_fields()
 
     BlockState::reset_avl_fields_of( blk );
 
-    PMM_TEST( BlockState::get_left_offset( blk ) == A::no_block );
-    PMM_TEST( BlockState::get_right_offset( blk ) == A::no_block );
-    PMM_TEST( BlockState::get_parent_offset( blk ) == A::no_block );
-    PMM_TEST( BlockState::get_avl_height( blk ) == 0 );
+    REQUIRE( BlockState::get_left_offset( blk ) == A::no_block );
+    REQUIRE( BlockState::get_right_offset( blk ) == A::no_block );
+    REQUIRE( BlockState::get_parent_offset( blk ) == A::no_block );
+    REQUIRE( BlockState::get_avl_height( blk ) == 0 );
 
     // Verify no_block is 0xFFFF for SmallAddressTraits
     static_assert( A::no_block == static_cast<A::index_type>( 0xFFFFU ),
                    "SmallAddressTraits::no_block must be 0xFFFF" );
-    return true;
 }
 
 /// @brief BlockStateBase<SmallAddressTraits>::get_weight() and get_next_offset() work correctly.
-static bool test_i168_BlockStateBase_small_at_read_fields()
+TEST_CASE( "I168-D2: BlockStateBase<SmallAddressTraits>::get_weight/next_offset correct",
+           "[test_issue168_deduplication]" )
 {
     using A          = pmm::SmallAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -326,45 +292,10 @@ static bool test_i168_BlockStateBase_small_at_read_fields()
                              /*root_offset*/ static_cast<A::index_type>( 10 ) );
 
     // get_weight and get_next_offset are now called directly in AllocatorPolicy (Issue #168)
-    PMM_TEST( BlockState::get_weight( blk ) == static_cast<A::index_type>( 3 ) );
-    PMM_TEST( BlockState::get_next_offset( blk ) == static_cast<A::index_type>( 99 ) );
-    return true;
+    REQUIRE( BlockState::get_weight( blk ) == static_cast<A::index_type>( 3 ) );
+    REQUIRE( BlockState::get_next_offset( blk ) == static_cast<A::index_type>( 99 ) );
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    std::cout << "=== test_issue168_deduplication (Issue #168: Deduplication) ===\n\n";
-    bool all_passed = true;
-
-    std::cout << "--- I168-A: kBlockHeaderGranules_t<AT> correctness ---\n";
-    PMM_RUN( "I168-A1: kBlockHeaderGranules_t<DefaultAddressTraits> == 2",
-             test_i168_kBlockHeaderGranules_matches_templated );
-    PMM_RUN( "I168-A2: kBlockHeaderGranules_t<SmallAddressTraits> is correct", test_i168_kBlockHeaderGranules_t_small );
-    PMM_RUN( "I168-A3: kBlockHeaderGranules_t<LargeAddressTraits> is >= 1", test_i168_kBlockHeaderGranules_t_large );
-
-    std::cout << "\n--- I168-B: BlockStateBase<AT> methods used directly (no wrapper overhead) ---\n";
-    PMM_RUN( "I168-B1: BlockStateBase::reset_avl_fields_of() directly",
-             test_i168_BlockStateBase_reset_avl_fields_directly );
-    PMM_RUN( "I168-B2: BlockStateBase::repair_prev_offset() directly",
-             test_i168_BlockStateBase_repair_prev_offset_directly );
-    PMM_RUN( "I168-B3: BlockStateBase::get_next_offset() directly", test_i168_BlockStateBase_get_next_offset_directly );
-    PMM_RUN( "I168-B4: BlockStateBase::get_weight() directly", test_i168_BlockStateBase_get_weight_directly );
-
-    std::cout << "\n--- I168-C: AllocatorPolicy recovery methods functional after refactoring ---\n";
-    PMM_RUN( "I168-C1: rebuild_free_tree() works after wrapper removal", test_i168_rebuild_free_tree_functional );
-    PMM_RUN( "I168-C2: repair_linked_list() works after wrapper removal", test_i168_repair_linked_list_functional );
-    PMM_RUN( "I168-C3: recompute_counters() works after wrapper removal", test_i168_recompute_counters_functional );
-
-    std::cout << "\n--- I168-D: Non-default AddressTraits BlockStateBase methods ---\n";
-    PMM_RUN( "I168-D1: BlockStateBase<SmallAddressTraits>::reset_avl_fields_of() uses 0xFFFF no_block",
-             test_i168_BlockStateBase_small_at_reset_avl_fields );
-    PMM_RUN( "I168-D2: BlockStateBase<SmallAddressTraits>::get_weight/next_offset correct",
-             test_i168_BlockStateBase_small_at_read_fields );
-
-    std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
-    return all_passed ? 0 : 1;
-}

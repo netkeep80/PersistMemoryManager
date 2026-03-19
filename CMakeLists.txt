@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(PersistMemoryManager VERSION 0.38.0 LANGUAGES CXX)
+project(PersistMemoryManager VERSION 0.39.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,6 +22,16 @@ endif()
 
 # ─── Потоки (для тестов потокобезопасности) ───────────────────────────────────
 find_package(Threads REQUIRED)
+
+# ─── Catch2 (фреймворк тестирования, Phase 5.1) ─────────────────────────────
+include(FetchContent)
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.7.1
+)
+FetchContent_MakeAvailable(Catch2)
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 
 # ─── Тесты ────────────────────────────────────────────────────────────────────
 enable_testing()

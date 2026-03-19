@@ -8,34 +8,20 @@
  */
 
 #include "pmm_multi_threaded_heap.h"
+#include <catch2/catch_test_macros.hpp>
 
 #include <atomic>
-#include <cstdlib>
 #include <cstring>
-#include <iostream>
+
 #include <thread>
 #include <vector>
-
-#define PMM_TEST( cond, msg )                                                                                          \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( cond ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << ( msg ) << "\n";                           \
-            std::exit( 1 );                                                                                            \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "PASS: " << ( msg ) << "\n";                                                                  \
-        }                                                                                                              \
-    } while ( false )
 
 using Mgr = pmm::presets::MultiThreadedHeap;
 
 /**
  * @brief Concurrent allocation from multiple threads.
  */
-static void test_concurrent_allocate()
+TEST_CASE( "test_concurrent_allocate", "[test_thread_safety]" )
 {
     constexpr std::size_t kMemSize   = 32 * 1024 * 1024; // 32 MB
     constexpr int         kThreads   = 4;
@@ -43,7 +29,8 @@ static void test_concurrent_allocate()
     constexpr std::size_t kBlockSize = 64;
 
     Mgr pmm;
-    PMM_TEST( pmm.create( kMemSize ), "concurrent_allocate: create" );
+    INFO( "concurrent_allocate: create" );
+    REQUIRE( pmm.create( kMemSize ) );
 
     std::vector<std::vector<Mgr::pptr<std::uint8_t>>> results( kThreads );
     std::vector<std::thread>                          threads;
@@ -74,12 +61,15 @@ static void test_concurrent_allocate()
             pmm.deallocate_typed( p );
     }
 
-    PMM_TEST( pmm.is_initialized(), "concurrent_allocate: is_initialized() after parallel allocs" );
+    INFO( "concurrent_allocate: is_initialized() after parallel allocs" );
+
+    REQUIRE( pmm.is_initialized() );
 
     int total = 0;
     for ( auto& vec : results )
         total += static_cast<int>( vec.size() );
-    PMM_TEST( total > 0, "concurrent_allocate: at least one block allocated" );
+    INFO( "concurrent_allocate: at least one block allocated" );
+    REQUIRE( total > 0 );
 
     pmm.destroy();
 }
@@ -87,14 +77,15 @@ static void test_concurrent_allocate()
 /**
  * @brief Concurrent interleaved allocate/deallocate.
  */
-static void test_concurrent_alloc_dealloc()
+TEST_CASE( "test_concurrent_alloc_dealloc", "[test_thread_safety]" )
 {
     constexpr std::size_t kMemSize = 64 * 1024 * 1024; // 64 MB
     constexpr int         kThreads = 4;
     constexpr int         kIter    = 500;
 
     Mgr pmm;
-    PMM_TEST( pmm.create( kMemSize ), "concurrent_alloc_dealloc: create" );
+    INFO( "concurrent_alloc_dealloc: create" );
+    REQUIRE( pmm.create( kMemSize ) );
 
     std::atomic<int>         errors{ 0 };
     std::vector<std::thread> threads;
@@ -136,9 +127,13 @@ static void test_concurrent_alloc_dealloc()
     for ( auto& th : threads )
         th.join();
 
-    PMM_TEST( pmm.is_initialized(), "concurrent_alloc_dealloc: is_initialized() after interleaved ops" );
-    PMM_TEST( errors.load() == 0, "concurrent_alloc_dealloc: no errors in threads" );
-    PMM_TEST( pmm.alloc_block_count() == 1, "concurrent_alloc_dealloc: all blocks freed" );
+    INFO( "concurrent_alloc_dealloc: is_initialized() after interleaved ops" );
+
+    REQUIRE( pmm.is_initialized() );
+    INFO( "concurrent_alloc_dealloc: no errors in threads" );
+    REQUIRE( errors.load() == 0 );
+    INFO( "concurrent_alloc_dealloc: all blocks freed" );
+    REQUIRE( pmm.alloc_block_count() == 1 );
 
     pmm.destroy();
 }
@@ -146,7 +141,7 @@ static void test_concurrent_alloc_dealloc()
 /**
  * @brief Concurrent manual grow (alloc-copy-free) operations.
  */
-static void test_concurrent_manual_grow()
+TEST_CASE( "test_concurrent_manual_grow", "[test_thread_safety]" )
 {
     constexpr std::size_t kMemSize  = 32 * 1024 * 1024; // 32 MB
     constexpr int         kThreads  = 4;
@@ -154,13 +149,15 @@ static void test_concurrent_manual_grow()
     constexpr std::size_t kInitSize = 64;
 
     Mgr pmm;
-    PMM_TEST( pmm.create( kMemSize ), "concurrent_manual_grow: create" );
+    INFO( "concurrent_manual_grow: create" );
+    REQUIRE( pmm.create( kMemSize ) );
 
     std::vector<Mgr::pptr<std::uint8_t>> blocks( kThreads );
     for ( int t = 0; t < kThreads; ++t )
     {
         blocks[t] = pmm.allocate_typed<std::uint8_t>( kInitSize );
-        PMM_TEST( !blocks[t].is_null(), "concurrent_manual_grow: initial alloc" );
+        INFO( "concurrent_manual_grow: initial alloc" );
+        REQUIRE( !blocks[t].is_null() );
     }
 
     std::vector<std::thread> threads;
@@ -194,7 +191,9 @@ static void test_concurrent_manual_grow()
             pmm.deallocate_typed( blocks[t] );
     }
 
-    PMM_TEST( pmm.is_initialized(), "concurrent_manual_grow: is_initialized() after parallel grows" );
+    INFO( "concurrent_manual_grow: is_initialized() after parallel grows" );
+
+    REQUIRE( pmm.is_initialized() );
 
     pmm.destroy();
 }
@@ -202,14 +201,15 @@ static void test_concurrent_manual_grow()
 /**
  * @brief Write data in parallel threads — no data races.
  */
-static void test_no_data_races()
+TEST_CASE( "test_no_data_races", "[test_thread_safety]" )
 {
     constexpr std::size_t kMemSize   = 32 * 1024 * 1024;
     constexpr int         kThreads   = 8;
     constexpr int         kPerThread = 50;
 
     Mgr pmm;
-    PMM_TEST( pmm.create( kMemSize ), "no_data_races: create" );
+    INFO( "no_data_races: create" );
+    REQUIRE( pmm.create( kMemSize ) );
 
     std::atomic<int>         mismatches{ 0 };
     std::vector<std::thread> threads;
@@ -246,23 +246,11 @@ static void test_no_data_races()
     for ( auto& th : threads )
         th.join();
 
-    PMM_TEST( pmm.is_initialized(), "no_data_races: is_initialized() passed" );
-    PMM_TEST( mismatches.load() == 0, "no_data_races: data in blocks not corrupted" );
+    INFO( "no_data_races: is_initialized() passed" );
+
+    REQUIRE( pmm.is_initialized() );
+    INFO( "no_data_races: data in blocks not corrupted" );
+    REQUIRE( mismatches.load() == 0 );
 
     pmm.destroy();
-}
-
-// ─── main ──────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "=== Thread safety tests (Phase 9, updated #102) ===\n";
-
-    test_concurrent_allocate();
-    test_concurrent_alloc_dealloc();
-    test_concurrent_manual_grow();
-    test_no_data_races();
-
-    std::cout << "\nAll thread safety tests PASSED.\n";
-    return 0;
 }

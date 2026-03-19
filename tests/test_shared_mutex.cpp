@@ -9,41 +9,29 @@
  */
 
 #include "pmm_multi_threaded_heap.h"
+#include <catch2/catch_test_macros.hpp>
 
 #include <atomic>
 #include <chrono>
 #include <cstring>
-#include <iostream>
+
 #include <thread>
 #include <vector>
-
-#define PMM_TEST( cond, msg )                                                                                          \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( cond ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << ( msg ) << "\n";                           \
-            std::exit( 1 );                                                                                            \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "PASS: " << ( msg ) << "\n";                                                                  \
-        }                                                                                                              \
-    } while ( false )
 
 using Mgr = pmm::presets::MultiThreadedHeap;
 
 /**
  * @brief Concurrent calls to is_initialized() from multiple threads.
  */
-static void test_concurrent_is_initialized()
+TEST_CASE( "test_concurrent_is_initialized", "[test_shared_mutex]" )
 {
     constexpr std::size_t kMemSize = 4 * 1024 * 1024;
     constexpr int         kThreads = 8;
     constexpr int         kIter    = 100;
 
     Mgr pmm;
-    PMM_TEST( pmm.create( kMemSize ), "concurrent_is_initialized: create" );
+    INFO( "concurrent_is_initialized: create" );
+    REQUIRE( pmm.create( kMemSize ) );
 
     // Allocate some blocks for a non-trivial state
     std::vector<Mgr::pptr<std::uint8_t>> ptrs;
@@ -73,7 +61,9 @@ static void test_concurrent_is_initialized()
     for ( auto& th : threads )
         th.join();
 
-    PMM_TEST( failures.load() == 0, "concurrent_is_initialized: all is_initialized() returned true" );
+    INFO( "concurrent_is_initialized: all is_initialized() returned true" );
+
+    REQUIRE( failures.load() == 0 );
 
     for ( auto& p : ptrs )
         pmm.deallocate_typed( p );
@@ -83,7 +73,7 @@ static void test_concurrent_is_initialized()
 /**
  * @brief Concurrent readers (is_initialized) and writers (allocate/deallocate).
  */
-static void test_readers_writers()
+TEST_CASE( "test_readers_writers", "[test_shared_mutex]" )
 {
     constexpr std::size_t kMemSize      = 32 * 1024 * 1024;
     constexpr int         kReadThreads  = 4;
@@ -91,7 +81,8 @@ static void test_readers_writers()
     constexpr int         kIter         = 200;
 
     Mgr pmm;
-    PMM_TEST( pmm.create( kMemSize ), "readers_writers: create" );
+    INFO( "readers_writers: create" );
+    REQUIRE( pmm.create( kMemSize ) );
 
     std::atomic<bool>        stop{ false };
     std::atomic<int>         invalid_reads{ 0 };
@@ -143,8 +134,11 @@ static void test_readers_writers()
     for ( int t = 0; t < kReadThreads; ++t )
         threads[t].join();
 
-    PMM_TEST( pmm.is_initialized(), "readers_writers: is_initialized() after mixed ops" );
-    PMM_TEST( invalid_reads.load() == 0, "readers_writers: readers saw no invalid state" );
+    INFO( "readers_writers: is_initialized() after mixed ops" );
+
+    REQUIRE( pmm.is_initialized() );
+    INFO( "readers_writers: readers saw no invalid state" );
+    REQUIRE( invalid_reads.load() == 0 );
 
     pmm.destroy();
 }
@@ -152,7 +146,7 @@ static void test_readers_writers()
 /**
  * @brief Manual grow (alloc-copy-free) correctness under concurrent access.
  */
-static void test_concurrent_manual_grow_correctness()
+TEST_CASE( "test_concurrent_manual_grow_correctness", "[test_shared_mutex]" )
 {
     constexpr std::size_t kMemSize  = 16 * 1024 * 1024;
     constexpr int         kThreads  = 4;
@@ -161,13 +155,15 @@ static void test_concurrent_manual_grow_correctness()
     constexpr unsigned    kPattern  = 0xAB;
 
     Mgr pmm;
-    PMM_TEST( pmm.create( kMemSize ), "concurrent_manual_grow: create" );
+    INFO( "concurrent_manual_grow: create" );
+    REQUIRE( pmm.create( kMemSize ) );
 
     std::vector<Mgr::pptr<std::uint8_t>> ptrs( kThreads );
     for ( int t = 0; t < kThreads; ++t )
     {
         ptrs[t] = pmm.allocate_typed<std::uint8_t>( kInitSize );
-        PMM_TEST( !ptrs[t].is_null(), "concurrent_manual_grow: initial alloc" );
+        INFO( "concurrent_manual_grow: initial alloc" );
+        REQUIRE( !ptrs[t].is_null() );
         std::memset( ptrs[t].resolve(), kPattern, kInitSize );
     }
 
@@ -207,8 +203,11 @@ static void test_concurrent_manual_grow_correctness()
             pmm.deallocate_typed( ptrs[t] );
     }
 
-    PMM_TEST( pmm.is_initialized(), "concurrent_manual_grow: is_initialized() after parallel grows" );
-    PMM_TEST( corrupted.load() == 0, "concurrent_manual_grow: data not corrupted during grow" );
+    INFO( "concurrent_manual_grow: is_initialized() after parallel grows" );
+
+    REQUIRE( pmm.is_initialized() );
+    INFO( "concurrent_manual_grow: data not corrupted during grow" );
+    REQUIRE( corrupted.load() == 0 );
 
     pmm.destroy();
 }
@@ -216,14 +215,15 @@ static void test_concurrent_manual_grow_correctness()
 /**
  * @brief Concurrent calls to block_count/free_block_count/alloc_block_count.
  */
-static void test_concurrent_block_counts()
+TEST_CASE( "test_concurrent_block_counts", "[test_shared_mutex]" )
 {
     constexpr std::size_t kMemSize = 8 * 1024 * 1024;
     constexpr int         kThreads = 6;
     constexpr int         kIter    = 100;
 
     Mgr pmm;
-    PMM_TEST( pmm.create( kMemSize ), "concurrent_block_counts: create" );
+    INFO( "concurrent_block_counts: create" );
+    REQUIRE( pmm.create( kMemSize ) );
 
     std::vector<Mgr::pptr<std::uint8_t>> ptrs;
     for ( int i = 0; i < 30; ++i )
@@ -256,24 +256,11 @@ static void test_concurrent_block_counts()
     for ( auto& th : threads )
         th.join();
 
-    PMM_TEST( inconsistent.load() == 0, "concurrent_block_counts: counts are consistent under concurrent reads" );
+    INFO( "concurrent_block_counts: counts are consistent under concurrent reads" );
+
+    REQUIRE( inconsistent.load() == 0 );
 
     for ( auto& p : ptrs )
         pmm.deallocate_typed( p );
     pmm.destroy();
-}
-
-// ─── main ──────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "=== Shared lock tests (Phase 10, updated #102) ===\n";
-
-    test_concurrent_is_initialized();
-    test_readers_writers();
-    test_concurrent_manual_grow_correctness();
-    test_concurrent_block_counts();
-
-    std::cout << "\nAll Phase 10 tests PASSED.\n";
-    return 0;
 }

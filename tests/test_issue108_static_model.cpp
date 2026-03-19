@@ -41,156 +41,128 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <iostream>
+
 #include <type_traits>
 
 // ─── Test macros ─────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        bool _result = fn();                                                                                           \
-        std::cout << ( _result ? "PASS" : "FAIL" ) << "\n";                                                            \
-        if ( !_result )                                                                                                \
-            all_passed = false;                                                                                        \
-    } while ( false )
 
 // =============================================================================
 // P108-A: StaticMemoryManager — базовые операции
 // =============================================================================
 
 /// @brief StaticMemoryManager — создание, аллокация, деаллокация, уничтожение.
-static bool test_p108_basic_lifecycle()
+TEST_CASE( "P108-A1: basic lifecycle (create/alloc/dealloc/destroy)", "[test_issue108_static_model]" )
 {
     // Используем уникальный InstanceId=10 чтобы не конфликтовать с другими тестами
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 10>;
 
-    PMM_TEST( !Mgr::is_initialized() );
+    REQUIRE( !Mgr::is_initialized() );
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
-    PMM_TEST( Mgr::is_initialized() );
-    PMM_TEST( Mgr::total_size() >= 64 * 1024 );
-    PMM_TEST( Mgr::free_size() > 0 );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::is_initialized() );
+    REQUIRE( Mgr::total_size() >= 64 * 1024 );
+    REQUIRE( Mgr::free_size() > 0 );
 
     // Аллокация через статический метод
     Mgr::pptr<int> p = Mgr::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
-    PMM_TEST( static_cast<bool>( p ) );
-    PMM_TEST( p.offset() > 0 );
+    REQUIRE( !p.is_null() );
+    REQUIRE( static_cast<bool>( p ) );
+    REQUIRE( p.offset() > 0 );
 
     // Статический resolve
     int* raw = Mgr::resolve( p );
-    PMM_TEST( raw != nullptr );
+    REQUIRE( raw != nullptr );
     *raw = 42;
-    PMM_TEST( *Mgr::resolve( p ) == 42 );
+    REQUIRE( *Mgr::resolve( p ) == 42 );
 
     // Деаллокация
     Mgr::deallocate_typed( p );
-    PMM_TEST( Mgr::is_initialized() );
+    REQUIRE( Mgr::is_initialized() );
 
     Mgr::destroy();
-    PMM_TEST( !Mgr::is_initialized() );
-
-    return true;
+    REQUIRE( !Mgr::is_initialized() );
 }
 
 /// @brief Аллокация массива через StaticMemoryManager.
-static bool test_p108_array_allocation()
+TEST_CASE( "P108-A2: array allocation", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 11>;
 
-    PMM_TEST( Mgr::create( 256 * 1024 ) );
+    REQUIRE( Mgr::create( 256 * 1024 ) );
 
     const std::size_t count   = 10;
     Mgr::pptr<int>    arr_ptr = Mgr::allocate_typed<int>( count );
-    PMM_TEST( !arr_ptr.is_null() );
+    REQUIRE( !arr_ptr.is_null() );
 
     int* arr = Mgr::resolve( arr_ptr );
-    PMM_TEST( arr != nullptr );
+    REQUIRE( arr != nullptr );
 
     for ( std::size_t i = 0; i < count; i++ )
         arr[i] = static_cast<int>( i * 100 );
 
     for ( std::size_t i = 0; i < count; i++ )
-        PMM_TEST( Mgr::resolve( arr_ptr )[i] == static_cast<int>( i * 100 ) );
+        REQUIRE( Mgr::resolve( arr_ptr )[i] == static_cast<int>( i * 100 ) );
 
     // resolve_at
     for ( std::size_t i = 0; i < count; i++ )
-        PMM_TEST( *Mgr::resolve_at( arr_ptr, i ) == static_cast<int>( i * 100 ) );
+        REQUIRE( *Mgr::resolve_at( arr_ptr, i ) == static_cast<int>( i * 100 ) );
 
     Mgr::deallocate_typed( arr_ptr );
     Mgr::destroy();
-
-    return true;
 }
 
 /// @brief StaticMemoryManager — несколько аллокаций разных типов.
-static bool test_p108_multiple_types()
+TEST_CASE( "P108-A3: multiple types", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 12>;
 
-    PMM_TEST( Mgr::create( 256 * 1024 ) );
+    REQUIRE( Mgr::create( 256 * 1024 ) );
 
     Mgr::pptr<int>    pi = Mgr::allocate_typed<int>();
     Mgr::pptr<double> pd = Mgr::allocate_typed<double>();
     Mgr::pptr<char>   pc = Mgr::allocate_typed<char>( 16 );
 
-    PMM_TEST( !pi.is_null() );
-    PMM_TEST( !pd.is_null() );
-    PMM_TEST( !pc.is_null() );
+    REQUIRE( !pi.is_null() );
+    REQUIRE( !pd.is_null() );
+    REQUIRE( !pc.is_null() );
 
     *Mgr::resolve( pi ) = 7;
     *Mgr::resolve( pd ) = 2.718;
     std::memcpy( Mgr::resolve( pc ), "world", 6 );
 
-    PMM_TEST( *Mgr::resolve( pi ) == 7 );
-    PMM_TEST( *Mgr::resolve( pd ) == 2.718 );
-    PMM_TEST( std::memcmp( Mgr::resolve( pc ), "world", 6 ) == 0 );
+    REQUIRE( *Mgr::resolve( pi ) == 7 );
+    REQUIRE( *Mgr::resolve( pd ) == 2.718 );
+    REQUIRE( std::memcmp( Mgr::resolve( pc ), "world", 6 ) == 0 );
 
     Mgr::deallocate_typed( pi );
     Mgr::deallocate_typed( pd );
     Mgr::deallocate_typed( pc );
     Mgr::destroy();
-
-    return true;
 }
 
 /// @brief StaticMemoryManager — auto-expand при нехватке памяти.
-static bool test_p108_auto_expand()
+TEST_CASE( "P108-A4: auto-expand", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 13>;
 
-    PMM_TEST( Mgr::create( 8 * 1024 ) );
+    REQUIRE( Mgr::create( 8 * 1024 ) );
 
     std::size_t initial_total = Mgr::total_size();
 
     Mgr::pptr<std::uint8_t> p1 = Mgr::allocate_typed<std::uint8_t>( 4 * 1024 );
-    PMM_TEST( !p1.is_null() );
+    REQUIRE( !p1.is_null() );
 
     Mgr::pptr<std::uint8_t> p2 = Mgr::allocate_typed<std::uint8_t>( 4 * 1024 );
-    PMM_TEST( !p2.is_null() );
+    REQUIRE( !p2.is_null() );
 
-    PMM_TEST( Mgr::is_initialized() );
-    PMM_TEST( Mgr::total_size() > initial_total );
+    REQUIRE( Mgr::is_initialized() );
+    REQUIRE( Mgr::total_size() > initial_total );
 
     Mgr::destroy();
-
-    return true;
 }
 
 // =============================================================================
@@ -198,53 +170,49 @@ static bool test_p108_auto_expand()
 // =============================================================================
 
 /// @brief pptr::resolve() — без аргументов (статическая модель).
-static bool test_p108_pptr_resolve_no_arg()
+TEST_CASE( "P108-B1: pptr::resolve() без аргументов", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 20>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<int> p = Mgr::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     // resolve() без аргументов
     int* raw = p.resolve();
-    PMM_TEST( raw != nullptr );
+    REQUIRE( raw != nullptr );
 
     *raw = 99;
-    PMM_TEST( *p.resolve() == 99 );
+    REQUIRE( *p.resolve() == 99 );
 
     Mgr::deallocate_typed( p );
     Mgr::destroy();
-
-    return true;
 }
 
 /// @brief pptr::operator* (статическая модель).
-static bool test_p108_pptr_operator_deref()
+TEST_CASE( "P108-B2: pptr::operator* разыменование", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 21>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<int> p = Mgr::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     // operator* — разыменование без аргументов
     *p = 123;
-    PMM_TEST( *p == 123 );
+    REQUIRE( *p == 123 );
 
     *p = 456;
-    PMM_TEST( *p == 456 );
+    REQUIRE( *p == 456 );
 
     Mgr::deallocate_typed( p );
     Mgr::destroy();
-
-    return true;
 }
 
 /// @brief pptr::operator-> — доступ к полям структуры (статическая модель).
-static bool test_p108_pptr_operator_arrow()
+TEST_CASE( "P108-B3: pptr::operator-> доступ к полям", "[test_issue108_static_model]" )
 {
     struct Point
     {
@@ -254,10 +222,10 @@ static bool test_p108_pptr_operator_arrow()
 
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 22>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<Point> p = Mgr::allocate_typed<Point>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     // Инициализация через resolve (чтобы убрать мусор)
     Mgr::resolve( p )->x = 0;
@@ -267,21 +235,19 @@ static bool test_p108_pptr_operator_arrow()
     p->x = 10;
     p->y = 20;
 
-    PMM_TEST( p->x == 10 );
-    PMM_TEST( p->y == 20 );
+    REQUIRE( p->x == 10 );
+    REQUIRE( p->y == 20 );
 
     // Проверяем что это те же данные через resolve
-    PMM_TEST( Mgr::resolve( p )->x == 10 );
-    PMM_TEST( Mgr::resolve( p )->y == 20 );
+    REQUIRE( Mgr::resolve( p )->x == 10 );
+    REQUIRE( Mgr::resolve( p )->y == 20 );
 
     Mgr::deallocate_typed( p );
     Mgr::destroy();
-
-    return true;
 }
 
 /// @brief pptr::index_type — тип индекса из менеджера (Issue #108 comment).
-static bool test_p108_pptr_index_type()
+TEST_CASE( "P108-B4: pptr::index_type из менеджера", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 23>;
 
@@ -293,51 +259,45 @@ static bool test_p108_pptr_index_type()
     static_assert( std::is_same_v<Mgr::pptr<int>::index_type, Mgr::index_type>,
                    "pptr::index_type must match manager::index_type" );
 
-    PMM_TEST( (std::is_same_v<Mgr::pptr<int>::index_type, std::uint32_t>));
+    REQUIRE( (std::is_same_v<Mgr::pptr<int>::index_type, std::uint32_t>));
 
     // sizeof(pptr<T, StaticMemoryManager>) == sizeof(uint32_t) == 4
     static_assert( sizeof( Mgr::pptr<int> ) == 4, "sizeof(pptr<int, StaticMemoryManager>) must be 4" );
-    PMM_TEST( sizeof( Mgr::pptr<int> ) == 4 );
-
-    return true;
+    REQUIRE( sizeof( Mgr::pptr<int> ) == 4 );
 }
 
 /// @brief pptr null-указатель в статической модели.
-static bool test_p108_pptr_null_static()
+TEST_CASE( "P108-B5: null pptr в статической модели", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 24>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<int> p; // null по умолчанию
-    PMM_TEST( p.is_null() );
-    PMM_TEST( !static_cast<bool>( p ) );
+    REQUIRE( p.is_null() );
+    REQUIRE( !static_cast<bool>( p ) );
 
     // resolve() для null возвращает nullptr
-    PMM_TEST( p.resolve() == nullptr );
+    REQUIRE( p.resolve() == nullptr );
 
     // Статический resolve тоже возвращает nullptr
-    PMM_TEST( Mgr::resolve( p ) == nullptr );
+    REQUIRE( Mgr::resolve( p ) == nullptr );
 
     Mgr::destroy();
-
-    return true;
 }
 
 /// @brief pptr — деаллокация null (статическая модель).
-static bool test_p108_pptr_deallocate_null_static()
+TEST_CASE( "P108-B6: деаллокация null (статическая модель)", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 25>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<int> p;
     Mgr::deallocate_typed( p ); // деаллокация null должна быть безопасна
-    PMM_TEST( Mgr::is_initialized() );
+    REQUIRE( Mgr::is_initialized() );
 
     Mgr::destroy();
-
-    return true;
 }
 
 // =============================================================================
@@ -345,7 +305,7 @@ static bool test_p108_pptr_deallocate_null_static()
 // =============================================================================
 
 /// @brief Менеджеры с разными InstanceId независимы.
-static bool test_p108_instance_independence()
+TEST_CASE( "P108-C1: менеджеры с разными InstanceId независимы", "[test_issue108_static_model]" )
 {
     using Mgr0 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 30>;
     using Mgr1 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 31>;
@@ -357,31 +317,31 @@ static bool test_p108_instance_independence()
     static_assert( !std::is_same_v<Mgr0::pptr<int>, Mgr1::pptr<int>>,
                    "pptr from different InstanceId must be different types" );
 
-    PMM_TEST( !Mgr0::is_initialized() );
-    PMM_TEST( !Mgr1::is_initialized() );
+    REQUIRE( !Mgr0::is_initialized() );
+    REQUIRE( !Mgr1::is_initialized() );
 
-    PMM_TEST( Mgr0::create( 16 * 1024 ) );
-    PMM_TEST( Mgr1::create( 32 * 1024 ) );
+    REQUIRE( Mgr0::create( 16 * 1024 ) );
+    REQUIRE( Mgr1::create( 32 * 1024 ) );
 
-    PMM_TEST( Mgr0::is_initialized() );
-    PMM_TEST( Mgr1::is_initialized() );
+    REQUIRE( Mgr0::is_initialized() );
+    REQUIRE( Mgr1::is_initialized() );
 
     // Разные размеры
-    PMM_TEST( Mgr1::total_size() > Mgr0::total_size() );
+    REQUIRE( Mgr1::total_size() > Mgr0::total_size() );
 
     // Независимые аллокации
     Mgr0::pptr<int> p0 = Mgr0::allocate_typed<int>();
     Mgr1::pptr<int> p1 = Mgr1::allocate_typed<int>();
 
-    PMM_TEST( !p0.is_null() );
-    PMM_TEST( !p1.is_null() );
+    REQUIRE( !p0.is_null() );
+    REQUIRE( !p1.is_null() );
 
     // Разыменование через статические методы своего менеджера
     *p0 = 111;
     *p1 = 222;
 
-    PMM_TEST( *p0 == 111 );
-    PMM_TEST( *p1 == 222 );
+    REQUIRE( *p0 == 111 );
+    REQUIRE( *p1 == 222 );
 
     // p0 и p1 — разные типы, нельзя смешать
     // (проверка на уровне компилятора — Mgr0::pptr<int> != Mgr1::pptr<int>)
@@ -391,20 +351,18 @@ static bool test_p108_instance_independence()
 
     Mgr0::destroy();
     Mgr1::destroy();
-
-    return true;
 }
 
 /// @brief Три независимых менеджера одной конфигурации через InstanceId.
-static bool test_p108_three_instances()
+TEST_CASE( "P108-C2: три независимых экземпляра", "[test_issue108_static_model]" )
 {
     using A = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 40>;
     using B = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 41>;
     using C = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 42>;
 
-    PMM_TEST( A::create( 8 * 1024 ) );
-    PMM_TEST( B::create( 16 * 1024 ) );
-    PMM_TEST( C::create( 32 * 1024 ) );
+    REQUIRE( A::create( 8 * 1024 ) );
+    REQUIRE( B::create( 16 * 1024 ) );
+    REQUIRE( C::create( 32 * 1024 ) );
 
     A::pptr<int> pa = A::allocate_typed<int>();
     B::pptr<int> pb = B::allocate_typed<int>();
@@ -414,9 +372,9 @@ static bool test_p108_three_instances()
     *pb = 2;
     *pc = 3;
 
-    PMM_TEST( *pa == 1 );
-    PMM_TEST( *pb == 2 );
-    PMM_TEST( *pc == 3 );
+    REQUIRE( *pa == 1 );
+    REQUIRE( *pb == 2 );
+    REQUIRE( *pc == 3 );
 
     A::deallocate_typed( pa );
     B::deallocate_typed( pb );
@@ -425,12 +383,10 @@ static bool test_p108_three_instances()
     A::destroy();
     B::destroy();
     C::destroy();
-
-    return true;
 }
 
 /// @brief Менеджеры с разными конфигурациями также независимы.
-static bool test_p108_different_configs()
+TEST_CASE( "P108-C3: разные конфигурации независимы", "[test_issue108_static_model]" )
 {
     using CacheMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 50>;
     using DataMgr  = pmm::PersistMemoryManager<pmm::PersistentDataConfig, 50>;
@@ -439,8 +395,8 @@ static bool test_p108_different_configs()
     static_assert( !std::is_same_v<CacheMgr, DataMgr>,
                    "Different ConfigT with same InstanceId must produce different manager types" );
 
-    PMM_TEST( CacheMgr::create( 16 * 1024 ) );
-    PMM_TEST( DataMgr::create( 32 * 1024 ) );
+    REQUIRE( CacheMgr::create( 16 * 1024 ) );
+    REQUIRE( DataMgr::create( 32 * 1024 ) );
 
     CacheMgr::pptr<double> cp = CacheMgr::allocate_typed<double>();
     DataMgr::pptr<double>  dp = DataMgr::allocate_typed<double>();
@@ -448,16 +404,14 @@ static bool test_p108_different_configs()
     *cp = 3.14;
     *dp = 2.72;
 
-    PMM_TEST( *cp == 3.14 );
-    PMM_TEST( *dp == 2.72 );
+    REQUIRE( *cp == 3.14 );
+    REQUIRE( *dp == 2.72 );
 
     CacheMgr::deallocate_typed( cp );
     DataMgr::deallocate_typed( dp );
 
     CacheMgr::destroy();
     DataMgr::destroy();
-
-    return true;
 }
 
 // =============================================================================
@@ -465,76 +419,70 @@ static bool test_p108_different_configs()
 // =============================================================================
 
 /// @brief destroy() сбрасывает состояние, повторная инициализация работает.
-static bool test_p108_reinitialize_after_destroy()
+TEST_CASE( "P108-D1: повторная инициализация после destroy()", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 60>;
 
     // Первый цикл
-    PMM_TEST( Mgr::create( 16 * 1024 ) );
-    PMM_TEST( Mgr::is_initialized() );
+    REQUIRE( Mgr::create( 16 * 1024 ) );
+    REQUIRE( Mgr::is_initialized() );
 
     Mgr::pptr<int> p1 = Mgr::allocate_typed<int>();
-    PMM_TEST( !p1.is_null() );
+    REQUIRE( !p1.is_null() );
     *p1 = 100;
-    PMM_TEST( *p1 == 100 );
+    REQUIRE( *p1 == 100 );
 
     Mgr::destroy();
-    PMM_TEST( !Mgr::is_initialized() );
+    REQUIRE( !Mgr::is_initialized() );
 
     // Второй цикл — повторная инициализация
-    PMM_TEST( Mgr::create( 32 * 1024 ) );
-    PMM_TEST( Mgr::is_initialized() );
+    REQUIRE( Mgr::create( 32 * 1024 ) );
+    REQUIRE( Mgr::is_initialized() );
 
     Mgr::pptr<int> p2 = Mgr::allocate_typed<int>();
-    PMM_TEST( !p2.is_null() );
+    REQUIRE( !p2.is_null() );
     *p2 = 200;
-    PMM_TEST( *p2 == 200 );
+    REQUIRE( *p2 == 200 );
 
     Mgr::deallocate_typed( p2 );
     Mgr::destroy();
-    PMM_TEST( !Mgr::is_initialized() );
-
-    return true;
+    REQUIRE( !Mgr::is_initialized() );
 }
 
 /// @brief destroy() без предшествующего create() безопасно.
-static bool test_p108_destroy_uninitialized()
+TEST_CASE( "P108-D2: destroy() неинициализированного менеджера", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 61>;
 
-    PMM_TEST( !Mgr::is_initialized() );
+    REQUIRE( !Mgr::is_initialized() );
     Mgr::destroy(); // должно быть безопасно
-    PMM_TEST( !Mgr::is_initialized() );
-
-    return true;
+    REQUIRE( !Mgr::is_initialized() );
 }
 
 /// @brief Статистика корректно отражает состояние.
-static bool test_p108_statistics()
+TEST_CASE( "P108-D3: статистика корректна", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 62>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     std::size_t total = Mgr::total_size();
-    PMM_TEST( total >= 64 * 1024 );
+    REQUIRE( total >= 64 * 1024 );
 
     std::size_t free_before = Mgr::free_size();
-    PMM_TEST( free_before > 0 );
+    REQUIRE( free_before > 0 );
 
     Mgr::pptr<std::uint64_t> p = Mgr::allocate_typed<std::uint64_t>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
-    PMM_TEST( Mgr::free_size() < free_before );
-    PMM_TEST( Mgr::alloc_block_count() >= 1 );
+    REQUIRE( Mgr::free_size() < free_before );
+    REQUIRE( Mgr::alloc_block_count() >= 1 );
 
     Mgr::deallocate_typed( p );
-    PMM_TEST( Mgr::free_size() >= free_before );
+    REQUIRE( Mgr::free_size() >= free_before );
 
     Mgr::destroy();
-    PMM_TEST( Mgr::total_size() == 0 );
-
-    return true;
+    REQUIRE( Mgr::total_size() == 0 );
 }
 
 // =============================================================================
@@ -542,62 +490,56 @@ static bool test_p108_statistics()
 // =============================================================================
 
 /// @brief PersistMemoryManager статический API работает (Issue #110 — унификация).
-static bool test_p108_unified_static_api_works()
+TEST_CASE( "P108-E1: PersistMemoryManager статический API работает", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 80>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<int> p = Mgr::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     // Статическая модель: resolve() без аргументов
     int* raw = p.resolve();
-    PMM_TEST( raw != nullptr );
+    REQUIRE( raw != nullptr );
     *raw = 42;
-    PMM_TEST( *p.resolve() == 42 );
+    REQUIRE( *p.resolve() == 42 );
 
     // Через статический метод менеджера
-    PMM_TEST( *Mgr::resolve<int>( p ) == 42 );
+    REQUIRE( *Mgr::resolve<int>( p ) == 42 );
 
     Mgr::deallocate_typed( p );
     Mgr::destroy();
-
-    return true;
 }
 
 /// @brief pptr::index_type для PersistMemoryManager — из address_traits::index_type.
-static bool test_p108_unified_index_type()
+TEST_CASE( "P108-E2: pptr::index_type из address_traits", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 81>;
 
     // PersistMemoryManager предоставляет address_traits::index_type (uint32_t)
     static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr with PersistMemoryManager must be 4 bytes" );
-    PMM_TEST( sizeof( Mgr::pptr<int> ) == 4 );
-
-    return true;
+    REQUIRE( sizeof( Mgr::pptr<int> ) == 4 );
 }
 
 /// @brief Сравнение pptr в статической модели.
-static bool test_p108_pptr_comparison_static()
+TEST_CASE( "P108-E3: сравнение pptr в статической модели", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 70>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<int> p1 = Mgr::allocate_typed<int>();
     Mgr::pptr<int> p2 = Mgr::allocate_typed<int>();
     Mgr::pptr<int> p3 = p1;
 
-    PMM_TEST( p1 == p3 );
-    PMM_TEST( p1 != p2 );
-    PMM_TEST( !( p1 == p2 ) );
+    REQUIRE( p1 == p3 );
+    REQUIRE( p1 != p2 );
+    REQUIRE( !( p1 == p2 ) );
 
     Mgr::deallocate_typed( p1 );
     Mgr::deallocate_typed( p2 );
     Mgr::destroy();
-
-    return true;
 }
 
 // =============================================================================
@@ -605,23 +547,23 @@ static bool test_p108_pptr_comparison_static()
 // =============================================================================
 
 /// @brief Блок, заблокированный навечно, не может быть освобождён (Issue #126).
-static bool test_p126_lock_block_permanent_prevents_dealloc()
+TEST_CASE( "P108-F1: lock_block_permanent блокирует навечно (нельзя освободить)", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 126>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     void* p = Mgr::allocate( 64 );
-    PMM_TEST( p != nullptr );
+    REQUIRE( p != nullptr );
 
     // До блокировки: блок должен быть не заблокирован
-    PMM_TEST( !Mgr::is_permanently_locked( p ) );
+    REQUIRE( !Mgr::is_permanently_locked( p ) );
 
     // Заблокировать навечно
-    PMM_TEST( Mgr::lock_block_permanent( p ) == true );
+    REQUIRE( Mgr::lock_block_permanent( p ) == true );
 
     // После блокировки: блок должен быть заблокирован
-    PMM_TEST( Mgr::is_permanently_locked( p ) );
+    REQUIRE( Mgr::is_permanently_locked( p ) );
 
     std::size_t alloc_count_before = Mgr::alloc_block_count();
 
@@ -629,110 +571,63 @@ static bool test_p126_lock_block_permanent_prevents_dealloc()
     Mgr::deallocate( p );
 
     // alloc_count не должен измениться
-    PMM_TEST( Mgr::alloc_block_count() == alloc_count_before );
+    REQUIRE( Mgr::alloc_block_count() == alloc_count_before );
 
     Mgr::destroy();
-    return true;
 }
 
 /// @brief lock_block_permanent возвращает false для nullptr и свободных блоков (Issue #126).
-static bool test_p126_lock_block_permanent_edge_cases()
+TEST_CASE( "P108-F2: lock_block_permanent граничные случаи (nullptr)", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 127>;
 
     // nullptr
-    PMM_TEST( Mgr::lock_block_permanent( nullptr ) == false );
+    REQUIRE( Mgr::lock_block_permanent( nullptr ) == false );
 
     // Неинициализированный менеджер
-    PMM_TEST( Mgr::is_permanently_locked( nullptr ) == false );
+    REQUIRE( Mgr::is_permanently_locked( nullptr ) == false );
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     // Обычный аллоцированный блок: кратковременно блокируем и разблокируем нельзя, но lock должен сработать
     void* p = Mgr::allocate( 32 );
-    PMM_TEST( p != nullptr );
-    PMM_TEST( !Mgr::is_permanently_locked( p ) );
-    PMM_TEST( Mgr::lock_block_permanent( p ) == true );
-    PMM_TEST( Mgr::is_permanently_locked( p ) );
+    REQUIRE( p != nullptr );
+    REQUIRE( !Mgr::is_permanently_locked( p ) );
+    REQUIRE( Mgr::lock_block_permanent( p ) == true );
+    REQUIRE( Mgr::is_permanently_locked( p ) );
 
     Mgr::destroy();
-    return true;
 }
 
 /// @brief Обычные блоки (не заблокированные) всё ещё могут быть освобождены (Issue #126).
-static bool test_p126_non_locked_blocks_can_be_freed()
+TEST_CASE( "P108-F3: незаблокированные блоки по-прежнему освобождаются", "[test_issue108_static_model]" )
 {
     using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 128>;
 
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     void* p1 = Mgr::allocate( 32 );
     void* p2 = Mgr::allocate( 32 );
-    PMM_TEST( p1 != nullptr && p2 != nullptr );
+    REQUIRE( ( p1 != nullptr && p2 != nullptr ) );
 
     // Блокируем p1 навечно
-    PMM_TEST( Mgr::lock_block_permanent( p1 ) );
+    REQUIRE( Mgr::lock_block_permanent( p1 ) );
 
     std::size_t alloc_before = Mgr::alloc_block_count();
-    PMM_TEST( alloc_before >= 2 );
+    REQUIRE( alloc_before >= 2 );
 
     // Освобождаем p2 (не заблокированный) — должно сработать (alloc_count уменьшится)
     Mgr::deallocate( p2 );
-    PMM_TEST( Mgr::alloc_block_count() == alloc_before - 1 );
+    REQUIRE( Mgr::alloc_block_count() == alloc_before - 1 );
 
     // Освобождаем p1 (заблокированный) — не должно освободиться (alloc_count не изменится)
     std::size_t alloc_after_p2 = Mgr::alloc_block_count();
     Mgr::deallocate( p1 );
-    PMM_TEST( Mgr::alloc_block_count() == alloc_after_p2 );
+    REQUIRE( Mgr::alloc_block_count() == alloc_after_p2 );
 
     Mgr::destroy();
-    return true;
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    std::cout << "=== test_issue108_static_model (Issue #108) ===\n\n";
-    bool all_passed = true;
-
-    std::cout << "--- P108-A: StaticMemoryManager — базовые операции ---\n";
-    PMM_RUN( "P108-A1: basic lifecycle (create/alloc/dealloc/destroy)", test_p108_basic_lifecycle );
-    PMM_RUN( "P108-A2: array allocation", test_p108_array_allocation );
-    PMM_RUN( "P108-A3: multiple types", test_p108_multiple_types );
-    PMM_RUN( "P108-A4: auto-expand", test_p108_auto_expand );
-
-    std::cout << "\n--- P108-B: pptr — статическая модель разыменования ---\n";
-    PMM_RUN( "P108-B1: pptr::resolve() без аргументов", test_p108_pptr_resolve_no_arg );
-    PMM_RUN( "P108-B2: pptr::operator* разыменование", test_p108_pptr_operator_deref );
-    PMM_RUN( "P108-B3: pptr::operator-> доступ к полям", test_p108_pptr_operator_arrow );
-    PMM_RUN( "P108-B4: pptr::index_type из менеджера", test_p108_pptr_index_type );
-    PMM_RUN( "P108-B5: null pptr в статической модели", test_p108_pptr_null_static );
-    PMM_RUN( "P108-B6: деаллокация null (статическая модель)", test_p108_pptr_deallocate_null_static );
-
-    std::cout << "\n--- P108-C: InstanceId — независимые экземпляры ---\n";
-    PMM_RUN( "P108-C1: менеджеры с разными InstanceId независимы", test_p108_instance_independence );
-    PMM_RUN( "P108-C2: три независимых экземпляра", test_p108_three_instances );
-    PMM_RUN( "P108-C3: разные конфигурации независимы", test_p108_different_configs );
-
-    std::cout << "\n--- P108-D: Изоляция тестов через destroy() ---\n";
-    PMM_RUN( "P108-D1: повторная инициализация после destroy()", test_p108_reinitialize_after_destroy );
-    PMM_RUN( "P108-D2: destroy() неинициализированного менеджера", test_p108_destroy_uninitialized );
-    PMM_RUN( "P108-D3: статистика корректна", test_p108_statistics );
-
-    std::cout << "\n--- P108-E: Унифицированный API PersistMemoryManager (Issue #110) ---\n";
-    PMM_RUN( "P108-E1: PersistMemoryManager статический API работает", test_p108_unified_static_api_works );
-    PMM_RUN( "P108-E2: pptr::index_type из address_traits", test_p108_unified_index_type );
-    PMM_RUN( "P108-E3: сравнение pptr в статической модели", test_p108_pptr_comparison_static );
-
-    std::cout << "\n--- P108-F: Issue #126 — lock_block_permanent и node_type ---\n";
-    PMM_RUN( "P108-F1: lock_block_permanent блокирует навечно (нельзя освободить)",
-             test_p126_lock_block_permanent_prevents_dealloc );
-    PMM_RUN( "P108-F2: lock_block_permanent граничные случаи (nullptr)", test_p126_lock_block_permanent_edge_cases );
-    PMM_RUN( "P108-F3: незаблокированные блоки по-прежнему освобождаются", test_p126_non_locked_blocks_can_be_freed );
-
-    std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
-    return all_passed ? 0 : 1;
-}

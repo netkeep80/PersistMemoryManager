@@ -15,6 +15,7 @@
  */
 
 #include "scenario_manager.h"
+#include <catch2/catch_test_macros.hpp>
 
 #include "demo_globals.h"
 
@@ -22,33 +23,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <thread>
-
-// ─── Test helpers ─────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << ( name ) << " ... " << std::flush;                                                        \
-        if ( (fn)() )                                                                                                  \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
@@ -75,21 +49,20 @@ static void pmm_teardown()
 /**
  * @brief ScenarioManager must expose exactly 8 scenarios.
  */
-static bool test_scenario_count()
+TEST_CASE( "scenario_count", "[test_scenario_manager]" )
 {
     pmm_setup();
 
     demo::ScenarioManager mgr;
-    PMM_TEST( mgr.count() == 8 );
+    REQUIRE( mgr.count() == 8 );
 
     pmm_teardown();
-    return true;
 }
 
 /**
  * @brief Start 3 scenarios, then stop_all() + join_all() within 5 s.
  */
-static bool test_stop_all_within_deadline()
+TEST_CASE( "stop_all_within_deadline", "[test_scenario_manager]" )
 {
     pmm_setup();
 
@@ -107,17 +80,16 @@ static bool test_stop_all_within_deadline()
         mgr.join_all();
         auto elapsed = std::chrono::steady_clock::now() - t0;
 
-        PMM_TEST( elapsed < std::chrono::seconds( 5 ) );
+        REQUIRE( elapsed < std::chrono::seconds( 5 ) );
     }
 
     pmm_teardown();
-    return true;
 }
 
 /**
  * @brief Start and stop a single scenario repeatedly (lifecycle idempotency).
  */
-static bool test_start_stop_single()
+TEST_CASE( "start_stop_single", "[test_scenario_manager]" )
 {
     pmm_setup();
 
@@ -135,17 +107,16 @@ static bool test_start_stop_single()
         mgr.join_all();
     }
 
-    PMM_TEST( demo::g_pmm.load() );
-    PMM_TEST( demo::DemoMgr::is_initialized() );
+    REQUIRE( demo::g_pmm.load() );
+    REQUIRE( demo::DemoMgr::is_initialized() );
 
     pmm_teardown();
-    return true;
 }
 
 /**
  * @brief Destructor must not abort even if stop_all / join_all were not called.
  */
-static bool test_destructor_cleans_up()
+TEST_CASE( "destructor_cleans_up", "[test_scenario_manager]" )
 {
     pmm_setup();
 
@@ -157,25 +128,8 @@ static bool test_destructor_cleans_up()
         // Let destructor call stop_all + join_all
     }
 
-    PMM_TEST( demo::g_pmm.load() );
-    PMM_TEST( demo::DemoMgr::is_initialized() );
+    REQUIRE( demo::g_pmm.load() );
+    REQUIRE( demo::DemoMgr::is_initialized() );
 
     pmm_teardown();
-    return true;
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "=== test_scenario_manager ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "scenario_count", test_scenario_count );
-    PMM_RUN( "stop_all_within_deadline", test_stop_all_within_deadline );
-    PMM_RUN( "start_stop_single", test_start_stop_single );
-    PMM_RUN( "destructor_cleans_up", test_destructor_cleans_up );
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

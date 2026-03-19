@@ -6,9 +6,9 @@
  */
 
 #include "pmm_single_threaded_heap.h"
+#include <catch2/catch_test_macros.hpp>
 
 #include <chrono>
-#include <cstdlib>
 #include <iostream>
 #include <vector>
 
@@ -22,31 +22,6 @@ static constexpr int kPhase0Iters = 50000;
 static constexpr int kPhase1Iters = 50000;
 static constexpr int kPhase2Iters = 50000;
 #endif
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 using Mgr = pmm::presets::SingleThreadedHeap;
 
@@ -83,16 +58,12 @@ struct Rng
 
 } // namespace
 
-static bool test_stress_realistic()
+TEST_CASE( "stress realistic", "[test_stress_realistic]" )
 {
     const std::size_t memory_size = 64UL * 1024 * 1024; // 64 MB
 
     Mgr pmm;
-    if ( !pmm.create( memory_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( pmm.create( memory_size ) );
 
     Rng rng( 12345 );
 
@@ -120,7 +91,7 @@ static bool test_stress_realistic()
         std::cout << "    Allocated: " << live.size() << " / " << kPhase0Iters << "  failed: " << failed
                   << "  time: " << ms << " ms\n";
 
-        PMM_TEST( pmm.is_initialized() );
+        REQUIRE( pmm.is_initialized() );
     }
 
     // Phase 1: 66% alloc / 33% dealloc
@@ -166,8 +137,8 @@ static bool test_stress_realistic()
         std::cout << "    Allocs: " << alloc_ok << "  failed: " << alloc_fail << "  deallocs: " << dealloc_cnt << "\n"
                   << "    Live blocks: " << start_live << " -> " << live.size() << "  time: " << ms << " ms\n";
 
-        PMM_TEST( pmm.is_initialized() );
-        PMM_TEST( live.size() > start_live );
+        REQUIRE( pmm.is_initialized() );
+        REQUIRE( live.size() > start_live );
     }
 
     // Phase 2: 50% alloc / 50% dealloc
@@ -212,7 +183,7 @@ static bool test_stress_realistic()
         std::cout << "    Allocs: " << alloc_ok << "  failed: " << alloc_fail << "  deallocs: " << dealloc_cnt << "\n"
                   << "    Live blocks after phase: " << live.size() << "  time: " << ms << " ms\n";
 
-        PMM_TEST( pmm.is_initialized() );
+        REQUIRE( pmm.is_initialized() );
     }
 
     // Phase 3: 66% dealloc / 33% alloc, until all freed
@@ -261,25 +232,13 @@ static bool test_stress_realistic()
                   << "  deallocs: " << dealloc_cnt << "\n"
                   << "    Live blocks after phase: " << live.size() << "  time: " << ms << " ms\n";
 
-        PMM_TEST( live.empty() );
-        PMM_TEST( pmm.is_initialized() );
-        PMM_TEST( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+        REQUIRE( live.empty() );
+        REQUIRE( pmm.is_initialized() );
+        REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
     }
 
     double total_ms = elapsed_ms( total_start, now() );
     std::cout << "  Total time: " << total_ms << " ms\n";
 
     pmm.destroy();
-    return true;
-}
-
-int main()
-{
-    std::cout << "=== test_stress_realistic (Issue #20) ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "stress realistic", test_stress_realistic );
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

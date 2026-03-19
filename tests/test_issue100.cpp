@@ -42,41 +42,21 @@
 #include "pmm_single_threaded_heap.h"
 #include "pmm_multi_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <iostream>
+
 #include <type_traits>
 
 // ─── Test macros ─────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        bool _result = fn();                                                                                           \
-        std::cout << ( _result ? "PASS" : "FAIL" ) << "\n";                                                            \
-        if ( !_result )                                                                                                \
-            all_passed = false;                                                                                        \
-    } while ( false )
 
 // =============================================================================
 // P100-A: pptr<T, ManagerT> — two-parameter persistent pointer
 // =============================================================================
 
 /// @brief pptr<T, ManagerT> stores only 4 bytes — ManagerT is not stored.
-static bool test_p100_pptr_sizeof()
+TEST_CASE( "P100-A1: sizeof(pptr<T, ManagerT>) == 4 (ManagerT not stored)", "[test_issue100]" )
 {
     using MgrType = pmm::presets::SingleThreadedHeap;
 
@@ -85,13 +65,12 @@ static bool test_p100_pptr_sizeof()
     static_assert( sizeof( pmm::pptr<double, MgrType> ) == 4, "sizeof(pptr<double,MgrType>) must be 4" );
     static_assert( sizeof( MgrType::pptr<int> ) == 4, "sizeof(Manager::pptr<int>) must be 4" );
 
-    PMM_TEST( sizeof( pmm::pptr<int, MgrType> ) == 4 );
-    PMM_TEST( sizeof( MgrType::pptr<int> ) == 4 );
-    return true;
+    REQUIRE( sizeof( pmm::pptr<int, MgrType> ) == 4 );
+    REQUIRE( sizeof( MgrType::pptr<int> ) == 4 );
 }
 
 /// @brief pptr<T, ManagerT> has typedefs element_type and manager_type.
-static bool test_p100_pptr_typedefs()
+TEST_CASE( "P100-A2: pptr<T,ManagerT> typedefs element_type and manager_type", "[test_issue100]" )
 {
     using MgrType = pmm::presets::SingleThreadedHeap;
 
@@ -102,59 +81,54 @@ static bool test_p100_pptr_typedefs()
     // manager_type
     static_assert( std::is_same_v<pmm::pptr<int, MgrType>::manager_type, MgrType> );
     static_assert( std::is_same_v<MgrType::pptr<int>::manager_type, MgrType> );
-
-    return true;
 }
 
 /// @brief pptr<T, ManagerT>::resolve() uses static manager's resolve method.
-static bool test_p100_pptr_resolve_method()
+TEST_CASE( "P100-A3: pptr<T,ManagerT>::resolve() uses static manager method", "[test_issue100]" )
 {
     using MgrType = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 400>;
-    PMM_TEST( MgrType::create( 16 * 1024 ) );
+    REQUIRE( MgrType::create( 16 * 1024 ) );
 
     using MyPptr = MgrType::pptr<int>;
 
     MyPptr p = MgrType::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     // Dereference via pptr::resolve() — no argument, uses static method
     int* ptr1 = p.resolve();
-    PMM_TEST( ptr1 != nullptr );
+    REQUIRE( ptr1 != nullptr );
 
     // Equivalent to MgrType::resolve<T>(p)
     int* ptr2 = MgrType::resolve<int>( p );
-    PMM_TEST( ptr2 != nullptr );
+    REQUIRE( ptr2 != nullptr );
 
     // Both point to the same location
-    PMM_TEST( ptr1 == ptr2 );
+    REQUIRE( ptr1 == ptr2 );
 
     // Read/write via both methods
     *ptr1 = 42;
-    PMM_TEST( *ptr2 == 42 );
+    REQUIRE( *ptr2 == 42 );
 
     *ptr2 = 99;
-    PMM_TEST( *p.resolve() == 99 );
+    REQUIRE( *p.resolve() == 99 );
 
     MgrType::deallocate_typed( p );
     MgrType::destroy();
-    return true;
 }
 
 /// @brief Null pptr<T, ManagerT> is correctly initialized and detected.
-static bool test_p100_pptr_null()
+TEST_CASE( "P100-A4: null pptr<T,ManagerT> correctly initialized", "[test_issue100]" )
 {
     using MgrType = pmm::presets::SingleThreadedHeap;
 
     MgrType::pptr<int> null_ptr;
-    PMM_TEST( null_ptr.is_null() );
-    PMM_TEST( !static_cast<bool>( null_ptr ) );
-    PMM_TEST( null_ptr.offset() == 0 );
+    REQUIRE( null_ptr.is_null() );
+    REQUIRE( !static_cast<bool>( null_ptr ) );
+    REQUIRE( null_ptr.offset() == 0 );
 
     MgrType::pptr<double> null_double;
-    PMM_TEST( null_double.is_null() );
-    PMM_TEST( null_double.offset() == 0 );
-
-    return true;
+    REQUIRE( null_double.is_null() );
+    REQUIRE( null_double.offset() == 0 );
 }
 
 // =============================================================================
@@ -162,18 +136,16 @@ static bool test_p100_pptr_null()
 // =============================================================================
 
 /// @brief Manager::manager_type refers to the manager's own type.
-static bool test_p100_manager_type_typedef()
+TEST_CASE( "P100-B1: Manager::manager_type == Manager", "[test_issue100]" )
 {
     using MgrType = pmm::presets::SingleThreadedHeap;
 
     static_assert( std::is_same_v<MgrType::manager_type, MgrType>,
                    "Manager::manager_type must be the manager's own type" );
-
-    return true;
 }
 
 /// @brief Manager::pptr<T> == pmm::pptr<T, manager_type>.
-static bool test_p100_nested_pptr_alias()
+TEST_CASE( "P100-B2: Manager::pptr<T> == pmm::pptr<T, manager_type>", "[test_issue100]" )
 {
     using MgrType = pmm::presets::SingleThreadedHeap;
 
@@ -188,73 +160,69 @@ static bool test_p100_nested_pptr_alias()
     using MgrType2 = pmm::presets::MultiThreadedHeap;
     static_assert( !std::is_same_v<MgrType::pptr<int>, MgrType2::pptr<int>>,
                    "pptr from different manager types must be different types" );
-
-    return true;
 }
 
 /// @brief allocate_typed returns Manager::pptr<T>.
-static bool test_p100_allocate_typed_returns_manager_pptr()
+TEST_CASE( "P100-B3: allocate_typed returns Manager::pptr<T>", "[test_issue100]" )
 {
     using MgrType = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 401>;
-    PMM_TEST( MgrType::create( 32 * 1024 ) );
+    REQUIRE( MgrType::create( 32 * 1024 ) );
 
     // Store in Manager::pptr<T>
     MgrType::pptr<int> p1 = MgrType::allocate_typed<int>();
-    PMM_TEST( !p1.is_null() );
+    REQUIRE( !p1.is_null() );
 
     MgrType::pptr<int> p2 = MgrType::allocate_typed<int>();
-    PMM_TEST( !p2.is_null() );
+    REQUIRE( !p2.is_null() );
 
     // Resolve and write
     *p1.resolve() = 111;
     *p2.resolve() = 222;
 
-    PMM_TEST( *p1.resolve() == 111 );
-    PMM_TEST( *p2.resolve() == 222 );
+    REQUIRE( *p1.resolve() == 111 );
+    REQUIRE( *p2.resolve() == 222 );
 
     // Different addresses
-    PMM_TEST( p1.offset() != p2.offset() );
+    REQUIRE( p1.offset() != p2.offset() );
 
     MgrType::deallocate_typed( p1 );
     MgrType::deallocate_typed( p2 );
     MgrType::destroy();
-    return true;
 }
 
 /// @brief Full lifecycle: allocate/write/read/deallocate with Manager::pptr<T>.
-static bool test_p100_full_lifecycle_with_manager_pptr()
+TEST_CASE( "P100-B4: full lifecycle with Manager::pptr<T>", "[test_issue100]" )
 {
     using MgrType = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 402>;
-    PMM_TEST( MgrType::create( 64 * 1024 ) );
+    REQUIRE( MgrType::create( 64 * 1024 ) );
 
     using MgrPptr = MgrType::pptr<int>;
 
     // Allocate array of 5 elements
     MgrPptr arr = MgrType::allocate_typed<int>( 5 );
-    PMM_TEST( !arr.is_null() );
+    REQUIRE( !arr.is_null() );
 
     // Write via resolve_at
     for ( int i = 0; i < 5; ++i )
     {
         int* elem = MgrType::resolve_at( arr, static_cast<std::size_t>( i ) );
-        PMM_TEST( elem != nullptr );
+        REQUIRE( elem != nullptr );
         *elem = i * 10;
     }
 
     // Read via resolve
     int* base = arr.resolve();
-    PMM_TEST( base != nullptr );
+    REQUIRE( base != nullptr );
     for ( int i = 0; i < 5; ++i )
-        PMM_TEST( base[i] == i * 10 );
+        REQUIRE( base[i] == i * 10 );
 
     // Dereference via pptr::resolve() (same as static resolve)
     int* base2 = arr.resolve();
-    PMM_TEST( base2 == base );
+    REQUIRE( base2 == base );
 
     // Deallocate
     MgrType::deallocate_typed( arr );
     MgrType::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -262,7 +230,7 @@ static bool test_p100_full_lifecycle_with_manager_pptr()
 // =============================================================================
 
 /// @brief PersistMemoryManager satisfies the concept.
-static bool test_p100_concept_persist_memory_manager()
+TEST_CASE( "P100-C1: PersistMemoryManager presets satisfy concept", "[test_issue100]" )
 {
     static_assert( pmm::is_persist_memory_manager_v<pmm::presets::SingleThreadedHeap>,
                    "SingleThreadedHeap must satisfy is_persist_memory_manager" );
@@ -270,13 +238,12 @@ static bool test_p100_concept_persist_memory_manager()
     static_assert( pmm::is_persist_memory_manager_v<pmm::presets::MultiThreadedHeap>,
                    "MultiThreadedHeap must satisfy is_persist_memory_manager" );
 
-    PMM_TEST( pmm::is_persist_memory_manager_v<pmm::presets::SingleThreadedHeap> );
-    PMM_TEST( pmm::is_persist_memory_manager_v<pmm::presets::MultiThreadedHeap> );
-    return true;
+    REQUIRE( pmm::is_persist_memory_manager_v<pmm::presets::SingleThreadedHeap> );
+    REQUIRE( pmm::is_persist_memory_manager_v<pmm::presets::MultiThreadedHeap> );
 }
 
 /// @brief Non-manager types do not satisfy the concept.
-static bool test_p100_concept_rejects_non_managers()
+TEST_CASE( "P100-C2: non-manager types rejected by concept", "[test_issue100]" )
 {
     static_assert( !pmm::is_persist_memory_manager_v<int>, "int must not satisfy is_persist_memory_manager" );
 
@@ -289,9 +256,8 @@ static bool test_p100_concept_rejects_non_managers()
     static_assert( !pmm::is_persist_memory_manager_v<NotAManager>,
                    "NotAManager must not satisfy is_persist_memory_manager" );
 
-    PMM_TEST( !pmm::is_persist_memory_manager_v<int> );
-    PMM_TEST( !pmm::is_persist_memory_manager_v<double> );
-    return true;
+    REQUIRE( !pmm::is_persist_memory_manager_v<int> );
+    REQUIRE( !pmm::is_persist_memory_manager_v<double> );
 }
 
 // =============================================================================
@@ -299,7 +265,7 @@ static bool test_p100_concept_rejects_non_managers()
 // =============================================================================
 
 /// @brief Different InstanceId creates different manager types and different pptr types.
-static bool test_p100_different_instances_different_types()
+TEST_CASE( "P100-D1: different InstanceIds = different manager types and pptr", "[test_issue100]" )
 {
     using MgrA = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 410>;
     using MgrB = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 411>;
@@ -315,74 +281,70 @@ static bool test_p100_different_instances_different_types()
     static_assert( sizeof( MgrA::pptr<int> ) == 4 );
     static_assert( sizeof( MgrB::pptr<int> ) == 4 );
 
-    PMM_TEST( sizeof( MgrA::pptr<int> ) == 4 );
-    PMM_TEST( sizeof( MgrB::pptr<int> ) == 4 );
-    return true;
+    REQUIRE( sizeof( MgrA::pptr<int> ) == 4 );
+    REQUIRE( sizeof( MgrB::pptr<int> ) == 4 );
 }
 
 /// @brief Full lifecycle of PersistMemoryManager with unique InstanceId.
-static bool test_p100_persist_manager_lifecycle()
+TEST_CASE( "P100-D2: full lifecycle of PersistMemoryManager", "[test_issue100]" )
 {
     using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 412>;
 
-    PMM_TEST( !MyMgr::is_initialized() );
+    REQUIRE( !MyMgr::is_initialized() );
 
-    PMM_TEST( MyMgr::create( 32 * 1024 ) );
-    PMM_TEST( MyMgr::is_initialized() );
-    PMM_TEST( MyMgr::total_size() >= 32 * 1024 );
-    PMM_TEST( MyMgr::free_size() > 0 );
+    REQUIRE( MyMgr::create( 32 * 1024 ) );
+    REQUIRE( MyMgr::is_initialized() );
+    REQUIRE( MyMgr::total_size() >= 32 * 1024 );
+    REQUIRE( MyMgr::free_size() > 0 );
 
     // Allocate via typed API
     MyMgr::pptr<int> p = MyMgr::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     // Dereference via pptr method (static model)
     *p.resolve() = 123;
-    PMM_TEST( *p.resolve() == 123 );
+    REQUIRE( *p.resolve() == 123 );
 
     // Dereference via static manager method
-    PMM_TEST( *MyMgr::resolve<int>( p ) == 123 );
+    REQUIRE( *MyMgr::resolve<int>( p ) == 123 );
 
     // Deallocate
     MyMgr::deallocate_typed( p );
     MyMgr::destroy();
-    PMM_TEST( !MyMgr::is_initialized() );
-
-    return true;
+    REQUIRE( !MyMgr::is_initialized() );
 }
 
 /// @brief PersistMemoryManager satisfies is_persist_memory_manager_v.
-static bool test_p100_persist_manager_concept()
+TEST_CASE( "P100-D3: PersistMemoryManager satisfies concept", "[test_issue100]" )
 {
     using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 413>;
 
     static_assert( pmm::is_persist_memory_manager_v<MyMgr>,
                    "PersistMemoryManager must satisfy is_persist_memory_manager" );
 
-    PMM_TEST( pmm::is_persist_memory_manager_v<MyMgr> );
-    return true;
+    REQUIRE( pmm::is_persist_memory_manager_v<MyMgr> );
 }
 
 /// @brief Two PersistMemoryManager instances with different InstanceIds work independently.
-static bool test_p100_multiple_instances_work_independently()
+TEST_CASE( "P100-D4: multiple instances with different InstanceIds work independently", "[test_issue100]" )
 {
     using MgrA = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 414>;
     using MgrB = pmm::PersistMemoryManager<pmm::PersistentDataConfig, 415>;
 
-    PMM_TEST( MgrA::create( 16 * 1024 ) );
-    PMM_TEST( MgrB::create( 32 * 1024 ) );
+    REQUIRE( MgrA::create( 16 * 1024 ) );
+    REQUIRE( MgrB::create( 32 * 1024 ) );
 
     MgrA::pptr<int> ap = MgrA::allocate_typed<int>();
     MgrB::pptr<int> bp = MgrB::allocate_typed<int>();
 
-    PMM_TEST( !ap.is_null() );
-    PMM_TEST( !bp.is_null() );
+    REQUIRE( !ap.is_null() );
+    REQUIRE( !bp.is_null() );
 
     *ap.resolve() = 111;
     *bp.resolve() = 222;
 
-    PMM_TEST( *ap.resolve() == 111 );
-    PMM_TEST( *bp.resolve() == 222 );
+    REQUIRE( *ap.resolve() == 111 );
+    REQUIRE( *bp.resolve() == 222 );
 
     // ap and bp are different types (MgrA::pptr<int> != MgrB::pptr<int>)
     static_assert( !std::is_same_v<MgrA::pptr<int>, MgrB::pptr<int>> );
@@ -392,7 +354,6 @@ static bool test_p100_multiple_instances_work_independently()
 
     MgrA::destroy();
     MgrB::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -400,7 +361,7 @@ static bool test_p100_multiple_instances_work_independently()
 // =============================================================================
 
 /// @brief CacheManagerConfig uses NoLock.
-static bool test_p100_configs_cache()
+TEST_CASE( "P100-E1: CacheManagerConfig (NoLock)", "[test_issue100]" )
 {
     static_assert( std::is_same_v<pmm::CacheManagerConfig::lock_policy, pmm::config::NoLock>,
                    "CacheManagerConfig must use NoLock" );
@@ -409,40 +370,38 @@ static bool test_p100_configs_cache()
 
     using CacheMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 420>;
 
-    PMM_TEST( CacheMgr::create( 8 * 1024 ) );
+    REQUIRE( CacheMgr::create( 8 * 1024 ) );
 
     CacheMgr::pptr<double> p = CacheMgr::allocate_typed<double>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
     *p.resolve() = 3.14;
-    PMM_TEST( *p.resolve() == 3.14 );
+    REQUIRE( *p.resolve() == 3.14 );
 
     CacheMgr::deallocate_typed( p );
     CacheMgr::destroy();
-    return true;
 }
 
 /// @brief PersistentDataConfig uses SharedMutexLock.
-static bool test_p100_configs_persistent()
+TEST_CASE( "P100-E2: PersistentDataConfig (SharedMutexLock)", "[test_issue100]" )
 {
     static_assert( std::is_same_v<pmm::PersistentDataConfig::lock_policy, pmm::config::SharedMutexLock>,
                    "PersistentDataConfig must use SharedMutexLock" );
 
     using PDataMgr = pmm::PersistMemoryManager<pmm::PersistentDataConfig, 421>;
 
-    PMM_TEST( PDataMgr::create( 16 * 1024 ) );
+    REQUIRE( PDataMgr::create( 16 * 1024 ) );
 
     PDataMgr::pptr<std::uint64_t> p = PDataMgr::allocate_typed<std::uint64_t>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
     *p.resolve() = 0xDEADBEEFCAFEBABEull;
-    PMM_TEST( *p.resolve() == 0xDEADBEEFCAFEBABEull );
+    REQUIRE( *p.resolve() == 0xDEADBEEFCAFEBABEull );
 
     PDataMgr::deallocate_typed( p );
     PDataMgr::destroy();
-    return true;
 }
 
 /// @brief EmbeddedManagerConfig uses NoLock with conservative growth.
-static bool test_p100_configs_embedded()
+TEST_CASE( "P100-E3: EmbeddedManagerConfig (NoLock + conservative grow)", "[test_issue100]" )
 {
     static_assert( std::is_same_v<pmm::EmbeddedManagerConfig::lock_policy, pmm::config::NoLock>,
                    "EmbeddedManagerConfig must use NoLock" );
@@ -451,21 +410,20 @@ static bool test_p100_configs_embedded()
 
     using EmbMgr = pmm::PersistMemoryManager<pmm::EmbeddedManagerConfig, 422>;
 
-    PMM_TEST( EmbMgr::create( 4 * 1024 ) );
-    PMM_TEST( EmbMgr::is_initialized() );
+    REQUIRE( EmbMgr::create( 4 * 1024 ) );
+    REQUIRE( EmbMgr::is_initialized() );
 
     EmbMgr::pptr<char> p = EmbMgr::allocate_typed<char>( 16 );
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
     std::memcpy( p.resolve(), "hello world!", 12 );
-    PMM_TEST( std::memcmp( p.resolve(), "hello world!", 12 ) == 0 );
+    REQUIRE( std::memcmp( p.resolve(), "hello world!", 12 ) == 0 );
 
     EmbMgr::deallocate_typed( p );
     EmbMgr::destroy();
-    return true;
 }
 
 /// @brief IndustrialDBConfig uses SharedMutexLock with aggressive growth.
-static bool test_p100_configs_industrial()
+TEST_CASE( "P100-E4: IndustrialDBConfig (SharedMutexLock + aggressive grow)", "[test_issue100]" )
 {
     static_assert( std::is_same_v<pmm::IndustrialDBConfig::lock_policy, pmm::config::SharedMutexLock>,
                    "IndustrialDBConfig must use SharedMutexLock" );
@@ -474,66 +432,26 @@ static bool test_p100_configs_industrial()
 
     using DBMgr = pmm::PersistMemoryManager<pmm::IndustrialDBConfig, 423>;
 
-    PMM_TEST( DBMgr::create( 64 * 1024 ) );
-    PMM_TEST( DBMgr::is_initialized() );
+    REQUIRE( DBMgr::create( 64 * 1024 ) );
+    REQUIRE( DBMgr::is_initialized() );
 
     // Allocate multiple elements
     DBMgr::pptr<int> p1 = DBMgr::allocate_typed<int>();
     DBMgr::pptr<int> p2 = DBMgr::allocate_typed<int>();
-    PMM_TEST( !p1.is_null() );
-    PMM_TEST( !p2.is_null() );
-    PMM_TEST( p1 != p2 );
+    REQUIRE( !p1.is_null() );
+    REQUIRE( !p2.is_null() );
+    REQUIRE( p1 != p2 );
 
     *p1.resolve() = 1;
     *p2.resolve() = 2;
-    PMM_TEST( *p1.resolve() == 1 );
-    PMM_TEST( *p2.resolve() == 2 );
+    REQUIRE( *p1.resolve() == 1 );
+    REQUIRE( *p2.resolve() == 2 );
 
     DBMgr::deallocate_typed( p1 );
     DBMgr::deallocate_typed( p2 );
     DBMgr::destroy();
-    return true;
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    std::cout << "=== test_issue100 (Issue #100/#110: Infrastructure & Static API) ===\n\n";
-    bool all_passed = true;
-
-    std::cout << "--- P100-A: pptr<T, ManagerT> (two-parameter persistent pointer) ---\n";
-    PMM_RUN( "P100-A1: sizeof(pptr<T, ManagerT>) == 4 (ManagerT not stored)", test_p100_pptr_sizeof );
-    PMM_RUN( "P100-A2: pptr<T,ManagerT> typedefs element_type and manager_type", test_p100_pptr_typedefs );
-    PMM_RUN( "P100-A3: pptr<T,ManagerT>::resolve() uses static manager method", test_p100_pptr_resolve_method );
-    PMM_RUN( "P100-A4: null pptr<T,ManagerT> correctly initialized", test_p100_pptr_null );
-
-    std::cout << "\n--- P100-B: PersistMemoryManager — manager_type and nested pptr<T> ---\n";
-    PMM_RUN( "P100-B1: Manager::manager_type == Manager", test_p100_manager_type_typedef );
-    PMM_RUN( "P100-B2: Manager::pptr<T> == pmm::pptr<T, manager_type>", test_p100_nested_pptr_alias );
-    PMM_RUN( "P100-B3: allocate_typed returns Manager::pptr<T>", test_p100_allocate_typed_returns_manager_pptr );
-    PMM_RUN( "P100-B4: full lifecycle with Manager::pptr<T>", test_p100_full_lifecycle_with_manager_pptr );
-
-    std::cout << "\n--- P100-C: manager_concept.h — is_persist_memory_manager<T> ---\n";
-    PMM_RUN( "P100-C1: PersistMemoryManager presets satisfy concept", test_p100_concept_persist_memory_manager );
-    PMM_RUN( "P100-C2: non-manager types rejected by concept", test_p100_concept_rejects_non_managers );
-
-    std::cout << "\n--- P100-D: Multiple distinct managers via InstanceId ---\n";
-    PMM_RUN( "P100-D1: different InstanceIds = different manager types and pptr",
-             test_p100_different_instances_different_types );
-    PMM_RUN( "P100-D2: full lifecycle of PersistMemoryManager", test_p100_persist_manager_lifecycle );
-    PMM_RUN( "P100-D3: PersistMemoryManager satisfies concept", test_p100_persist_manager_concept );
-    PMM_RUN( "P100-D4: multiple instances with different InstanceIds work independently",
-             test_p100_multiple_instances_work_independently );
-
-    std::cout << "\n--- P100-E: manager_configs.h — ready-made configurations ---\n";
-    PMM_RUN( "P100-E1: CacheManagerConfig (NoLock)", test_p100_configs_cache );
-    PMM_RUN( "P100-E2: PersistentDataConfig (SharedMutexLock)", test_p100_configs_persistent );
-    PMM_RUN( "P100-E3: EmbeddedManagerConfig (NoLock + conservative grow)", test_p100_configs_embedded );
-    PMM_RUN( "P100-E4: IndustrialDBConfig (SharedMutexLock + aggressive grow)", test_p100_configs_industrial );
-
-    std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
-    return all_passed ? 0 : 1;
-}

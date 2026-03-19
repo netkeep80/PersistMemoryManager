@@ -16,40 +16,14 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
-#include <iostream>
+
 #include <limits>
 
 // ─── Test macros ──────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // ─── Manager alias for tests ──────────────────────────────────────────────────
 
@@ -77,29 +51,28 @@ struct TrackedObject
 };
 
 /// @brief create_typed<T>(args...) constructs T in-place; destroy_typed calls destructor.
-static bool test_i172_create_destroy_typed_constructor_called()
+TEST_CASE( "I172-A1: create_typed calls constructor, destroy_typed calls destructor", "[test_issue172_code_review]" )
 {
     M::destroy();
-    PMM_TEST( M::create( 64 * 1024 ) );
+    REQUIRE( M::create( 64 * 1024 ) );
 
     bool destroyed = false;
 
     // create_typed should allocate memory AND call constructor
     auto p = M::create_typed<TrackedObject>( 42, &destroyed );
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     TrackedObject* obj = M::resolve( p );
-    PMM_TEST( obj != nullptr );
-    PMM_TEST( obj->value == 42 );
-    PMM_TEST( obj->tag == static_cast<int>( 0xCAFEBABE ) ); // constructor set this
-    PMM_TEST( !destroyed );
+    REQUIRE( obj != nullptr );
+    REQUIRE( obj->value == 42 );
+    REQUIRE( obj->tag == static_cast<int>( 0xCAFEBABE ) ); // constructor set this
+    REQUIRE( !destroyed );
 
     // destroy_typed should call destructor AND free memory
     M::destroy_typed( p );
-    PMM_TEST( destroyed ); // destructor was called
+    REQUIRE( destroyed ); // destructor was called
 
     M::destroy();
-    return true;
 }
 
 /// @brief allocate_typed does NOT call constructor (raw allocation only).
@@ -109,42 +82,40 @@ struct WithDefaultValue
     WithDefaultValue() noexcept : x( 123 ) {}
 };
 
-static bool test_i172_allocate_typed_no_constructor()
+TEST_CASE( "I172-A2: allocate_typed is raw allocation (no constructor call)", "[test_issue172_code_review]" )
 {
     M::destroy();
-    PMM_TEST( M::create( 64 * 1024 ) );
+    REQUIRE( M::create( 64 * 1024 ) );
 
     // allocate_typed does NOT call the constructor — only raw memory allocation.
     // Issue #172: this is documented behavior; create_typed should be used instead.
     auto p = M::allocate_typed<WithDefaultValue>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     // We cannot verify the value here because memory is uninitialized — just verify
     // that allocate_typed succeeded and the pointer is valid.
     WithDefaultValue* obj = M::resolve( p );
-    PMM_TEST( obj != nullptr );
+    REQUIRE( obj != nullptr );
 
     M::deallocate_typed( p );
     M::destroy();
-    return true;
 }
 
 /// @brief create_typed<T> with args; resolve and verify constructor args were passed.
-static bool test_i172_create_typed_with_args()
+TEST_CASE( "I172-A3: create_typed<T>() with default constructor sets fields", "[test_issue172_code_review]" )
 {
     M::destroy();
-    PMM_TEST( M::create( 64 * 1024 ) );
+    REQUIRE( M::create( 64 * 1024 ) );
 
     // Create objects using create_typed, verify constructor was invoked correctly.
     auto p1 = M::create_typed<WithDefaultValue>();
-    PMM_TEST( !p1.is_null() );
+    REQUIRE( !p1.is_null() );
     WithDefaultValue* obj1 = M::resolve( p1 );
-    PMM_TEST( obj1 != nullptr );
-    PMM_TEST( obj1->x == 123 ); // default constructor must have been called
+    REQUIRE( obj1 != nullptr );
+    REQUIRE( obj1->x == 123 ); // default constructor must have been called
 
     M::destroy_typed( p1 );
     M::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -152,17 +123,15 @@ static bool test_i172_create_typed_with_args()
 // =============================================================================
 
 /// @brief create() with initial_size near SIZE_MAX returns false (overflow guard).
-static bool test_i172_create_overflow_guard()
+TEST_CASE( "I172-B: create() overflow guard for huge initial_size", "[test_issue172_code_review]" )
 {
     M::destroy();
 
     // initial_size near SIZE_MAX should return false without crashing
     constexpr std::size_t huge_size = std::numeric_limits<std::size_t>::max() - 1;
     bool                  result    = M::create( huge_size );
-    PMM_TEST( !result );              // must fail gracefully
-    PMM_TEST( !M::is_initialized() ); // must remain uninitialized
-
-    return true;
+    REQUIRE( !result );              // must fail gracefully
+    REQUIRE( !M::is_initialized() ); // must remain uninitialized
 }
 
 // =============================================================================
@@ -170,45 +139,18 @@ static bool test_i172_create_overflow_guard()
 // =============================================================================
 
 /// @brief is_initialized() returns false before create() and true after.
-static bool test_i172_is_initialized_state()
+TEST_CASE( "I172-C: is_initialized() state transitions", "[test_issue172_code_review]" )
 {
     M::destroy();
-    PMM_TEST( !M::is_initialized() );
+    REQUIRE( !M::is_initialized() );
 
-    PMM_TEST( M::create( 64 * 1024 ) );
-    PMM_TEST( M::is_initialized() );
+    REQUIRE( M::create( 64 * 1024 ) );
+    REQUIRE( M::is_initialized() );
 
     M::destroy();
-    PMM_TEST( !M::is_initialized() );
-
-    return true;
+    REQUIRE( !M::is_initialized() );
 }
 
 // =============================================================================
 // Main
 // =============================================================================
-
-int main()
-{
-    std::cout << "Test suite: Issue #172 code review fixes\n";
-    bool all_passed = true;
-
-    PMM_RUN( "I172-A1: create_typed calls constructor, destroy_typed calls destructor",
-             test_i172_create_destroy_typed_constructor_called );
-    PMM_RUN( "I172-A2: allocate_typed is raw allocation (no constructor call)",
-             test_i172_allocate_typed_no_constructor );
-    PMM_RUN( "I172-A3: create_typed<T>() with default constructor sets fields", test_i172_create_typed_with_args );
-    PMM_RUN( "I172-B: create() overflow guard for huge initial_size", test_i172_create_overflow_guard );
-    PMM_RUN( "I172-C: is_initialized() state transitions", test_i172_is_initialized_state );
-
-    if ( all_passed )
-    {
-        std::cout << "All tests PASSED.\n";
-        return 0;
-    }
-    else
-    {
-        std::cout << "Some tests FAILED.\n";
-        return 1;
-    }
-}

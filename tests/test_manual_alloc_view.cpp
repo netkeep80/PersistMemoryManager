@@ -19,36 +19,7 @@
 #include "demo_globals.h"
 #include "manual_alloc_view.h"
 
-#include <cassert>
-#include <cstdlib>
-#include <iostream>
-
-// ─── Test helpers ─────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << ( name ) << " ... " << std::flush;                                                        \
-        if ( (fn)() )                                                                                                  \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
+#include <catch2/catch_test_macros.hpp>
 
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
@@ -69,21 +40,20 @@ static void destroy_pmm()
 /**
  * @brief clear() on a freshly constructed view must not crash.
  */
-static bool test_clear_empty_view()
+TEST_CASE( "clear_empty_view", "[test_manual_alloc_view]" )
 {
     demo::ManualAllocView view;
     view.clear(); // must not crash on empty view
-    PMM_TEST( view.live_count() == 0 );
-    return true;
+    REQUIRE( view.live_count() == 0 );
 }
 
 /**
  * @brief clear() when PMM is active must not crash and must leave live_count == 0.
  */
-static bool test_clear_frees_blocks()
+TEST_CASE( "clear_frees_blocks", "[test_manual_alloc_view]" )
 {
     make_pmm( 256 * 1024 );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     const std::size_t used_before = demo::DemoMgr::used_size();
 
@@ -92,60 +62,43 @@ static bool test_clear_frees_blocks()
     for ( int i = 0; i < 5; ++i )
     {
         demo::DemoMgr::pptr<std::uint8_t> p = demo::DemoMgr::allocate_typed<std::uint8_t>( 64 );
-        PMM_TEST( !p.is_null() );
+        REQUIRE( !p.is_null() );
         ptrs.push_back( p );
     }
 
-    PMM_TEST( demo::DemoMgr::used_size() > used_before );
+    REQUIRE( demo::DemoMgr::used_size() > used_before );
 
     // Exercise clear() on an empty view (no blocks tracked by the view).
     {
         demo::ManualAllocView view;
-        PMM_TEST( view.live_count() == 0 );
+        REQUIRE( view.live_count() == 0 );
         view.clear();
-        PMM_TEST( view.live_count() == 0 );
+        REQUIRE( view.live_count() == 0 );
     }
 
     for ( auto& p : ptrs )
         demo::DemoMgr::deallocate_typed( p );
 
-    PMM_TEST( demo::DemoMgr::is_initialized() );
+    REQUIRE( demo::DemoMgr::is_initialized() );
     destroy_pmm();
-    return true;
 }
 
 /**
  * @brief Calling clear() multiple times on the same view is idempotent.
  */
-static bool test_repeated_clear()
+TEST_CASE( "repeated_clear", "[test_manual_alloc_view]" )
 {
     make_pmm( 128 * 1024 );
-    PMM_TEST( demo::g_pmm.load() );
+    REQUIRE( demo::g_pmm.load() );
 
     {
         demo::ManualAllocView view;
         view.clear();
         view.clear();
         view.clear();
-        PMM_TEST( view.live_count() == 0 );
+        REQUIRE( view.live_count() == 0 );
     }
 
-    PMM_TEST( demo::DemoMgr::is_initialized() );
+    REQUIRE( demo::DemoMgr::is_initialized() );
     destroy_pmm();
-    return true;
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "=== test_manual_alloc_view ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "clear_empty_view", test_clear_empty_view );
-    PMM_RUN( "clear_frees_blocks", test_clear_frees_blocks );
-    PMM_RUN( "repeated_clear", test_repeated_clear );
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

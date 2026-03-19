@@ -24,6 +24,7 @@
  */
 
 #include "scenario_manager.h"
+#include <catch2/catch_test_macros.hpp>
 #include "scenarios.h"
 
 #include "demo_globals.h"
@@ -34,33 +35,6 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-
-// ─── Test helpers ─────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << ( name ) << " ... " << std::flush;                                                        \
-        if ( (fn)() )                                                                                                  \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // ─── PMM fixture helpers ───────────────────────────────────────────────────────
 
@@ -87,7 +61,7 @@ static void pmm_teardown()
 /**
  * @brief yield_if_paused() must block until resume_others() is called.
  */
-static bool test_pause_blocks_thread()
+TEST_CASE( "pause_blocks_thread", "[test_scenario_coordinator]" )
 {
     demo::ScenarioCoordinator coord;
     std::atomic<bool>         stop_flag{ false };
@@ -105,21 +79,20 @@ static bool test_pause_blocks_thread()
 
     coord.pause_others( stop_flag );
 
-    PMM_TEST( !thread_unblocked.load( std::memory_order_acquire ) );
+    REQUIRE( !thread_unblocked.load( std::memory_order_acquire ) );
 
     coord.resume_others();
     t.join();
 
     coord.unregister_participant();
 
-    PMM_TEST( thread_unblocked.load( std::memory_order_acquire ) );
-    return true;
+    REQUIRE( thread_unblocked.load( std::memory_order_acquire ) );
 }
 
 /**
  * @brief All blocked threads are unblocked by a single resume_others() call.
  */
-static bool test_resume_unblocks_all()
+TEST_CASE( "resume_unblocks_all", "[test_scenario_coordinator]" )
 {
     demo::ScenarioCoordinator coord;
     std::atomic<bool>         stop_flag{ false };
@@ -143,7 +116,7 @@ static bool test_resume_unblocks_all()
 
     coord.pause_others( stop_flag );
 
-    PMM_TEST( unblocked_count.load() == 0 );
+    REQUIRE( unblocked_count.load() == 0 );
 
     coord.resume_others();
 
@@ -153,14 +126,13 @@ static bool test_resume_unblocks_all()
     for ( int i = 0; i < kThreads; ++i )
         coord.unregister_participant();
 
-    PMM_TEST( unblocked_count.load() == kThreads );
-    return true;
+    REQUIRE( unblocked_count.load() == kThreads );
 }
 
 /**
  * @brief yield_if_paused() returns immediately when no pause is active.
  */
-static bool test_no_block_when_not_paused()
+TEST_CASE( "no_block_when_not_paused", "[test_scenario_coordinator]" )
 {
     demo::ScenarioCoordinator coord;
     std::atomic<bool>         stop_flag{ false };
@@ -174,14 +146,13 @@ static bool test_no_block_when_not_paused()
         } );
 
     t.join();
-    PMM_TEST( returned.load( std::memory_order_acquire ) );
-    return true;
+    REQUIRE( returned.load( std::memory_order_acquire ) );
 }
 
 /**
  * @brief yield_if_paused() returns promptly when stop_flag is set while paused.
  */
-static bool test_stop_flag_breaks_pause()
+TEST_CASE( "stop_flag_breaks_pause", "[test_scenario_coordinator]" )
 {
     demo::ScenarioCoordinator coord;
     std::atomic<bool>         stop_flag{ false };
@@ -199,7 +170,7 @@ static bool test_stop_flag_breaks_pause()
 
     coord.pause_others( stop_flag );
 
-    PMM_TEST( !thread_returned.load( std::memory_order_acquire ) );
+    REQUIRE( !thread_returned.load( std::memory_order_acquire ) );
 
     stop_flag.store( true, std::memory_order_release );
     coord.resume_others();
@@ -215,15 +186,14 @@ static bool test_stop_flag_breaks_pause()
 
     coord.unregister_participant();
 
-    PMM_TEST( thread_returned.load( std::memory_order_acquire ) );
-    return true;
+    REQUIRE( thread_returned.load( std::memory_order_acquire ) );
 }
 
 /**
  * @brief PersistenceCycle scenario runs safely alongside LinearFill and
  *        RandomStress; after the save cycle PMM is_initialized() returns true.
  */
-static bool test_persistence_cycle_safety()
+TEST_CASE( "persistence_cycle_safety", "[test_scenario_coordinator]" )
 {
     pmm_setup( kDefaultPmmSize );
 
@@ -240,26 +210,8 @@ static bool test_persistence_cycle_safety()
         sm.join_all();
     }
 
-    PMM_TEST( demo::g_pmm.load() );
-    PMM_TEST( demo::DemoMgr::is_initialized() );
+    REQUIRE( demo::g_pmm.load() );
+    REQUIRE( demo::DemoMgr::is_initialized() );
 
     pmm_teardown();
-    return true;
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "=== test_scenario_coordinator ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "pause_blocks_thread", test_pause_blocks_thread );
-    PMM_RUN( "resume_unblocks_all", test_resume_unblocks_all );
-    PMM_RUN( "no_block_when_not_paused", test_no_block_when_not_paused );
-    PMM_RUN( "stop_flag_breaks_pause", test_stop_flag_breaks_pause );
-    PMM_RUN( "persistence_cycle_safety", test_persistence_cycle_safety );
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

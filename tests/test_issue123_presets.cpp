@@ -16,39 +16,14 @@
 #include "pmm_embedded_heap.h"
 #include "pmm_industrial_db_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <iostream>
+
 #include <type_traits>
 
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // =============================================================================
 // Issue #123 tests: new presets in pmm_presets.h
@@ -57,7 +32,7 @@
 // ─── I123-A: Компиляция всех четырёх пресетов ────────────────────────────────
 
 /// @brief Все четыре пресета компилируются и имеют ожидаемые свойства.
-static bool test_all_four_presets_compile()
+TEST_CASE( "I123-A1: All presets instantiate without compile errors", "[test_issue123_presets]" )
 {
     using STH = pmm::presets::SingleThreadedHeap;
     using MTH = pmm::presets::MultiThreadedHeap;
@@ -77,65 +52,61 @@ static bool test_all_four_presets_compile()
     static_assert( sizeof( MTH::pptr<int> ) == 4, "pptr must be 4 bytes" );
     static_assert( sizeof( EMB::pptr<int> ) == 4, "pptr must be 4 bytes" );
     static_assert( sizeof( IDB::pptr<int> ) == 4, "pptr must be 4 bytes" );
-
-    return true;
 }
 
 // ─── I123-B: EmbeddedHeap — функциональность ─────────────────────────────────
 
 /// @brief EmbeddedHeap: create(size) и allocate/deallocate.
-static bool test_embedded_heap_create()
+TEST_CASE( "I123-B1: EmbeddedHeap create(size) and alloc/dealloc", "[test_issue123_presets]" )
 {
     using EMB = pmm::presets::EmbeddedHeap;
 
-    PMM_TEST( !EMB::is_initialized() );
+    REQUIRE( !EMB::is_initialized() );
 
-    PMM_TEST( EMB::create( 16 * 1024 ) ); // 16 KiB
-    PMM_TEST( EMB::is_initialized() );
-    PMM_TEST( EMB::total_size() >= 16 * 1024 );
+    REQUIRE( EMB::create( 16 * 1024 ) ); // 16 KiB
+    REQUIRE( EMB::is_initialized() );
+    REQUIRE( EMB::total_size() >= 16 * 1024 );
 
     void* ptr = EMB::allocate( 128 );
-    PMM_TEST( ptr != nullptr );
+    REQUIRE( ptr != nullptr );
     std::memset( ptr, 0xCC, 128 );
     EMB::deallocate( ptr );
 
     EMB::destroy();
-    PMM_TEST( !EMB::is_initialized() );
-    return true;
+    REQUIRE( !EMB::is_initialized() );
 }
 
 /// @brief EmbeddedHeap: typed allocation via allocate_typed<T>.
-static bool test_embedded_heap_typed_alloc()
+TEST_CASE( "I123-B2: EmbeddedHeap typed allocation", "[test_issue123_presets]" )
 {
     using EMB = pmm::presets::EmbeddedHeap;
 
-    PMM_TEST( EMB::create( 32 * 1024 ) );
-    PMM_TEST( EMB::is_initialized() );
+    REQUIRE( EMB::create( 32 * 1024 ) );
+    REQUIRE( EMB::is_initialized() );
 
     EMB::pptr<int> p = EMB::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
-    PMM_TEST( p.offset() > 0 );
+    REQUIRE( !p.is_null() );
+    REQUIRE( p.offset() > 0 );
 
     *p.resolve() = 42;
-    PMM_TEST( *p.resolve() == 42 );
+    REQUIRE( *p.resolve() == 42 );
 
     EMB::deallocate_typed( p );
     EMB::destroy();
-    return true;
 }
 
 /// @brief EmbeddedHeap: множественные аллокации и деаллокации.
-static bool test_embedded_heap_multiple_allocs()
+TEST_CASE( "I123-B3: EmbeddedHeap multiple allocations", "[test_issue123_presets]" )
 {
     using EMB = pmm::presets::EmbeddedHeap;
 
-    PMM_TEST( EMB::create( 64 * 1024 ) );
+    REQUIRE( EMB::create( 64 * 1024 ) );
 
     void* ptrs[8];
     for ( int i = 0; i < 8; ++i )
     {
         ptrs[i] = EMB::allocate( 64 );
-        PMM_TEST( ptrs[i] != nullptr );
+        REQUIRE( ptrs[i] != nullptr );
         std::memset( ptrs[i], static_cast<int>( i ), 64 );
     }
 
@@ -145,57 +116,54 @@ static bool test_embedded_heap_multiple_allocs()
     }
 
     EMB::destroy();
-    return true;
 }
 
 // ─── I123-C: IndustrialDBHeap — функциональность ─────────────────────────────
 
 /// @brief IndustrialDBHeap: create(size) и allocate/deallocate.
-static bool test_industrial_db_heap_create()
+TEST_CASE( "I123-C1: IndustrialDBHeap create(size) and alloc/dealloc", "[test_issue123_presets]" )
 {
     using IDB = pmm::presets::IndustrialDBHeap;
 
-    PMM_TEST( !IDB::is_initialized() );
+    REQUIRE( !IDB::is_initialized() );
 
-    PMM_TEST( IDB::create( 32 * 1024 ) ); // 32 KiB
-    PMM_TEST( IDB::is_initialized() );
-    PMM_TEST( IDB::total_size() >= 32 * 1024 );
+    REQUIRE( IDB::create( 32 * 1024 ) ); // 32 KiB
+    REQUIRE( IDB::is_initialized() );
+    REQUIRE( IDB::total_size() >= 32 * 1024 );
 
     void* ptr = IDB::allocate( 256 );
-    PMM_TEST( ptr != nullptr );
+    REQUIRE( ptr != nullptr );
     std::memset( ptr, 0xDD, 256 );
     IDB::deallocate( ptr );
 
     IDB::destroy();
-    PMM_TEST( !IDB::is_initialized() );
-    return true;
+    REQUIRE( !IDB::is_initialized() );
 }
 
 /// @brief IndustrialDBHeap: typed allocation via allocate_typed<T>.
-static bool test_industrial_db_heap_typed_alloc()
+TEST_CASE( "I123-C2: IndustrialDBHeap typed allocation", "[test_issue123_presets]" )
 {
     using IDB = pmm::presets::IndustrialDBHeap;
 
-    PMM_TEST( IDB::create( 64 * 1024 ) );
-    PMM_TEST( IDB::is_initialized() );
+    REQUIRE( IDB::create( 64 * 1024 ) );
+    REQUIRE( IDB::is_initialized() );
 
     IDB::pptr<double> p = IDB::allocate_typed<double>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     *p.resolve() = 2.718;
-    PMM_TEST( *p.resolve() == 2.718 );
+    REQUIRE( *p.resolve() == 2.718 );
 
     IDB::deallocate_typed( p );
     IDB::destroy();
-    return true;
 }
 
 /// @brief IndustrialDBHeap: большой блок аллокации (проверка агрессивного роста).
-static bool test_industrial_db_heap_large_alloc()
+TEST_CASE( "I123-C3: IndustrialDBHeap large block allocation", "[test_issue123_presets]" )
 {
     using IDB = pmm::presets::IndustrialDBHeap;
 
-    PMM_TEST( IDB::create( 16 * 1024 ) );
+    REQUIRE( IDB::create( 16 * 1024 ) );
 
     // Большой блок — IndustrialDBConfig имеет grow 100%, должен расшириться
     void* ptr = IDB::allocate( 8 * 1024 );
@@ -206,31 +174,8 @@ static bool test_industrial_db_heap_large_alloc()
     }
 
     IDB::destroy();
-    return true;
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    std::cout << "=== test_issue123_presets (Issue #123: EmbeddedHeap + IndustrialDBHeap) ===\n\n";
-    bool all_passed = true;
-
-    std::cout << "--- I123-A: All four presets compile ---\n";
-    PMM_RUN( "I123-A1: All presets instantiate without compile errors", test_all_four_presets_compile );
-
-    std::cout << "\n--- I123-B: EmbeddedHeap ---\n";
-    PMM_RUN( "I123-B1: EmbeddedHeap create(size) and alloc/dealloc", test_embedded_heap_create );
-    PMM_RUN( "I123-B2: EmbeddedHeap typed allocation", test_embedded_heap_typed_alloc );
-    PMM_RUN( "I123-B3: EmbeddedHeap multiple allocations", test_embedded_heap_multiple_allocs );
-
-    std::cout << "\n--- I123-C: IndustrialDBHeap ---\n";
-    PMM_RUN( "I123-C1: IndustrialDBHeap create(size) and alloc/dealloc", test_industrial_db_heap_create );
-    PMM_RUN( "I123-C2: IndustrialDBHeap typed allocation", test_industrial_db_heap_typed_alloc );
-    PMM_RUN( "I123-C3: IndustrialDBHeap large block allocation", test_industrial_db_heap_large_alloc );
-
-    std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
-    return all_passed ? 0 : 1;
-}

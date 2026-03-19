@@ -26,43 +26,15 @@
 #include "pmm/persist_memory_manager.h"
 #include "pmm/pallocator.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
-#include <iostream>
+
 #include <memory>
 #include <new>
 #include <string>
 #include <type_traits>
 #include <vector>
-
-// --- Test macros -------------------------------------------------------------
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // --- Manager type alias for tests --------------------------------------------
 
@@ -74,28 +46,27 @@ using TestAlloc = TestMgr::pallocator<int>;
 // =============================================================================
 
 /// @brief allocate(n) returns a valid pointer and deallocate frees it.
-static bool test_i198_basic_alloc_dealloc()
+TEST_CASE( "I198-A: basic alloc/dealloc", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestAlloc alloc;
     int*      p = alloc.allocate( 4 );
-    PMM_TEST( p != nullptr );
+    REQUIRE( p != nullptr );
 
     // Write and read back.
     p[0] = 10;
     p[1] = 20;
     p[2] = 30;
     p[3] = 40;
-    PMM_TEST( p[0] == 10 );
-    PMM_TEST( p[1] == 20 );
-    PMM_TEST( p[2] == 30 );
-    PMM_TEST( p[3] == 40 );
+    REQUIRE( p[0] == 10 );
+    REQUIRE( p[1] == 20 );
+    REQUIRE( p[2] == 30 );
+    REQUIRE( p[3] == 40 );
 
     alloc.deallocate( p, 4 );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -103,10 +74,10 @@ static bool test_i198_basic_alloc_dealloc()
 // =============================================================================
 
 /// @brief allocate(0) must throw std::bad_alloc.
-static bool test_i198_alloc_zero()
+TEST_CASE( "I198-B: allocate(0) throws", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestAlloc alloc;
     bool      threw = false;
@@ -118,10 +89,9 @@ static bool test_i198_alloc_zero()
     {
         threw = true;
     }
-    PMM_TEST( threw );
+    REQUIRE( threw );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -129,10 +99,10 @@ static bool test_i198_alloc_zero()
 // =============================================================================
 
 /// @brief allocate() throws std::bad_alloc when n exceeds max_size().
-static bool test_i198_alloc_failure()
+TEST_CASE( "I198-C: allocate failure throws", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestAlloc alloc;
     bool      threw = false;
@@ -145,10 +115,9 @@ static bool test_i198_alloc_failure()
     {
         threw = true;
     }
-    PMM_TEST( threw );
+    REQUIRE( threw );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -156,10 +125,10 @@ static bool test_i198_alloc_failure()
 // =============================================================================
 
 /// @brief std::vector<int, pallocator<int>> works correctly.
-static bool test_i198_vector_int()
+TEST_CASE( "I198-D: vector<int>", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     {
         std::vector<int, TestMgr::pallocator<int>> vec;
@@ -167,20 +136,19 @@ static bool test_i198_vector_int()
         vec.push_back( 20 );
         vec.push_back( 30 );
 
-        PMM_TEST( vec.size() == 3 );
-        PMM_TEST( vec[0] == 10 );
-        PMM_TEST( vec[1] == 20 );
-        PMM_TEST( vec[2] == 30 );
+        REQUIRE( vec.size() == 3 );
+        REQUIRE( vec[0] == 10 );
+        REQUIRE( vec[1] == 20 );
+        REQUIRE( vec[2] == 30 );
 
         vec.pop_back();
-        PMM_TEST( vec.size() == 2 );
+        REQUIRE( vec.size() == 2 );
 
         vec.clear();
-        PMM_TEST( vec.empty() );
+        REQUIRE( vec.empty() );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -188,23 +156,22 @@ static bool test_i198_vector_int()
 // =============================================================================
 
 /// @brief std::vector<double, pallocator<double>> works correctly.
-static bool test_i198_vector_double()
+TEST_CASE( "I198-E: vector<double>", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     {
         std::vector<double, TestMgr::pallocator<double>> vec;
         vec.push_back( 3.14 );
         vec.push_back( 2.71 );
 
-        PMM_TEST( vec.size() == 2 );
-        PMM_TEST( vec[0] == 3.14 );
-        PMM_TEST( vec[1] == 2.71 );
+        REQUIRE( vec.size() == 2 );
+        REQUIRE( vec[0] == 3.14 );
+        REQUIRE( vec[1] == 2.71 );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -212,20 +179,18 @@ static bool test_i198_vector_double()
 // =============================================================================
 
 /// @brief All pallocators with the same ManagerT are equal.
-static bool test_i198_equality()
+TEST_CASE( "I198-F: equality", "[test_issue198_pallocator]" )
 {
     TestMgr::pallocator<int>    a1;
     TestMgr::pallocator<int>    a2;
     TestMgr::pallocator<double> a3;
 
-    PMM_TEST( a1 == a2 );
-    PMM_TEST( !( a1 != a2 ) );
+    REQUIRE( a1 == a2 );
+    REQUIRE( !( a1 != a2 ) );
 
     // Different value types — still equal (stateless, same manager).
-    PMM_TEST( a1 == a3 );
-    PMM_TEST( !( a1 != a3 ) );
-
-    return true;
+    REQUIRE( a1 == a3 );
+    REQUIRE( !( a1 != a3 ) );
 }
 
 // =============================================================================
@@ -233,29 +198,28 @@ static bool test_i198_equality()
 // =============================================================================
 
 /// @brief Rebinding pallocator<int> to pallocator<double> via allocator_traits.
-static bool test_i198_rebind()
+TEST_CASE( "I198-G: rebind", "[test_issue198_pallocator]" )
 {
     using traits     = std::allocator_traits<TestMgr::pallocator<int>>;
     using rebound    = typename traits::template rebind_alloc<double>;
     using rebound_vt = typename rebound::value_type;
 
-    PMM_TEST( (std::is_same_v<rebound_vt, double>));
+    REQUIRE( (std::is_same_v<rebound_vt, double>));
 
     // Verify rebound allocator works.
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     rebound alloc;
     double* p = alloc.allocate( 2 );
-    PMM_TEST( p != nullptr );
+    REQUIRE( p != nullptr );
     p[0] = 1.5;
     p[1] = 2.5;
-    PMM_TEST( p[0] == 1.5 );
-    PMM_TEST( p[1] == 2.5 );
+    REQUIRE( p[0] == 1.5 );
+    REQUIRE( p[1] == 2.5 );
     alloc.deallocate( p, 2 );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -263,26 +227,24 @@ static bool test_i198_rebind()
 // =============================================================================
 
 /// @brief Verify std::allocator_traits recognizes pallocator correctly.
-static bool test_i198_traits()
+TEST_CASE( "I198-H: allocator_traits", "[test_issue198_pallocator]" )
 {
     using alloc_t = TestMgr::pallocator<int>;
     using traits  = std::allocator_traits<alloc_t>;
 
-    PMM_TEST( (std::is_same_v<typename traits::value_type, int>));
-    PMM_TEST( (std::is_same_v<typename traits::size_type, std::size_t>));
-    PMM_TEST( (std::is_same_v<typename traits::difference_type, std::ptrdiff_t>));
-    PMM_TEST( (std::is_same_v<typename traits::pointer, int*>));
-    PMM_TEST( (std::is_same_v<typename traits::const_pointer, const int*>));
+    REQUIRE( (std::is_same_v<typename traits::value_type, int>));
+    REQUIRE( (std::is_same_v<typename traits::size_type, std::size_t>));
+    REQUIRE( (std::is_same_v<typename traits::difference_type, std::ptrdiff_t>));
+    REQUIRE( (std::is_same_v<typename traits::pointer, int*>));
+    REQUIRE( (std::is_same_v<typename traits::const_pointer, const int*>));
 
     // is_always_equal should be true_type (stateless allocator).
-    PMM_TEST( ( traits::is_always_equal::value ) );
+    REQUIRE( ( traits::is_always_equal::value ) );
 
     // propagate traits should be true_type.
-    PMM_TEST( ( traits::propagate_on_container_copy_assignment::value ) );
-    PMM_TEST( ( traits::propagate_on_container_move_assignment::value ) );
-    PMM_TEST( ( traits::propagate_on_container_swap::value ) );
-
-    return true;
+    REQUIRE( ( traits::propagate_on_container_copy_assignment::value ) );
+    REQUIRE( ( traits::propagate_on_container_move_assignment::value ) );
+    REQUIRE( ( traits::propagate_on_container_swap::value ) );
 }
 
 // =============================================================================
@@ -290,14 +252,12 @@ static bool test_i198_traits()
 // =============================================================================
 
 /// @brief Converting constructor from pallocator<U> works.
-static bool test_i198_converting_ctor()
+TEST_CASE( "I198-I: converting constructor", "[test_issue198_pallocator]" )
 {
     TestMgr::pallocator<int>    a_int;
     TestMgr::pallocator<double> a_double( a_int );
 
-    PMM_TEST( a_int == a_double );
-
-    return true;
+    REQUIRE( a_int == a_double );
 }
 
 // =============================================================================
@@ -305,10 +265,10 @@ static bool test_i198_converting_ctor()
 // =============================================================================
 
 /// @brief std::vector with pallocator handles growth (multiple reallocations).
-static bool test_i198_vector_growth()
+TEST_CASE( "I198-J: vector growth (1000 elements)", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     {
         std::vector<int, TestMgr::pallocator<int>> vec;
@@ -317,18 +277,17 @@ static bool test_i198_vector_growth()
         for ( int i = 0; i < N; ++i )
             vec.push_back( i * 3 );
 
-        PMM_TEST( vec.size() == static_cast<std::size_t>( N ) );
+        REQUIRE( vec.size() == static_cast<std::size_t>( N ) );
         for ( int i = 0; i < N; ++i )
-            PMM_TEST( vec[static_cast<std::size_t>( i )] == i * 3 );
+            REQUIRE( vec[static_cast<std::size_t>( i )] == i * 3 );
 
         vec.resize( 500 );
-        PMM_TEST( vec.size() == 500 );
-        PMM_TEST( vec[0] == 0 );
-        PMM_TEST( vec[499] == 499 * 3 );
+        REQUIRE( vec.size() == 500 );
+        REQUIRE( vec[0] == 0 );
+        REQUIRE( vec[499] == 499 * 3 );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -336,10 +295,10 @@ static bool test_i198_vector_growth()
 // =============================================================================
 
 /// @brief Multiple vectors with different element types can coexist.
-static bool test_i198_multiple_vectors()
+TEST_CASE( "I198-K: multiple vectors coexist", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     {
         std::vector<int, TestMgr::pallocator<int>>       vi;
@@ -350,13 +309,12 @@ static bool test_i198_multiple_vectors()
         vd.push_back( 3.14 );
         vc.push_back( 'A' );
 
-        PMM_TEST( vi[0] == 42 );
-        PMM_TEST( vd[0] == 3.14 );
-        PMM_TEST( vc[0] == 'A' );
+        REQUIRE( vi[0] == 42 );
+        REQUIRE( vd[0] == 3.14 );
+        REQUIRE( vc[0] == 'A' );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -364,17 +322,15 @@ static bool test_i198_multiple_vectors()
 // =============================================================================
 
 /// @brief max_size() returns a reasonable value.
-static bool test_i198_max_size()
+TEST_CASE( "I198-L: max_size()", "[test_issue198_pallocator]" )
 {
     TestMgr::pallocator<int> alloc;
     std::size_t              ms = alloc.max_size();
-    PMM_TEST( ms > 0 );
-    PMM_TEST( ms == std::numeric_limits<std::size_t>::max() / sizeof( int ) );
+    REQUIRE( ms > 0 );
+    REQUIRE( ms == std::numeric_limits<std::size_t>::max() / sizeof( int ) );
 
     TestMgr::pallocator<char> alloc_char;
-    PMM_TEST( alloc_char.max_size() == std::numeric_limits<std::size_t>::max() / sizeof( char ) );
-
-    return true;
+    REQUIRE( alloc_char.max_size() == std::numeric_limits<std::size_t>::max() / sizeof( char ) );
 }
 
 // =============================================================================
@@ -382,15 +338,13 @@ static bool test_i198_max_size()
 // =============================================================================
 
 /// @brief pallocator is accessible via Mgr::pallocator<T> alias.
-static bool test_i198_manager_alias()
+TEST_CASE( "I198-M: manager alias", "[test_issue198_pallocator]" )
 {
     using AliasAlloc  = TestMgr::pallocator<int>;
     using DirectAlloc = pmm::pallocator<int, TestMgr>;
 
     // Both aliases refer to the same type.
-    PMM_TEST( (std::is_same_v<AliasAlloc, DirectAlloc>));
-
-    return true;
+    REQUIRE( (std::is_same_v<AliasAlloc, DirectAlloc>));
 }
 
 // =============================================================================
@@ -398,10 +352,10 @@ static bool test_i198_manager_alias()
 // =============================================================================
 
 /// @brief std::vector copy and move work with pallocator.
-static bool test_i198_vector_copy_move()
+TEST_CASE( "I198-N: vector copy/move", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     {
         using Vec = std::vector<int, TestMgr::pallocator<int>>;
@@ -413,21 +367,20 @@ static bool test_i198_vector_copy_move()
 
         // Copy.
         Vec v2( v1 );
-        PMM_TEST( v2.size() == 3 );
-        PMM_TEST( v2[0] == 1 );
-        PMM_TEST( v2[1] == 2 );
-        PMM_TEST( v2[2] == 3 );
+        REQUIRE( v2.size() == 3 );
+        REQUIRE( v2[0] == 1 );
+        REQUIRE( v2[1] == 2 );
+        REQUIRE( v2[2] == 3 );
 
         // Move.
         Vec v3( std::move( v1 ) );
-        PMM_TEST( v3.size() == 3 );
-        PMM_TEST( v3[0] == 1 );
-        PMM_TEST( v3[1] == 2 );
-        PMM_TEST( v3[2] == 3 );
+        REQUIRE( v3.size() == 3 );
+        REQUIRE( v3[0] == 1 );
+        REQUIRE( v3[1] == 2 );
+        REQUIRE( v3[2] == 3 );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -435,26 +388,25 @@ static bool test_i198_vector_copy_move()
 // =============================================================================
 
 /// @brief reserve() and shrink_to_fit() work with pallocator.
-static bool test_i198_vector_reserve()
+TEST_CASE( "I198-O: vector reserve", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     {
         std::vector<int, TestMgr::pallocator<int>> vec;
         vec.reserve( 100 );
-        PMM_TEST( vec.capacity() >= 100 );
-        PMM_TEST( vec.empty() );
+        REQUIRE( vec.capacity() >= 100 );
+        REQUIRE( vec.empty() );
 
         for ( int i = 0; i < 50; ++i )
             vec.push_back( i );
 
-        PMM_TEST( vec.size() == 50 );
-        PMM_TEST( vec.capacity() >= 100 );
+        REQUIRE( vec.size() == 50 );
+        REQUIRE( vec.capacity() >= 100 );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -462,10 +414,10 @@ static bool test_i198_vector_reserve()
 // =============================================================================
 
 /// @brief erase and insert work with pallocator-backed vector.
-static bool test_i198_vector_erase_insert()
+TEST_CASE( "I198-P: vector erase/insert", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     {
         std::vector<int, TestMgr::pallocator<int>> vec;
@@ -476,20 +428,19 @@ static bool test_i198_vector_erase_insert()
 
         // Erase second element.
         vec.erase( vec.begin() + 1 );
-        PMM_TEST( vec.size() == 3 );
-        PMM_TEST( vec[0] == 10 );
-        PMM_TEST( vec[1] == 30 );
-        PMM_TEST( vec[2] == 40 );
+        REQUIRE( vec.size() == 3 );
+        REQUIRE( vec[0] == 10 );
+        REQUIRE( vec[1] == 30 );
+        REQUIRE( vec[2] == 40 );
 
         // Insert at beginning.
         vec.insert( vec.begin(), 5 );
-        PMM_TEST( vec.size() == 4 );
-        PMM_TEST( vec[0] == 5 );
-        PMM_TEST( vec[1] == 10 );
+        REQUIRE( vec.size() == 4 );
+        REQUIRE( vec[0] == 5 );
+        REQUIRE( vec[1] == 10 );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -497,23 +448,22 @@ static bool test_i198_vector_erase_insert()
 // =============================================================================
 
 /// @brief pallocator works with small types like uint8_t.
-static bool test_i198_small_type()
+TEST_CASE( "I198-Q: small type (uint8_t)", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     {
         std::vector<std::uint8_t, TestMgr::pallocator<std::uint8_t>> vec;
         for ( int i = 0; i < 256; ++i )
             vec.push_back( static_cast<std::uint8_t>( i ) );
 
-        PMM_TEST( vec.size() == 256 );
+        REQUIRE( vec.size() == 256 );
         for ( int i = 0; i < 256; ++i )
-            PMM_TEST( vec[static_cast<std::size_t>( i )] == static_cast<std::uint8_t>( i ) );
+            REQUIRE( vec[static_cast<std::size_t>( i )] == static_cast<std::uint8_t>( i ) );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -527,10 +477,10 @@ struct Point198
 };
 
 /// @brief pallocator works with user-defined POD struct.
-static bool test_i198_struct_type()
+TEST_CASE( "I198-R: struct type", "[test_issue198_pallocator]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     {
         std::vector<Point198, TestMgr::pallocator<Point198>> vec;
@@ -538,45 +488,15 @@ static bool test_i198_struct_type()
         vec.push_back( { 3, 4 } );
         vec.push_back( { 5, 6 } );
 
-        PMM_TEST( vec.size() == 3 );
-        PMM_TEST( vec[0].x == 1 && vec[0].y == 2 );
-        PMM_TEST( vec[1].x == 3 && vec[1].y == 4 );
-        PMM_TEST( vec[2].x == 5 && vec[2].y == 6 );
+        REQUIRE( vec.size() == 3 );
+        REQUIRE( ( vec[0].x == 1 && vec[0].y == 2 ) );
+        REQUIRE( ( vec[1].x == 3 && vec[1].y == 4 ) );
+        REQUIRE( ( vec[2].x == 5 && vec[2].y == 6 ) );
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
 // Main — run all tests
 // =============================================================================
-
-int main()
-{
-    std::cout << "[Issue #198] pallocator — STL-compatible allocator (Phase 3.5)\n";
-
-    bool all_passed = true;
-
-    PMM_RUN( "I198-A: basic alloc/dealloc", test_i198_basic_alloc_dealloc );
-    PMM_RUN( "I198-B: allocate(0) throws", test_i198_alloc_zero );
-    PMM_RUN( "I198-C: allocate failure throws", test_i198_alloc_failure );
-    PMM_RUN( "I198-D: vector<int>", test_i198_vector_int );
-    PMM_RUN( "I198-E: vector<double>", test_i198_vector_double );
-    PMM_RUN( "I198-F: equality", test_i198_equality );
-    PMM_RUN( "I198-G: rebind", test_i198_rebind );
-    PMM_RUN( "I198-H: allocator_traits", test_i198_traits );
-    PMM_RUN( "I198-I: converting constructor", test_i198_converting_ctor );
-    PMM_RUN( "I198-J: vector growth (1000 elements)", test_i198_vector_growth );
-    PMM_RUN( "I198-K: multiple vectors coexist", test_i198_multiple_vectors );
-    PMM_RUN( "I198-L: max_size()", test_i198_max_size );
-    PMM_RUN( "I198-M: manager alias", test_i198_manager_alias );
-    PMM_RUN( "I198-N: vector copy/move", test_i198_vector_copy_move );
-    PMM_RUN( "I198-O: vector reserve", test_i198_vector_reserve );
-    PMM_RUN( "I198-P: vector erase/insert", test_i198_vector_erase_insert );
-    PMM_RUN( "I198-Q: small type (uint8_t)", test_i198_small_type );
-    PMM_RUN( "I198-R: struct type", test_i198_struct_type );
-
-    std::cout << "\n" << ( all_passed ? "All pallocator tests PASSED." : "Some pallocator tests FAILED!" ) << "\n";
-    return all_passed ? EXIT_SUCCESS : EXIT_FAILURE;
-}

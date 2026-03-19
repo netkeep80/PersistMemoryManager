@@ -14,36 +14,30 @@
 
 #include "pmm_industrial_db_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <iostream>
 
-int main()
+TEST_CASE( "test_issue123_sh_industrial_db", "[test_issue123_sh_industrial_db]" )
 {
-    std::cout << "=== test_issue123_sh_industrial_db (pmm_industrial_db_heap.h) ===\n";
-
     using IDB = pmm::presets::IndustrialDBHeap;
 
-    assert( !IDB::is_initialized() );
+    REQUIRE( !IDB::is_initialized() );
     bool created = IDB::create( 32 * 1024 );
-    assert( created );
-    assert( IDB::is_initialized() );
-    assert( IDB::total_size() >= 32 * 1024 );
+    REQUIRE( created );
+    REQUIRE( IDB::is_initialized() );
+    REQUIRE( IDB::total_size() >= 32 * 1024 );
 
     void* ptr = IDB::allocate( 256 );
-    assert( ptr != nullptr );
+    REQUIRE( ptr != nullptr );
     std::memset( ptr, 0xDD, 256 );
     IDB::deallocate( ptr );
 
     IDB::pptr<double> p = IDB::allocate_typed<double>();
-    assert( !p.is_null() );
+    REQUIRE( !p.is_null() );
     *p.resolve() = 2.718;
-    assert( *p.resolve() == 2.718 );
+    REQUIRE( *p.resolve() == 2.718 );
     IDB::deallocate_typed( p );
 
     IDB::destroy();
-    assert( !IDB::is_initialized() );
-
-    std::cout << "PASSED\n";
-    return 0;
+    REQUIRE( !IDB::is_initialized() );
 }

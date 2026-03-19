@@ -19,47 +19,21 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
-#include <iostream>
+
 #include <limits>
 
 // ─── Test macros ──────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // =============================================================================
 // I144-A: FreeBlock::cast_from_raw validates invariants in debug mode
 // =============================================================================
 
 /// @brief FreeBlock::cast_from_raw on a correctly initialized free block succeeds.
-static bool test_i144_free_block_cast_valid()
+TEST_CASE( "    cast_from_raw valid free block", "[test_issue144_code_review]" )
 {
     using A = pmm::DefaultAddressTraits;
 
@@ -68,16 +42,14 @@ static bool test_i144_free_block_cast_valid()
     // weight=0, root_offset=0 — valid FreeBlock state
 
     auto* fb = pmm::FreeBlock<A>::cast_from_raw( buffer );
-    PMM_TEST( fb != nullptr );
-    PMM_TEST( fb->verify_invariants() == true );
-    PMM_TEST( fb->weight() == 0 );
-    PMM_TEST( fb->root_offset() == 0 );
-
-    return true;
+    REQUIRE( fb != nullptr );
+    REQUIRE( fb->verify_invariants() == true );
+    REQUIRE( fb->weight() == 0 );
+    REQUIRE( fb->root_offset() == 0 );
 }
 
 /// @brief FreeBlock::verify_invariants detects invalid state (weight > 0).
-static bool test_i144_free_block_invalid_weight()
+TEST_CASE( "    verify_invariants: invalid weight", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -93,13 +65,11 @@ static bool test_i144_free_block_invalid_weight()
     BlockState::set_weight_of( buffer, 3u );
 
     auto* fb = reinterpret_cast<pmm::FreeBlock<A>*>( buffer );
-    PMM_TEST( fb->verify_invariants() == false );
-
-    return true;
+    REQUIRE( fb->verify_invariants() == false );
 }
 
 /// @brief FreeBlock::verify_invariants detects invalid state (root_offset != 0).
-static bool test_i144_free_block_invalid_root_offset()
+TEST_CASE( "    verify_invariants: invalid root_offset", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -113,9 +83,7 @@ static bool test_i144_free_block_invalid_root_offset()
     BlockState::set_root_offset_of( buffer, 5u );
 
     auto* fb = reinterpret_cast<pmm::FreeBlock<A>*>( buffer );
-    PMM_TEST( fb->verify_invariants() == false );
-
-    return true;
+    REQUIRE( fb->verify_invariants() == false );
 }
 
 // =============================================================================
@@ -123,7 +91,7 @@ static bool test_i144_free_block_invalid_root_offset()
 // =============================================================================
 
 /// @brief AllocatedBlock::cast_from_raw on a valid allocated block succeeds.
-static bool test_i144_allocated_block_cast_valid()
+TEST_CASE( "    cast_from_raw valid allocated block", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -135,15 +103,13 @@ static bool test_i144_allocated_block_cast_valid()
     BlockState::set_root_offset_of( buffer, 6u );
 
     auto* alloc = pmm::AllocatedBlock<A>::cast_from_raw( buffer );
-    PMM_TEST( alloc != nullptr );
-    PMM_TEST( alloc->verify_invariants( 6 ) == true );
-    PMM_TEST( alloc->weight() == 4 );
-
-    return true;
+    REQUIRE( alloc != nullptr );
+    REQUIRE( alloc->verify_invariants( 6 ) == true );
+    REQUIRE( alloc->weight() == 4 );
 }
 
 /// @brief AllocatedBlock::verify_invariants detects wrong own_idx.
-static bool test_i144_allocated_block_wrong_idx()
+TEST_CASE( "    verify_invariants: wrong own_idx", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -155,11 +121,9 @@ static bool test_i144_allocated_block_wrong_idx()
     BlockState::set_root_offset_of( buffer, 6u ); // own_idx should be 6
 
     auto* alloc = pmm::AllocatedBlock<A>::cast_from_raw( buffer );
-    PMM_TEST( alloc->verify_invariants( 6 ) == true );  // Correct idx
-    PMM_TEST( alloc->verify_invariants( 7 ) == false ); // Wrong idx
-    PMM_TEST( alloc->verify_invariants( 0 ) == false ); // Wrong idx
-
-    return true;
+    REQUIRE( alloc->verify_invariants( 6 ) == true );  // Correct idx
+    REQUIRE( alloc->verify_invariants( 7 ) == false ); // Wrong idx
+    REQUIRE( alloc->verify_invariants( 0 ) == false ); // Wrong idx
 }
 
 // =============================================================================
@@ -167,14 +131,14 @@ static bool test_i144_allocated_block_wrong_idx()
 // =============================================================================
 
 /// @brief bytes_to_granules returns 0 on overflow (well-defined sentinel).
-static bool test_i144_bytes_to_granules_overflow()
+TEST_CASE( "    overflow returns 0", "[test_issue144_code_review]" )
 {
     using A = pmm::DefaultAddressTraits;
 
     // Max size_t: would overflow in granule calculation
     std::size_t   max_sz = std::numeric_limits<std::size_t>::max();
     A::index_type result = A::bytes_to_granules( max_sz );
-    PMM_TEST( result == 0 ); // Overflow returns 0
+    REQUIRE( result == 0 ); // Overflow returns 0
 
     // Also test with a value that overflows IndexT (uint32_t)
     // Large value that produces > 2^32 granules: (2^32 + 1) * granule_size
@@ -184,31 +148,27 @@ static bool test_i144_bytes_to_granules_overflow()
     if ( overflow_for_idx != 0 ) // Only if no size_t overflow in the multiplication
     {
         A::index_type r2 = A::bytes_to_granules( overflow_for_idx );
-        PMM_TEST( r2 == 0 ); // Should return 0 on IndexT overflow
+        REQUIRE( r2 == 0 ); // Should return 0 on IndexT overflow
     }
-
-    return true;
 }
 
 /// @brief bytes_to_granules normal conversion is correct.
-static bool test_i144_bytes_to_granules_normal()
+TEST_CASE( "    normal conversions correct", "[test_issue144_code_review]" )
 {
     using A = pmm::DefaultAddressTraits;
 
     // Exact multiple of granule_size
-    PMM_TEST( A::bytes_to_granules( 0 ) == 0 );
-    PMM_TEST( A::bytes_to_granules( 16 ) == 1 );
-    PMM_TEST( A::bytes_to_granules( 32 ) == 2 );
-    PMM_TEST( A::bytes_to_granules( 48 ) == 3 );
+    REQUIRE( A::bytes_to_granules( 0 ) == 0 );
+    REQUIRE( A::bytes_to_granules( 16 ) == 1 );
+    REQUIRE( A::bytes_to_granules( 32 ) == 2 );
+    REQUIRE( A::bytes_to_granules( 48 ) == 3 );
 
     // Ceiling: non-multiple rounds up
-    PMM_TEST( A::bytes_to_granules( 1 ) == 1 );
-    PMM_TEST( A::bytes_to_granules( 15 ) == 1 );
-    PMM_TEST( A::bytes_to_granules( 17 ) == 2 );
-    PMM_TEST( A::bytes_to_granules( 31 ) == 2 );
-    PMM_TEST( A::bytes_to_granules( 33 ) == 3 );
-
-    return true;
+    REQUIRE( A::bytes_to_granules( 1 ) == 1 );
+    REQUIRE( A::bytes_to_granules( 15 ) == 1 );
+    REQUIRE( A::bytes_to_granules( 17 ) == 2 );
+    REQUIRE( A::bytes_to_granules( 31 ) == 2 );
+    REQUIRE( A::bytes_to_granules( 33 ) == 3 );
 }
 
 // =============================================================================
@@ -216,16 +176,15 @@ static bool test_i144_bytes_to_granules_normal()
 // =============================================================================
 
 /// @brief is_valid_block rejects kNoBlock index.
-static bool test_i144_is_valid_block_no_block()
+TEST_CASE( "    kNoBlock constant", "[test_issue144_code_review]" )
 {
     using namespace pmm::detail;
     // is_valid_block with kNoBlock should return false
-    PMM_TEST( kNoBlock == 0xFFFFFFFFU );
-    return true;
+    REQUIRE( kNoBlock == 0xFFFFFFFFU );
 }
 
 /// @brief Block state machine: is_free() and is_allocated() agree with weight.
-static bool test_i144_block_state_consistency()
+TEST_CASE( "    block state: is_free / is_allocated consistency", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -235,24 +194,22 @@ static bool test_i144_block_state_consistency()
     // Free: weight=0, root_offset=0
     std::memset( buffer, 0, sizeof( buffer ) );
     auto* state = reinterpret_cast<BlockState*>( buffer );
-    PMM_TEST( state->is_free() == true );
-    PMM_TEST( state->is_allocated( 0 ) == false );
-    PMM_TEST( state->weight() == 0 );
+    REQUIRE( state->is_free() == true );
+    REQUIRE( state->is_allocated( 0 ) == false );
+    REQUIRE( state->weight() == 0 );
 
     // Transitional: weight=0, root_offset!=0 — neither free nor allocated
     BlockState::set_root_offset_of( buffer, 5u );
-    PMM_TEST( state->is_free() == false );
-    PMM_TEST( state->is_allocated( 0 ) == false );
-    PMM_TEST( state->is_allocated( 5 ) == false ); // weight==0, so not allocated
+    REQUIRE( state->is_free() == false );
+    REQUIRE( state->is_allocated( 0 ) == false );
+    REQUIRE( state->is_allocated( 5 ) == false ); // weight==0, so not allocated
 
     // Allocated: weight>0, root_offset==own_idx
     BlockState::set_weight_of( buffer, 3u );
     BlockState::set_root_offset_of( buffer, 7u );
-    PMM_TEST( state->is_free() == false );
-    PMM_TEST( state->is_allocated( 7 ) == true );
-    PMM_TEST( state->is_allocated( 8 ) == false );
-
-    return true;
+    REQUIRE( state->is_free() == false );
+    REQUIRE( state->is_allocated( 7 ) == true );
+    REQUIRE( state->is_allocated( 8 ) == false );
 }
 
 // =============================================================================
@@ -260,7 +217,7 @@ static bool test_i144_block_state_consistency()
 // =============================================================================
 
 /// @brief recover_block_state fixes weight>0 with wrong root_offset.
-static bool test_i144_recover_allocated_wrong_root()
+TEST_CASE( "    recover allocated with wrong root_offset", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -274,17 +231,15 @@ static bool test_i144_recover_allocated_wrong_root()
 
     pmm::recover_block_state<A>( buffer, 10 ); // Own index is 10
 
-    PMM_TEST( BlockState::get_weight( buffer ) == 5 );       // Unchanged
-    PMM_TEST( BlockState::get_root_offset( buffer ) == 10 ); // Corrected to own_idx
+    REQUIRE( BlockState::get_weight( buffer ) == 5 );       // Unchanged
+    REQUIRE( BlockState::get_root_offset( buffer ) == 10 ); // Corrected to own_idx
 
     auto* state = reinterpret_cast<BlockState*>( buffer );
-    PMM_TEST( state->is_allocated( 10 ) == true );
-
-    return true;
+    REQUIRE( state->is_allocated( 10 ) == true );
 }
 
 /// @brief recover_block_state fixes weight==0 with non-zero root_offset.
-static bool test_i144_recover_free_nonzero_root()
+TEST_CASE( "    recover free with non-zero root_offset", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -298,17 +253,15 @@ static bool test_i144_recover_free_nonzero_root()
 
     pmm::recover_block_state<A>( buffer, 10 ); // Own index is 10
 
-    PMM_TEST( BlockState::get_weight( buffer ) == 0 );      // Unchanged
-    PMM_TEST( BlockState::get_root_offset( buffer ) == 0 ); // Cleared
+    REQUIRE( BlockState::get_weight( buffer ) == 0 );      // Unchanged
+    REQUIRE( BlockState::get_root_offset( buffer ) == 0 ); // Cleared
 
     auto* state = reinterpret_cast<BlockState*>( buffer );
-    PMM_TEST( state->is_free() == true );
-
-    return true;
+    REQUIRE( state->is_free() == true );
 }
 
 /// @brief recover_block_state leaves valid allocated block unchanged.
-static bool test_i144_recover_valid_allocated_unchanged()
+TEST_CASE( "    valid allocated block unchanged", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -322,17 +275,15 @@ static bool test_i144_recover_valid_allocated_unchanged()
 
     pmm::recover_block_state<A>( buffer, 5 );
 
-    PMM_TEST( BlockState::get_weight( buffer ) == 7 );      // Unchanged
-    PMM_TEST( BlockState::get_root_offset( buffer ) == 5 ); // Unchanged
+    REQUIRE( BlockState::get_weight( buffer ) == 7 );      // Unchanged
+    REQUIRE( BlockState::get_root_offset( buffer ) == 5 ); // Unchanged
 
     auto* state = reinterpret_cast<BlockState*>( buffer );
-    PMM_TEST( state->is_allocated( 5 ) == true );
-
-    return true;
+    REQUIRE( state->is_allocated( 5 ) == true );
 }
 
 /// @brief recover_block_state leaves valid free block unchanged.
-static bool test_i144_recover_valid_free_unchanged()
+TEST_CASE( "    valid free block unchanged", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -346,13 +297,11 @@ static bool test_i144_recover_valid_free_unchanged()
 
     pmm::recover_block_state<A>( buffer, 5 );
 
-    PMM_TEST( BlockState::get_weight( buffer ) == 0 );
-    PMM_TEST( BlockState::get_root_offset( buffer ) == 0 );
+    REQUIRE( BlockState::get_weight( buffer ) == 0 );
+    REQUIRE( BlockState::get_root_offset( buffer ) == 0 );
 
     auto* state = reinterpret_cast<BlockState*>( buffer );
-    PMM_TEST( state->is_free() == true );
-
-    return true;
+    REQUIRE( state->is_free() == true );
 }
 
 // =============================================================================
@@ -362,16 +311,16 @@ static bool test_i144_recover_valid_free_unchanged()
 using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 144>;
 
 /// @brief for_each_block iterates all blocks without deadlock (read-only callback).
-static bool test_i144_for_each_block_read_only()
+TEST_CASE( "    for_each_block (read-only)", "[test_issue144_code_review]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 4096 ) );
+    REQUIRE( TestMgr::create( 4096 ) );
 
     // Allocate a few blocks
     void* p1 = TestMgr::allocate( 64 );
     void* p2 = TestMgr::allocate( 128 );
-    PMM_TEST( p1 != nullptr );
-    PMM_TEST( p2 != nullptr );
+    REQUIRE( p1 != nullptr );
+    REQUIRE( p2 != nullptr );
 
     // Read-only callback: just count blocks
     std::size_t block_count     = 0;
@@ -390,27 +339,26 @@ static bool test_i144_for_each_block_read_only()
                 free_count++;
         } );
 
-    PMM_TEST( ok == true );
-    PMM_TEST( block_count >= 3 );     // Block_0 (header) + p1 block + p2 block + free remainder
-    PMM_TEST( allocated_count >= 2 ); // At least p1 and p2 (Block_0 also counts as used)
-    PMM_TEST( free_count >= 1 );      // At least one free block (remainder)
+    REQUIRE( ok == true );
+    REQUIRE( block_count >= 3 );     // Block_0 (header) + p1 block + p2 block + free remainder
+    REQUIRE( allocated_count >= 2 ); // At least p1 and p2 (Block_0 also counts as used)
+    REQUIRE( free_count >= 1 );      // At least one free block (remainder)
 
     TestMgr::deallocate( p1 );
     TestMgr::deallocate( p2 );
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief for_each_free_block iterates only free blocks.
-static bool test_i144_for_each_free_block()
+TEST_CASE( "    for_each_free_block", "[test_issue144_code_review]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 8192 ) );
+    REQUIRE( TestMgr::create( 8192 ) );
 
     void* p1 = TestMgr::allocate( 64 );
     void* p2 = TestMgr::allocate( 128 );
     void* p3 = TestMgr::allocate( 32 );
-    PMM_TEST( p1 != nullptr && p2 != nullptr && p3 != nullptr );
+    REQUIRE( ( p1 != nullptr && p2 != nullptr && p3 != nullptr ) );
 
     TestMgr::deallocate( p2 ); // Create a free block in the middle
 
@@ -423,15 +371,14 @@ static bool test_i144_for_each_free_block()
                 found_invalid = true;
             free_block_count++;
         } );
-    PMM_TEST( !found_invalid );
+    REQUIRE( !found_invalid );
 
-    PMM_TEST( ok == true );
-    PMM_TEST( free_block_count >= 1 ); // At least one free block after deallocate
+    REQUIRE( ok == true );
+    REQUIRE( free_block_count >= 1 ); // At least one free block after deallocate
 
     TestMgr::deallocate( p1 );
     TestMgr::deallocate( p3 );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -439,27 +386,26 @@ static bool test_i144_for_each_free_block()
 // =============================================================================
 
 /// @brief lock_block_permanent makes block immune to deallocate.
-static bool test_i144_permanently_locked_block()
+TEST_CASE( "    permanently locked block", "[test_issue144_code_review]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 4096 ) );
+    REQUIRE( TestMgr::create( 4096 ) );
 
     void* p = TestMgr::allocate( 64 );
-    PMM_TEST( p != nullptr );
+    REQUIRE( p != nullptr );
 
-    PMM_TEST( TestMgr::is_permanently_locked( p ) == false );
-    PMM_TEST( TestMgr::lock_block_permanent( p ) == true );
-    PMM_TEST( TestMgr::is_permanently_locked( p ) == true );
+    REQUIRE( TestMgr::is_permanently_locked( p ) == false );
+    REQUIRE( TestMgr::lock_block_permanent( p ) == true );
+    REQUIRE( TestMgr::is_permanently_locked( p ) == true );
 
     std::size_t alloc_before = TestMgr::alloc_block_count();
     TestMgr::deallocate( p ); // Should be a no-op for locked block
     std::size_t alloc_after = TestMgr::alloc_block_count();
 
-    PMM_TEST( alloc_before == alloc_after ); // Count unchanged: block not freed
-    PMM_TEST( TestMgr::is_permanently_locked( p ) == true );
+    REQUIRE( alloc_before == alloc_after ); // Count unchanged: block not freed
+    REQUIRE( TestMgr::is_permanently_locked( p ) == true );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -468,7 +414,7 @@ static bool test_i144_permanently_locked_block()
 
 /// @brief BlockStateBase::reset_avl_fields_of zeroes left/right/parent/height.
 /// Issue #168: reset_block_avl_fields() removed; use BlockStateBase<AT>::reset_avl_fields_of() directly.
-static bool test_i144_reset_avl_fields()
+TEST_CASE( "    reset_avl_fields_of clears AVL fields", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -485,66 +431,12 @@ static bool test_i144_reset_avl_fields()
     // Reset via BlockStateBase directly (Issue #168: wrapper removed)
     BlockState::reset_avl_fields_of( buffer );
 
-    PMM_TEST( BlockState::get_left_offset( buffer ) == A::no_block );
-    PMM_TEST( BlockState::get_right_offset( buffer ) == A::no_block );
-    PMM_TEST( BlockState::get_parent_offset( buffer ) == A::no_block );
-    PMM_TEST( BlockState::get_avl_height( buffer ) == 0 );
-
-    return true;
+    REQUIRE( BlockState::get_left_offset( buffer ) == A::no_block );
+    REQUIRE( BlockState::get_right_offset( buffer ) == A::no_block );
+    REQUIRE( BlockState::get_parent_offset( buffer ) == A::no_block );
+    REQUIRE( BlockState::get_avl_height( buffer ) == 0 );
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    bool all_passed = true;
-
-    std::cout << "[Issue #144: Code Review Improvements]\n";
-
-    std::cout << "  I144-A: FreeBlock::cast_from_raw validation\n";
-    PMM_RUN( "    cast_from_raw valid free block", test_i144_free_block_cast_valid );
-    PMM_RUN( "    verify_invariants: invalid weight", test_i144_free_block_invalid_weight );
-    PMM_RUN( "    verify_invariants: invalid root_offset", test_i144_free_block_invalid_root_offset );
-
-    std::cout << "  I144-B: AllocatedBlock::cast_from_raw validation\n";
-    PMM_RUN( "    cast_from_raw valid allocated block", test_i144_allocated_block_cast_valid );
-    PMM_RUN( "    verify_invariants: wrong own_idx", test_i144_allocated_block_wrong_idx );
-
-    std::cout << "  I144-C: bytes_to_granules overflow handling\n";
-    PMM_RUN( "    overflow returns 0", test_i144_bytes_to_granules_overflow );
-    PMM_RUN( "    normal conversions correct", test_i144_bytes_to_granules_normal );
-
-    std::cout << "  I144-D: is_valid_block / block state consistency\n";
-    PMM_RUN( "    kNoBlock constant", test_i144_is_valid_block_no_block );
-    PMM_RUN( "    block state: is_free / is_allocated consistency", test_i144_block_state_consistency );
-
-    std::cout << "  I144-E: recover_block_state transitional states\n";
-    PMM_RUN( "    recover allocated with wrong root_offset", test_i144_recover_allocated_wrong_root );
-    PMM_RUN( "    recover free with non-zero root_offset", test_i144_recover_free_nonzero_root );
-    PMM_RUN( "    valid allocated block unchanged", test_i144_recover_valid_allocated_unchanged );
-    PMM_RUN( "    valid free block unchanged", test_i144_recover_valid_free_unchanged );
-
-    std::cout << "  I144-F: for_each_block read-only callback\n";
-    PMM_RUN( "    for_each_block (read-only)", test_i144_for_each_block_read_only );
-    PMM_RUN( "    for_each_free_block", test_i144_for_each_free_block );
-
-    std::cout << "  I144-G: lock_block_permanent prevents deallocation\n";
-    PMM_RUN( "    permanently locked block", test_i144_permanently_locked_block );
-
-    std::cout << "  I144-H: BlockStateBase::reset_avl_fields_of\n";
-    PMM_RUN( "    reset_avl_fields_of clears AVL fields", test_i144_reset_avl_fields );
-
-    std::cout << "\n";
-    if ( all_passed )
-    {
-        std::cout << "All Issue #144 tests PASSED.\n";
-        return EXIT_SUCCESS;
-    }
-    else
-    {
-        std::cout << "Some Issue #144 tests FAILED.\n";
-        return EXIT_FAILURE;
-    }
-}

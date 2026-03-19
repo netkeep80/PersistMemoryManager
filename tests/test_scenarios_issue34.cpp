@@ -16,38 +16,13 @@
  */
 
 #include "pmm_single_threaded_heap.h"
+#include <catch2/catch_test_macros.hpp>
 
 #include <algorithm>
 #include <chrono>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <vector>
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 using Mgr = pmm::presets::SingleThreadedHeap;
 
@@ -88,16 +63,12 @@ struct Rng
 
 // ─── Scenario 1: "Shredder" ───────────────────────────────────────────────────
 
-static bool test_shredder()
+TEST_CASE( "shredder (fragmentation & coalesce)", "[test_scenarios_issue34]" )
 {
     const std::size_t memory_size = 64UL * 1024 * 1024; // 64 MB
 
     Mgr pmm;
-    if ( !pmm.create( memory_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( pmm.create( memory_size ) );
 
     Rng rng( 31337 );
 
@@ -127,7 +98,7 @@ static bool test_shredder()
     std::cout << "    Allocated: " << all_ptrs.size() << " / 10000" << "  failed: " << failed
               << "  time: " << elapsed_ms( t0, now() ) << " ms\n";
 
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.is_initialized() );
 
     // Shuffle pointer order
     for ( std::size_t i = all_ptrs.size() - 1; i > 0; --i )
@@ -151,7 +122,7 @@ static bool test_shredder()
 
     std::cout << "    Freed: " << random_half.size() << " blocks  time: " << elapsed_ms( t1, now() ) << " ms\n";
 
-    PMM_TEST( pmm.is_initialized() );
+    REQUIRE( pmm.is_initialized() );
 
     // Phase 3: fragmentation check
     {
@@ -159,8 +130,8 @@ static bool test_shredder()
         std::cout << "    Total blocks: " << pmm.block_count() << "  free: " << pmm.free_block_count()
                   << "  allocated: " << pmm.alloc_block_count() << "\n";
 
-        PMM_TEST( pmm.alloc_block_count() == static_cast<std::uint32_t>( sorted_half.size() ) + 1 );
-        PMM_TEST( pmm.free_block_count() >= 1 );
+        REQUIRE( pmm.alloc_block_count() == static_cast<std::uint32_t>( sorted_half.size() ) + 1 );
+        REQUIRE( pmm.free_block_count() >= 1 );
     }
 
     // Phase 4: free remaining 50% in ascending address order
@@ -179,18 +150,17 @@ static bool test_shredder()
     // Phase 5: final validation
     {
         std::cout << "  Phase 5: final validation after full deallocation:\n";
-        PMM_TEST( pmm.is_initialized() );
+        REQUIRE( pmm.is_initialized() );
         std::cout << "    Total blocks: " << pmm.block_count() << "  free: " << pmm.free_block_count()
                   << "  allocated: " << pmm.alloc_block_count() << "\n";
-        PMM_TEST( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
-        PMM_TEST( pmm.free_block_count() <= 10 );
+        REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+        REQUIRE( pmm.free_block_count() <= 10 );
     }
 
     double total_ms = elapsed_ms( t0, now() );
     std::cout << "  Total time: " << total_ms << " ms\n";
 
     pmm.destroy();
-    return true;
 }
 
 // ─── Scenario 2: "Persistent Cycle" ──────────────────────────────────────────
@@ -207,7 +177,7 @@ static unsigned int compute_checksum( int id, std::uint32_t next_offset )
     return static_cast<unsigned int>( id * 2654435761u ) ^ static_cast<unsigned int>( next_offset );
 }
 
-static bool test_persistent_cycle()
+TEST_CASE( "persistent cycle (save/load pptr list)", "[test_scenarios_issue34]" )
 {
     const std::size_t memory_size = 4UL * 1024 * 1024;
     const char*       filename    = "test_issue34_heap.dat";
@@ -217,11 +187,7 @@ static bool test_persistent_cycle()
     std::cout << "  Phase 1: building linked list of " << node_count << " nodes...\n";
 
     Mgr pmm1;
-    if ( !pmm1.create( memory_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( pmm1.create( memory_size ) );
 
     Mgr::pptr<Node> head;
     Mgr::pptr<Node> tail;
@@ -234,7 +200,7 @@ static bool test_persistent_cycle()
         {
             std::cerr << "  ERROR: allocate returned null at i=" << i << "\n";
             pmm1.destroy();
-            return false;
+            FAIL( "unexpected failure" );
         }
 
         Node* node_ptr = n.resolve();
@@ -261,30 +227,30 @@ static bool test_persistent_cycle()
         tail.resolve()->checksum = compute_checksum( tail.resolve()->id, 0 );
 
     std::cout << "    Built " << node_count << " nodes in " << elapsed_ms( t0, now() ) << " ms\n";
-    PMM_TEST( pmm1.is_initialized() );
+    REQUIRE( pmm1.is_initialized() );
 
     std::uint32_t head_offset = head.offset();
 
     // Phase 2: Save
     std::cout << "  Phase 2: saving state...\n";
     auto t1 = now();
-    PMM_TEST( pmm::save_manager<decltype( pmm1 )>( filename ) );
+    REQUIRE( pmm::save_manager<decltype( pmm1 )>( filename ) );
     pmm1.destroy();
     std::cout << "    Saved in " << elapsed_ms( t1, now() ) << " ms\n";
 
     // Phase 3: Load
     std::cout << "  Phase 3: loading state...\n";
     Mgr pmm2;
-    PMM_TEST( pmm2.create( memory_size ) );
-    PMM_TEST( pmm::load_manager_from_file<decltype( pmm2 )>( filename ) );
-    PMM_TEST( pmm2.is_initialized() );
+    REQUIRE( pmm2.create( memory_size ) );
+    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( filename ) );
+    REQUIRE( pmm2.is_initialized() );
     std::cout << "    Loaded (new manager instance)\n";
 
     // Phase 4: Verify linked list
     std::cout << "  Phase 4: verifying " << node_count << " nodes...\n";
 
     Mgr::pptr<Node> cur( head_offset );
-    PMM_TEST( !cur.is_null() );
+    REQUIRE( !cur.is_null() );
 
     auto t2        = now();
     int  traversed = 0;
@@ -322,8 +288,8 @@ static bool test_persistent_cycle()
 
     std::cout << "    Traversed " << traversed << " nodes in " << elapsed_ms( t2, now() ) << " ms\n";
 
-    PMM_TEST( data_ok );
-    PMM_TEST( traversed == node_count );
+    REQUIRE( data_ok );
+    REQUIRE( traversed == node_count );
 
     // Free all nodes
     cur = Mgr::pptr<Node>( head_offset );
@@ -334,26 +300,21 @@ static bool test_persistent_cycle()
         cur = next_node;
     }
 
-    PMM_TEST( pmm2.is_initialized() );
-    PMM_TEST( pmm2.alloc_block_count() == 1 ); // Issue #75
+    REQUIRE( pmm2.is_initialized() );
+    REQUIRE( pmm2.alloc_block_count() == 1 ); // Issue #75
 
     pmm2.destroy();
     std::remove( filename );
-    return true;
 }
 
 // ─── Scenario 5: "Marathon" ───────────────────────────────────────────────────
 
-static bool test_marathon()
+TEST_CASE( "marathon (long-term stability)", "[test_scenarios_issue34]" )
 {
     const std::size_t memory_size = 64UL * 1024 * 1024; // 64 MB
 
     Mgr pmm;
-    if ( !pmm.create( memory_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( pmm.create( memory_size ) );
 
     Rng rng( 99991 );
 
@@ -422,16 +383,16 @@ static bool test_marathon()
         }
     }
 
-    PMM_TEST( validate_ok );
-    PMM_TEST( validate_cnt == total_iterations / validate_interval );
+    REQUIRE( validate_ok );
+    REQUIRE( validate_cnt == total_iterations / validate_interval );
 
     std::cout << "  Freeing " << live.size() << " remaining blocks...\n";
     for ( auto& p : live )
         pmm.deallocate_typed( p );
     live.clear();
 
-    PMM_TEST( pmm.is_initialized() );
-    PMM_TEST( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm.is_initialized() );
+    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double total_ms = elapsed_ms( t0, now() );
     std::cout << "  Total: " << total_iterations << " iterations, " << alloc_ok << " allocs" << "  (" << alloc_fail
@@ -440,20 +401,4 @@ static bool test_marathon()
     std::cout << "  Total time: " << total_ms << " ms\n";
 
     pmm.destroy();
-    return true;
-}
-
-// ─── main ─────────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "=== test_scenarios_issue34 (Issue #34, updated #102) ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "shredder (fragmentation & coalesce)", test_shredder );
-    PMM_RUN( "persistent cycle (save/load pptr list)", test_persistent_cycle );
-    PMM_RUN( "marathon (long-term stability)", test_marathon );
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

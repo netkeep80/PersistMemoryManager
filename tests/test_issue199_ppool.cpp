@@ -26,40 +26,12 @@
 #include "pmm/persist_memory_manager.h"
 #include "pmm/ppool.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
-#include <iostream>
+
 #include <type_traits>
 #include <vector>
-
-// --- Test macros -------------------------------------------------------------
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // --- Manager type alias for tests --------------------------------------------
 
@@ -70,28 +42,27 @@ using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 199>;
 // =============================================================================
 
 /// @brief allocate() returns a valid pointer and deallocate() returns it to the pool.
-static bool test_i199_basic_alloc_dealloc()
+TEST_CASE( "I199-A: basic alloc/dealloc", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
-    PMM_TEST( !pool.is_null() );
+    REQUIRE( !pool.is_null() );
 
     int* a = pool->allocate();
-    PMM_TEST( a != nullptr );
+    REQUIRE( a != nullptr );
     *a = 42;
-    PMM_TEST( *a == 42 );
+    REQUIRE( *a == 42 );
 
-    PMM_TEST( pool->allocated_count() == 1 );
+    REQUIRE( pool->allocated_count() == 1 );
 
     pool->deallocate( a );
-    PMM_TEST( pool->allocated_count() == 0 );
+    REQUIRE( pool->allocated_count() == 0 );
 
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -99,29 +70,28 @@ static bool test_i199_basic_alloc_dealloc()
 // =============================================================================
 
 /// @brief Deallocated slots are reused by subsequent allocations.
-static bool test_i199_slot_reuse()
+TEST_CASE( "I199-B: slot reuse", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
 
     int* a = pool->allocate();
-    PMM_TEST( a != nullptr );
+    REQUIRE( a != nullptr );
     *a = 100;
 
     pool->deallocate( a );
 
     // The next allocation should reuse the freed slot.
     int* b = pool->allocate();
-    PMM_TEST( b != nullptr );
-    PMM_TEST( b == a ); // Same slot reused (LIFO free-list).
+    REQUIRE( b != nullptr );
+    REQUIRE( b == a ); // Same slot reused (LIFO free-list).
 
     pool->deallocate( b );
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -129,10 +99,10 @@ static bool test_i199_slot_reuse()
 // =============================================================================
 
 /// @brief Multiple objects can be allocated from a single chunk.
-static bool test_i199_multiple_allocs()
+TEST_CASE( "I199-C: multiple allocations", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
 
@@ -141,32 +111,31 @@ static bool test_i199_multiple_allocs()
     for ( int i = 0; i < N; ++i )
     {
         ptrs[i] = pool->allocate();
-        PMM_TEST( ptrs[i] != nullptr );
+        REQUIRE( ptrs[i] != nullptr );
         *ptrs[i] = i * 10;
     }
 
-    PMM_TEST( pool->allocated_count() == N );
-    PMM_TEST( pool->total_capacity() >= static_cast<std::uint32_t>( N ) );
+    REQUIRE( pool->allocated_count() == N );
+    REQUIRE( pool->total_capacity() >= static_cast<std::uint32_t>( N ) );
 
     // Verify values.
     for ( int i = 0; i < N; ++i )
-        PMM_TEST( *ptrs[i] == i * 10 );
+        REQUIRE( *ptrs[i] == i * 10 );
 
     // Verify all pointers are unique.
     for ( int i = 0; i < N; ++i )
         for ( int j = i + 1; j < N; ++j )
-            PMM_TEST( ptrs[i] != ptrs[j] );
+            REQUIRE( ptrs[i] != ptrs[j] );
 
     for ( int i = 0; i < N; ++i )
         pool->deallocate( ptrs[i] );
 
-    PMM_TEST( pool->allocated_count() == 0 );
-    PMM_TEST( pool->empty() );
+    REQUIRE( pool->allocated_count() == 0 );
+    REQUIRE( pool->empty() );
 
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -174,10 +143,10 @@ static bool test_i199_multiple_allocs()
 // =============================================================================
 
 /// @brief Pool allocates new chunks when needed.
-static bool test_i199_chunk_growth()
+TEST_CASE( "I199-D: chunk growth", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 512 * 1024 ) );
+    REQUIRE( TestMgr::create( 512 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
     pool->set_objects_per_chunk( 4 ); // Small chunks to force growth.
@@ -187,17 +156,17 @@ static bool test_i199_chunk_growth()
     for ( int i = 0; i < N; ++i )
     {
         ptrs[i] = pool->allocate();
-        PMM_TEST( ptrs[i] != nullptr );
+        REQUIRE( ptrs[i] != nullptr );
         *ptrs[i] = i;
     }
 
-    PMM_TEST( pool->allocated_count() == static_cast<std::uint32_t>( N ) );
+    REQUIRE( pool->allocated_count() == static_cast<std::uint32_t>( N ) );
     // With 4 objects per chunk, we need ceil(20/4) = 5 chunks.
-    PMM_TEST( pool->total_capacity() >= static_cast<std::uint32_t>( N ) );
+    REQUIRE( pool->total_capacity() >= static_cast<std::uint32_t>( N ) );
 
     // Verify values.
     for ( int i = 0; i < N; ++i )
-        PMM_TEST( *ptrs[i] == i );
+        REQUIRE( *ptrs[i] == i );
 
     for ( int i = 0; i < N; ++i )
         pool->deallocate( ptrs[i] );
@@ -205,7 +174,6 @@ static bool test_i199_chunk_growth()
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -213,33 +181,32 @@ static bool test_i199_chunk_growth()
 // =============================================================================
 
 /// @brief free_all() resets the pool to empty state.
-static bool test_i199_free_all()
+TEST_CASE( "I199-E: free_all", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
 
     for ( int i = 0; i < 10; ++i )
     {
         int* p = pool->allocate();
-        PMM_TEST( p != nullptr );
+        REQUIRE( p != nullptr );
         *p = i;
     }
 
-    PMM_TEST( pool->allocated_count() == 10 );
-    PMM_TEST( pool->total_capacity() > 0 );
+    REQUIRE( pool->allocated_count() == 10 );
+    REQUIRE( pool->total_capacity() > 0 );
 
     pool->free_all();
 
-    PMM_TEST( pool->allocated_count() == 0 );
-    PMM_TEST( pool->total_capacity() == 0 );
-    PMM_TEST( pool->free_count() == 0 );
-    PMM_TEST( pool->empty() );
+    REQUIRE( pool->allocated_count() == 0 );
+    REQUIRE( pool->total_capacity() == 0 );
+    REQUIRE( pool->free_count() == 0 );
+    REQUIRE( pool->empty() );
 
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -247,61 +214,60 @@ static bool test_i199_free_all()
 // =============================================================================
 
 /// @brief Statistics are correctly maintained during alloc/dealloc.
-static bool test_i199_statistics()
+TEST_CASE( "I199-F: statistics", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
     pool->set_objects_per_chunk( 8 );
 
-    PMM_TEST( pool->allocated_count() == 0 );
-    PMM_TEST( pool->total_capacity() == 0 );
-    PMM_TEST( pool->free_count() == 0 );
-    PMM_TEST( pool->empty() );
+    REQUIRE( pool->allocated_count() == 0 );
+    REQUIRE( pool->total_capacity() == 0 );
+    REQUIRE( pool->free_count() == 0 );
+    REQUIRE( pool->empty() );
 
     // Allocate first object — triggers chunk allocation (8 slots).
     int* a = pool->allocate();
-    PMM_TEST( a != nullptr );
-    PMM_TEST( pool->allocated_count() == 1 );
-    PMM_TEST( pool->total_capacity() == 8 );
-    PMM_TEST( pool->free_count() == 7 );
+    REQUIRE( a != nullptr );
+    REQUIRE( pool->allocated_count() == 1 );
+    REQUIRE( pool->total_capacity() == 8 );
+    REQUIRE( pool->free_count() == 7 );
 
     // Allocate 7 more to fill the chunk.
     int* ptrs[7];
     for ( int i = 0; i < 7; ++i )
     {
         ptrs[i] = pool->allocate();
-        PMM_TEST( ptrs[i] != nullptr );
+        REQUIRE( ptrs[i] != nullptr );
     }
 
-    PMM_TEST( pool->allocated_count() == 8 );
-    PMM_TEST( pool->total_capacity() == 8 );
-    PMM_TEST( pool->free_count() == 0 );
+    REQUIRE( pool->allocated_count() == 8 );
+    REQUIRE( pool->total_capacity() == 8 );
+    REQUIRE( pool->free_count() == 0 );
 
     // Allocate one more — triggers new chunk.
     int* extra = pool->allocate();
-    PMM_TEST( extra != nullptr );
-    PMM_TEST( pool->allocated_count() == 9 );
-    PMM_TEST( pool->total_capacity() == 16 );
-    PMM_TEST( pool->free_count() == 7 );
+    REQUIRE( extra != nullptr );
+    REQUIRE( pool->allocated_count() == 9 );
+    REQUIRE( pool->total_capacity() == 16 );
+    REQUIRE( pool->free_count() == 7 );
 
     // Deallocate some.
     pool->deallocate( a );
     pool->deallocate( extra );
-    PMM_TEST( pool->allocated_count() == 7 );
-    PMM_TEST( pool->free_count() == 9 );
+    REQUIRE( pool->allocated_count() == 7 );
+    REQUIRE( pool->free_count() == 9 );
 
     for ( int i = 0; i < 7; ++i )
         pool->deallocate( ptrs[i] );
 
-    PMM_TEST( pool->allocated_count() == 0 );
-    PMM_TEST( pool->free_count() == 16 );
+    REQUIRE( pool->allocated_count() == 0 );
+    REQUIRE( pool->free_count() == 16 );
 
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -309,28 +275,27 @@ static bool test_i199_statistics()
 // =============================================================================
 
 /// @brief set_objects_per_chunk has effect before first allocation.
-static bool test_i199_set_objects_per_chunk()
+TEST_CASE( "I199-G: set_objects_per_chunk", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
 
     pool->set_objects_per_chunk( 16 );
 
     int* a = pool->allocate();
-    PMM_TEST( a != nullptr );
-    PMM_TEST( pool->total_capacity() == 16 );
+    REQUIRE( a != nullptr );
+    REQUIRE( pool->total_capacity() == 16 );
 
     // set_objects_per_chunk has no effect after allocation.
     pool->set_objects_per_chunk( 1000 );
-    PMM_TEST( pool->total_capacity() == 16 ); // Unchanged.
+    REQUIRE( pool->total_capacity() == 16 ); // Unchanged.
 
     pool->deallocate( a );
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -345,34 +310,33 @@ struct Point199
 };
 
 /// @brief ppool works with user-defined POD struct.
-static bool test_i199_struct_type()
+TEST_CASE( "I199-H: struct type", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<Point199>> pool = TestMgr::create_typed<TestMgr::ppool<Point199>>();
 
     Point199* a = pool->allocate();
-    PMM_TEST( a != nullptr );
+    REQUIRE( a != nullptr );
     a->x = 1;
     a->y = 2;
     a->z = 3;
 
     Point199* b = pool->allocate();
-    PMM_TEST( b != nullptr );
+    REQUIRE( b != nullptr );
     b->x = 10;
     b->y = 20;
     b->z = 30;
 
-    PMM_TEST( a->x == 1 && a->y == 2 && a->z == 3 );
-    PMM_TEST( b->x == 10 && b->y == 20 && b->z == 30 );
+    REQUIRE( ( a->x == 1 && a->y == 2 && a->z == 3 ) );
+    REQUIRE( ( b->x == 10 && b->y == 20 && b->z == 30 ) );
 
     pool->deallocate( a );
     pool->deallocate( b );
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -385,29 +349,29 @@ struct LargeNode199
 };
 
 /// @brief ppool works with types larger than one granule.
-static bool test_i199_large_type()
+TEST_CASE( "I199-I: large type (multi-granule)", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 512 * 1024 ) );
+    REQUIRE( TestMgr::create( 512 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<LargeNode199>> pool = TestMgr::create_typed<TestMgr::ppool<LargeNode199>>();
     pool->set_objects_per_chunk( 8 );
 
     LargeNode199* a = pool->allocate();
-    PMM_TEST( a != nullptr );
+    REQUIRE( a != nullptr );
     for ( int i = 0; i < 8; ++i )
         a->data[i] = static_cast<std::uint64_t>( i ) * 100;
 
     LargeNode199* b = pool->allocate();
-    PMM_TEST( b != nullptr );
+    REQUIRE( b != nullptr );
     for ( int i = 0; i < 8; ++i )
         b->data[i] = static_cast<std::uint64_t>( i ) * 200;
 
     // Verify data integrity (no overlap between a and b).
     for ( int i = 0; i < 8; ++i )
     {
-        PMM_TEST( a->data[i] == static_cast<std::uint64_t>( i ) * 100 );
-        PMM_TEST( b->data[i] == static_cast<std::uint64_t>( i ) * 200 );
+        REQUIRE( a->data[i] == static_cast<std::uint64_t>( i ) * 100 );
+        REQUIRE( b->data[i] == static_cast<std::uint64_t>( i ) * 200 );
     }
 
     pool->deallocate( a );
@@ -415,7 +379,6 @@ static bool test_i199_large_type()
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -423,15 +386,13 @@ static bool test_i199_large_type()
 // =============================================================================
 
 /// @brief ppool is accessible via Mgr::ppool<T> alias.
-static bool test_i199_manager_alias()
+TEST_CASE( "I199-J: manager alias", "[test_issue199_ppool]" )
 {
     using AliasPool  = TestMgr::ppool<int>;
     using DirectPool = pmm::ppool<int, TestMgr>;
 
     // Both aliases refer to the same type.
-    PMM_TEST( (std::is_same_v<AliasPool, DirectPool>));
-
-    return true;
+    REQUIRE( (std::is_same_v<AliasPool, DirectPool>));
 }
 
 // =============================================================================
@@ -439,10 +400,10 @@ static bool test_i199_manager_alias()
 // =============================================================================
 
 /// @brief Mass allocation/deallocation (1000 objects) maintains integrity.
-static bool test_i199_stress()
+TEST_CASE( "I199-K: stress (1000 objects)", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 1024 * 1024 ) );
+    REQUIRE( TestMgr::create( 1024 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
     pool->set_objects_per_chunk( 32 );
@@ -454,27 +415,26 @@ static bool test_i199_stress()
     for ( int i = 0; i < N; ++i )
     {
         ptrs[static_cast<std::size_t>( i )] = pool->allocate();
-        PMM_TEST( ptrs[static_cast<std::size_t>( i )] != nullptr );
+        REQUIRE( ptrs[static_cast<std::size_t>( i )] != nullptr );
         *ptrs[static_cast<std::size_t>( i )] = i;
     }
 
-    PMM_TEST( pool->allocated_count() == static_cast<std::uint32_t>( N ) );
+    REQUIRE( pool->allocated_count() == static_cast<std::uint32_t>( N ) );
 
     // Verify all values.
     for ( int i = 0; i < N; ++i )
-        PMM_TEST( *ptrs[static_cast<std::size_t>( i )] == i );
+        REQUIRE( *ptrs[static_cast<std::size_t>( i )] == i );
 
     // Deallocate all.
     for ( int i = 0; i < N; ++i )
         pool->deallocate( ptrs[static_cast<std::size_t>( i )] );
 
-    PMM_TEST( pool->allocated_count() == 0 );
-    PMM_TEST( pool->empty() );
+    REQUIRE( pool->allocated_count() == 0 );
+    REQUIRE( pool->empty() );
 
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -482,10 +442,10 @@ static bool test_i199_stress()
 // =============================================================================
 
 /// @brief Interleaved allocation and deallocation maintains pool integrity.
-static bool test_i199_interleaved()
+TEST_CASE( "I199-L: interleaved alloc/dealloc", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
     pool->set_objects_per_chunk( 4 );
@@ -500,12 +460,12 @@ static bool test_i199_interleaved()
     *c     = 3;
     *d     = 4;
 
-    PMM_TEST( pool->allocated_count() == 4 );
+    REQUIRE( pool->allocated_count() == 4 );
 
     // Deallocate b and c.
     pool->deallocate( b );
     pool->deallocate( c );
-    PMM_TEST( pool->allocated_count() == 2 );
+    REQUIRE( pool->allocated_count() == 2 );
 
     // Allocate 2 more — should reuse freed slots.
     int* e = pool->allocate();
@@ -513,13 +473,13 @@ static bool test_i199_interleaved()
     *e     = 5;
     *f     = 6;
 
-    PMM_TEST( pool->allocated_count() == 4 );
+    REQUIRE( pool->allocated_count() == 4 );
 
     // Original values intact.
-    PMM_TEST( *a == 1 );
-    PMM_TEST( *d == 4 );
-    PMM_TEST( *e == 5 );
-    PMM_TEST( *f == 6 );
+    REQUIRE( *a == 1 );
+    REQUIRE( *d == 4 );
+    REQUIRE( *e == 5 );
+    REQUIRE( *f == 6 );
 
     pool->deallocate( a );
     pool->deallocate( d );
@@ -529,7 +489,6 @@ static bool test_i199_interleaved()
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -537,10 +496,10 @@ static bool test_i199_interleaved()
 // =============================================================================
 
 /// @brief Pool can be reused after free_all().
-static bool test_i199_reuse_after_free()
+TEST_CASE( "I199-M: reuse after free_all", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
     pool->set_objects_per_chunk( 8 );
@@ -549,29 +508,28 @@ static bool test_i199_reuse_after_free()
     for ( int i = 0; i < 5; ++i )
     {
         int* p = pool->allocate();
-        PMM_TEST( p != nullptr );
+        REQUIRE( p != nullptr );
         *p = i;
     }
-    PMM_TEST( pool->allocated_count() == 5 );
+    REQUIRE( pool->allocated_count() == 5 );
 
     pool->free_all();
-    PMM_TEST( pool->allocated_count() == 0 );
-    PMM_TEST( pool->total_capacity() == 0 );
+    REQUIRE( pool->allocated_count() == 0 );
+    REQUIRE( pool->total_capacity() == 0 );
 
     // Second round — pool allocates new chunks.
     for ( int i = 0; i < 5; ++i )
     {
         int* p = pool->allocate();
-        PMM_TEST( p != nullptr );
+        REQUIRE( p != nullptr );
         *p = i + 100;
     }
-    PMM_TEST( pool->allocated_count() == 5 );
-    PMM_TEST( pool->total_capacity() == 8 ); // New chunk with 8 slots.
+    REQUIRE( pool->allocated_count() == 5 );
+    REQUIRE( pool->total_capacity() == 8 ); // New chunk with 8 slots.
 
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -579,22 +537,21 @@ static bool test_i199_reuse_after_free()
 // =============================================================================
 
 /// @brief deallocate(nullptr) is a no-op.
-static bool test_i199_dealloc_nullptr()
+TEST_CASE( "I199-N: deallocate nullptr", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
 
     // deallocate(nullptr) should not crash or change state.
     pool->deallocate( nullptr );
-    PMM_TEST( pool->allocated_count() == 0 );
-    PMM_TEST( pool->empty() );
+    REQUIRE( pool->allocated_count() == 0 );
+    REQUIRE( pool->empty() );
 
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -602,24 +559,23 @@ static bool test_i199_dealloc_nullptr()
 // =============================================================================
 
 /// @brief Allocated slots are zero-initialized.
-static bool test_i199_zero_init()
+TEST_CASE( "I199-O: zero-initialization", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<Point199>> pool = TestMgr::create_typed<TestMgr::ppool<Point199>>();
 
     Point199* p = pool->allocate();
-    PMM_TEST( p != nullptr );
-    PMM_TEST( p->x == 0 );
-    PMM_TEST( p->y == 0 );
-    PMM_TEST( p->z == 0 );
+    REQUIRE( p != nullptr );
+    REQUIRE( p->x == 0 );
+    REQUIRE( p->y == 0 );
+    REQUIRE( p->z == 0 );
 
     pool->deallocate( p );
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -627,18 +583,16 @@ static bool test_i199_zero_init()
 // =============================================================================
 
 /// @brief ppool<T> requires T to be trivially copyable (compile-time check).
-static bool test_i199_trivially_copyable()
+TEST_CASE( "I199-P: trivially copyable", "[test_issue199_ppool]" )
 {
     // ppool requires T to be trivially copyable.
-    PMM_TEST( (std::is_trivially_copyable_v<int>));
-    PMM_TEST( (std::is_trivially_copyable_v<Point199>));
-    PMM_TEST( (std::is_trivially_copyable_v<LargeNode199>));
+    REQUIRE( (std::is_trivially_copyable_v<int>));
+    REQUIRE( (std::is_trivially_copyable_v<Point199>));
+    REQUIRE( (std::is_trivially_copyable_v<LargeNode199>));
 
     // Verify ppool itself is trivially copyable (POD-structure for PAP).
-    PMM_TEST( (std::is_trivially_copyable_v<TestMgr::ppool<int>>));
-    PMM_TEST( (std::is_trivially_copyable_v<TestMgr::ppool<Point199>>));
-
-    return true;
+    REQUIRE( (std::is_trivially_copyable_v<TestMgr::ppool<int>>));
+    REQUIRE( (std::is_trivially_copyable_v<TestMgr::ppool<Point199>>));
 }
 
 // =============================================================================
@@ -646,32 +600,31 @@ static bool test_i199_trivially_copyable()
 // =============================================================================
 
 /// @brief ppool works with small types (uint8_t) — slot is padded to granule size.
-static bool test_i199_small_type()
+TEST_CASE( "I199-Q: small type (uint8_t)", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<std::uint8_t>> pool = TestMgr::create_typed<TestMgr::ppool<std::uint8_t>>();
     pool->set_objects_per_chunk( 8 );
 
     std::uint8_t* a = pool->allocate();
-    PMM_TEST( a != nullptr );
+    REQUIRE( a != nullptr );
     *a = 0xAB;
 
     std::uint8_t* b = pool->allocate();
-    PMM_TEST( b != nullptr );
+    REQUIRE( b != nullptr );
     *b = 0xCD;
 
-    PMM_TEST( *a == 0xAB );
-    PMM_TEST( *b == 0xCD );
-    PMM_TEST( a != b );
+    REQUIRE( *a == 0xAB );
+    REQUIRE( *b == 0xCD );
+    REQUIRE( a != b );
 
     pool->deallocate( a );
     pool->deallocate( b );
     pool->free_all();
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -679,52 +632,22 @@ static bool test_i199_small_type()
 // =============================================================================
 
 /// @brief free_all() on an empty pool is a no-op.
-static bool test_i199_free_all_empty()
+TEST_CASE( "I199-R: free_all on empty pool", "[test_issue199_ppool]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pptr<TestMgr::ppool<int>> pool = TestMgr::create_typed<TestMgr::ppool<int>>();
 
     // free_all on empty pool should not crash.
     pool->free_all();
-    PMM_TEST( pool->allocated_count() == 0 );
-    PMM_TEST( pool->total_capacity() == 0 );
+    REQUIRE( pool->allocated_count() == 0 );
+    REQUIRE( pool->total_capacity() == 0 );
 
     TestMgr::destroy_typed( pool );
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
 // Main — run all tests
 // =============================================================================
-
-int main()
-{
-    std::cout << "[Issue #199] ppool — persistent object pool (Phase 3.6)\n";
-
-    bool all_passed = true;
-
-    PMM_RUN( "I199-A: basic alloc/dealloc", test_i199_basic_alloc_dealloc );
-    PMM_RUN( "I199-B: slot reuse", test_i199_slot_reuse );
-    PMM_RUN( "I199-C: multiple allocations", test_i199_multiple_allocs );
-    PMM_RUN( "I199-D: chunk growth", test_i199_chunk_growth );
-    PMM_RUN( "I199-E: free_all", test_i199_free_all );
-    PMM_RUN( "I199-F: statistics", test_i199_statistics );
-    PMM_RUN( "I199-G: set_objects_per_chunk", test_i199_set_objects_per_chunk );
-    PMM_RUN( "I199-H: struct type", test_i199_struct_type );
-    PMM_RUN( "I199-I: large type (multi-granule)", test_i199_large_type );
-    PMM_RUN( "I199-J: manager alias", test_i199_manager_alias );
-    PMM_RUN( "I199-K: stress (1000 objects)", test_i199_stress );
-    PMM_RUN( "I199-L: interleaved alloc/dealloc", test_i199_interleaved );
-    PMM_RUN( "I199-M: reuse after free_all", test_i199_reuse_after_free );
-    PMM_RUN( "I199-N: deallocate nullptr", test_i199_dealloc_nullptr );
-    PMM_RUN( "I199-O: zero-initialization", test_i199_zero_init );
-    PMM_RUN( "I199-P: trivially copyable", test_i199_trivially_copyable );
-    PMM_RUN( "I199-Q: small type (uint8_t)", test_i199_small_type );
-    PMM_RUN( "I199-R: free_all on empty pool", test_i199_free_all_empty );
-
-    std::cout << "\n" << ( all_passed ? "All ppool tests PASSED." : "Some ppool tests FAILED!" ) << "\n";
-    return all_passed ? EXIT_SUCCESS : EXIT_FAILURE;
-}

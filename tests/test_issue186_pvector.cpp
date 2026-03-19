@@ -38,40 +38,14 @@
 #include "pmm/persist_memory_manager.h"
 #include "pmm/pvector.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
-#include <iostream>
+
 #include <string>
 #include <vector>
 
 // ─── Test macros ──────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // ─── Manager type alias for tests ────────────────────────────────────────────
 
@@ -82,67 +56,64 @@ using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 186>;
 // =============================================================================
 
 /// @brief push_back() returns non-null pptr; at(0) returns the same value.
-static bool test_i186_push_back_basic()
+TEST_CASE( "    push_back single element", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     auto                  p = vec.push_back( 42 );
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     auto found = vec.at( 0 );
-    PMM_TEST( !found.is_null() );
-    PMM_TEST( found == p );
+    REQUIRE( !found.is_null() );
+    REQUIRE( found == p );
 
     const auto* node = found.resolve();
-    PMM_TEST( node != nullptr );
-    PMM_TEST( node->value == 42 );
+    REQUIRE( node != nullptr );
+    REQUIRE( node->value == 42 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief push_back() with multiple elements.
-static bool test_i186_push_back_multiple()
+TEST_CASE( "    push_back multiple elements", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     auto                  p1 = vec.push_back( 10 );
     auto                  p2 = vec.push_back( 20 );
     auto                  p3 = vec.push_back( 30 );
 
-    PMM_TEST( !p1.is_null() && !p2.is_null() && !p3.is_null() );
-    PMM_TEST( p1 != p2 && p2 != p3 && p1 != p3 );
+    REQUIRE( ( !p1.is_null() && !p2.is_null() && !p3.is_null() ) );
+    REQUIRE( ( p1 != p2 && p2 != p3 && p1 != p3 ) );
 
     // Check values via at()
-    PMM_TEST( vec.at( 0 )->value == 10 );
-    PMM_TEST( vec.at( 1 )->value == 20 );
-    PMM_TEST( vec.at( 2 )->value == 30 );
+    REQUIRE( vec.at( 0 )->value == 10 );
+    REQUIRE( vec.at( 1 )->value == 20 );
+    REQUIRE( vec.at( 2 )->value == 30 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief at() returns null pptr for out of range index.
-static bool test_i186_at_out_of_range()
+TEST_CASE( "    at returns null for out of range", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     vec.push_back( 42 );
 
     auto not_found = vec.at( 1 );
-    PMM_TEST( not_found.is_null() );
+    REQUIRE( not_found.is_null() );
 
     auto also_not_found = vec.at( 100 );
-    PMM_TEST( also_not_found.is_null() );
+    REQUIRE( also_not_found.is_null() );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -150,25 +121,24 @@ static bool test_i186_at_out_of_range()
 // =============================================================================
 
 /// @brief size() returns correct count after push_back operations.
-static bool test_i186_size()
+TEST_CASE( "    size() returns correct count", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
-    PMM_TEST( vec.size() == 0 );
+    REQUIRE( vec.size() == 0 );
 
     vec.push_back( 1 );
-    PMM_TEST( vec.size() == 1 );
+    REQUIRE( vec.size() == 1 );
 
     vec.push_back( 2 );
-    PMM_TEST( vec.size() == 2 );
+    REQUIRE( vec.size() == 2 );
 
     vec.push_back( 3 );
-    PMM_TEST( vec.size() == 3 );
+    REQUIRE( vec.size() == 3 );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -176,19 +146,18 @@ static bool test_i186_size()
 // =============================================================================
 
 /// @brief empty() returns true for new vector, false after push_back.
-static bool test_i186_empty()
+TEST_CASE( "    empty() returns correct state", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
-    PMM_TEST( vec.empty() );
+    REQUIRE( vec.empty() );
 
     vec.push_back( 1 );
-    PMM_TEST( !vec.empty() );
+    REQUIRE( !vec.empty() );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -196,31 +165,30 @@ static bool test_i186_empty()
 // =============================================================================
 
 /// @brief front() returns first element, back() returns last element.
-static bool test_i186_front_back()
+TEST_CASE( "    front() and back() return correct elements", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
 
     // Empty vector
-    PMM_TEST( vec.front().is_null() );
-    PMM_TEST( vec.back().is_null() );
+    REQUIRE( vec.front().is_null() );
+    REQUIRE( vec.back().is_null() );
 
     vec.push_back( 10 );
-    PMM_TEST( vec.front()->value == 10 );
-    PMM_TEST( vec.back()->value == 10 );
+    REQUIRE( vec.front()->value == 10 );
+    REQUIRE( vec.back()->value == 10 );
 
     vec.push_back( 20 );
-    PMM_TEST( vec.front()->value == 10 );
-    PMM_TEST( vec.back()->value == 20 );
+    REQUIRE( vec.front()->value == 10 );
+    REQUIRE( vec.back()->value == 20 );
 
     vec.push_back( 30 );
-    PMM_TEST( vec.front()->value == 10 );
-    PMM_TEST( vec.back()->value == 30 );
+    REQUIRE( vec.front()->value == 10 );
+    REQUIRE( vec.back()->value == 30 );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -228,36 +196,35 @@ static bool test_i186_front_back()
 // =============================================================================
 
 /// @brief pop_back() removes the last element.
-static bool test_i186_pop_back()
+TEST_CASE( "    pop_back() removes last element", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     vec.push_back( 10 );
     vec.push_back( 20 );
     vec.push_back( 30 );
 
-    PMM_TEST( vec.size() == 3 );
-    PMM_TEST( vec.back()->value == 30 );
+    REQUIRE( vec.size() == 3 );
+    REQUIRE( vec.back()->value == 30 );
 
-    PMM_TEST( vec.pop_back() == true );
-    PMM_TEST( vec.size() == 2 );
-    PMM_TEST( vec.back()->value == 20 );
+    REQUIRE( vec.pop_back() == true );
+    REQUIRE( vec.size() == 2 );
+    REQUIRE( vec.back()->value == 20 );
 
-    PMM_TEST( vec.pop_back() == true );
-    PMM_TEST( vec.size() == 1 );
-    PMM_TEST( vec.back()->value == 10 );
+    REQUIRE( vec.pop_back() == true );
+    REQUIRE( vec.size() == 1 );
+    REQUIRE( vec.back()->value == 10 );
 
-    PMM_TEST( vec.pop_back() == true );
-    PMM_TEST( vec.size() == 0 );
-    PMM_TEST( vec.empty() );
+    REQUIRE( vec.pop_back() == true );
+    REQUIRE( vec.size() == 0 );
+    REQUIRE( vec.empty() );
 
     // pop_back on empty vector returns false
-    PMM_TEST( vec.pop_back() == false );
+    REQUIRE( vec.pop_back() == false );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -265,27 +232,26 @@ static bool test_i186_pop_back()
 // =============================================================================
 
 /// @brief clear() removes all elements.
-static bool test_i186_clear()
+TEST_CASE( "    clear() removes all elements", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     vec.push_back( 10 );
     vec.push_back( 20 );
     vec.push_back( 30 );
 
-    PMM_TEST( vec.size() == 3 );
-    PMM_TEST( !vec.empty() );
+    REQUIRE( vec.size() == 3 );
+    REQUIRE( !vec.empty() );
 
     vec.clear();
-    PMM_TEST( vec.size() == 0 );
-    PMM_TEST( vec.empty() );
-    PMM_TEST( vec.front().is_null() );
-    PMM_TEST( vec.back().is_null() );
+    REQUIRE( vec.size() == 0 );
+    REQUIRE( vec.empty() );
+    REQUIRE( vec.front().is_null() );
+    REQUIRE( vec.back().is_null() );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -293,27 +259,26 @@ static bool test_i186_clear()
 // =============================================================================
 
 /// @brief reset() clears indices but does not free memory.
-static bool test_i186_reset()
+TEST_CASE( "    reset() clears indices for test isolation", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     vec.push_back( 1 );
-    PMM_TEST( !vec.empty() );
+    REQUIRE( !vec.empty() );
 
     vec.reset();
-    PMM_TEST( vec.empty() );
-    PMM_TEST( vec.size() == 0 );
-    PMM_TEST( vec.at( 0 ).is_null() );
+    REQUIRE( vec.empty() );
+    REQUIRE( vec.size() == 0 );
+    REQUIRE( vec.at( 0 ).is_null() );
 
     // Can push_back after reset
     vec.push_back( 2 );
-    PMM_TEST( !vec.empty() );
-    PMM_TEST( vec.at( 0 )->value == 2 );
+    REQUIRE( !vec.empty() );
+    REQUIRE( vec.at( 0 )->value == 2 );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -321,23 +286,22 @@ static bool test_i186_reset()
 // =============================================================================
 
 /// @brief pvector node blocks are NOT permanently locked.
-static bool test_i186_node_block_not_permanently_locked()
+TEST_CASE( "    pvector node block NOT permanently locked", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     auto                  p = vec.push_back( 42 );
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     auto* node = p.resolve();
-    PMM_TEST( node != nullptr );
+    REQUIRE( node != nullptr );
 
     // pvector node blocks are NOT permanently locked
-    PMM_TEST( TestMgr::is_permanently_locked( node ) == false );
+    REQUIRE( TestMgr::is_permanently_locked( node ) == false );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -345,10 +309,10 @@ static bool test_i186_node_block_not_permanently_locked()
 // =============================================================================
 
 /// @brief Iterator traverses all elements in order.
-static bool test_i186_iterator()
+TEST_CASE( "    iterator traverses all elements", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     vec.push_back( 10 );
@@ -359,30 +323,28 @@ static bool test_i186_iterator()
     for ( auto it = vec.begin(); it != vec.end(); ++it )
     {
         auto p = *it;
-        PMM_TEST( !p.is_null() );
+        REQUIRE( !p.is_null() );
         values.push_back( p->value );
     }
 
-    PMM_TEST( values.size() == 3 );
-    PMM_TEST( values[0] == 10 );
-    PMM_TEST( values[1] == 20 );
-    PMM_TEST( values[2] == 30 );
+    REQUIRE( values.size() == 3 );
+    REQUIRE( values[0] == 10 );
+    REQUIRE( values[1] == 20 );
+    REQUIRE( values[2] == 30 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief Empty vector iterator: begin() == end().
-static bool test_i186_iterator_empty()
+TEST_CASE( "    empty vector iterator", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<int> vec;
-    PMM_TEST( vec.begin() == vec.end() );
+    REQUIRE( vec.begin() == vec.end() );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -390,12 +352,11 @@ static bool test_i186_iterator_empty()
 // =============================================================================
 
 /// @brief pvector_node<T> has the expected layout (contains value).
-static bool test_i186_layout()
+TEST_CASE( "    pvector_node<int> size check", "[test_issue186_pvector]" )
 {
     using node_t = pmm::pvector_node<int>;
     // node must contain value field
-    PMM_TEST( sizeof( node_t ) >= sizeof( int ) );
-    return true;
+    REQUIRE( sizeof( node_t ) >= sizeof( int ) );
 }
 
 // =============================================================================
@@ -403,7 +364,7 @@ static bool test_i186_layout()
 // =============================================================================
 
 /// @brief Mgr::pvector<int> is the same type as pmm::pvector<int, Mgr>.
-static bool test_i186_alias()
+TEST_CASE( "    Mgr::pvector<T> is same type as pmm::pvector<T,Mgr>", "[test_issue186_pvector]" )
 {
     using DirectVec = pmm::pvector<int, TestMgr>;
     using AliasVec  = TestMgr::pvector<int>;
@@ -412,14 +373,13 @@ static bool test_i186_alias()
     static_assert( std::is_same<DirectVec, AliasVec>::value, "Mgr::pvector alias type mismatch" );
 
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     AliasVec vec;
     vec.push_back( 7 );
-    PMM_TEST( vec.at( 0 )->value == 7 );
+    REQUIRE( vec.at( 0 )->value == 7 );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -427,10 +387,10 @@ static bool test_i186_alias()
 // =============================================================================
 
 /// @brief Insert 100 elements and verify all are accessible correctly.
-static bool test_i186_stress_many_elements()
+TEST_CASE( "    100 elements with access by index", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 512 * 1024 ) );
+    REQUIRE( TestMgr::create( 512 * 1024 ) );
 
     TestMgr::pvector<int> vec;
 
@@ -438,20 +398,19 @@ static bool test_i186_stress_many_elements()
     for ( int i = 0; i < N; i++ )
         vec.push_back( i * 10 );
 
-    PMM_TEST( vec.size() == static_cast<std::size_t>( N ) );
+    REQUIRE( vec.size() == static_cast<std::size_t>( N ) );
 
     for ( int i = 0; i < N; i++ )
     {
         auto p = vec.at( static_cast<std::size_t>( i ) );
-        PMM_TEST( !p.is_null() );
-        PMM_TEST( p->value == i * 10 );
+        REQUIRE( !p.is_null() );
+        REQUIRE( p->value == i * 10 );
     }
 
     // Out of range
-    PMM_TEST( vec.at( N ).is_null() );
+    REQUIRE( vec.at( N ).is_null() );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -465,10 +424,10 @@ struct Point186
 };
 
 /// @brief pvector works with struct types.
-static bool test_i186_struct_type()
+TEST_CASE( "    pvector works with struct types", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pvector<Point186> vec;
 
@@ -480,19 +439,18 @@ static bool test_i186_struct_type()
     vec.push_back( p2 );
     vec.push_back( p3 );
 
-    PMM_TEST( vec.size() == 3 );
+    REQUIRE( vec.size() == 3 );
 
     auto n0 = vec.at( 0 );
     auto n1 = vec.at( 1 );
     auto n2 = vec.at( 2 );
 
-    PMM_TEST( !n0.is_null() && !n1.is_null() && !n2.is_null() );
-    PMM_TEST( n0->value.x == 1 && n0->value.y == 2 );
-    PMM_TEST( n1->value.x == 3 && n1->value.y == 4 );
-    PMM_TEST( n2->value.x == 5 && n2->value.y == 6 );
+    REQUIRE( ( !n0.is_null() && !n1.is_null() && !n2.is_null() ) );
+    REQUIRE( ( n0->value.x == 1 && n0->value.y == 2 ) );
+    REQUIRE( ( n1->value.x == 3 && n1->value.y == 4 ) );
+    REQUIRE( ( n2->value.x == 5 && n2->value.y == 6 ) );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -540,10 +498,10 @@ static int verify_avl_node( TestMgr::pvector<int>::node_pptr p )
 }
 
 /// @brief AVL tree structure: weight fields correct, balanced, height is O(log n).
-static bool test_i186_avl_structure()
+TEST_CASE( "    AVL invariants: weight correct, height O(log n)", "[test_issue186_pvector]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 512 * 1024 ) );
+    REQUIRE( TestMgr::create( 512 * 1024 ) );
 
     TestMgr::pvector<int> vec;
     const int             N = 100;
@@ -551,103 +509,38 @@ static bool test_i186_avl_structure()
     for ( int i = 0; i < N; i++ )
         vec.push_back( i );
 
-    PMM_TEST( static_cast<int>( vec.size() ) == N );
+    REQUIRE( static_cast<int>( vec.size() ) == N );
 
     // Проверяем структуру AVL-дерева.
     TestMgr::pvector<int>::node_pptr root( vec._root_idx );
     int                              total = verify_avl_node( root );
-    PMM_TEST( total == N );
+    REQUIRE( total == N );
 
     // Высота дерева должна быть O(log n): не более 2 * ceil(log2(N+1)).
     int height         = static_cast<int>( root.tree_node().get_height() );
     int max_avl_height = 2 * 8; // log2(100) ~ 6.6, AVL допускает ~1.44*log2(n); 16 — с запасом
-    PMM_TEST( height <= max_avl_height );
+    REQUIRE( height <= max_avl_height );
 
     // Проверяем корректность at() для всех элементов.
     for ( int i = 0; i < N; i++ )
     {
         auto p = vec.at( static_cast<std::size_t>( i ) );
-        PMM_TEST( !p.is_null() );
-        PMM_TEST( p->value == i );
+        REQUIRE( !p.is_null() );
+        REQUIRE( p->value == i );
     }
 
     // Проверяем структуру после нескольких pop_back.
     for ( int i = 0; i < 30; i++ )
         vec.pop_back();
 
-    PMM_TEST( static_cast<int>( vec.size() ) == N - 30 );
+    REQUIRE( static_cast<int>( vec.size() ) == N - 30 );
     TestMgr::pvector<int>::node_pptr root2( vec._root_idx );
     int                              total2 = verify_avl_node( root2 );
-    PMM_TEST( total2 == N - 30 );
+    REQUIRE( total2 == N - 30 );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    bool all_passed = true;
-
-    std::cout << "[Issue #186: pvector<T> — persistent vector]\n";
-
-    std::cout << "  I186-A: Basic push_back and at\n";
-    PMM_RUN( "    push_back single element", test_i186_push_back_basic );
-    PMM_RUN( "    push_back multiple elements", test_i186_push_back_multiple );
-    PMM_RUN( "    at returns null for out of range", test_i186_at_out_of_range );
-
-    std::cout << "  I186-B: size()\n";
-    PMM_RUN( "    size() returns correct count", test_i186_size );
-
-    std::cout << "  I186-C: empty()\n";
-    PMM_RUN( "    empty() returns correct state", test_i186_empty );
-
-    std::cout << "  I186-D: front() and back()\n";
-    PMM_RUN( "    front() and back() return correct elements", test_i186_front_back );
-
-    std::cout << "  I186-E: pop_back()\n";
-    PMM_RUN( "    pop_back() removes last element", test_i186_pop_back );
-
-    std::cout << "  I186-F: clear()\n";
-    PMM_RUN( "    clear() removes all elements", test_i186_clear );
-
-    std::cout << "  I186-G: reset()\n";
-    PMM_RUN( "    reset() clears indices for test isolation", test_i186_reset );
-
-    std::cout << "  I186-H: Block locking\n";
-    PMM_RUN( "    pvector node block NOT permanently locked", test_i186_node_block_not_permanently_locked );
-
-    std::cout << "  I186-I: Iterator\n";
-    PMM_RUN( "    iterator traverses all elements", test_i186_iterator );
-    PMM_RUN( "    empty vector iterator", test_i186_iterator_empty );
-
-    std::cout << "  I186-J: pvector layout\n";
-    PMM_RUN( "    pvector_node<int> size check", test_i186_layout );
-
-    std::cout << "  I186-K: Mgr::pvector alias\n";
-    PMM_RUN( "    Mgr::pvector<T> is same type as pmm::pvector<T,Mgr>", test_i186_alias );
-
-    std::cout << "  I186-L: Stress test\n";
-    PMM_RUN( "    100 elements with access by index", test_i186_stress_many_elements );
-
-    std::cout << "  I186-M: Struct type\n";
-    PMM_RUN( "    pvector works with struct types", test_i186_struct_type );
-
-    std::cout << "  I186-N: AVL tree structure\n";
-    PMM_RUN( "    AVL invariants: weight correct, height O(log n)", test_i186_avl_structure );
-
-    std::cout << "\n";
-    if ( all_passed )
-    {
-        std::cout << "All Issue #186 tests PASSED.\n";
-        return EXIT_SUCCESS;
-    }
-    else
-    {
-        std::cout << "Some Issue #186 tests FAILED.\n";
-        return EXIT_FAILURE;
-    }
-}

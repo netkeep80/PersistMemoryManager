@@ -21,39 +21,13 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
-#include <cstdlib>
 #include <cstring>
-#include <iostream>
+
 #include <type_traits>
 
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // =============================================================================
 // Phase 3 tests: Block
@@ -62,7 +36,7 @@
 // ─── P3-A: Block — наследование и алиасы ─────────────────────────────────────
 
 /// @brief Block<DefaultAddressTraits> — наследует LinkedListNode и TreeNode.
-static bool test_p3_block_inherits_nodes()
+TEST_CASE( "P3-A1: Block<Default> inherits TreeNode, has prev/next fields (Issue #138)", "[test_issue87_phase3]" )
 {
     using A     = pmm::DefaultAddressTraits;
     using Block = pmm::Block<A>;
@@ -80,13 +54,11 @@ static bool test_p3_block_inherits_nodes()
 
     // Block size is still 32 bytes: TreeNode(24) + prev_offset(4) + next_offset(4)
     static_assert( sizeof( Block ) == 32, "Block<Default> must still be 32 bytes (Issue #138)" );
-
-    return true;
 }
 
 /// @brief Block<DefaultAddressTraits> — поля weight и root_offset имеют тип index_type (через BlockStateBase).
 /// Phase 3 v0.4: Fields are protected (Issue #120); types verified via BlockStateBase::index_type.
-static bool test_p3_block_treenode_field_types()
+TEST_CASE( "P3-A2: Block<Default> index_type is uint32_t (Issue #120)", "[test_issue87_phase3]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -94,14 +66,12 @@ static bool test_p3_block_treenode_field_types()
     // index_type == uint32_t (fields weight and root_offset are of this type via TreeNode<A>)
     static_assert( std::is_same<BlockState::index_type, std::uint32_t>::value,
                    "BlockStateBase::index_type must be uint32_t" );
-
-    return true;
 }
 
 // ─── P3-B: Block — размеры ────────────────────────────────────────────────────
 
 /// @brief sizeof(Block<DefaultAddressTraits>) == 32 байта (Issue #112).
-static bool test_p3_block_default_size_equals_blockheader()
+TEST_CASE( "P3-B1: Block<Default> size == 32 bytes (Issue #112)", "[test_issue87_phase3]" )
 {
     using A     = pmm::DefaultAddressTraits;
     using Block = pmm::Block<A>;
@@ -109,13 +79,11 @@ static bool test_p3_block_default_size_equals_blockheader()
     // Block<DefaultAddressTraits> must be exactly 32 bytes (Issue #112: BlockHeader removed)
     static_assert( sizeof( Block ) == 32, "Block<DefaultAddressTraits> must be 32 bytes" );
     static_assert( sizeof( Block ) % pmm::kGranuleSize == 0, "Block<DefaultAddressTraits> must be granule-aligned" );
-
-    return true;
 }
 
 /// @brief Block работает с разными AddressTraits (8/16/32/64-bit).
 /// Phase 3 v0.4: weight+root_offset теперь в TreeNode, собственных полей у Block нет.
-static bool test_p3_block_various_traits()
+TEST_CASE( "P3-B2: Block with various AddressTraits (8/16/32/64-bit)", "[test_issue87_phase3]" )
 {
     // 8-bit:
     //   TreeNode<Tiny> = 3*1 + [1 pad] + 2 + 2 + 1 + 1 = 10 bytes (int16_t alignment)
@@ -148,14 +116,12 @@ static bool test_p3_block_various_traits()
     using Block64 = pmm::Block<pmm::LargeAddressTraits>;
     static_assert( std::is_same<Block64::index_type, std::uint64_t>::value );
     static_assert( sizeof( Block64 ) >= 60, "Block<Large> must be at least 60 bytes" );
-
-    return true;
 }
 
 // ─── P3-C: Block — поля доступны через BlockStateBase API ────────────────────
 
 /// @brief Поля LinkedListNode доступны через BlockStateBase API (Issue #120).
-static bool test_p3_block_list_node_fields()
+TEST_CASE( "P3-C1: Block prev/next fields via BlockStateBase API (Issue #138)", "[test_issue87_phase3]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -165,20 +131,18 @@ static bool test_p3_block_list_node_fields()
     // Инициализация через BlockStateBase::init_fields
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0, 0 );
 
-    PMM_TEST( BlockState::get_prev_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_next_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_prev_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_next_offset( buf ) == pmm::detail::kNoBlock );
 
     // Изменение через статические сеттеры
     BlockState::set_prev_offset_of( buf, 5u );
     BlockState::set_next_offset_of( buf, 10u );
-    PMM_TEST( BlockState::get_prev_offset( buf ) == 5u );
-    PMM_TEST( BlockState::get_next_offset( buf ) == 10u );
-
-    return true;
+    REQUIRE( BlockState::get_prev_offset( buf ) == 5u );
+    REQUIRE( BlockState::get_next_offset( buf ) == 10u );
 }
 
 /// @brief Поля TreeNode (включая weight и root_offset) доступны через BlockStateBase API (Issue #120).
-static bool test_p3_block_tree_node_fields()
+TEST_CASE( "P3-C2: TreeNode fields via BlockStateBase API", "[test_issue87_phase3]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -188,12 +152,12 @@ static bool test_p3_block_tree_node_fields()
     // Инициализация через BlockStateBase::init_fields
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0u, 0u );
 
-    PMM_TEST( BlockState::get_left_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_right_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_parent_offset( buf ) == pmm::detail::kNoBlock );
-    PMM_TEST( BlockState::get_avl_height( buf ) == 0 );
-    PMM_TEST( BlockState::get_weight( buf ) == 0u );
-    PMM_TEST( BlockState::get_root_offset( buf ) == 0u );
+    REQUIRE( BlockState::get_left_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_right_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_parent_offset( buf ) == pmm::detail::kNoBlock );
+    REQUIRE( BlockState::get_avl_height( buf ) == 0 );
+    REQUIRE( BlockState::get_weight( buf ) == 0u );
+    REQUIRE( BlockState::get_root_offset( buf ) == 0u );
 
     // Изменение через статические сеттеры
     BlockState::set_left_offset_of( buf, 3u );
@@ -202,21 +166,19 @@ static bool test_p3_block_tree_node_fields()
     BlockState::set_avl_height_of( buf, 2 );
     BlockState::set_weight_of( buf, 15u );
     BlockState::set_root_offset_of( buf, 0u ); // свободный
-    PMM_TEST( BlockState::get_left_offset( buf ) == 3u );
-    PMM_TEST( BlockState::get_right_offset( buf ) == 7u );
-    PMM_TEST( BlockState::get_parent_offset( buf ) == 1u );
-    PMM_TEST( BlockState::get_avl_height( buf ) == 2 );
-    PMM_TEST( BlockState::get_weight( buf ) == 15u );
-    PMM_TEST( BlockState::get_root_offset( buf ) == 0u );
-
-    return true;
+    REQUIRE( BlockState::get_left_offset( buf ) == 3u );
+    REQUIRE( BlockState::get_right_offset( buf ) == 7u );
+    REQUIRE( BlockState::get_parent_offset( buf ) == 1u );
+    REQUIRE( BlockState::get_avl_height( buf ) == 2 );
+    REQUIRE( BlockState::get_weight( buf ) == 15u );
+    REQUIRE( BlockState::get_root_offset( buf ) == 0u );
 }
 
 // ─── P3-D: Block — собственные поля ──────────────────────────────────────────
 
 /// @brief Поля weight и root_offset (из TreeNode) инициализируются корректно через BlockStateBase API.
 /// Phase 3 v0.4: Fields are protected (Issue #120); use BlockStateBase static API.
-static bool test_p3_block_treenode_fields_runtime()
+TEST_CASE( "P3-D1: Block weight+root_offset (from TreeNode) runtime via API", "[test_issue87_phase3]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
@@ -225,27 +187,25 @@ static bool test_p3_block_treenode_fields_runtime()
 
     // Свободный блок: weight == 0, root_offset == 0
     BlockState::init_fields( buf, A::no_block, A::no_block, 0, 0u, 0u );
-    PMM_TEST( BlockState::get_weight( buf ) == 0u );
-    PMM_TEST( BlockState::get_root_offset( buf ) == 0u );
+    REQUIRE( BlockState::get_weight( buf ) == 0u );
+    REQUIRE( BlockState::get_root_offset( buf ) == 0u );
 
     // Блок с весом
     BlockState::set_weight_of( buf, 10u );
     BlockState::set_root_offset_of( buf, 0u );
-    PMM_TEST( BlockState::get_weight( buf ) == 10u );
-    PMM_TEST( BlockState::get_root_offset( buf ) == 0u );
+    REQUIRE( BlockState::get_weight( buf ) == 10u );
+    REQUIRE( BlockState::get_root_offset( buf ) == 0u );
 
     // Занятый блок: weight > 0, root_offset == собственный индекс
     alignas( pmm::Block<A> ) std::uint8_t buf2[sizeof( pmm::Block<A> )] = {};
     BlockState::init_fields( buf2, A::no_block, A::no_block, 0, 42u, 20u );
-    PMM_TEST( BlockState::get_weight( buf2 ) == 42u );
-    PMM_TEST( BlockState::get_root_offset( buf2 ) == 20u );
-
-    return true;
+    REQUIRE( BlockState::get_weight( buf2 ) == 42u );
+    REQUIRE( BlockState::get_root_offset( buf2 ) == 20u );
 }
 
 /// @brief Block<AddressTraits<uint8_t, 8>> с 8-bit полями weight и root_offset (через BlockStateBase API).
 /// Phase 3 v0.4: Fields are protected (Issue #120); use BlockStateBase static API.
-static bool test_p3_block_tiny_traits()
+TEST_CASE( "P3-D2: Block<AddressTraits<uint8_t, 8>> 8-bit fields via BlockStateBase API", "[test_issue87_phase3]" )
 {
     using A          = pmm::AddressTraits<std::uint8_t, 8>;
     using BlockState = pmm::BlockStateBase<A>;
@@ -257,42 +217,38 @@ static bool test_p3_block_tiny_traits()
     // Инициализация через BlockStateBase::init_fields
     BlockState::init_fields( buf, A::no_block, 0u, 0, 0u, 0u );
 
-    PMM_TEST( BlockState::get_prev_offset( buf ) == 0xFFU );
-    PMM_TEST( BlockState::get_next_offset( buf ) == 0u );
-    PMM_TEST( BlockState::get_weight( buf ) == 0u );
-    PMM_TEST( BlockState::get_root_offset( buf ) == 0u );
+    REQUIRE( BlockState::get_prev_offset( buf ) == 0xFFU );
+    REQUIRE( BlockState::get_next_offset( buf ) == 0u );
+    REQUIRE( BlockState::get_weight( buf ) == 0u );
+    REQUIRE( BlockState::get_root_offset( buf ) == 0u );
 
     // Установка веса
     BlockState::set_weight_of( buf, 5u );
-    PMM_TEST( BlockState::get_weight( buf ) == 5u );
+    REQUIRE( BlockState::get_weight( buf ) == 5u );
 
     // Занятый tiny-блок
     BlockState::set_weight_of( buf, 3u );
     BlockState::set_root_offset_of( buf, 10u );
-    PMM_TEST( BlockState::get_weight( buf ) == 3u );
-    PMM_TEST( BlockState::get_root_offset( buf ) == 10u );
-
-    return true;
+    REQUIRE( BlockState::get_weight( buf ) == 3u );
+    REQUIRE( BlockState::get_root_offset( buf ) == 10u );
 }
 
 // ─── P3-E: Block — типы полей (Issue #112, #120) ─────────────────────────────
 
 /// @brief Типы полей Block<Default>: index_type == uint32_t (Issue #112, #120).
-static bool test_p3_block_weight_type_matches_blockheader()
+TEST_CASE( "P3-E1: Block index_type is uint32_t (Issue #112, #120)", "[test_issue87_phase3]" )
 {
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
     // index_type must be uint32_t (fields weight and root_offset are of this type via TreeNode<A>)
     static_assert( std::is_same<BlockState::index_type, std::uint32_t>::value, "index_type must be uint32_t" );
-
-    return true;
 }
 
 // ─── P3-F: Block layout offsets (Issue #120) ─────────────────────────────────
 
 /// @brief Смещения полей Block<Default> (через BlockStateBase::kOffset*) корректны (Issue #120).
-static bool test_p3_block_layout_offsets()
+TEST_CASE( "P3-F1: Block<Default> layout offsets via BlockStateBase::kOffset*", "[test_issue87_phase3]" )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
 
@@ -310,42 +266,8 @@ static bool test_p3_block_layout_offsets()
     // Issue #138: prev/next come after TreeNode (sizeof(TreeNode<Default>) = 24)
     static_assert( BlockState::kOffsetPrevOffset == 24 );
     static_assert( BlockState::kOffsetNextOffset == 28 );
-
-    return true;
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    std::cout << "=== test_issue87_phase3 (Phase 3: Block<AddressTraits>, Issue #120) ===\n\n";
-    bool all_passed = true;
-
-    std::cout << "--- P3-A: Block — inheritance and aliases ---\n";
-    PMM_RUN( "P3-A1: Block<Default> inherits TreeNode, has prev/next fields (Issue #138)",
-             test_p3_block_inherits_nodes );
-    PMM_RUN( "P3-A2: Block<Default> index_type is uint32_t (Issue #120)", test_p3_block_treenode_field_types );
-
-    std::cout << "\n--- P3-B: Block — sizes ---\n";
-    PMM_RUN( "P3-B1: Block<Default> size == 32 bytes (Issue #112)", test_p3_block_default_size_equals_blockheader );
-    PMM_RUN( "P3-B2: Block with various AddressTraits (8/16/32/64-bit)", test_p3_block_various_traits );
-
-    std::cout << "\n--- P3-C: Block — fields accessible via BlockStateBase API (Issue #120) ---\n";
-    PMM_RUN( "P3-C1: Block prev/next fields via BlockStateBase API (Issue #138)", test_p3_block_list_node_fields );
-    PMM_RUN( "P3-C2: TreeNode fields via BlockStateBase API", test_p3_block_tree_node_fields );
-
-    std::cout << "\n--- P3-D: Block — TreeNode fields (weight+root_offset) ---\n";
-    PMM_RUN( "P3-D1: Block weight+root_offset (from TreeNode) runtime via API", test_p3_block_treenode_fields_runtime );
-    PMM_RUN( "P3-D2: Block<AddressTraits<uint8_t, 8>> 8-bit fields via BlockStateBase API", test_p3_block_tiny_traits );
-
-    std::cout << "\n--- P3-E: Block — field types (Issue #112, #120) ---\n";
-    PMM_RUN( "P3-E1: Block index_type is uint32_t (Issue #112, #120)", test_p3_block_weight_type_matches_blockheader );
-
-    std::cout << "\n--- P3-F: Block — layout offsets (Issue #120) ---\n";
-    PMM_RUN( "P3-F1: Block<Default> layout offsets via BlockStateBase::kOffset*", test_p3_block_layout_offsets );
-
-    std::cout << "\n" << ( all_passed ? "All tests PASSED\n" : "Some tests FAILED\n" );
-    return all_passed ? 0 : 1;
-}

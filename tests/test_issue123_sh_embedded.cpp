@@ -14,36 +14,30 @@
 
 #include "pmm_embedded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstring>
-#include <iostream>
 
-int main()
+TEST_CASE( "test_issue123_sh_embedded", "[test_issue123_sh_embedded]" )
 {
-    std::cout << "=== test_issue123_sh_embedded (pmm_embedded_heap.h) ===\n";
-
     using EMB = pmm::presets::EmbeddedHeap;
 
-    assert( !EMB::is_initialized() );
+    REQUIRE( !EMB::is_initialized() );
     bool created = EMB::create( 16 * 1024 );
-    assert( created );
-    assert( EMB::is_initialized() );
-    assert( EMB::total_size() >= 16 * 1024 );
+    REQUIRE( created );
+    REQUIRE( EMB::is_initialized() );
+    REQUIRE( EMB::total_size() >= 16 * 1024 );
 
     void* ptr = EMB::allocate( 128 );
-    assert( ptr != nullptr );
+    REQUIRE( ptr != nullptr );
     std::memset( ptr, 0xCC, 128 );
     EMB::deallocate( ptr );
 
     EMB::pptr<int> p = EMB::allocate_typed<int>();
-    assert( !p.is_null() );
+    REQUIRE( !p.is_null() );
     *p.resolve() = 99;
-    assert( *p.resolve() == 99 );
+    REQUIRE( *p.resolve() == 99 );
     EMB::deallocate_typed( p );
 
     EMB::destroy();
-    assert( !EMB::is_initialized() );
-
-    std::cout << "PASSED\n";
-    return 0;
+    REQUIRE( !EMB::is_initialized() );
 }

@@ -14,40 +14,14 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
-#include <iostream>
+
 #include <type_traits>
 
 // ─── Test macros ──────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // ─── #176-R1: prev_owns_memory and prev_base_ptr removed ─────────────────────
 
@@ -115,29 +89,28 @@ using M = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 176>;
 // ─── #176-R4: load() resets runtime fields ─────────────────────────────────────
 
 /// @brief After save/load round-trip, runtime-only fields are reset and manager is usable.
-static bool test_i176_load_resets_runtime_fields()
+TEST_CASE( "#176-R4: load() resets runtime fields (save/load round-trip)", "[test_issue176_manager_header]" )
 {
     const char* TEST_FILE = "test_issue176_load.dat";
 
     M::destroy();
-    PMM_TEST( M::create( 64 * 1024 ) );
+    REQUIRE( M::create( 64 * 1024 ) );
     auto p = M::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
-    PMM_TEST( pmm::save_manager<M>( TEST_FILE ) );
+    REQUIRE( pmm::save_manager<M>( TEST_FILE ) );
     M::destroy();
 
-    PMM_TEST( M::create( 64 * 1024 ) );
-    PMM_TEST( pmm::load_manager_from_file<M>( TEST_FILE ) );
-    PMM_TEST( M::is_initialized() );
+    REQUIRE( M::create( 64 * 1024 ) );
+    REQUIRE( pmm::load_manager_from_file<M>( TEST_FILE ) );
+    REQUIRE( M::is_initialized() );
 
     M::destroy();
     std::remove( TEST_FILE );
-    return true;
 }
 
 /// @brief ManagerHeader fields have correct types and sizes (compile-time checks).
-static bool test_i176_manager_header_field_types()
+TEST_CASE( "#176-R3: ManagerHeader field types are correct", "[test_issue176_manager_header]" )
 {
     static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::owns_memory ), bool>,
                    "owns_memory must be bool" );
@@ -147,48 +120,23 @@ static bool test_i176_manager_header_field_types()
                    "granule_size must be uint16_t" );
     static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::prev_total_size ), std::uint64_t>,
                    "prev_total_size must be uint64_t" );
-    return true;
 }
 
 /// @brief create() and basic allocation work correctly after field removal.
-static bool test_i176_basic_alloc_after_field_removal()
+TEST_CASE( "#176: basic alloc/dealloc after field removal", "[test_issue176_manager_header]" )
 {
     M::destroy();
-    PMM_TEST( M::create( 64 * 1024 ) );
-    PMM_TEST( M::is_initialized() );
+    REQUIRE( M::create( 64 * 1024 ) );
+    REQUIRE( M::is_initialized() );
 
     auto p = M::allocate_typed<int>();
-    PMM_TEST( !p.is_null() );
+    REQUIRE( !p.is_null() );
 
     int* ptr = M::resolve( p );
-    PMM_TEST( ptr != nullptr );
+    REQUIRE( ptr != nullptr );
     *ptr = 42;
-    PMM_TEST( *ptr == 42 );
+    REQUIRE( *ptr == 42 );
 
     M::deallocate_typed( p );
     M::destroy();
-    return true;
-}
-
-// ─── main ─────────────────────────────────────────────────────────────────────
-
-int main()
-{
-    std::cout << "Test suite: Issue #176 — remove prev_owns_memory and prev_base_ptr\n";
-    bool all_passed = true;
-
-    PMM_RUN( "#176-R4: load() resets runtime fields (save/load round-trip)", test_i176_load_resets_runtime_fields );
-    PMM_RUN( "#176-R3: ManagerHeader field types are correct", test_i176_manager_header_field_types );
-    PMM_RUN( "#176: basic alloc/dealloc after field removal", test_i176_basic_alloc_after_field_removal );
-
-    if ( all_passed )
-    {
-        std::cout << "All tests PASSED.\n";
-        return 0;
-    }
-    else
-    {
-        std::cout << "Some tests FAILED.\n";
-        return 1;
-    }
 }

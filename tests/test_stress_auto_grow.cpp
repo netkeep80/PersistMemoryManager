@@ -9,37 +9,12 @@
  */
 
 #include "pmm_single_threaded_heap.h"
+#include <catch2/catch_test_macros.hpp>
 
 #include <chrono>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <vector>
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 static auto now()
 {
@@ -76,17 +51,13 @@ struct Rng
 
 // Each test uses a unique InstanceId to ensure a fresh backend (no carryover from expand).
 
-static bool test_single_expand()
+TEST_CASE( "single expand", "[test_stress_auto_grow]" )
 {
     using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 700>;
 
     const std::size_t initial_size = 64UL * 1024;
 
-    if ( !MgrT::create( initial_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( MgrT::create( initial_size ) );
 
     const std::size_t                     block_size = 512;
     std::vector<MgrT::pptr<std::uint8_t>> ptrs;
@@ -117,8 +88,8 @@ static bool test_single_expand()
         }
     }
 
-    PMM_TEST( expand_count >= 1 );
-    PMM_TEST( MgrT::is_initialized() );
+    REQUIRE( expand_count >= 1 );
+    REQUIRE( MgrT::is_initialized() );
 
     bool data_ok = true;
     for ( auto& p : ptrs )
@@ -136,33 +107,28 @@ static bool test_single_expand()
         if ( !data_ok )
             break;
     }
-    PMM_TEST( data_ok );
+    REQUIRE( data_ok );
 
     for ( auto& p : ptrs )
         MgrT::deallocate_typed( p );
     ptrs.clear();
 
-    PMM_TEST( MgrT::is_initialized() );
-    PMM_TEST( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( MgrT::is_initialized() );
+    REQUIRE( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
     MgrT::destroy();
-    return true;
 }
 
-static bool test_multi_expand()
+TEST_CASE( "multi expand", "[test_stress_auto_grow]" )
 {
     using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 701>;
 
     const std::size_t initial_size = 16 * 1024; // start small
 
-    if ( !MgrT::create( initial_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( MgrT::create( initial_size ) );
 
     Rng rng( 7777 );
 
@@ -186,7 +152,7 @@ static bool test_multi_expand()
         {
             std::cerr << "  ERROR: allocate returned null at i=" << i << "\n";
             MgrT::destroy();
-            return false;
+            FAIL( "unexpected failure" );
         }
 
         std::memset( p.resolve(), static_cast<int>( i & 0xFF ), sz );
@@ -205,8 +171,8 @@ static bool test_multi_expand()
 
     std::cout << "    Allocated: " << ptrs.size() << " blocks, expand() called: " << expand_count << " times\n";
 
-    PMM_TEST( expand_count >= max_expands );
-    PMM_TEST( MgrT::is_initialized() );
+    REQUIRE( expand_count >= max_expands );
+    REQUIRE( MgrT::is_initialized() );
 
     bool data_ok = true;
     for ( int i = 0; i < static_cast<int>( ptrs.size() ); ++i )
@@ -225,33 +191,28 @@ static bool test_multi_expand()
         if ( !data_ok )
             break;
     }
-    PMM_TEST( data_ok );
+    REQUIRE( data_ok );
 
     for ( auto& p : ptrs )
         MgrT::deallocate_typed( p );
     ptrs.clear();
 
-    PMM_TEST( MgrT::is_initialized() );
-    PMM_TEST( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( MgrT::is_initialized() );
+    REQUIRE( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
     MgrT::destroy();
-    return true;
 }
 
-static bool test_expand_with_mixed_ops()
+TEST_CASE( "expand with mixed ops", "[test_stress_auto_grow]" )
 {
     using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 702>;
 
     const std::size_t initial_size = 32UL * 1024;
 
-    if ( !MgrT::create( initial_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( MgrT::create( initial_size ) );
 
     Rng rng( 31415 );
 
@@ -307,34 +268,29 @@ static bool test_expand_with_mixed_ops()
     std::cout << "    Allocs: " << alloc_ok << "  deallocs: " << dealloc_cnt << "\n";
     std::cout << "    Live blocks: " << live.size() << "  expand() called: " << expand_count << " times\n";
 
-    PMM_TEST( expand_count >= 1 );
-    PMM_TEST( MgrT::is_initialized() );
+    REQUIRE( expand_count >= 1 );
+    REQUIRE( MgrT::is_initialized() );
 
     for ( auto& p : live )
         MgrT::deallocate_typed( p );
     live.clear();
 
-    PMM_TEST( MgrT::is_initialized() );
-    PMM_TEST( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( MgrT::is_initialized() );
+    REQUIRE( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
     MgrT::destroy();
-    return true;
 }
 
-static bool test_large_alloc_triggers_expand()
+TEST_CASE( "large alloc triggers expand", "[test_stress_auto_grow]" )
 {
     using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 703>;
 
     const std::size_t initial_size = 16UL * 1024;
 
-    if ( !MgrT::create( initial_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( MgrT::create( initial_size ) );
 
     auto t0 = now();
 
@@ -347,7 +303,7 @@ static bool test_large_alloc_triggers_expand()
     for ( int i = 0; i < n_blocks; ++i )
     {
         MgrT::pptr<std::uint8_t> p = MgrT::allocate_typed<std::uint8_t>( block_sz );
-        PMM_TEST( !p.is_null() );
+        REQUIRE( !p.is_null() );
         std::memset( p.resolve(), i + 1, block_sz );
         ptrs.push_back( p );
     }
@@ -358,40 +314,35 @@ static bool test_large_alloc_triggers_expand()
     // Allocate a large block that won't fit in the initial buffer
     const std::size_t        big_sz = initial_size * 2;
     MgrT::pptr<std::uint8_t> big    = MgrT::allocate_typed<std::uint8_t>( big_sz );
-    PMM_TEST( !big.is_null() );
+    REQUIRE( !big.is_null() );
 
     std::size_t size_after = MgrT::total_size();
     bool        did_expand = size_after > size_before;
     std::cout << "    large alloc expand: " << ( did_expand ? "yes" : "no" ) << "\n";
     std::cout << "    Buffer: " << size_before / 1024 << " KB -> " << size_after / 1024 << " KB\n";
 
-    PMM_TEST( did_expand );
-    PMM_TEST( MgrT::is_initialized() );
+    REQUIRE( did_expand );
+    REQUIRE( MgrT::is_initialized() );
 
     MgrT::deallocate_typed( big );
     for ( int i = 0; i < n_blocks; ++i )
         MgrT::deallocate_typed( ptrs[i] );
 
-    PMM_TEST( MgrT::is_initialized() );
+    REQUIRE( MgrT::is_initialized() );
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
     MgrT::destroy();
-    return true;
 }
 
-static bool test_grow_factor()
+TEST_CASE( "grow factor >= 25%", "[test_stress_auto_grow]" )
 {
     using MgrT = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 704>;
 
     const std::size_t initial_size = 8UL * 1024;
 
-    if ( !MgrT::create( initial_size ) )
-    {
-        std::cerr << "  ERROR: failed to create manager\n";
-        return false;
-    }
+    REQUIRE( MgrT::create( initial_size ) );
 
     auto t0 = now();
 
@@ -410,7 +361,7 @@ static bool test_grow_factor()
         {
             std::cerr << "  ERROR: allocate returned null at i=" << i << "\n";
             MgrT::destroy();
-            return false;
+            FAIL( "unexpected failure" );
         }
         ptrs.push_back( p );
 
@@ -429,34 +380,18 @@ static bool test_grow_factor()
         }
     }
 
-    PMM_TEST( grow_ok );
-    PMM_TEST( expand_count >= max_expands );
-    PMM_TEST( MgrT::is_initialized() );
+    REQUIRE( grow_ok );
+    REQUIRE( expand_count >= max_expands );
+    REQUIRE( MgrT::is_initialized() );
 
     for ( auto& p : ptrs )
         MgrT::deallocate_typed( p );
 
-    PMM_TEST( MgrT::is_initialized() );
-    PMM_TEST( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( MgrT::is_initialized() );
+    REQUIRE( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
 
     MgrT::destroy();
-    return true;
-}
-
-int main()
-{
-    std::cout << "=== test_stress_auto_grow (Issue #30) ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "single expand", test_single_expand );
-    PMM_RUN( "multi expand", test_multi_expand );
-    PMM_RUN( "expand with mixed ops", test_expand_with_mixed_ops );
-    PMM_RUN( "large alloc triggers expand", test_large_alloc_triggers_expand );
-    PMM_RUN( "grow factor >= 25%", test_grow_factor );
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

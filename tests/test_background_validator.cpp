@@ -20,32 +20,14 @@
 #include "demo_globals.h"
 #include "metrics_view.h"
 
+#include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstddef>
-#include <cstdio>
-#include <cstdlib>
-
-// ─── helpers ──────────────────────────────────────────────────────────────────
-
-static void pass( const char* name )
-{
-    std::printf( "[PASS] %s\n", name );
-}
-
-static void fail( const char* name, const char* reason )
-{
-    std::fprintf( stderr, "[FAIL] %s: %s\n", name, reason );
-    std::exit( 1 );
-}
 
 // Create a fresh DemoMgr (static) and set the global flag.
 static void make_pmm( std::size_t sz )
 {
-    if ( !demo::DemoMgr::create( sz ) )
-    {
-        std::fprintf( stderr, "DemoMgr::create() failed\n" );
-        std::exit( 1 );
-    }
+    REQUIRE( demo::DemoMgr::create( sz ) );
     demo::g_pmm.store( true );
 }
 
@@ -57,31 +39,24 @@ static void destroy_pmm()
 
 // ─── test: ValidationResult default state ────────────────────────────────────
 
-static void test_validation_result_default_state()
+TEST_CASE( "validation_result_default_state", "[test_background_validator]" )
 {
-    const char*            name = "validation_result_default_state";
     demo::ValidationResult r{};
-    if ( r.state != demo::ValidationResult::State::Unknown )
-        fail( name, "expected State::Unknown by default" );
-    pass( name );
+    REQUIRE( r.state == demo::ValidationResult::State::Unknown );
 }
 
 // ─── test: MetricsView starts with validate_requested == false ────────────────
 
-static void test_metrics_view_initial_state()
+TEST_CASE( "metrics_view_initial_state", "[test_background_validator]" )
 {
-    const char*       name = "metrics_view_initial_state";
     demo::MetricsView mv;
-    if ( mv.validate_requested() )
-        fail( name, "validate_requested_ should be false initially" );
-    pass( name );
+    REQUIRE( !mv.validate_requested() );
 }
 
 // ─── test: update_validation(Ok) does not crash ───────────────────────────────
 
-static void test_metrics_view_update_validation_ok()
+TEST_CASE( "metrics_view_update_validation_ok", "[test_background_validator]" )
 {
-    const char*       name = "metrics_view_update_validation_ok";
     demo::MetricsView mv;
 
     demo::ValidationResult r;
@@ -91,15 +66,12 @@ static void test_metrics_view_update_validation_ok()
 
     demo::MetricsSnapshot snap{};
     mv.update( snap, 0.0f );
-
-    pass( name );
 }
 
 // ─── test: update_validation(Failed) does not crash ──────────────────────────
 
-static void test_metrics_view_update_validation_failed()
+TEST_CASE( "metrics_view_update_validation_failed", "[test_background_validator]" )
 {
-    const char*       name = "metrics_view_update_validation_failed";
     demo::MetricsView mv;
 
     demo::ValidationResult r;
@@ -109,55 +81,41 @@ static void test_metrics_view_update_validation_failed()
 
     demo::MetricsSnapshot snap{};
     mv.update( snap, 0.0f );
-
-    pass( name );
 }
 
 // ─── test: is_initialized() on a fresh PMM returns true ─────────────────────
 
-static void test_validate_fresh_pmm_returns_ok()
+TEST_CASE( "validate_fresh_pmm_returns_ok", "[test_background_validator]" )
 {
-    const char* name = "validate_fresh_pmm_returns_ok";
     make_pmm( 1 * 1024 * 1024 );
-
-    bool ok = demo::DemoMgr::is_initialized();
-    if ( !ok )
-        fail( name, "is_initialized() returned false on a freshly created PMM" );
-
+    REQUIRE( demo::DemoMgr::is_initialized() );
     destroy_pmm();
-    pass( name );
 }
 
 // ─── test: is_initialized() after allocations / deallocations returns true ───
 
-static void test_validate_after_allocations()
+TEST_CASE( "validate_after_allocations", "[test_background_validator]" )
 {
-    const char* name = "validate_after_allocations";
     make_pmm( 1 * 1024 * 1024 );
 
     demo::DemoMgr::pptr<std::uint8_t> p1 = demo::DemoMgr::allocate_typed<std::uint8_t>( 256 );
     demo::DemoMgr::pptr<std::uint8_t> p2 = demo::DemoMgr::allocate_typed<std::uint8_t>( 512 );
     demo::DemoMgr::pptr<std::uint8_t> p3 = demo::DemoMgr::allocate_typed<std::uint8_t>( 1024 );
-    if ( p1.is_null() || p2.is_null() || p3.is_null() )
-        fail( name, "allocate() returned null unexpectedly" );
+    REQUIRE( ( !p1.is_null() && !p2.is_null() && !p3.is_null() ) );
 
     demo::DemoMgr::deallocate_typed( p2 ); // free middle block to exercise coalescing
 
-    bool ok = demo::DemoMgr::is_initialized();
-    if ( !ok )
-        fail( name, "is_initialized() returned false after alloc/dealloc sequence" );
+    REQUIRE( demo::DemoMgr::is_initialized() );
 
     demo::DemoMgr::deallocate_typed( p1 );
     demo::DemoMgr::deallocate_typed( p3 );
     destroy_pmm();
-    pass( name );
 }
 
 // ─── test: ValidationResult timestamp is set correctly ───────────────────────
 
-static void test_validation_timestamp_is_recent()
+TEST_CASE( "validation_timestamp_is_recent", "[test_background_validator]" )
 {
-    const char* name = "validation_timestamp_is_recent";
     make_pmm( 512 * 1024 );
 
     bool ok    = demo::DemoMgr::is_initialized();
@@ -169,29 +127,23 @@ static void test_validation_timestamp_is_recent()
 
     auto age_ms =
         std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::steady_clock::now() - r.timestamp ).count();
-    if ( age_ms > 1000 )
-        fail( name, "timestamp is older than 1 second — clock mismatch" );
+    REQUIRE( age_ms <= 1000 );
 
     destroy_pmm();
-    pass( name );
 }
 
 // ─── test: DemoApp::kValidateIntervalSec is 5 ────────────────────────────────
 
-static void test_validate_interval_is_five_seconds()
+TEST_CASE( "validate_interval_is_five_seconds", "[test_background_validator]" )
 {
-    const char*         name     = "validate_interval_is_five_seconds";
     constexpr long long expected = 5;
-    if ( demo::DemoApp::kValidateIntervalSec != expected )
-        fail( name, "kValidateIntervalSec is not 5" );
-    pass( name );
+    REQUIRE( demo::DemoApp::kValidateIntervalSec == expected );
 }
 
 // ─── test: successive update_validation calls — last one wins ────────────────
 
-static void test_update_validation_last_wins()
+TEST_CASE( "update_validation_last_wins", "[test_background_validator]" )
 {
-    const char*       name = "update_validation_last_wins";
     demo::MetricsView mv;
 
     demo::ValidationResult r1;
@@ -206,42 +158,14 @@ static void test_update_validation_last_wins()
 
     demo::MetricsSnapshot snap{};
     mv.update( snap, 0.0f );
-
-    pass( name );
 }
 
 // ─── test: ValidationResult State enum has exactly the three expected values ──
 
-static void test_validation_state_enum_values()
+TEST_CASE( "validation_state_enum_values", "[test_background_validator]" )
 {
-    const char* name = "validation_state_enum_values";
-    using State      = demo::ValidationResult::State;
-
-    if ( State::Unknown == State::Ok )
-        fail( name, "Unknown == Ok" );
-    if ( State::Unknown == State::Failed )
-        fail( name, "Unknown == Failed" );
-    if ( State::Ok == State::Failed )
-        fail( name, "Ok == Failed" );
-
-    pass( name );
-}
-
-// ─── main ────────────────────────────────────────────────────────────────────
-
-int main()
-{
-    test_validation_result_default_state();
-    test_metrics_view_initial_state();
-    test_metrics_view_update_validation_ok();
-    test_metrics_view_update_validation_failed();
-    test_validate_fresh_pmm_returns_ok();
-    test_validate_after_allocations();
-    test_validation_timestamp_is_recent();
-    test_validate_interval_is_five_seconds();
-    test_update_validation_last_wins();
-    test_validation_state_enum_values();
-
-    std::printf( "\nAll Phase 12 tests passed.\n" );
-    return 0;
+    using State = demo::ValidationResult::State;
+    REQUIRE( State::Unknown != State::Ok );
+    REQUIRE( State::Unknown != State::Failed );
+    REQUIRE( State::Ok != State::Failed );
 }

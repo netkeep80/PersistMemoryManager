@@ -12,85 +12,56 @@
 
 #include "pmm_single_threaded_heap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 using Mgr = pmm::presets::SingleThreadedHeap;
 
-static bool test_create_basic()
+TEST_CASE( "create_basic", "[test_allocate]" )
 {
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
-    PMM_TEST( Mgr::is_initialized() );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::is_initialized() );
 
     Mgr::destroy();
-    PMM_TEST( !Mgr::is_initialized() );
-    return true;
+    REQUIRE( !Mgr::is_initialized() );
 }
 
-static bool test_create_too_small()
+TEST_CASE( "create_too_small", "[test_allocate]" )
 {
-    PMM_TEST( !Mgr::create( 128 ) );
-    return true;
+    REQUIRE( !Mgr::create( 128 ) );
 }
 
-static bool test_allocate_single_small()
+TEST_CASE( "allocate_single_small", "[test_allocate]" )
 {
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<std::uint8_t> p = Mgr::allocate_typed<std::uint8_t>( 64 );
-    PMM_TEST( !p.is_null() );
-    PMM_TEST( p.resolve() != nullptr );
-    PMM_TEST( reinterpret_cast<std::uintptr_t>( p.resolve() ) % 16 == 0 );
+    REQUIRE( !p.is_null() );
+    REQUIRE( p.resolve() != nullptr );
+    REQUIRE( reinterpret_cast<std::uintptr_t>( p.resolve() ) % 16 == 0 );
 
     Mgr::deallocate_typed( p );
     Mgr::destroy();
-    return true;
 }
 
-static bool test_allocate_multiple()
+TEST_CASE( "allocate_multiple", "[test_allocate]" )
 {
-    PMM_TEST( Mgr::create( 256 * 1024 ) );
+    REQUIRE( Mgr::create( 256 * 1024 ) );
 
     const int               num = 10;
     Mgr::pptr<std::uint8_t> ptrs[num];
     for ( int i = 0; i < num; i++ )
     {
         ptrs[i] = Mgr::allocate_typed<std::uint8_t>( 1024 );
-        PMM_TEST( !ptrs[i].is_null() );
+        REQUIRE( !ptrs[i].is_null() );
     }
 
     for ( int i = 0; i < num; i++ )
     {
         for ( int j = i + 1; j < num; j++ )
         {
-            PMM_TEST( ptrs[i] != ptrs[j] );
+            REQUIRE( ptrs[i] != ptrs[j] );
         }
     }
 
@@ -98,18 +69,16 @@ static bool test_allocate_multiple()
         Mgr::deallocate_typed( ptrs[i] );
 
     Mgr::destroy();
-    return true;
 }
 
-static bool test_allocate_zero()
+TEST_CASE( "allocate_zero", "[test_allocate]" )
 {
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<std::uint8_t> p = Mgr::allocate_typed<std::uint8_t>( 0 );
-    PMM_TEST( p.is_null() );
+    REQUIRE( p.is_null() );
 
     Mgr::destroy();
-    return true;
 }
 
 /**
@@ -117,37 +86,36 @@ static bool test_allocate_zero()
  *
  * Uses unique InstanceId (500) to start with a fresh backend of exactly 8K.
  */
-static bool test_allocate_auto_expand()
+TEST_CASE( "allocate_auto_expand", "[test_allocate]" )
 {
     using MgrExpand = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 500>;
 
-    PMM_TEST( MgrExpand::create( 8 * 1024 ) );
+    REQUIRE( MgrExpand::create( 8 * 1024 ) );
 
     std::size_t initial_total = MgrExpand::total_size();
 
     // Fill most of the memory
     MgrExpand::pptr<std::uint8_t> block1 = MgrExpand::allocate_typed<std::uint8_t>( 4 * 1024 );
-    PMM_TEST( !block1.is_null() );
+    REQUIRE( !block1.is_null() );
 
     // Request a block that requires expansion
     MgrExpand::pptr<std::uint8_t> block2 = MgrExpand::allocate_typed<std::uint8_t>( 4 * 1024 );
-    PMM_TEST( !block2.is_null() );
+    REQUIRE( !block2.is_null() );
 
-    PMM_TEST( MgrExpand::is_initialized() );
-    PMM_TEST( MgrExpand::total_size() > initial_total );
+    REQUIRE( MgrExpand::is_initialized() );
+    REQUIRE( MgrExpand::total_size() > initial_total );
 
     MgrExpand::destroy();
-    return true;
 }
 
-static bool test_allocate_write_read()
+TEST_CASE( "allocate_write_read", "[test_allocate]" )
 {
-    PMM_TEST( Mgr::create( 64 * 1024 ) );
+    REQUIRE( Mgr::create( 64 * 1024 ) );
 
     Mgr::pptr<std::uint8_t> p1 = Mgr::allocate_typed<std::uint8_t>( 128 );
     Mgr::pptr<std::uint8_t> p2 = Mgr::allocate_typed<std::uint8_t>( 256 );
-    PMM_TEST( !p1.is_null() );
-    PMM_TEST( !p2.is_null() );
+    REQUIRE( !p1.is_null() );
+    REQUIRE( !p2.is_null() );
 
     std::memset( p1.resolve(), 0xAA, 128 );
     std::memset( p2.resolve(), 0xBB, 256 );
@@ -155,39 +123,37 @@ static bool test_allocate_write_read()
     const std::uint8_t* r1 = p1.resolve();
     const std::uint8_t* r2 = p2.resolve();
     for ( std::size_t i = 0; i < 128; i++ )
-        PMM_TEST( r1[i] == 0xAA );
+        REQUIRE( r1[i] == 0xAA );
     for ( std::size_t i = 0; i < 256; i++ )
-        PMM_TEST( r2[i] == 0xBB );
+        REQUIRE( r2[i] == 0xBB );
 
     Mgr::deallocate_typed( p1 );
     Mgr::deallocate_typed( p2 );
     Mgr::destroy();
-    return true;
 }
 
 /**
  * Uses unique InstanceId (501) so backend starts fresh at exactly 64K.
  */
-static bool test_allocate_metrics()
+TEST_CASE( "allocate_metrics", "[test_allocate]" )
 {
     using MgrMetrics = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 501>;
 
-    PMM_TEST( MgrMetrics::create( 64 * 1024 ) );
+    REQUIRE( MgrMetrics::create( 64 * 1024 ) );
 
-    PMM_TEST( MgrMetrics::total_size() == 64 * 1024 );
-    PMM_TEST( MgrMetrics::used_size() > 0 );
-    PMM_TEST( MgrMetrics::free_size() < 64 * 1024 );
-    PMM_TEST( MgrMetrics::used_size() + MgrMetrics::free_size() <= 64 * 1024 );
+    REQUIRE( MgrMetrics::total_size() == 64 * 1024 );
+    REQUIRE( MgrMetrics::used_size() > 0 );
+    REQUIRE( MgrMetrics::free_size() < 64 * 1024 );
+    REQUIRE( MgrMetrics::used_size() + MgrMetrics::free_size() <= 64 * 1024 );
 
     std::size_t used_before = MgrMetrics::used_size();
 
     MgrMetrics::pptr<std::uint8_t> ptr = MgrMetrics::allocate_typed<std::uint8_t>( 512 );
-    PMM_TEST( !ptr.is_null() );
-    PMM_TEST( MgrMetrics::used_size() > used_before );
+    REQUIRE( !ptr.is_null() );
+    REQUIRE( MgrMetrics::used_size() > used_before );
 
     MgrMetrics::deallocate_typed( ptr );
     MgrMetrics::destroy();
-    return true;
 }
 
 /**
@@ -202,14 +168,14 @@ static bool test_allocate_metrics()
  *   3. Re-allocate N/2 blocks of the same size.
  *   4. Verify total_size did NOT grow — all allocations fit in the freed holes.
  */
-static bool test_fragmented_gaps_reused_before_expand_space()
+TEST_CASE( "fragmented_gaps_reused_before_expand_space", "[test_allocate]" )
 {
     using MgrFrag = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 502>;
 
     const std::size_t block_size   = 256;
     const std::size_t initial_size = 8 * 1024;
 
-    PMM_TEST( MgrFrag::create( initial_size ) );
+    REQUIRE( MgrFrag::create( initial_size ) );
 
     // Allocate blocks until most of the space is used, but stop before auto-grow.
     MgrFrag::pptr<std::uint8_t> ptrs[20];
@@ -223,7 +189,7 @@ static bool test_fragmented_gaps_reused_before_expand_space()
         if ( MgrFrag::total_size() != initial_size )
             break;
     }
-    PMM_TEST( n >= 4 );
+    REQUIRE( n >= 4 );
 
     // Free every other block — creates n/2 non-adjacent holes
     int holes = 0;
@@ -232,7 +198,7 @@ static bool test_fragmented_gaps_reused_before_expand_space()
         MgrFrag::deallocate_typed( ptrs[i] );
         ++holes;
     }
-    PMM_TEST( holes >= 2 );
+    REQUIRE( holes >= 2 );
 
     // Record state before re-allocation
     std::size_t size_before = MgrFrag::total_size();
@@ -241,32 +207,12 @@ static bool test_fragmented_gaps_reused_before_expand_space()
     for ( int i = 0; i < holes; ++i )
     {
         MgrFrag::pptr<std::uint8_t> p = MgrFrag::allocate_typed<std::uint8_t>( block_size );
-        PMM_TEST( !p.is_null() );
+        REQUIRE( !p.is_null() );
         ptrs[i] = p; // track for cleanup
     }
 
     // No expansion must have occurred — all allocations fit inside the freed holes.
-    PMM_TEST( MgrFrag::total_size() == size_before );
+    REQUIRE( MgrFrag::total_size() == size_before );
 
     MgrFrag::destroy();
-    return true;
-}
-
-int main()
-{
-    std::cout << "=== test_allocate ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "create_basic", test_create_basic );
-    PMM_RUN( "create_too_small", test_create_too_small );
-    PMM_RUN( "allocate_single_small", test_allocate_single_small );
-    PMM_RUN( "allocate_multiple", test_allocate_multiple );
-    PMM_RUN( "allocate_zero", test_allocate_zero );
-    PMM_RUN( "allocate_auto_expand", test_allocate_auto_expand );
-    PMM_RUN( "allocate_write_read", test_allocate_write_read );
-    PMM_RUN( "allocate_metrics", test_allocate_metrics );
-    PMM_RUN( "fragmented_gaps_reused_before_expand_space", test_fragmented_gaps_reused_before_expand_space );
-
-    std::cout << ( all_passed ? "\nAll tests PASSED\n" : "\nSome tests FAILED\n" );
-    return all_passed ? 0 : 1;
 }

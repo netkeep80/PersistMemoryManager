@@ -28,39 +28,11 @@
 #include "pmm/io.h"
 #include "pmm/logging_policy.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <iostream>
-
-// --- Test macros -------------------------------------------------------------
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // --- Custom logging policy for testing ---------------------------------------
 
@@ -155,41 +127,38 @@ using MgrDefault = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 310>;
 // --- Tests -------------------------------------------------------------------
 
 /// 1. NoLogging policy compiles with all preset configs.
-static bool test_no_logging_compiles()
+TEST_CASE( "NoLogging compiles", "[test_issue202_logging_hooks]" )
 {
     MgrDefault::create( 4096 );
     void* p = MgrDefault::allocate( 64 );
-    PMM_TEST( p != nullptr );
+    REQUIRE( p != nullptr );
     MgrDefault::deallocate( p );
     MgrDefault::destroy();
-    return true;
 }
 
 /// 3. on_create() fires on successful creation.
-static bool test_on_create_hook()
+TEST_CASE( "on_create hook", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
-    PMM_TEST( TestHookCounters::create_count == 0 );
+    REQUIRE( TestHookCounters::create_count == 0 );
     MgrLog::create( 8192 );
-    PMM_TEST( TestHookCounters::create_count == 1 );
-    PMM_TEST( TestHookCounters::last_create_size > 0 );
+    REQUIRE( TestHookCounters::create_count == 1 );
+    REQUIRE( TestHookCounters::last_create_size > 0 );
     MgrLog::destroy();
-    return true;
 }
 
 /// 4. on_destroy() fires on destroy.
-static bool test_on_destroy_hook()
+TEST_CASE( "on_destroy hook", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
     MgrLog::create( 4096 );
-    PMM_TEST( TestHookCounters::destroy_count == 0 );
+    REQUIRE( TestHookCounters::destroy_count == 0 );
     MgrLog::destroy();
-    PMM_TEST( TestHookCounters::destroy_count == 1 );
-    return true;
+    REQUIRE( TestHookCounters::destroy_count == 1 );
 }
 
 /// 5. on_allocation_failure() fires on OOM (overflow path).
-static bool test_on_allocation_failure_oom()
+TEST_CASE( "on_allocation_failure (OOM)", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
     MgrLogOOM::create( 256 );
@@ -201,33 +170,31 @@ static bool test_on_allocation_failure_oom()
     // This will cause data_gran + kBlockHdrGranules > max(uint32_t), triggering Overflow.
     std::size_t overflow_size = static_cast<std::size_t>( std::numeric_limits<std::uint32_t>::max() - 1 ) * 16;
     void*       p             = MgrLogOOM::allocate( overflow_size );
-    PMM_TEST( p == nullptr );
-    PMM_TEST( TestHookCounters::allocation_failure_count >= 1 );
-    PMM_TEST( TestHookCounters::last_alloc_err == pmm::PmmError::Overflow );
+    REQUIRE( p == nullptr );
+    REQUIRE( TestHookCounters::allocation_failure_count >= 1 );
+    REQUIRE( TestHookCounters::last_alloc_err == pmm::PmmError::Overflow );
 
     MgrLogOOM::destroy();
-    return true;
 }
 
 /// 6. on_allocation_failure() fires on allocate(0) (InvalidSize).
-static bool test_on_allocation_failure_invalid_size()
+TEST_CASE( "on_allocation_failure (InvalidSize)", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
     MgrLog::create( 4096 );
     TestHookCounters::reset();
 
     void* p = MgrLog::allocate( 0 );
-    PMM_TEST( p == nullptr );
-    PMM_TEST( TestHookCounters::allocation_failure_count == 1 );
-    PMM_TEST( TestHookCounters::last_alloc_err == pmm::PmmError::InvalidSize );
-    PMM_TEST( TestHookCounters::last_alloc_size == 0 );
+    REQUIRE( p == nullptr );
+    REQUIRE( TestHookCounters::allocation_failure_count == 1 );
+    REQUIRE( TestHookCounters::last_alloc_err == pmm::PmmError::InvalidSize );
+    REQUIRE( TestHookCounters::last_alloc_size == 0 );
 
     MgrLog::destroy();
-    return true;
 }
 
 /// 7. on_allocation_failure() fires on allocate() before create() (NotInitialized).
-static bool test_on_allocation_failure_not_initialized()
+TEST_CASE( "on_allocation_failure (NotInitialized)", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
 
@@ -235,15 +202,13 @@ static bool test_on_allocation_failure_not_initialized()
     // Ensure it's really not initialized:
     using MgrNotInit = pmm::PersistMemoryManager<TestLoggingConfig, 320>;
     void* p          = MgrNotInit::allocate( 64 );
-    PMM_TEST( p == nullptr );
-    PMM_TEST( TestHookCounters::allocation_failure_count == 1 );
-    PMM_TEST( TestHookCounters::last_alloc_err == pmm::PmmError::NotInitialized );
-
-    return true;
+    REQUIRE( p == nullptr );
+    REQUIRE( TestHookCounters::allocation_failure_count == 1 );
+    REQUIRE( TestHookCounters::last_alloc_err == pmm::PmmError::NotInitialized );
 }
 
 /// 8. on_expand() fires on backend expansion.
-static bool test_on_expand_hook()
+TEST_CASE( "on_expand hook", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
     MgrLogExpand::create( 256 );
@@ -251,17 +216,16 @@ static bool test_on_expand_hook()
 
     // Allocate enough to trigger expansion.
     void* p = MgrLogExpand::allocate( 512 );
-    PMM_TEST( p != nullptr );
-    PMM_TEST( TestHookCounters::expand_count >= 1 );
-    PMM_TEST( TestHookCounters::last_expand_new > TestHookCounters::last_expand_old );
+    REQUIRE( p != nullptr );
+    REQUIRE( TestHookCounters::expand_count >= 1 );
+    REQUIRE( TestHookCounters::last_expand_new > TestHookCounters::last_expand_old );
 
     MgrLogExpand::deallocate( p );
     MgrLogExpand::destroy();
-    return true;
 }
 
 /// 9. on_corruption_detected() fires on bad magic.
-static bool test_on_corruption_bad_magic()
+TEST_CASE( "on_corruption (bad magic)", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
 
@@ -275,7 +239,7 @@ static bool test_on_corruption_bad_magic()
     std::uint8_t* base     = Mgr::backend().base_ptr();
     std::size_t   buf_size = Mgr::backend().total_size();
     std::FILE*    f        = std::fopen( "test_issue202_mag.dat", "rb" );
-    PMM_TEST( f != nullptr );
+    REQUIRE( f != nullptr );
     std::fread( base, 1, buf_size, f );
     std::fclose( f );
 
@@ -287,17 +251,16 @@ static bool test_on_corruption_bad_magic()
     // Call load() directly (manager is still created, buffer has corrupted data).
     TestHookCounters::reset();
     bool ok = Mgr::load();
-    PMM_TEST( !ok );
-    PMM_TEST( TestHookCounters::corruption_count == 1 );
-    PMM_TEST( TestHookCounters::last_corrupt_err == pmm::PmmError::InvalidMagic );
+    REQUIRE( !ok );
+    REQUIRE( TestHookCounters::corruption_count == 1 );
+    REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::InvalidMagic );
 
     Mgr::destroy();
     std::remove( "test_issue202_mag.dat" );
-    return true;
 }
 
 /// 10. on_corruption_detected() fires on size mismatch.
-static bool test_on_corruption_size_mismatch()
+TEST_CASE( "on_corruption (size mismatch)", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
 
@@ -311,7 +274,7 @@ static bool test_on_corruption_size_mismatch()
     std::uint8_t* base     = Mgr::backend().base_ptr();
     std::size_t   buf_size = Mgr::backend().total_size();
     std::FILE*    f        = std::fopen( "test_issue202_sz.dat", "rb" );
-    PMM_TEST( f != nullptr );
+    REQUIRE( f != nullptr );
     std::fread( base, 1, buf_size, f );
     std::fclose( f );
 
@@ -324,17 +287,16 @@ static bool test_on_corruption_size_mismatch()
     // which will re-validate the header. The _initialized flag doesn't gate load().
     TestHookCounters::reset();
     bool ok = Mgr::load();
-    PMM_TEST( !ok );
-    PMM_TEST( TestHookCounters::corruption_count == 1 );
-    PMM_TEST( TestHookCounters::last_corrupt_err == pmm::PmmError::SizeMismatch );
+    REQUIRE( !ok );
+    REQUIRE( TestHookCounters::corruption_count == 1 );
+    REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::SizeMismatch );
 
     Mgr::destroy();
     std::remove( "test_issue202_sz.dat" );
-    return true;
 }
 
 /// 11. on_corruption_detected() fires on granule mismatch.
-static bool test_on_corruption_granule_mismatch()
+TEST_CASE( "on_corruption (granule mismatch)", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
 
@@ -348,7 +310,7 @@ static bool test_on_corruption_granule_mismatch()
     std::uint8_t* base     = Mgr::backend().base_ptr();
     std::size_t   buf_size = Mgr::backend().total_size();
     std::FILE*    f        = std::fopen( "test_issue202_gr.dat", "rb" );
-    PMM_TEST( f != nullptr );
+    REQUIRE( f != nullptr );
     std::fread( base, 1, buf_size, f );
     std::fclose( f );
 
@@ -359,17 +321,16 @@ static bool test_on_corruption_granule_mismatch()
 
     TestHookCounters::reset();
     bool ok = Mgr::load();
-    PMM_TEST( !ok );
-    PMM_TEST( TestHookCounters::corruption_count == 1 );
-    PMM_TEST( TestHookCounters::last_corrupt_err == pmm::PmmError::GranuleMismatch );
+    REQUIRE( !ok );
+    REQUIRE( TestHookCounters::corruption_count == 1 );
+    REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::GranuleMismatch );
 
     Mgr::destroy();
     std::remove( "test_issue202_gr.dat" );
-    return true;
 }
 
 /// 12. on_load() fires on successful load.
-static bool test_on_load_hook()
+TEST_CASE( "on_load hook", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
 
@@ -381,16 +342,15 @@ static bool test_on_load_hook()
     MgrSave::create( 4096 );
     TestHookCounters::reset();
     bool ok = pmm::load_manager_from_file<MgrSave>( "test_issue202_load.dat" );
-    PMM_TEST( ok );
-    PMM_TEST( TestHookCounters::load_count == 1 );
+    REQUIRE( ok );
+    REQUIRE( TestHookCounters::load_count == 1 );
 
     MgrSave::destroy();
     std::remove( "test_issue202_load.dat" );
-    return true;
 }
 
 /// 13. on_corruption_detected() fires on CRC mismatch.
-static bool test_on_corruption_crc_mismatch()
+TEST_CASE( "on_corruption (CRC mismatch)", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
 
@@ -400,7 +360,7 @@ static bool test_on_corruption_crc_mismatch()
 
     // Corrupt the file.
     std::FILE* f = std::fopen( "test_issue202_crc.dat", "r+b" );
-    PMM_TEST( f != nullptr );
+    REQUIRE( f != nullptr );
     // Corrupt a byte near the end of the file.
     std::fseek( f, -10, SEEK_END );
     unsigned char bad = 0xFF;
@@ -410,69 +370,40 @@ static bool test_on_corruption_crc_mismatch()
     MgrLogCrc::create( 4096 );
     TestHookCounters::reset();
     bool ok = pmm::load_manager_from_file<MgrLogCrc>( "test_issue202_crc.dat" );
-    PMM_TEST( !ok );
-    PMM_TEST( TestHookCounters::corruption_count == 1 );
-    PMM_TEST( TestHookCounters::last_corrupt_err == pmm::PmmError::CrcMismatch );
+    REQUIRE( !ok );
+    REQUIRE( TestHookCounters::corruption_count == 1 );
+    REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::CrcMismatch );
 
     MgrLogCrc::destroy();
     std::remove( "test_issue202_crc.dat" );
-    return true;
 }
 
 /// 14. Logging hooks work with SmallAddressTraits.
-static bool test_logging_small_address_traits()
+TEST_CASE( "SmallAddressTraits", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
     MgrLogSmall::create( 4096 );
-    PMM_TEST( TestHookCounters::create_count == 1 );
+    REQUIRE( TestHookCounters::create_count == 1 );
 
     void* p = MgrLogSmall::allocate( 32 );
-    PMM_TEST( p != nullptr );
+    REQUIRE( p != nullptr );
     MgrLogSmall::deallocate( p );
 
     MgrLogSmall::destroy();
-    PMM_TEST( TestHookCounters::destroy_count == 1 );
-    return true;
+    REQUIRE( TestHookCounters::destroy_count == 1 );
 }
 
 /// 15. Logging hooks work with LargeAddressTraits.
-static bool test_logging_large_address_traits()
+TEST_CASE( "LargeAddressTraits", "[test_issue202_logging_hooks]" )
 {
     TestHookCounters::reset();
     MgrLogLarge::create( 8192 );
-    PMM_TEST( TestHookCounters::create_count == 1 );
+    REQUIRE( TestHookCounters::create_count == 1 );
 
     void* p = MgrLogLarge::allocate( 128 );
-    PMM_TEST( p != nullptr );
+    REQUIRE( p != nullptr );
     MgrLogLarge::deallocate( p );
 
     MgrLogLarge::destroy();
-    PMM_TEST( TestHookCounters::destroy_count == 1 );
-    return true;
-}
-
-// --- main --------------------------------------------------------------------
-
-int main()
-{
-    std::cout << "=== test_issue202_logging_hooks ===\n";
-    bool all_passed = true;
-
-    PMM_RUN( "NoLogging compiles", test_no_logging_compiles );
-    PMM_RUN( "on_create hook", test_on_create_hook );
-    PMM_RUN( "on_destroy hook", test_on_destroy_hook );
-    PMM_RUN( "on_allocation_failure (OOM)", test_on_allocation_failure_oom );
-    PMM_RUN( "on_allocation_failure (InvalidSize)", test_on_allocation_failure_invalid_size );
-    PMM_RUN( "on_allocation_failure (NotInitialized)", test_on_allocation_failure_not_initialized );
-    PMM_RUN( "on_expand hook", test_on_expand_hook );
-    PMM_RUN( "on_corruption (bad magic)", test_on_corruption_bad_magic );
-    PMM_RUN( "on_corruption (size mismatch)", test_on_corruption_size_mismatch );
-    PMM_RUN( "on_corruption (granule mismatch)", test_on_corruption_granule_mismatch );
-    PMM_RUN( "on_load hook", test_on_load_hook );
-    PMM_RUN( "on_corruption (CRC mismatch)", test_on_corruption_crc_mismatch );
-    PMM_RUN( "SmallAddressTraits", test_logging_small_address_traits );
-    PMM_RUN( "LargeAddressTraits", test_logging_large_address_traits );
-
-    std::cout << ( all_passed ? "All tests PASSED.\n" : "Some tests FAILED!\n" );
-    return all_passed ? 0 : 1;
+    REQUIRE( TestHookCounters::destroy_count == 1 );
 }

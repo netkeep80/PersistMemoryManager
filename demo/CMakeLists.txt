@@ -92,7 +92,7 @@ endif()
 
 function(pmm_demo_test name source)
     add_executable(${name} ${source})
-    target_link_libraries(${name} PRIVATE pmm_demo_lib)
+    target_link_libraries(${name} PRIVATE pmm_demo_lib Catch2::Catch2WithMain)
     if(MSVC)
         target_compile_options(${name} PRIVATE /W3 /utf-8)
     else()

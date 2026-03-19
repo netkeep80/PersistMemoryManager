@@ -18,39 +18,13 @@
 #include "pmm/persist_memory_manager.h"
 #include "pmm/pmap.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
-#include <iostream>
+
 #include <vector>
 
 // ─── Test macros ──────────────────────────────────────────────────────────────
-
-#define PMM_TEST( expr )                                                                                               \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if ( !( expr ) )                                                                                               \
-        {                                                                                                              \
-            std::cerr << "FAIL [" << __FILE__ << ":" << __LINE__ << "] " << #expr << "\n";                             \
-            return false;                                                                                              \
-        }                                                                                                              \
-    } while ( false )
-
-#define PMM_RUN( name, fn )                                                                                            \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << "  " << name << " ... ";                                                                          \
-        if ( fn() )                                                                                                    \
-        {                                                                                                              \
-            std::cout << "PASS\n";                                                                                     \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            std::cout << "FAIL\n";                                                                                     \
-            all_passed = false;                                                                                        \
-        }                                                                                                              \
-    } while ( false )
 
 // ─── Manager type alias for tests ────────────────────────────────────────────
 
@@ -61,82 +35,78 @@ using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 196>;
 // =============================================================================
 
 /// @brief erase() returns true for existing key and removes it.
-static bool test_i196_erase_basic()
+TEST_CASE( "    erase existing key", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 42, 100 );
-    PMM_TEST( map.contains( 42 ) );
+    REQUIRE( map.contains( 42 ) );
 
     bool removed = map.erase( 42 );
-    PMM_TEST( removed );
-    PMM_TEST( !map.contains( 42 ) );
-    PMM_TEST( map.find( 42 ).is_null() );
-    PMM_TEST( map.empty() );
+    REQUIRE( removed );
+    REQUIRE( !map.contains( 42 ) );
+    REQUIRE( map.find( 42 ).is_null() );
+    REQUIRE( map.empty() );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief erase() returns false for missing key.
-static bool test_i196_erase_missing()
+TEST_CASE( "    erase missing key returns false", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 1, 10 );
 
     bool removed = map.erase( 99 );
-    PMM_TEST( !removed );
-    PMM_TEST( map.contains( 1 ) );
+    REQUIRE( !removed );
+    REQUIRE( map.contains( 1 ) );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief erase() from empty map returns false.
-static bool test_i196_erase_empty()
+TEST_CASE( "    erase from empty map", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
-    PMM_TEST( !map.erase( 1 ) );
+    REQUIRE( !map.erase( 1 ) );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief erase() one of multiple keys; others remain accessible.
-static bool test_i196_erase_preserves_others()
+TEST_CASE( "    erase preserves other keys", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 10, 1 );
     map.insert( 20, 2 );
     map.insert( 30, 3 );
 
-    PMM_TEST( map.erase( 20 ) );
-    PMM_TEST( !map.contains( 20 ) );
-    PMM_TEST( map.contains( 10 ) );
-    PMM_TEST( map.contains( 30 ) );
-    PMM_TEST( map.find( 10 )->value == 1 );
-    PMM_TEST( map.find( 30 )->value == 3 );
+    REQUIRE( map.erase( 20 ) );
+    REQUIRE( !map.contains( 20 ) );
+    REQUIRE( map.contains( 10 ) );
+    REQUIRE( map.contains( 30 ) );
+    REQUIRE( map.find( 10 )->value == 1 );
+    REQUIRE( map.find( 30 )->value == 3 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief erase() all keys one by one; map becomes empty.
-static bool test_i196_erase_all_one_by_one()
+TEST_CASE( "    erase all keys one by one", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 5, 50 );
@@ -145,23 +115,22 @@ static bool test_i196_erase_all_one_by_one()
     map.insert( 1, 10 );
     map.insert( 4, 40 );
 
-    PMM_TEST( map.erase( 3 ) );
-    PMM_TEST( map.erase( 7 ) );
-    PMM_TEST( map.erase( 1 ) );
-    PMM_TEST( map.erase( 5 ) );
-    PMM_TEST( map.erase( 4 ) );
+    REQUIRE( map.erase( 3 ) );
+    REQUIRE( map.erase( 7 ) );
+    REQUIRE( map.erase( 1 ) );
+    REQUIRE( map.erase( 5 ) );
+    REQUIRE( map.erase( 4 ) );
 
-    PMM_TEST( map.empty() );
+    REQUIRE( map.empty() );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief erase() the root node; tree restructures correctly.
-static bool test_i196_erase_root()
+TEST_CASE( "    erase root node", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 2, 20 );
@@ -169,32 +138,30 @@ static bool test_i196_erase_root()
     map.insert( 3, 30 );
 
     // After AVL balancing, 2 should be root
-    PMM_TEST( map.erase( 2 ) );
-    PMM_TEST( !map.contains( 2 ) );
-    PMM_TEST( map.contains( 1 ) );
-    PMM_TEST( map.contains( 3 ) );
+    REQUIRE( map.erase( 2 ) );
+    REQUIRE( !map.contains( 2 ) );
+    REQUIRE( map.contains( 1 ) );
+    REQUIRE( map.contains( 3 ) );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief erase() then re-insert same key works correctly.
-static bool test_i196_erase_then_reinsert()
+TEST_CASE( "    erase then re-insert", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 42, 100 );
-    PMM_TEST( map.erase( 42 ) );
-    PMM_TEST( map.empty() );
+    REQUIRE( map.erase( 42 ) );
+    REQUIRE( map.empty() );
 
     auto p = map.insert( 42, 999 );
-    PMM_TEST( !p.is_null() );
-    PMM_TEST( map.find( 42 )->value == 999 );
+    REQUIRE( !p.is_null() );
+    REQUIRE( map.find( 42 )->value == 999 );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -202,65 +169,62 @@ static bool test_i196_erase_then_reinsert()
 // =============================================================================
 
 /// @brief size() returns 0 for empty map.
-static bool test_i196_size_empty()
+TEST_CASE( "    size() of empty map", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
-    PMM_TEST( map.size() == 0 );
+    REQUIRE( map.size() == 0 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief size() returns correct count after inserts.
-static bool test_i196_size_after_insert()
+TEST_CASE( "    size() after inserts", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 1, 10 );
-    PMM_TEST( map.size() == 1 );
+    REQUIRE( map.size() == 1 );
 
     map.insert( 2, 20 );
-    PMM_TEST( map.size() == 2 );
+    REQUIRE( map.size() == 2 );
 
     map.insert( 3, 30 );
-    PMM_TEST( map.size() == 3 );
+    REQUIRE( map.size() == 3 );
 
     // Duplicate key should not increase size
     map.insert( 2, 99 );
-    PMM_TEST( map.size() == 3 );
+    REQUIRE( map.size() == 3 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief size() decreases after erase.
-static bool test_i196_size_after_erase()
+TEST_CASE( "    size() after erase", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 1, 10 );
     map.insert( 2, 20 );
     map.insert( 3, 30 );
-    PMM_TEST( map.size() == 3 );
+    REQUIRE( map.size() == 3 );
 
     map.erase( 2 );
-    PMM_TEST( map.size() == 2 );
+    REQUIRE( map.size() == 2 );
 
     map.erase( 1 );
-    PMM_TEST( map.size() == 1 );
+    REQUIRE( map.size() == 1 );
 
     map.erase( 3 );
-    PMM_TEST( map.size() == 0 );
+    REQUIRE( map.size() == 0 );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -268,23 +232,22 @@ static bool test_i196_size_after_erase()
 // =============================================================================
 
 /// @brief begin() == end() for empty map.
-static bool test_i196_iterator_empty()
+TEST_CASE( "    begin() == end() for empty map", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
-    PMM_TEST( map.begin() == map.end() );
+    REQUIRE( map.begin() == map.end() );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief Iterator visits all elements in key order.
-static bool test_i196_iterator_order()
+TEST_CASE( "    iterator visits keys in sorted order", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     // Insert in non-sorted order
@@ -299,50 +262,48 @@ static bool test_i196_iterator_order()
     for ( auto it = map.begin(); it != map.end(); ++it )
     {
         auto node = *it;
-        PMM_TEST( !node.is_null() );
+        REQUIRE( !node.is_null() );
         keys.push_back( node->key );
     }
 
-    PMM_TEST( keys.size() == 5 );
-    PMM_TEST( keys[0] == 10 );
-    PMM_TEST( keys[1] == 20 );
-    PMM_TEST( keys[2] == 30 );
-    PMM_TEST( keys[3] == 40 );
-    PMM_TEST( keys[4] == 50 );
+    REQUIRE( keys.size() == 5 );
+    REQUIRE( keys[0] == 10 );
+    REQUIRE( keys[1] == 20 );
+    REQUIRE( keys[2] == 30 );
+    REQUIRE( keys[3] == 40 );
+    REQUIRE( keys[4] == 50 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief Iterator works with single element.
-static bool test_i196_iterator_single()
+TEST_CASE( "    iterator with single element", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 42, 100 );
 
     auto it = map.begin();
-    PMM_TEST( it != map.end() );
+    REQUIRE( it != map.end() );
 
     auto node = *it;
-    PMM_TEST( !node.is_null() );
-    PMM_TEST( node->key == 42 );
-    PMM_TEST( node->value == 100 );
+    REQUIRE( !node.is_null() );
+    REQUIRE( node->key == 42 );
+    REQUIRE( node->value == 100 );
 
     ++it;
-    PMM_TEST( it == map.end() );
+    REQUIRE( it == map.end() );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief Iterator reflects state after erase.
-static bool test_i196_iterator_after_erase()
+TEST_CASE( "    iterator after erase", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 10, 1 );
@@ -358,19 +319,18 @@ static bool test_i196_iterator_after_erase()
         keys.push_back( node->key );
     }
 
-    PMM_TEST( keys.size() == 2 );
-    PMM_TEST( keys[0] == 10 );
-    PMM_TEST( keys[1] == 30 );
+    REQUIRE( keys.size() == 2 );
+    REQUIRE( keys[0] == 10 );
+    REQUIRE( keys[1] == 30 );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief Iterator with many elements maintains sorted order.
-static bool test_i196_iterator_many()
+TEST_CASE( "    iterator with many elements", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 256 * 1024 ) );
+    REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
 
@@ -385,15 +345,14 @@ static bool test_i196_iterator_many()
     for ( auto it = map.begin(); it != map.end(); ++it )
     {
         auto node = *it;
-        PMM_TEST( node->key > prev );
-        PMM_TEST( node->value == node->key * 10 );
+        REQUIRE( node->key > prev );
+        REQUIRE( node->value == node->key * 10 );
         prev = node->key;
         count++;
     }
-    PMM_TEST( count == N );
+    REQUIRE( count == N );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -401,45 +360,43 @@ static bool test_i196_iterator_many()
 // =============================================================================
 
 /// @brief clear() removes all elements.
-static bool test_i196_clear_basic()
+TEST_CASE( "    clear() removes all elements", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 1, 10 );
     map.insert( 2, 20 );
     map.insert( 3, 30 );
-    PMM_TEST( map.size() == 3 );
+    REQUIRE( map.size() == 3 );
 
     map.clear();
-    PMM_TEST( map.empty() );
-    PMM_TEST( map.size() == 0 );
-    PMM_TEST( map.begin() == map.end() );
+    REQUIRE( map.empty() );
+    REQUIRE( map.size() == 0 );
+    REQUIRE( map.begin() == map.end() );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief clear() on empty map is safe.
-static bool test_i196_clear_empty()
+TEST_CASE( "    clear() on empty map is safe", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.clear();
-    PMM_TEST( map.empty() );
+    REQUIRE( map.empty() );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief Can insert after clear().
-static bool test_i196_insert_after_clear()
+TEST_CASE( "    insert after clear()", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 1, 10 );
@@ -447,12 +404,11 @@ static bool test_i196_insert_after_clear()
     map.clear();
 
     map.insert( 5, 50 );
-    PMM_TEST( map.size() == 1 );
-    PMM_TEST( map.find( 5 )->value == 50 );
-    PMM_TEST( map.find( 1 ).is_null() );
+    REQUIRE( map.size() == 1 );
+    REQUIRE( map.find( 5 )->value == 50 );
+    REQUIRE( map.find( 1 ).is_null() );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -460,10 +416,10 @@ static bool test_i196_insert_after_clear()
 // =============================================================================
 
 /// @brief Erase half the elements, verify remaining are all findable.
-static bool test_i196_erase_stress()
+TEST_CASE( "    erase half elements, verify remaining", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 512 * 1024 ) );
+    REQUIRE( TestMgr::create( 512 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
 
@@ -471,70 +427,68 @@ static bool test_i196_erase_stress()
     for ( int i = 0; i < N; i++ )
         map.insert( i, i * 100 );
 
-    PMM_TEST( map.size() == static_cast<std::size_t>( N ) );
+    REQUIRE( map.size() == static_cast<std::size_t>( N ) );
 
     // Erase even keys
     for ( int i = 0; i < N; i += 2 )
-        PMM_TEST( map.erase( i ) );
+        REQUIRE( map.erase( i ) );
 
-    PMM_TEST( map.size() == static_cast<std::size_t>( N / 2 ) );
+    REQUIRE( map.size() == static_cast<std::size_t>( N / 2 ) );
 
     // Verify odd keys remain
     for ( int i = 1; i < N; i += 2 )
     {
         auto p = map.find( i );
-        PMM_TEST( !p.is_null() );
-        PMM_TEST( p->value == i * 100 );
+        REQUIRE( !p.is_null() );
+        REQUIRE( p->value == i * 100 );
     }
 
     // Verify even keys are gone
     for ( int i = 0; i < N; i += 2 )
-        PMM_TEST( map.find( i ).is_null() );
+        REQUIRE( map.find( i ).is_null() );
 
     // Verify iterator still sorted
     int prev = -1;
     for ( auto it = map.begin(); it != map.end(); ++it )
     {
         auto node = *it;
-        PMM_TEST( node->key > prev );
+        REQUIRE( node->key > prev );
         prev = node->key;
     }
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief Insert, erase, re-insert cycle with memory reuse.
-static bool test_i196_erase_reinsert_cycle()
+TEST_CASE( "    insert-erase-reinsert cycle", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 128 * 1024 ) );
+    REQUIRE( TestMgr::create( 128 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
 
     // First round
     for ( int i = 0; i < 10; i++ )
         map.insert( i, i );
-    PMM_TEST( map.size() == 10 );
+    REQUIRE( map.size() == 10 );
 
     // Erase all
     for ( int i = 0; i < 10; i++ )
-        PMM_TEST( map.erase( i ) );
-    PMM_TEST( map.empty() );
+        REQUIRE( map.erase( i ) );
+    REQUIRE( map.empty() );
 
     // Second round
     for ( int i = 100; i < 110; i++ )
         map.insert( i, i );
-    PMM_TEST( map.size() == 10 );
+    REQUIRE( map.size() == 10 );
 
     // Verify only second round keys exist
     for ( int i = 0; i < 10; i++ )
-        PMM_TEST( map.find( i ).is_null() );
+        REQUIRE( map.find( i ).is_null() );
     for ( int i = 100; i < 110; i++ )
-        PMM_TEST( map.find( i )->value == i );
+        REQUIRE( map.find( i )->value == i );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
@@ -542,10 +496,10 @@ static bool test_i196_erase_reinsert_cycle()
 // =============================================================================
 
 /// @brief erase() deallocates memory (free_size increases).
-static bool test_i196_erase_frees_memory()
+TEST_CASE( "    erase() frees memory", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     map.insert( 1, 10 );
@@ -557,17 +511,16 @@ static bool test_i196_erase_frees_memory()
     map.erase( 2 );
 
     auto free_after = TestMgr::free_size();
-    PMM_TEST( free_after > free_before );
+    REQUIRE( free_after > free_before );
 
     TestMgr::destroy();
-    return true;
 }
 
 /// @brief clear() deallocates all memory (free_size increases).
-static bool test_i196_clear_frees_memory()
+TEST_CASE( "    clear() frees all memory", "[test_issue196_pmap_erase]" )
 {
     TestMgr::destroy();
-    PMM_TEST( TestMgr::create( 64 * 1024 ) );
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     TestMgr::pmap<int, int> map;
     for ( int i = 0; i < 10; i++ )
@@ -578,66 +531,12 @@ static bool test_i196_clear_frees_memory()
     map.clear();
 
     auto free_after = TestMgr::free_size();
-    PMM_TEST( free_after > free_before );
-    PMM_TEST( map.empty() );
+    REQUIRE( free_after > free_before );
+    REQUIRE( map.empty() );
 
     TestMgr::destroy();
-    return true;
 }
 
 // =============================================================================
 // main
 // =============================================================================
-
-int main()
-{
-    bool all_passed = true;
-
-    std::cout << "[Issue #196: pmap erase(), size(), iterator, clear() — Phase 3.3]\n";
-
-    std::cout << "  I196-A: erase() basic functionality\n";
-    PMM_RUN( "    erase existing key", test_i196_erase_basic );
-    PMM_RUN( "    erase missing key returns false", test_i196_erase_missing );
-    PMM_RUN( "    erase from empty map", test_i196_erase_empty );
-    PMM_RUN( "    erase preserves other keys", test_i196_erase_preserves_others );
-    PMM_RUN( "    erase all keys one by one", test_i196_erase_all_one_by_one );
-    PMM_RUN( "    erase root node", test_i196_erase_root );
-    PMM_RUN( "    erase then re-insert", test_i196_erase_then_reinsert );
-
-    std::cout << "  I196-B: size() method\n";
-    PMM_RUN( "    size() of empty map", test_i196_size_empty );
-    PMM_RUN( "    size() after inserts", test_i196_size_after_insert );
-    PMM_RUN( "    size() after erase", test_i196_size_after_erase );
-
-    std::cout << "  I196-C: begin()/end() iterator\n";
-    PMM_RUN( "    begin() == end() for empty map", test_i196_iterator_empty );
-    PMM_RUN( "    iterator visits keys in sorted order", test_i196_iterator_order );
-    PMM_RUN( "    iterator with single element", test_i196_iterator_single );
-    PMM_RUN( "    iterator after erase", test_i196_iterator_after_erase );
-    PMM_RUN( "    iterator with many elements", test_i196_iterator_many );
-
-    std::cout << "  I196-D: clear() method\n";
-    PMM_RUN( "    clear() removes all elements", test_i196_clear_basic );
-    PMM_RUN( "    clear() on empty map is safe", test_i196_clear_empty );
-    PMM_RUN( "    insert after clear()", test_i196_insert_after_clear );
-
-    std::cout << "  I196-E: AVL balance and stress tests\n";
-    PMM_RUN( "    erase half elements, verify remaining", test_i196_erase_stress );
-    PMM_RUN( "    insert-erase-reinsert cycle", test_i196_erase_reinsert_cycle );
-
-    std::cout << "  I196-F: Memory deallocation\n";
-    PMM_RUN( "    erase() frees memory", test_i196_erase_frees_memory );
-    PMM_RUN( "    clear() frees all memory", test_i196_clear_frees_memory );
-
-    std::cout << "\n";
-    if ( all_passed )
-    {
-        std::cout << "All Issue #196 tests PASSED.\n";
-        return EXIT_SUCCESS;
-    }
-    else
-    {
-        std::cout << "Some Issue #196 tests FAILED.\n";
-        return EXIT_FAILURE;
-    }
-}
