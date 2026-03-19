@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>STL-compatible allocator backed by <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Унифицированный статический менеджер персистентной памяти (Issue #110).">PersistMemoryManager</a> (Issue #198, Phase 3.5).  
+<p>STL-compatible allocator backed by <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> (Issue #198, Phase 3.5).  
  <a href="structpmm_1_1pallocator.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pallocator_8h_source.html">pallocator.h</a>&gt;</code></p>
@@ -134,8 +134,8 @@ Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename T, typename ManagerT&gt;<br />
-struct pmm::pallocator&lt; T, ManagerT &gt;</div><p>STL-compatible allocator backed by <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Унифицированный статический менеджер персистентной памяти (Issue #110).">PersistMemoryManager</a> (Issue #198, Phase 3.5). </p>
-<p>pallocator&lt;T, ManagerT&gt; delegates memory allocation and deallocation to a <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Унифицированный статический менеджер персистентной памяти (Issue #110).">PersistMemoryManager</a>, allowing STL containers to store their data in the persistent address space (PAP).</p>
+struct pmm::pallocator&lt; T, ManagerT &gt;</div><p>STL-compatible allocator backed by <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> (Issue #198, Phase 3.5). </p>
+<p>pallocator&lt;T, ManagerT&gt; delegates memory allocation and deallocation to a <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>, allowing STL containers to store their data in the persistent address space (PAP).</p>
 <p>The allocator is stateless — all state is held in the static ManagerT. Two pallocator instances with the same ManagerT are always equal.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">

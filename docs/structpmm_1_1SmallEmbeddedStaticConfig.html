@@ -97,6 +97,8 @@ Public Types</h2></td></tr>
 <tr class="separator:a96ace4dd874370b494812e1cf3809a31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae68d5cf104aa8490697d6dece7030198" id="r_ae68d5cf104aa8490697d6dece7030198"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1SmallEmbeddedStaticConfig.html#ae68d5cf104aa8490697d6dece7030198">lock_policy</a> = <a class="el" href="structpmm_1_1config_1_1NoLock.html">config::NoLock</a></td></tr>
 <tr class="separator:ae68d5cf104aa8490697d6dece7030198"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04963e5240f1ba6f8f17420150c9accf" id="r_a04963e5240f1ba6f8f17420150c9accf"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1SmallEmbeddedStaticConfig.html#a04963e5240f1ba6f8f17420150c9accf">logging_policy</a> = <a class="el" href="structpmm_1_1logging_1_1NoLogging.html">logging::NoLogging</a></td></tr>
+<tr class="separator:a04963e5240f1ba6f8f17420150c9accf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -137,9 +139,9 @@ struct pmm::SmallEmbeddedStaticConfig&lt; BufferSize &gt;</div><p>Конфигу
 <div class="line">SmallMgr::create(1024);</div>
 <div class="line"><span class="keywordtype">void</span>* ptr = SmallMgr::allocate(32);</div>
 <div class="line"><span class="comment">// sizeof(SmallMgr::pptr&lt;int&gt;) == 2  (16-bit индекс)</span></div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00111">persist_memory_manager.h:112</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00125">persist_memory_manager.h:126</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00222">222</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00234">234</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="afc95192f443647f4da4ec7b0d0f82899" name="afc95192f443647f4da4ec7b0d0f82899"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afc95192f443647f4da4ec7b0d0f82899">&#9670;&#160;</a></span>address_traits</h2>
@@ -155,7 +157,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00227">227</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00239">239</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -173,7 +175,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00229">229</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00241">241</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -191,7 +193,25 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00230">230</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00242">242</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+
+</div>
+</div>
+<a id="a04963e5240f1ba6f8f17420150c9accf" name="a04963e5240f1ba6f8f17420150c9accf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04963e5240f1ba6f8f17420150c9accf">&#9670;&#160;</a></span>logging_policy</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t BufferSize = 1024&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="structpmm_1_1SmallEmbeddedStaticConfig.html">pmm::SmallEmbeddedStaticConfig</a>&lt; BufferSize &gt;::logging_policy =  <a class="el" href="structpmm_1_1logging_1_1NoLogging.html">logging::NoLogging</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00243">243</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -209,7 +229,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00228">228</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00240">240</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -236,7 +256,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00231">231</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00244">244</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -262,7 +282,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00234">234</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00247">247</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -288,7 +308,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00233">233</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00246">246</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -314,7 +334,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00232">232</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00245">245</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

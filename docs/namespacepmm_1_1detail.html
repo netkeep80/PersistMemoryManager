@@ -81,9 +81,16 @@ $(function() {
   <div class="headertitle"><div class="title">pmm::detail Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Унифицированный статический менеджер персистентной памяти (Issue #110).  
+<a href="namespacepmm_1_1detail.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1config__logging__policy.html">config_logging_policy</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1config__logging__policy_3_01C_00_01std_1_1void__t_3_01typename_01C_1_1logging__policy_01_4_01_4.html">config_logging_policy&lt; C, std::void_t&lt; typename C::logging_policy &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support). All _offset and counter fields use index_type, so LargeDBConfig uses uint64_t indices and DefaultAddressTraits keeps uint32_t with exactly 64 bytes as before. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).  <a href="structpmm_1_1detail_1_1ManagerHeader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -204,7 +211,26 @@ Variables</h2></td></tr>
 <tr class="memdesc:aad88b724ee045e7a9ccba9f270a7a5e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager header size in granules for AddressTraitsT (Issue #146, #175). Uses ceiling division: ceil(sizeof(ManagerHeader&lt;AT&gt;) / AT::granule_size). For DefaultAddressTraits (16B granule): 64/16 = 4. For LargeAddressTraits (64B granule): ceil(96/64) = 2.  <br /></td></tr>
 <tr class="separator:aad88b724ee045e7a9ccba9f270a7a5e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Унифицированный статический менеджер персистентной памяти (Issue #110). </p>
+<p>Все состояние и методы статические — нет необходимости создавать экземпляры. Параметр <code>InstanceId</code> обеспечивает уникальность типа для каждого логического «экземпляра» при одинаковой конфигурации, что реализует паттерн мультитон.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">ConfigT</td><td>Конфигурация менеджера (например <a class="el" href="namespacepmm.html#a7300ec13c59027526d51d363b3b14fd7" title="Конфигурация кеш-менеджера (однопоточный, heap, 16B гранула).">pmm::CacheManagerConfig</a>). Должна предоставлять:<ul>
+<li><code>address_traits</code> — тип адресных traits</li>
+<li><code>storage_backend</code> — тип бэкенда хранилища</li>
+<li><code>free_block_tree</code> — тип политики дерева свободных блоков</li>
+<li><code>lock_policy</code> — политика блокировок </li>
+</ul>
+</td></tr>
+    <tr><td class="paramname">InstanceId</td><td>Идентификатор экземпляра (по умолчанию 0). Позволяет создать несколько независимых менеджеров одной конфигурации.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>Состояние хранится в статических переменных класса. Каждая специализация <code><a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>&lt;ConfigT, InstanceId&gt;</code> имеет собственный независимый статический бэкенд, мьютекс и флаг инициализации.</dd>
+<dd>
+Используйте <code>destroy()</code> перед повторной инициализацией и между тестами. </dd></dl>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="a02099bcb0dd9e581347c38d4ac4d9671" name="a02099bcb0dd9e581347c38d4ac4d9671"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a02099bcb0dd9e581347c38d4ac4d9671">&#9670;&#160;</a></span>atomic_rename()</h2>
 

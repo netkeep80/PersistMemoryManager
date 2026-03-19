@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PersistMemoryManager: pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt; Struct Template Reference</title>
+<title>PersistMemoryManager: pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt; Struct Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -78,7 +78,7 @@ $(function() {
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="structpmm_1_1BasicConfig-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt; Struct Template Reference</div></div>
+  <div class="headertitle"><div class="title">pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt; Struct Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
@@ -89,29 +89,31 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:aa51defefad754fb3bdd70d22595028fa" id="r_aa51defefad754fb3bdd70d22595028fa"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#aa51defefad754fb3bdd70d22595028fa">address_traits</a> = AddressTraitsT</td></tr>
-<tr class="separator:aa51defefad754fb3bdd70d22595028fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11405eeef62fa9330f64179f9721c391" id="r_a11405eeef62fa9330f64179f9721c391"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a11405eeef62fa9330f64179f9721c391">storage_backend</a> = <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt; AddressTraitsT &gt;</td></tr>
-<tr class="separator:a11405eeef62fa9330f64179f9721c391"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6780ec2f1afafc2865d074cdce4fc68f" id="r_a6780ec2f1afafc2865d074cdce4fc68f"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a6780ec2f1afafc2865d074cdce4fc68f">free_block_tree</a> = <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; AddressTraitsT &gt;</td></tr>
-<tr class="separator:a6780ec2f1afafc2865d074cdce4fc68f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fb665914bdf462997999deecc46e842" id="r_a0fb665914bdf462997999deecc46e842"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a0fb665914bdf462997999deecc46e842">lock_policy</a> = LockPolicyT</td></tr>
-<tr class="separator:a0fb665914bdf462997999deecc46e842"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14de5b47afec59f6695083874ddacd3b" id="r_a14de5b47afec59f6695083874ddacd3b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a14de5b47afec59f6695083874ddacd3b">address_traits</a> = AddressTraitsT</td></tr>
+<tr class="separator:a14de5b47afec59f6695083874ddacd3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae54d665359a0d820ae9fe93b346c9048" id="r_ae54d665359a0d820ae9fe93b346c9048"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#ae54d665359a0d820ae9fe93b346c9048">storage_backend</a> = <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt; AddressTraitsT &gt;</td></tr>
+<tr class="separator:ae54d665359a0d820ae9fe93b346c9048"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a30a346bba3a57c4800514f7969247a" id="r_a6a30a346bba3a57c4800514f7969247a"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a6a30a346bba3a57c4800514f7969247a">free_block_tree</a> = <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; AddressTraitsT &gt;</td></tr>
+<tr class="separator:a6a30a346bba3a57c4800514f7969247a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b7ea15d49d1fbaa6316f32d0af831da" id="r_a6b7ea15d49d1fbaa6316f32d0af831da"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a6b7ea15d49d1fbaa6316f32d0af831da">lock_policy</a> = LockPolicyT</td></tr>
+<tr class="separator:a6b7ea15d49d1fbaa6316f32d0af831da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa69f7843f87452d906884a04c8dfb0f9" id="r_aa69f7843f87452d906884a04c8dfb0f9"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#aa69f7843f87452d906884a04c8dfb0f9">logging_policy</a> = LoggingPolicyT</td></tr>
+<tr class="separator:aa69f7843f87452d906884a04c8dfb0f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
-<tr class="memitem:afc3cb4f4f1803c9ced2f9bdc9dd66e79" id="r_afc3cb4f4f1803c9ced2f9bdc9dd66e79"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#afc3cb4f4f1803c9ced2f9bdc9dd66e79">granule_size</a> = AddressTraitsT::granule_size</td></tr>
-<tr class="separator:afc3cb4f4f1803c9ced2f9bdc9dd66e79"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb44307f0b6f8e5b6eb4f3153eb918f9" id="r_adb44307f0b6f8e5b6eb4f3153eb918f9"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#adb44307f0b6f8e5b6eb4f3153eb918f9">max_memory_gb</a> = MaxMemoryGB</td></tr>
-<tr class="separator:adb44307f0b6f8e5b6eb4f3153eb918f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a8838fc8d106bb6e5b6f99dc6610118" id="r_a0a8838fc8d106bb6e5b6f99dc6610118"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a0a8838fc8d106bb6e5b6f99dc6610118">grow_numerator</a> = GrowNum</td></tr>
-<tr class="separator:a0a8838fc8d106bb6e5b6f99dc6610118"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e26128e6476caedc1d4ff821e11db65" id="r_a4e26128e6476caedc1d4ff821e11db65"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a4e26128e6476caedc1d4ff821e11db65">grow_denominator</a> = GrowDen</td></tr>
-<tr class="separator:a4e26128e6476caedc1d4ff821e11db65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62f974186624750126963323cf8d4649" id="r_a62f974186624750126963323cf8d4649"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a62f974186624750126963323cf8d4649">granule_size</a> = AddressTraitsT::granule_size</td></tr>
+<tr class="separator:a62f974186624750126963323cf8d4649"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4f301b27fff801e5944c7685520eee3" id="r_af4f301b27fff801e5944c7685520eee3"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#af4f301b27fff801e5944c7685520eee3">max_memory_gb</a> = MaxMemoryGB</td></tr>
+<tr class="separator:af4f301b27fff801e5944c7685520eee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa82f399b99db53224677486fcff6cb40" id="r_aa82f399b99db53224677486fcff6cb40"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#aa82f399b99db53224677486fcff6cb40">grow_numerator</a> = GrowNum</td></tr>
+<tr class="separator:aa82f399b99db53224677486fcff6cb40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60163bfb9863a808c5bea01c44df7ebc" id="r_a60163bfb9863a808c5bea01c44df7ebc"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1BasicConfig.html#a60163bfb9863a808c5bea01c44df7ebc">grow_denominator</a> = GrowDen</td></tr>
+<tr class="separator:a60163bfb9863a808c5bea01c44df7ebc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><div class="compoundTemplParams">template&lt;typename AddressTraitsT = DefaultAddressTraits, typename LockPolicyT = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt;<br />
-struct pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;</div><p>Базовый шаблон конфигурации менеджера с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> (Issue #160). </p>
+<div class="textblock"><div class="compoundTemplParams">template&lt;typename AddressTraitsT = DefaultAddressTraits, typename LockPolicyT = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT = logging::NoLogging&gt;<br />
+struct pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;</div><p>Базовый шаблон конфигурации менеджера с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> (Issue #160). </p>
 <p>Устраняет дублирование между CacheManagerConfig, PersistentDataConfig, EmbeddedManagerConfig, IndustrialDBConfig и LargeDBConfig. Готовые конфигурации теперь являются псевдонимами <a class="el" href="structpmm_1_1BasicConfig.html" title="Базовый шаблон конфигурации менеджера с HeapStorage (Issue #160).">BasicConfig</a> с конкретными параметрами.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
@@ -119,7 +121,8 @@ struct pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMe
     <tr><td class="paramname">LockPolicyT</td><td>Политика блокировок (<a class="el" href="structpmm_1_1config_1_1NoLock.html" title="Политика без блокировок (однопоточный режим, нет накладных расходов).">config::NoLock</a> или <a class="el" href="structpmm_1_1config_1_1SharedMutexLock.html" title="Политика блокировки с std::shared_mutex (многопоточная, по умолчанию).">config::SharedMutexLock</a>) </td></tr>
     <tr><td class="paramname">GrowNum</td><td>Числитель коэффициента роста хранилища (по умолчанию 5) </td></tr>
     <tr><td class="paramname">GrowDen</td><td>Знаменатель коэффициента роста хранилища (по умолчанию 4, т.е. рост 25%) </td></tr>
-    <tr><td class="paramname">MaxMemoryGB</td><td>Максимальный объём памяти в ГБ (0 = без ограничения)</td></tr>
+    <tr><td class="paramname">MaxMemoryGB</td><td>Максимальный объём памяти в ГБ (0 = без ограничения) </td></tr>
+    <tr><td class="paramname">LoggingPolicyT</td><td>Политика логирования (<a class="el" href="structpmm_1_1logging_1_1NoLogging.html" title="Политика без логирования (нулевые накладные расходы, по умолчанию).">logging::NoLogging</a> по умолчанию) (Issue #202, Phase 4.2)</td></tr>
   </table>
   </dd>
 </dl>
@@ -131,99 +134,127 @@ struct pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMe
 <div class="line">    32     <span class="comment">// max 32 GB</span></div>
 <div class="line">&gt;;</div>
 <div class="line"><span class="keyword">using </span>MyManager = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;MyConfig&gt;</a>;</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00111">persist_memory_manager.h:112</a></div></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Менеджер с логированием в stderr</span></div>
+<div class="line"><span class="keyword">using </span>DebugConfig = <a class="code hl_struct" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt;</div>
+<div class="line">    <a class="code hl_typedef" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a>,</div>
+<div class="line">    <a class="code hl_struct" href="structpmm_1_1config_1_1NoLock.html">pmm::config::NoLock</a>,</div>
+<div class="line">    5, 4, 64,</div>
+<div class="line">    <a class="code hl_struct" href="structpmm_1_1logging_1_1StderrLogging.html">pmm::logging::StderrLogging</a></div>
+<div class="line">&gt;;</div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00125">persist_memory_manager.h:126</a></div></div>
 <div class="ttc" id="anamespacepmm_html_a9ca69087900283384dda68352be048bb"><div class="ttname"><a href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a></div><div class="ttdeci">AddressTraits&lt; std::uint32_t, 16 &gt; DefaultAddressTraits</div><div class="ttdoc">32-bit вариант, 16-байтная гранула — текущий дефолт (без потерь: Block=32B=2*16B).</div><div class="ttdef"><b>Definition</b> <a href="address__traits_8h_source.html#l00140">address_traits.h:140</a></div></div>
-<div class="ttc" id="astructpmm_1_1BasicConfig_html"><div class="ttname"><a href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a></div><div class="ttdoc">Базовый шаблон конфигурации менеджера с HeapStorage (Issue #160).</div><div class="ttdef"><b>Definition</b> <a href="manager__configs_8h_source.html#l00173">manager_configs.h:174</a></div></div>
+<div class="ttc" id="astructpmm_1_1BasicConfig_html"><div class="ttname"><a href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a></div><div class="ttdoc">Базовый шаблон конфигурации менеджера с HeapStorage (Issue #160).</div><div class="ttdef"><b>Definition</b> <a href="manager__configs_8h_source.html#l00184">manager_configs.h:185</a></div></div>
+<div class="ttc" id="astructpmm_1_1config_1_1NoLock_html"><div class="ttname"><a href="structpmm_1_1config_1_1NoLock.html">pmm::config::NoLock</a></div><div class="ttdoc">Политика без блокировок (однопоточный режим, нет накладных расходов).</div><div class="ttdef"><b>Definition</b> <a href="config_8h_source.html#l00044">config.h:45</a></div></div>
 <div class="ttc" id="astructpmm_1_1config_1_1SharedMutexLock_html"><div class="ttname"><a href="structpmm_1_1config_1_1SharedMutexLock.html">pmm::config::SharedMutexLock</a></div><div class="ttdoc">Политика блокировки с std::shared_mutex (многопоточная, по умолчанию).</div><div class="ttdef"><b>Definition</b> <a href="config_8h_source.html#l00036">config.h:37</a></div></div>
+<div class="ttc" id="astructpmm_1_1logging_1_1StderrLogging_html"><div class="ttname"><a href="structpmm_1_1logging_1_1StderrLogging.html">pmm::logging::StderrLogging</a></div><div class="ttdoc">Политика логирования в stderr.</div><div class="ttdef"><b>Definition</b> <a href="logging__policy_8h_source.html#l00100">logging_policy.h:101</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00173">173</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00184">184</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="aa51defefad754fb3bdd70d22595028fa" name="aa51defefad754fb3bdd70d22595028fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa51defefad754fb3bdd70d22595028fa">&#9670;&#160;</a></span>address_traits</h2>
+<a id="a14de5b47afec59f6695083874ddacd3b" name="a14de5b47afec59f6695083874ddacd3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a14de5b47afec59f6695083874ddacd3b">&#9670;&#160;</a></span>address_traits</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt; </div>
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;::address_traits =  AddressTraitsT</td>
+          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::address_traits =  AddressTraitsT</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00178">178</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00189">189</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
-<a id="a6780ec2f1afafc2865d074cdce4fc68f" name="a6780ec2f1afafc2865d074cdce4fc68f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6780ec2f1afafc2865d074cdce4fc68f">&#9670;&#160;</a></span>free_block_tree</h2>
+<a id="a6a30a346bba3a57c4800514f7969247a" name="a6a30a346bba3a57c4800514f7969247a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a30a346bba3a57c4800514f7969247a">&#9670;&#160;</a></span>free_block_tree</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt; </div>
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;::free_block_tree =  <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;AddressTraitsT&gt;</td>
+          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::free_block_tree =  <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;AddressTraitsT&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00180">180</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00191">191</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
-<a id="a0fb665914bdf462997999deecc46e842" name="a0fb665914bdf462997999deecc46e842"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0fb665914bdf462997999deecc46e842">&#9670;&#160;</a></span>lock_policy</h2>
+<a id="a6b7ea15d49d1fbaa6316f32d0af831da" name="a6b7ea15d49d1fbaa6316f32d0af831da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b7ea15d49d1fbaa6316f32d0af831da">&#9670;&#160;</a></span>lock_policy</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt; </div>
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;::lock_policy =  LockPolicyT</td>
+          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::lock_policy =  LockPolicyT</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00181">181</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00192">192</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
-<a id="a11405eeef62fa9330f64179f9721c391" name="a11405eeef62fa9330f64179f9721c391"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a11405eeef62fa9330f64179f9721c391">&#9670;&#160;</a></span>storage_backend</h2>
+<a id="aa69f7843f87452d906884a04c8dfb0f9" name="aa69f7843f87452d906884a04c8dfb0f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa69f7843f87452d906884a04c8dfb0f9">&#9670;&#160;</a></span>logging_policy</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt; </div>
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;::storage_backend =  <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt;AddressTraitsT&gt;</td>
+          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::logging_policy =  LoggingPolicyT</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00179">179</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00193">193</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+
+</div>
+</div>
+<a id="ae54d665359a0d820ae9fe93b346c9048" name="ae54d665359a0d820ae9fe93b346c9048"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae54d665359a0d820ae9fe93b346c9048">&#9670;&#160;</a></span>storage_backend</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::storage_backend =  <a class="el" href="classpmm_1_1HeapStorage.html">HeapStorage</a>&lt;AddressTraitsT&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00190">190</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="afc3cb4f4f1803c9ced2f9bdc9dd66e79" name="afc3cb4f4f1803c9ced2f9bdc9dd66e79"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afc3cb4f4f1803c9ced2f9bdc9dd66e79">&#9670;&#160;</a></span>granule_size</h2>
+<a id="a62f974186624750126963323cf8d4649" name="a62f974186624750126963323cf8d4649"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62f974186624750126963323cf8d4649">&#9670;&#160;</a></span>granule_size</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt; </div>
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr std::size_t <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;::granule_size = AddressTraitsT::granule_size</td>
+          <td class="memname">constexpr std::size_t <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::granule_size = AddressTraitsT::granule_size</td>
         </tr>
       </table>
   </td>
@@ -233,23 +264,23 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00182">182</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00194">194</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
-<a id="a4e26128e6476caedc1d4ff821e11db65" name="a4e26128e6476caedc1d4ff821e11db65"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4e26128e6476caedc1d4ff821e11db65">&#9670;&#160;</a></span>grow_denominator</h2>
+<a id="a60163bfb9863a808c5bea01c44df7ebc" name="a60163bfb9863a808c5bea01c44df7ebc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60163bfb9863a808c5bea01c44df7ebc">&#9670;&#160;</a></span>grow_denominator</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt; </div>
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr std::size_t <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;::grow_denominator = GrowDen</td>
+          <td class="memname">constexpr std::size_t <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::grow_denominator = GrowDen</td>
         </tr>
       </table>
   </td>
@@ -259,23 +290,23 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00185">185</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00197">197</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
-<a id="a0a8838fc8d106bb6e5b6f99dc6610118" name="a0a8838fc8d106bb6e5b6f99dc6610118"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0a8838fc8d106bb6e5b6f99dc6610118">&#9670;&#160;</a></span>grow_numerator</h2>
+<a id="aa82f399b99db53224677486fcff6cb40" name="aa82f399b99db53224677486fcff6cb40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa82f399b99db53224677486fcff6cb40">&#9670;&#160;</a></span>grow_numerator</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt; </div>
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr std::size_t <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;::grow_numerator = GrowNum</td>
+          <td class="memname">constexpr std::size_t <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::grow_numerator = GrowNum</td>
         </tr>
       </table>
   </td>
@@ -285,23 +316,23 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00184">184</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00196">196</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
-<a id="adb44307f0b6f8e5b6eb4f3153eb918f9" name="adb44307f0b6f8e5b6eb4f3153eb918f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adb44307f0b6f8e5b6eb4f3153eb918f9">&#9670;&#160;</a></span>max_memory_gb</h2>
+<a id="af4f301b27fff801e5944c7685520eee3" name="af4f301b27fff801e5944c7685520eee3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4f301b27fff801e5944c7685520eee3">&#9670;&#160;</a></span>max_memory_gb</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64&gt; </div>
+template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicyT  = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT  = logging::NoLogging&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr std::size_t <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB &gt;::max_memory_gb = MaxMemoryGB</td>
+          <td class="memname">constexpr std::size_t <a class="el" href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a>&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;::max_memory_gb = MaxMemoryGB</td>
         </tr>
       </table>
   </td>
@@ -311,7 +342,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00183">183</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00195">195</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

@@ -86,6 +86,7 @@ $(function() {
 <div class="textblock"><code>#include &quot;<a class="el" href="allocator__policy_8h_source.html">pmm/allocator_policy.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="block_8h_source.html">pmm/block.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="block__state_8h_source.html">pmm/block_state.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="logging__policy_8h_source.html">pmm/logging_policy.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="manager__configs_8h_source.html">pmm/manager_configs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pallocator_8h_source.html">pmm/pallocator.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="parray_8h_source.html">pmm/parray.h</a>&quot;</code><br />
@@ -109,13 +110,19 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1config__logging__policy.html">pmm::detail::config_logging_policy&lt; C, typename &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1config__logging__policy_3_01C_00_01std_1_1void__t_3_01typename_01C_1_1logging__policy_01_4_01_4.html">pmm::detail::config_logging_policy&lt; C, std::void_t&lt; typename C::logging_policy &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt; ConfigT, InstanceId &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Унифицированный статический менеджер персистентной памяти (Issue #110).  <a href="classpmm_1_1PersistMemoryManager.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm" id="r_namespacepmm"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html">pmm</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacepmm_1_1detail" id="r_namespacepmm_1_1detail"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html">pmm::detail</a></td></tr>
+<tr class="memdesc:namespacepmm_1_1detail"><td class="mdescLeft">&#160;</td><td class="mdescRight">Унифицированный статический менеджер персистентной памяти (Issue #110). <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -154,7 +161,7 @@ Namespaces</h2></td></tr>
 <div class="line">Buffer::destroy_typed(bp);</div>
 <div class="line">Cache::destroy();</div>
 <div class="line">Buffer::destroy();</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00111">persist_memory_manager.h:112</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00125">persist_memory_manager.h:126</a></div></div>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="manager__configs_8h.html" title="Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).">manager_configs.h</a> — готовые конфигурации менеджеров </dd>
 <dd>
 <a class="el" href="pmm__presets_8h.html" title="pmm_presets — готовые инстанции PersistMemoryManager (Issue #87 Phase 8, #110, #123,...">pmm_presets.h</a> — готовые псевдонимы для типичных сценариев </dd>

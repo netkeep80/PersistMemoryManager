@@ -11,7 +11,7 @@ var searchData=
   ['set_5fleft_5foffset_5fof_8',['set_left_offset_of',['../classpmm_1_1BlockStateBase.html#aa74c34aa6ba7da89c40752a66959d509',1,'pmm::BlockStateBase']]],
   ['set_5fnext_5foffset_9',['set_next_offset',['../classpmm_1_1BlockStateBase.html#a5f40a7bcc19ea2d5f47f1eca6a7e2aee',1,'pmm::BlockStateBase']]],
   ['set_5fnext_5foffset_5fof_10',['set_next_offset_of',['../classpmm_1_1BlockStateBase.html#a6d1a06f6f0b260071dbe4638045b52e7',1,'pmm::BlockStateBase']]],
-  ['set_5fnode_5ftype_11',['set_node_type',['../structpmm_1_1TreeNode.html#a973cc7bc560c8dae30fc2ce4975e5955',1,'pmm::TreeNode::set_node_type()'],['../classpmm_1_1BlockStateBase.html#a8160442f7c6a71d1175a55b87f9fc6b1',1,'pmm::BlockStateBase::set_node_type(std::uint16_t v) noexcept']]],
+  ['set_5fnode_5ftype_11',['set_node_type',['../classpmm_1_1BlockStateBase.html#a8160442f7c6a71d1175a55b87f9fc6b1',1,'pmm::BlockStateBase::set_node_type()'],['../structpmm_1_1TreeNode.html#a973cc7bc560c8dae30fc2ce4975e5955',1,'pmm::TreeNode::set_node_type()']]],
   ['set_5fnode_5ftype_5fof_12',['set_node_type_of',['../classpmm_1_1BlockStateBase.html#abc76b4fd19a7ae2cf0233d16173eea18',1,'pmm::BlockStateBase']]],
   ['set_5fobjects_5fper_5fchunk_13',['set_objects_per_chunk',['../structpmm_1_1ppool.html#ae5553ad1719f603675067da6a627dcfd',1,'pmm::ppool']]],
   ['set_5fparent_14',['set_parent',['../structpmm_1_1TreeNode.html#a331801a067f8fb6f080c2def1001466e',1,'pmm::TreeNode']]],
@@ -46,7 +46,8 @@ var searchData=
   ['splittingblock_43',['SplittingBlock',['../classpmm_1_1SplittingBlock.html',1,'pmm']]],
   ['static_5fstorage_2eh_44',['static_storage.h',['../static__storage_8h.html',1,'']]],
   ['staticstorage_45',['staticstorage',['../classpmm_1_1StaticStorage.html#ac49e4f5931e81a137c30ca0d3d79debf',1,'pmm::StaticStorage::StaticStorage(StaticStorage &amp;&amp;)=delete'],['../classpmm_1_1StaticStorage.html#abddd193aef5b482d840e2e591c4d4464',1,'pmm::StaticStorage::StaticStorage(const StaticStorage &amp;)=delete'],['../classpmm_1_1StaticStorage.html#a159d8a0b5b4b4cfb373ab243a3aaf946',1,'pmm::StaticStorage::StaticStorage() noexcept=default'],['../classpmm_1_1StaticStorage.html',1,'pmm::StaticStorage&lt; Size, AddressTraitsT &gt;']]],
-  ['storage_5fbackend_46',['storage_backend',['../structpmm_1_1BasicConfig.html#a11405eeef62fa9330f64179f9721c391',1,'pmm::BasicConfig::storage_backend'],['../structpmm_1_1SmallEmbeddedStaticConfig.html#ae3a9a228d6098df8cc40ad5730e16121',1,'pmm::SmallEmbeddedStaticConfig::storage_backend'],['../structpmm_1_1EmbeddedStaticConfig.html#a446ee4f33c478384f99727a095db2c1d',1,'pmm::EmbeddedStaticConfig::storage_backend'],['../classpmm_1_1PersistMemoryManager.html#a21a29f95d2f488d380f006c4187af55f',1,'pmm::PersistMemoryManager::storage_backend']]],
-  ['storage_5fbackend_2eh_47',['storage_backend.h',['../storage__backend_8h.html',1,'']]],
-  ['str_48',['str',['../structpmm_1_1pstringview.html#af26d985e30baf7e996ff428548d4a691',1,'pmm::pstringview']]]
+  ['stderrlogging_46',['StderrLogging',['../structpmm_1_1logging_1_1StderrLogging.html',1,'pmm::logging']]],
+  ['storage_5fbackend_47',['storage_backend',['../structpmm_1_1BasicConfig.html#ae54d665359a0d820ae9fe93b346c9048',1,'pmm::BasicConfig::storage_backend'],['../structpmm_1_1SmallEmbeddedStaticConfig.html#ae3a9a228d6098df8cc40ad5730e16121',1,'pmm::SmallEmbeddedStaticConfig::storage_backend'],['../structpmm_1_1EmbeddedStaticConfig.html#a446ee4f33c478384f99727a095db2c1d',1,'pmm::EmbeddedStaticConfig::storage_backend'],['../classpmm_1_1PersistMemoryManager.html#a21a29f95d2f488d380f006c4187af55f',1,'pmm::PersistMemoryManager::storage_backend']]],
+  ['storage_5fbackend_2eh_48',['storage_backend.h',['../storage__backend_8h.html',1,'']]],
+  ['str_49',['str',['../structpmm_1_1pstringview.html#af26d985e30baf7e996ff428548d4a691',1,'pmm::pstringview']]]
 ];
