@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.27.0] - 2026-03-19
+
+### Added
+- `pstring<ManagerT>` — mutable persistent string type for persistent address space (Issue #45, Phase 3.1)
+  - API: `assign()`, `append()`, `c_str()`, `size()`, `clear()`, `free_data()`, `operator[]`
+  - Data stored in a separate block with amortized O(1) reallocation (doubling strategy)
+  - POD-structure (trivially copyable) for direct serialization in PAP
+  - Comparison operators: `==`, `!=`, `<` with C-strings and other pstrings
+  - Manager alias: `Mgr::pstring` for concise usage
+
+
 ## [0.26.0] - 2026-03-18
 
 ### Added
