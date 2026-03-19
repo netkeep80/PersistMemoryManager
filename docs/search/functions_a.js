@@ -2,5 +2,6 @@ var searchData=
 [
   ['mark_5fas_5fallocated_0',['mark_as_allocated',['../classpmm_1_1FreeBlockRemovedAVL.html#a4eeee6090df0f5333ee5f2aee8496204',1,'pmm::FreeBlockRemovedAVL']]],
   ['mark_5fas_5ffree_1',['mark_as_free',['../classpmm_1_1AllocatedBlock.html#a115d7215d185da8532b047fa0e269dd9',1,'pmm::AllocatedBlock']]],
-  ['mmapstorage_2',['mmapstorage',['../classpmm_1_1MMapStorage.html#a0b5769057cad68693b2f94130d4ecffd',1,'pmm::MMapStorage::MMapStorage() noexcept=default'],['../classpmm_1_1MMapStorage.html#a687440980f3343a3f0dace67bd4be0b3',1,'pmm::MMapStorage::MMapStorage(const MMapStorage &amp;)=delete'],['../classpmm_1_1MMapStorage.html#ac631220dd65e21c3ff21e0a9a468c66a',1,'pmm::MMapStorage::MMapStorage(MMapStorage &amp;&amp;other) noexcept']]]
+  ['max_5fsize_2',['max_size',['../structpmm_1_1pallocator.html#abb47a3073b732bbbc83ddec23349bea9',1,'pmm::pallocator']]],
+  ['mmapstorage_3',['mmapstorage',['../classpmm_1_1MMapStorage.html#a0b5769057cad68693b2f94130d4ecffd',1,'pmm::MMapStorage::MMapStorage() noexcept=default'],['../classpmm_1_1MMapStorage.html#a687440980f3343a3f0dace67bd4be0b3',1,'pmm::MMapStorage::MMapStorage(const MMapStorage &amp;)=delete'],['../classpmm_1_1MMapStorage.html#ac631220dd65e21c3ff21e0a9a468c66a',1,'pmm::MMapStorage::MMapStorage(MMapStorage &amp;&amp;other) noexcept']]]
 ];

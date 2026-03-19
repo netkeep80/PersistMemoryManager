@@ -6,7 +6,7 @@ var searchData=
   ['alignment_3',['alignment',['../structpmm_1_1BlockView.html#a5098ff9cd5a73c8afec0ee4cc1ea5b3f',1,'pmm::BlockView']]],
   ['alloc_5fblock_5fcount_4',['alloc_block_count',['../classpmm_1_1PersistMemoryManager.html#a89879a510adcf526920f5b152c5bee97',1,'pmm::PersistMemoryManager']]],
   ['alloc_5fcount_5',['alloc_count',['../structpmm_1_1ManagerInfo.html#ae6f2770808f0e31199c561c0cc2d9b27',1,'pmm::ManagerInfo::alloc_count'],['../structpmm_1_1detail_1_1ManagerHeader.html#a05d63db2e83a65815bc121c9c18369c1',1,'pmm::detail::ManagerHeader::alloc_count']]],
-  ['allocate_6',['allocate',['../classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8',1,'pmm::PersistMemoryManager']]],
+  ['allocate_6',['allocate',['../structpmm_1_1pallocator.html#a92bec98211cdf7bb13705bf2d3d62d10',1,'pmm::pallocator::allocate()'],['../classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8',1,'pmm::PersistMemoryManager::allocate()']]],
   ['allocate_5ffrom_5fblock_7',['allocate_from_block',['../classpmm_1_1AllocatorPolicy.html#abb22aa9eedb474ae211a49b5294c6f89',1,'pmm::AllocatorPolicy']]],
   ['allocate_5ftyped_8',['allocate_typed',['../classpmm_1_1PersistMemoryManager.html#a1195a62d6d1ad521671f983a6f1fdbee',1,'pmm::PersistMemoryManager::allocate_typed() noexcept'],['../classpmm_1_1PersistMemoryManager.html#adcc0f931425ef71211dafd6ec225f5e3',1,'pmm::PersistMemoryManager::allocate_typed(std::size_t count) noexcept']]],
   ['allocated_5fblocks_9',['allocated_blocks',['../structpmm_1_1MemoryStats.html#a6e721bf5c77a38c1f5bd15468d3778c4',1,'pmm::MemoryStats']]],
