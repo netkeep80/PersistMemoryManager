@@ -127,6 +127,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:afc8820ac39ec71c2c101fad4d2bdd857" id="r_afc8820ac39ec71c2c101fad4d2bdd857"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#afc8820ac39ec71c2c101fad4d2bdd857">recompute_counters</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr)</td></tr>
 <tr class="memdesc:afc8820ac39ec71c2c101fad4d2bdd857"><td class="mdescLeft">&#160;</td><td class="mdescRight">Пересчитать счётчики блоков и использованного размера.  <br /></td></tr>
 <tr class="separator:afc8820ac39ec71c2c101fad4d2bdd857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ece7f551af631f6e36d49a18c155255" id="r_a2ece7f551af631f6e36d49a18c155255"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a2ece7f551af631f6e36d49a18c155255">realloc_shrink</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> blk_idx, void *blk_raw, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> old_data_gran, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> new_data_gran) noexcept</td></tr>
+<tr class="memdesc:a2ece7f551af631f6e36d49a18c155255"><td class="mdescLeft">&#160;</td><td class="mdescRight">In-place shrink: update weight, split remainder into free block + coalesce.  <br /></td></tr>
+<tr class="separator:a2ece7f551af631f6e36d49a18c155255"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad86e779aa0f9985fbbdb636f92418782" id="r_ad86e779aa0f9985fbbdb636f92418782"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#ad86e779aa0f9985fbbdb636f92418782">realloc_grow</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> blk_idx, void *blk_raw, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> old_data_gran, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> new_data_gran) noexcept</td></tr>
+<tr class="memdesc:ad86e779aa0f9985fbbdb636f92418782"><td class="mdescLeft">&#160;</td><td class="mdescRight">Try in-place grow by absorbing adjacent free block. Returns true on success.  <br /></td></tr>
+<tr class="separator:ad86e779aa0f9985fbbdb636f92418782"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename FreeBlockTreeT = AvlFreeTree&lt;DefaultAddressTraits&gt;, typename AddressTraitsT = DefaultAddressTraits&gt;<br />
@@ -439,6 +445,138 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad86e779aa0f9985fbbdb636f92418782" name="ad86e779aa0f9985fbbdb636f92418782"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad86e779aa0f9985fbbdb636f92418782">&#9670;&#160;</a></span>realloc_grow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool <a class="el" href="classpmm_1_1AllocatorPolicy.html">pmm::AllocatorPolicy</a>&lt; FreeBlockTreeT, AddressTraitsT &gt;::realloc_grow </td>
+          <td>(</td>
+          <td class="paramtype">std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *&#160;</td>
+          <td class="paramname"><em>hdr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a>&#160;</td>
+          <td class="paramname"><em>blk_idx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>blk_raw</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a>&#160;</td>
+          <td class="paramname"><em>old_data_gran</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a>&#160;</td>
+          <td class="paramname"><em>new_data_gran</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Try in-place grow by absorbing adjacent free block. Returns true on success. </p>
+
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00438">438</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+
+</div>
+</div>
+<a id="a2ece7f551af631f6e36d49a18c155255" name="a2ece7f551af631f6e36d49a18c155255"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ece7f551af631f6e36d49a18c155255">&#9670;&#160;</a></span>realloc_shrink()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classpmm_1_1AllocatorPolicy.html">pmm::AllocatorPolicy</a>&lt; FreeBlockTreeT, AddressTraitsT &gt;::realloc_shrink </td>
+          <td>(</td>
+          <td class="paramtype">std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *&#160;</td>
+          <td class="paramname"><em>hdr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a>&#160;</td>
+          <td class="paramname"><em>blk_idx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>blk_raw</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a>&#160;</td>
+          <td class="paramname"><em>old_data_gran</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a>&#160;</td>
+          <td class="paramname"><em>new_data_gran</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>In-place shrink: update weight, split remainder into free block + coalesce. </p>
+
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00404">404</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
