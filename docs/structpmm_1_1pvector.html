@@ -133,6 +133,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8e15b188bc71b55ba1822be81cbb1dbf" id="r_a8e15b188bc71b55ba1822be81cbb1dbf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#a8e15b188bc71b55ba1822be81cbb1dbf">pop_back</a> () noexcept</td></tr>
 <tr class="memdesc:a8e15b188bc71b55ba1822be81cbb1dbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Удалить последний элемент вектора за O(log n).  <br /></td></tr>
 <tr class="separator:a8e15b188bc71b55ba1822be81cbb1dbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34f3fe2e96f6f2769efdae79900c83ea" id="r_a34f3fe2e96f6f2769efdae79900c83ea"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#a34f3fe2e96f6f2769efdae79900c83ea">erase</a> (std::size_t index) noexcept</td></tr>
+<tr class="memdesc:a34f3fe2e96f6f2769efdae79900c83ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Удалить элемент по индексу за O(log n).  <br /></td></tr>
+<tr class="separator:a34f3fe2e96f6f2769efdae79900c83ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60209c414e8d3f64393cd2cc76c5620e" id="r_a60209c414e8d3f64393cd2cc76c5620e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#a60209c414e8d3f64393cd2cc76c5620e">clear</a> () noexcept</td></tr>
 <tr class="memdesc:a60209c414e8d3f64393cd2cc76c5620e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Очистить вектор (удалить все элементы).  <br /></td></tr>
 <tr class="separator:a60209c414e8d3f64393cd2cc76c5620e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -385,7 +388,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Начало итерации (самый левый узел = первый элемент). </p>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00363">363</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00390">390</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -417,7 +420,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Очистить вектор (удалить все элементы). </p>
 <p>Освобождает память всех узлов в ПАП. </p>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00271">271</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00298">298</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -479,7 +482,47 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Конец итерации (sentinel = 0). </p>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00380">380</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00407">407</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+
+</div>
+</div>
+<a id="a34f3fe2e96f6f2769efdae79900c83ea" name="a34f3fe2e96f6f2769efdae79900c83ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a34f3fe2e96f6f2769efdae79900c83ea">&#9670;&#160;</a></span>erase()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="structpmm_1_1pvector.html">pmm::pvector</a>&lt; T, ManagerT &gt;::erase </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Удалить элемент по индексу за O(log n). </p>
+<p>Находит узел по индексу через order-statistic tree, удаляет его из AVL-дерева с перебалансировкой и освобождает память узла в ПАП.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>Индекс элемента для удаления (0-based). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true если элемент был удалён, false если индекс вне диапазона. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00275">275</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -616,7 +659,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Сбросить вектор (для тестов). </p>
 <p>Сбрасывает _root_idx, но не освобождает данные в ПАП. </p>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00284">284</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00311">311</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
