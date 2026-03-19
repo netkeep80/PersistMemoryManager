@@ -851,7 +851,7 @@ PersistMemoryManager/
 │       ├── pmm.h                     # Полная библиотека (v0.10.0)
 │       └── pmm_*.h                   # Файлы пресетов
 ├── examples/                         # Примеры использования
-├── tests/                            # Тесты Catch2 (130+)
+├── tests/                            # Тесты Catch2 (160+)
 ├── demo/                             # Визуальное ImGui/OpenGL демо
 ├── docs/                             # Архитектура, API, план развития
 │   ├── plan.md                       # План развития pmm
@@ -884,7 +884,7 @@ PersistMemoryManager/
 **Ближайшие приоритеты (Фаза 5)** — Тестирование и качество:
 
 - ~~Миграция на Catch2~~ ✅ (#212)
-- Fuzz-тестирование аллокатора (AFL++ / libFuzzer)
+- ~~Расширение покрытия тестами (overflow, concurrent, fuzz)~~ ✅ (#213)
 - Бенчмарки производительности (Google Benchmark)
 
 План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
