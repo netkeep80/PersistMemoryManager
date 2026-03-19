@@ -218,3 +218,51 @@ Mgr::destroy();
 - **clear()**: рекурсивная post-order деаллокация всех узлов
 - **Исправление**: инициализация AVL-полей нового узла теперь использует `no_block`
   sentinel вместо 0 для корректной работы итератора и AVL-операций
+
+## 3.4 Доработка `pvector<T>` — метод `erase(index)` ✅
+
+**Issue:** #197
+**Файл:** `include/pmm/pvector.h`
+**Тесты:** `tests/test_issue197_pvector_erase.cpp` (17 тестов)
+
+### Описание
+
+Добавление метода `erase(index)` в `pvector<T, ManagerT>` для удаления элемента
+по произвольному индексу за O(log n). Метод находит узел через order-statistic tree
+(поле weight), удаляет его из AVL-дерева с перебалансировкой и освобождает память в ПАП.
+
+### Новый метод
+
+```cpp
+using Mgr = pmm::presets::SingleThreadedHeap;
+Mgr::create(64 * 1024);
+
+using MyVec = Mgr::pvector<int>;
+MyVec vec;
+
+vec.push_back(10);
+vec.push_back(20);
+vec.push_back(30);
+vec.push_back(40);
+
+// Удаление по индексу — O(log n)
+bool removed = vec.erase(1);       // true, удалён элемент 20 → [10, 30, 40]
+bool missing = vec.erase(100);     // false, индекс вне диапазона
+
+// Удаление первого элемента
+vec.erase(0);                      // [30, 40]
+
+// Удаление последнего элемента
+vec.erase(vec.size() - 1);         // [30]
+
+Mgr::destroy();
+```
+
+### Детали реализации
+
+- **erase(index)**: находит узел через `_avl_find_by_index()` (O(log n) по полю weight),
+  удаляет из AVL-дерева через `detail::avl_remove()` с `_WeightUpdateFn` для обновления
+  весов поддеревьев, деаллоцирует блок в ПАП через `deallocate_typed()`
+- **Перебалансировка**: `_WeightUpdateFn` обновляет и высоту, и вес (размер поддерева)
+  при каждой ротации, что гарантирует корректность order-statistic tree после удаления
+- **Граничные случаи**: возвращает `false` для пустого вектора и для индекса >= size()

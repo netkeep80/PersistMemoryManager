@@ -264,6 +264,33 @@ template <typename T, typename ManagerT> struct pvector
     }
 
     /**
+     * @brief Удалить элемент по индексу за O(log n).
+     *
+     * Находит узел по индексу через order-statistic tree, удаляет его из AVL-дерева
+     * с перебалансировкой и освобождает память узла в ПАП.
+     *
+     * @param index Индекс элемента для удаления (0-based).
+     * @return true если элемент был удалён, false если индекс вне диапазона.
+     */
+    bool erase( std::size_t index ) noexcept
+    {
+        if ( _root_idx == static_cast<index_type>( 0 ) )
+            return false;
+
+        node_pptr root( _root_idx );
+        if ( index >= static_cast<std::size_t>( root.tree_node().get_weight() ) )
+            return false;
+
+        node_pptr target = _avl_find_by_index( node_pptr( _root_idx ), index );
+        if ( target.is_null() )
+            return false;
+
+        _avl_remove( target );
+        ManagerT::template deallocate_typed<node_type>( target );
+        return true;
+    }
+
+    /**
      * @brief Очистить вектор (удалить все элементы).
      *
      * Освобождает память всех узлов в ПАП.

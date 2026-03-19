@@ -436,14 +436,15 @@ for (auto it = vec.begin(); it != vec.end(); ++it) {
     // node->value — элемент
 }
 
-vec.pop_back();  // удаляет 30
-vec.clear();     // удаляет все элементы
+vec.pop_back();     // удаляет 30
+vec.erase(0);       // удаляет элемент по индексу (10)
+vec.clear();        // удаляет все элементы
 
 Mgr::destroy();
 ```
 
 **Особенности:**
-- O(log n) push_back, pop_back, at(i)
+- O(log n) push_back, pop_back, erase(index), at(i)
 - O(1) size, front, back
 - Итератор для range-based for
 - Узлы **не** перманентно заблокированы
