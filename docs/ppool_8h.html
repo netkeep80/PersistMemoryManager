@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PersistMemoryManager: include/pmm/pptr.h File Reference</title>
+<title>PersistMemoryManager: include/pmm/ppool.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -77,62 +77,76 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a>  </div>
-  <div class="headertitle"><div class="title">pptr.h File Reference</div></div>
+  <div class="headertitle"><div class="title">ppool.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129).  
+<p>ppool&lt;T, ManagerT&gt; — persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;cstddef&gt;</code><br />
+<div class="textblock"><code>#include &lt;cassert&gt;</code><br />
+<code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
+<code>#include &lt;cstring&gt;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
 </div>
-<p><a href="pptr_8h_source.html">Go to the source code of this file.</a></p>
+<p><a href="ppool_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html">pmm::pptr&lt; T, ManagerT &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Персистентный типизированный указатель (гранульный индекс).  <a href="classpmm_1_1pptr.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1ppool.html">pmm::ppool&lt; T, ManagerT &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).  <a href="structpmm_1_1ppool.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm" id="r_namespacepmm"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html">pmm</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespacepmm_1_1detail" id="r_namespacepmm_1_1detail"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html">pmm::detail</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129). </p>
-<p>pptr&lt;T, ManagerT&gt; хранит гранульный индекс вместо адреса, что делает его адресно-независимым и пригодным для персистентных хранилищ:</p><ul>
-<li>Хранит индекс типа ManagerT::address_traits::index_type</li>
-<li>Нет смещения при повторной загрузке по другому адресу</li>
-<li>Запрет адресной арифметики (pptr++ запрещён)</li>
-<li>Index 0 означает null</li>
+<div class="textblock"><p>ppool&lt;T, ManagerT&gt; — persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6). </p>
+<p>Implements a pool of fixed-size objects in the persistent address space (PAP). Objects are allocated from large chunks via a free-list, providing O(1) allocation and deallocation — ideal for mass creation of tree nodes, list nodes, graph nodes, and similar small objects.</p>
+<p>Key properties:</p><ul>
+<li>O(1) allocate() / deallocate() via embedded free-list.</li>
+<li>Chunks allocated from the manager in configurable sizes (default 64 objects per chunk).</li>
+<li>All internal references use granule indices — address-independent across PAP reloads.</li>
+<li>POD-structure: all fields are primitive types (trivially copyable), enabling direct serialization in PAP.</li>
+<li>Element type T must be trivially copyable.</li>
+<li>Each slot is aligned to granule boundaries for correct granule index addressing.</li>
 </ul>
-<p>Поддерживаемые режимы разыменования (Issue #102, #108):</p><ul>
-<li>Статическая модель: <code>*p</code>, <code>p-&gt;field</code> — через статический метод менеджера</li>
-</ul>
-<p>Доступ к узлу AVL-дерева (Issue #138):</p><ul>
-<li><code>p.tree_node()</code> — прямой доступ к TreeNode через ссылку</li>
-</ul>
-<p>Пример использования с PersistMemoryManager (статическая модель): </p><div class="fragment"><div class="line"><span class="keyword">using </span>MyMgr = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::CacheManagerConfig&gt;</a>;</div>
-<div class="line">MyMgr::create(64 * 1024);</div>
+<p>Usage: </p><div class="fragment"><div class="line"><span class="keyword">using </span>Mgr = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::CacheManagerConfig&gt;</a>;</div>
+<div class="line">Mgr::create(256 * 1024);</div>
 <div class="line"> </div>
-<div class="line">MyMgr::pptr&lt;int&gt; p = MyMgr::allocate_typed&lt;int&gt;();</div>
-<div class="line"><span class="keywordflow">if</span> (p) {</div>
-<div class="line">    *p = 42;        <span class="comment">// operator* — разыменование без аргументов</span></div>
-<div class="line">    p-&gt;some_field;  <span class="comment">// operator-&gt; — доступ к полям</span></div>
-<div class="line">}</div>
-<div class="line">MyMgr::deallocate_typed(p);</div>
-<div class="line">MyMgr::destroy();</div>
+<div class="line"><span class="comment">// Create a pool for int objects</span></div>
+<div class="line">Mgr::pptr&lt;Mgr::ppool&lt;int&gt;&gt; pool = Mgr::create_typed&lt;Mgr::ppool&lt;int&gt;&gt;();</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Allocate objects from the pool — O(1)</span></div>
+<div class="line"><span class="keywordtype">int</span>* a = pool-&gt;allocate();</div>
+<div class="line"><span class="keywordtype">int</span>* b = pool-&gt;allocate();</div>
+<div class="line">*a = 42;</div>
+<div class="line">*b = 99;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Deallocate — O(1), returns the slot to the free-list</span></div>
+<div class="line">pool-&gt;deallocate(a);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Allocate again — reuses the freed slot</span></div>
+<div class="line"><span class="keywordtype">int</span>* c = pool-&gt;allocate();</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Free all chunks and destroy</span></div>
+<div class="line">pool-&gt;free_all();</div>
+<div class="line">Mgr::destroy_typed(pool);</div>
+<div class="line"> </div>
+<div class="line">Mgr::destroy();</div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdoc">Унифицированный статический менеджер персистентной памяти (Issue #110).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00111">persist_memory_manager.h:112</a></div></div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — унифицированный статический менеджер ПАП (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (статическая модель, Issue #110) </dd>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="parray_8h.html" title="parray&lt;T, ManagerT&gt; — persistent dynamic array with O(1) random access (Issue #195,...">parray.h</a> — parray&lt;T, ManagerT&gt; (persistent dynamic array with O(1) indexing) </dd>
 <dd>
-<a class="el" href="tree__node_8h.html" title="TreeNode&lt;AddressTraits&gt; — узел AVL-дерева для ПАП (Issue #87 Phase 2, #138).">tree_node.h</a> — TreeNode с публичными методами (Issue #138) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.8 (Issue #164 — удалены избыточные методы tree_node) </dd></dl>
+<a class="el" href="pallocator_8h.html" title="pallocator&lt;T, ManagerT&gt; — STL-compatible allocator for persistent address space (Issue #198,...">pallocator.h</a> — pallocator&lt;T, ManagerT&gt; (STL-compatible allocator) </dd>
+<dd>
+<a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — унифицированный статический менеджер ПАП (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (static model) </dd>
+<dd>
+<a class="el" href="pptr_8h.html" title="pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129).">pptr.h</a> — pptr&lt;T, ManagerT&gt; (persistent pointer) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.1 (Issue #199 — Phase 3.6: persistent object pool) </dd></dl>
 
-<p class="definition">Definition in file <a class="el" href="pptr_8h_source.html">pptr.h</a>.</p>
+<p class="definition">Definition in file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

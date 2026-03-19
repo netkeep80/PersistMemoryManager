@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['used_0',['used',['../structpmm_1_1BlockView.html#a72b31f6664325495e0ef5203a60e4671',1,'pmm::BlockView']]],
-  ['used_5fsize_1',['used_size',['../structpmm_1_1ManagerInfo.html#abeac45d57b420a1c7933d36b435ca8b8',1,'pmm::ManagerInfo::used_size'],['../structpmm_1_1detail_1_1ManagerHeader.html#a9011ca5c186c9c974833ee9437d47a2d',1,'pmm::detail::ManagerHeader::used_size']]],
-  ['user_5fsize_2',['user_size',['../structpmm_1_1BlockView.html#ae1d45dcd73d208eb83e07d326c3e77a4',1,'pmm::BlockView']]]
+  ['total_5fblocks_0',['total_blocks',['../structpmm_1_1MemoryStats.html#a2333545cd8c548c5b8810d9f361560d7',1,'pmm::MemoryStats']]],
+  ['total_5ffragmentation_1',['total_fragmentation',['../structpmm_1_1MemoryStats.html#ac348e3631972cbdf69526de092566c11',1,'pmm::MemoryStats']]],
+  ['total_5fsize_2',['total_size',['../structpmm_1_1ManagerInfo.html#a8d2fe922a587214208709ee65be2a866',1,'pmm::ManagerInfo::total_size'],['../structpmm_1_1BlockView.html#a39f520c73e2f55c8559ac46abab72e49',1,'pmm::BlockView::total_size'],['../structpmm_1_1FreeBlockView.html#a92282687161b5049bf3a45500d15879d',1,'pmm::FreeBlockView::total_size'],['../structpmm_1_1detail_1_1ManagerHeader.html#a35d73e460fc8d82afb28dbd389eff474',1,'pmm::detail::ManagerHeader::total_size']]]
 ];
