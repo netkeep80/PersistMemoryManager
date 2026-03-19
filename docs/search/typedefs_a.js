@@ -4,7 +4,7 @@ var searchData=
   ['persistentavltree_1',['PersistentAvlTree',['../namespacepmm.html#a343de335e434d7d59ee388be5c798684',1,'pmm']]],
   ['persistentdataconfig_2',['PersistentDataConfig',['../namespacepmm.html#a8e4d4d19d14744c66228f25dcfaf1a8a',1,'pmm']]],
   ['pmap_3',['pmap',['../classpmm_1_1PersistMemoryManager.html#a04d8a7a501a4399e97a46add464c1420',1,'pmm::PersistMemoryManager']]],
-  ['pointer_4',['pointer',['../structpmm_1_1pvector_1_1iterator.html#afd82bca186e87937b2160927e0b2e86e',1,'pmm::pvector::iterator']]],
+  ['pointer_4',['pointer',['../structpmm_1_1pmap_1_1iterator.html#a60686f6228854c5856d99d87f2fda1d3',1,'pmm::pmap::iterator::pointer'],['../structpmm_1_1pvector_1_1iterator.html#afd82bca186e87937b2160927e0b2e86e',1,'pmm::pvector::iterator::pointer']]],
   ['pptr_5',['pptr',['../classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3',1,'pmm::PersistMemoryManager']]],
   ['pstring_6',['pstring',['../classpmm_1_1PersistMemoryManager.html#ad3a667ca3868eeb1a6ae0075c5bbfd42',1,'pmm::PersistMemoryManager']]],
   ['pstringview_7',['pstringview',['../classpmm_1_1PersistMemoryManager.html#a3ffaacff7d4795badd3889736bb2f063',1,'pmm::PersistMemoryManager']]],

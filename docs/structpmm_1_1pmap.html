@@ -75,9 +75,11 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="structpmm_1_1pmap-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">pmm::pmap&lt; _K, _V, ManagerT &gt; Struct Template Reference</div></div>
 </div><!--header-->
@@ -88,6 +90,12 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="pmap_8h_source.html">pmap.h</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap_1_1iterator.html">iterator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Итератор для обхода словаря в порядке ключей (in-order).  <a href="structpmm_1_1pmap_1_1iterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:a5aefff21bc7a29652db4196d7a284b71" id="r_a5aefff21bc7a29652db4196d7a284b71"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a5aefff21bc7a29652db4196d7a284b71">manager_type</a> = ManagerT</td></tr>
@@ -107,6 +115,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6e8c3737af2fcbd6c0bd4849f9225dfc" id="r_a6e8c3737af2fcbd6c0bd4849f9225dfc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a6e8c3737af2fcbd6c0bd4849f9225dfc">empty</a> () const noexcept</td></tr>
 <tr class="memdesc:a6e8c3737af2fcbd6c0bd4849f9225dfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, пуст ли словарь.  <br /></td></tr>
 <tr class="separator:a6e8c3737af2fcbd6c0bd4849f9225dfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a997e3f861cdb051b47bc677875b1b612" id="r_a997e3f861cdb051b47bc677875b1b612"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a997e3f861cdb051b47bc677875b1b612">size</a> () const noexcept</td></tr>
+<tr class="memdesc:a997e3f861cdb051b47bc677875b1b612"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить количество элементов в словаре за O(n).  <br /></td></tr>
+<tr class="separator:a997e3f861cdb051b47bc677875b1b612"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a0412208a39b704c95219ad7e3bc125" id="r_a9a0412208a39b704c95219ad7e3bc125"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1pmap.html#ae95ce2bc6480a9aebeded7dcba47f1c2">node_pptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a9a0412208a39b704c95219ad7e3bc125">insert</a> (const _K &amp;key, const _V &amp;val) noexcept</td></tr>
 <tr class="memdesc:a9a0412208a39b704c95219ad7e3bc125"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вставить или обновить пару ключ-значение.  <br /></td></tr>
 <tr class="separator:a9a0412208a39b704c95219ad7e3bc125"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -116,23 +127,45 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa48dab6f34fb84746e3f83ee38cc84b5" id="r_aa48dab6f34fb84746e3f83ee38cc84b5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#aa48dab6f34fb84746e3f83ee38cc84b5">contains</a> (const _K &amp;key) const noexcept</td></tr>
 <tr class="memdesc:aa48dab6f34fb84746e3f83ee38cc84b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, содержит ли словарь заданный ключ.  <br /></td></tr>
 <tr class="separator:aa48dab6f34fb84746e3f83ee38cc84b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af971e390167c8748798b62b9f9c02700" id="r_af971e390167c8748798b62b9f9c02700"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#af971e390167c8748798b62b9f9c02700">erase</a> (const _K &amp;key) noexcept</td></tr>
+<tr class="memdesc:af971e390167c8748798b62b9f9c02700"><td class="mdescLeft">&#160;</td><td class="mdescRight">Удалить узел по ключу (Issue #196).  <br /></td></tr>
+<tr class="separator:af971e390167c8748798b62b9f9c02700"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5cae9cfece648b3ad140c89babf1f128" id="r_a5cae9cfece648b3ad140c89babf1f128"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a5cae9cfece648b3ad140c89babf1f128">clear</a> () noexcept</td></tr>
+<tr class="memdesc:a5cae9cfece648b3ad140c89babf1f128"><td class="mdescLeft">&#160;</td><td class="mdescRight">Очистить словарь (удалить все элементы) (Issue #196).  <br /></td></tr>
+<tr class="separator:a5cae9cfece648b3ad140c89babf1f128"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a606608889b1f241f01e030095fbd4627" id="r_a606608889b1f241f01e030095fbd4627"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a606608889b1f241f01e030095fbd4627">reset</a> () noexcept</td></tr>
 <tr class="memdesc:a606608889b1f241f01e030095fbd4627"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить словарь (для тестов).  <br /></td></tr>
 <tr class="separator:a606608889b1f241f01e030095fbd4627"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9daa44d19ae563be7311f079901924e7" id="r_a9daa44d19ae563be7311f079901924e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1pmap_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a9daa44d19ae563be7311f079901924e7">begin</a> () const noexcept</td></tr>
+<tr class="memdesc:a9daa44d19ae563be7311f079901924e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Начало итерации (самый левый узел = наименьший ключ).  <br /></td></tr>
+<tr class="separator:a9daa44d19ae563be7311f079901924e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9074107d1c1a4c8537dd66aac10e65cc" id="r_a9074107d1c1a4c8537dd66aac10e65cc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1pmap_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a9074107d1c1a4c8537dd66aac10e65cc">end</a> () const noexcept</td></tr>
+<tr class="memdesc:a9074107d1c1a4c8537dd66aac10e65cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конец итерации (sentinel = 0).  <br /></td></tr>
+<tr class="separator:a9074107d1c1a4c8537dd66aac10e65cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a47c56cc56749ed033d17b398dbe86cfb" id="r_a47c56cc56749ed033d17b398dbe86cfb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1pmap.html#af910fd73e587597776f0a1b5605605e0">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a47c56cc56749ed033d17b398dbe86cfb">_root_idx</a></td></tr>
 <tr class="memdesc:a47c56cc56749ed033d17b398dbe86cfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Гранульный индекс корня AVL-дерева; 0 = пустое дерево.  <br /></td></tr>
 <tr class="separator:a47c56cc56749ed033d17b398dbe86cfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a9a5a04d0c78d5a2a4d0b86d1cb7a1619" id="r_a9a5a04d0c78d5a2a4d0b86d1cb7a1619"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="structpmm_1_1pmap.html#af910fd73e587597776f0a1b5605605e0">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pmap.html#a9a5a04d0c78d5a2a4d0b86d1cb7a1619">no_block</a> = ManagerT::address_traits::no_block</td></tr>
+<tr class="memdesc:a9a5a04d0c78d5a2a4d0b86d1cb7a1619"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sentinel value for "no node" in <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a> fields.  <br /></td></tr>
+<tr class="separator:a9a5a04d0c78d5a2a4d0b86d1cb7a1619"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename _K, typename _V, typename ManagerT&gt;<br />
 struct pmm::pmap&lt; _K, _V, ManagerT &gt;</div><p>Персистентный ассоциативный контейнер (словарь) на основе AVL-дерева (Issue #153). </p>
 <p>Объект pmap сам по себе не хранится в ПАП — он является хелпером на стеке, содержащим гранульный индекс корня AVL-дерева. Узлы словаря (<a class="el" href="structpmm_1_1pmap__node.html" title="Узел pmap — хранит пару ключ-значение в ПАП (Issue #153).">pmap_node</a>) хранятся в ПАП и используют встроенные TreeNode-поля для организации AVL-дерева.</p>
 <p>Особенности:</p><ul>
-<li>Вставка/поиск за O(log n).</li>
+<li>Вставка/поиск/удаление за O(log n).</li>
 <li>Повторная вставка по существующему ключу обновляет значение.</li>
+<li>erase(key) удаляет узел и освобождает память в ПАП (Issue #196).</li>
+<li><a class="el" href="structpmm_1_1pmap.html#a997e3f861cdb051b47bc677875b1b612" title="Получить количество элементов в словаре за O(n).">size()</a> возвращает количество элементов за O(n) (Issue #196).</li>
+<li><a class="el" href="structpmm_1_1pmap.html#a9daa44d19ae563be7311f079901924e7" title="Начало итерации (самый левый узел = наименьший ключ).">begin()</a>/end() — итератор для обхода в порядке ключей (Issue #196).</li>
+<li><a class="el" href="structpmm_1_1pmap.html#a5cae9cfece648b3ad140c89babf1f128" title="Очистить словарь (удалить все элементы) (Issue #196).">clear()</a> — удаление всех элементов с деаллокацией (Issue #196).</li>
 <li>Узлы НЕ блокируются навечно (Issue #155): в отличие от pstringview, узлы pmap могут быть освобождены после удаления из дерева.</li>
 </ul>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
@@ -144,7 +177,7 @@ struct pmm::pmap&lt; _K, _V, ManagerT &gt;</div><p>Персистентный а
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00112">112</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00134">134</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="af910fd73e587597776f0a1b5605605e0" name="af910fd73e587597776f0a1b5605605e0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af910fd73e587597776f0a1b5605605e0">&#9670;&#160;</a></span>index_type</h2>
@@ -160,7 +193,7 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00115">115</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00137">137</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -178,7 +211,7 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00114">114</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00136">136</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -196,7 +229,7 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00117">117</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00139">139</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -214,7 +247,7 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00116">116</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00138">138</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -246,11 +279,74 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
 
 <p>Создать пустой словарь. </p>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00125">125</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00150">150</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a9daa44d19ae563be7311f079901924e7" name="a9daa44d19ae563be7311f079901924e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9daa44d19ae563be7311f079901924e7">&#9670;&#160;</a></span>begin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpmm_1_1pmap_1_1iterator.html">iterator</a> <a class="el" href="structpmm_1_1pmap.html">pmm::pmap</a>&lt; _K, _V, ManagerT &gt;::begin </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Начало итерации (самый левый узел = наименьший ключ). </p>
+
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00348">348</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+
+</div>
+</div>
+<a id="a5cae9cfece648b3ad140c89babf1f128" name="a5cae9cfece648b3ad140c89babf1f128"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cae9cfece648b3ad140c89babf1f128">&#9670;&#160;</a></span>clear()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="structpmm_1_1pmap.html">pmm::pmap</a>&lt; _K, _V, ManagerT &gt;::clear </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Очистить словарь (удалить все элементы) (Issue #196). </p>
+<p>Освобождает память всех узлов в ПАП. </p>
+
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00257">257</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+
+</div>
+</div>
 <a id="aa48dab6f34fb84746e3f83ee38cc84b5" name="aa48dab6f34fb84746e3f83ee38cc84b5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa48dab6f34fb84746e3f83ee38cc84b5">&#9670;&#160;</a></span>contains()</h2>
 
@@ -286,7 +382,7 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если ключ найден. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00196">196</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00230">230</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -317,7 +413,78 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
 
 <p>Проверить, пуст ли словарь. </p>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00130">130</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00155">155</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+
+</div>
+</div>
+<a id="a9074107d1c1a4c8537dd66aac10e65cc" name="a9074107d1c1a4c8537dd66aac10e65cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9074107d1c1a4c8537dd66aac10e65cc">&#9670;&#160;</a></span>end()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpmm_1_1pmap_1_1iterator.html">iterator</a> <a class="el" href="structpmm_1_1pmap.html">pmm::pmap</a>&lt; _K, _V, ManagerT &gt;::end </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Конец итерации (sentinel = 0). </p>
+
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00357">357</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+
+</div>
+</div>
+<a id="af971e390167c8748798b62b9f9c02700" name="af971e390167c8748798b62b9f9c02700"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af971e390167c8748798b62b9f9c02700">&#9670;&#160;</a></span>erase()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="structpmm_1_1pmap.html">pmm::pmap</a>&lt; _K, _V, ManagerT &gt;::erase </td>
+          <td>(</td>
+          <td class="paramtype">const _K &amp;&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Удалить узел по ключу (Issue #196). </p>
+<p>Находит узел с заданным ключом, удаляет его из AVL-дерева и освобождает память блока в ПАП.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>Ключ для удаления. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true если ключ был найден и удалён, false если ключ не найден. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00241">241</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -356,7 +523,7 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr на найденный узел, или нулевой pptr если не найден. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00188">188</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00222">222</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -407,7 +574,7 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr на узел с данным ключом. Нулевой pptr при ошибке аллокации. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00144">144</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00178">178</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -439,7 +606,39 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
 <p>Сбросить словарь (для тестов). </p>
 <p>Сбрасывает _root_idx, но не освобождает данные в ПАП. </p>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00203">203</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00269">269</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+
+</div>
+</div>
+<a id="a997e3f861cdb051b47bc677875b1b612" name="a997e3f861cdb051b47bc677875b1b612"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a997e3f861cdb051b47bc677875b1b612">&#9670;&#160;</a></span>size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t <a class="el" href="structpmm_1_1pmap.html">pmm::pmap</a>&lt; _K, _V, ManagerT &gt;::size </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Получить количество элементов в словаре за O(n). </p>
+<dl class="section return"><dt>Returns</dt><dd>Количество элементов (подсчитывается обходом дерева). </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00159">159</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>
@@ -460,7 +659,35 @@ template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
 
 <p>Гранульный индекс корня AVL-дерева; 0 = пустое дерево. </p>
 
-<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00120">120</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00145">145</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
+
+</div>
+</div>
+<a id="a9a5a04d0c78d5a2a4d0b86d1cb7a1619" name="a9a5a04d0c78d5a2a4d0b86d1cb7a1619"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a5a04d0c78d5a2a4d0b86d1cb7a1619">&#9670;&#160;</a></span>no_block</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _K , typename _V , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="structpmm_1_1pmap.html#af910fd73e587597776f0a1b5605605e0">index_type</a> <a class="el" href="structpmm_1_1pmap.html">pmm::pmap</a>&lt; _K, _V, ManagerT &gt;::no_block = ManagerT::address_traits::no_block</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sentinel value for "no node" in <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a> fields. </p>
+
+<p class="definition">Definition at line <a class="el" href="pmap_8h_source.html#l00142">142</a> of file <a class="el" href="pmap_8h_source.html">pmap.h</a>.</p>
 
 </div>
 </div>

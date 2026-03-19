@@ -1,7 +1,7 @@
 var searchData=
 [
   ['_5fcapacity_0',['_capacity',['../structpmm_1_1parray.html#ae612a24f38e9d6e9454b8dbe669b9e9d',1,'pmm::parray::_capacity'],['../structpmm_1_1pstring.html#a0bce0f8b19953fae9c165c3c36192b5b',1,'pmm::pstring::_capacity']]],
-  ['_5fcurrent_5fidx_1',['_current_idx',['../structpmm_1_1pvector_1_1iterator.html#a40706a46a9c89832decfa8367036ade8',1,'pmm::pvector::iterator']]],
+  ['_5fcurrent_5fidx_1',['_current_idx',['../structpmm_1_1pmap_1_1iterator.html#ac9115328ab3efc839b68c53ee6de0abe',1,'pmm::pmap::iterator::_current_idx'],['../structpmm_1_1pvector_1_1iterator.html#a40706a46a9c89832decfa8367036ade8',1,'pmm::pvector::iterator::_current_idx']]],
   ['_5fdata_5fidx_2',['_data_idx',['../structpmm_1_1parray.html#a08cbfce3ebe82b3e48b4461ef31b6558',1,'pmm::parray::_data_idx'],['../structpmm_1_1pstring.html#aef6213dc41efca6194686fd7440dccd2',1,'pmm::pstring::_data_idx']]],
   ['_5flength_3',['_length',['../structpmm_1_1pstring.html#a906ae169bec879634baf80b2d981b12b',1,'pmm::pstring']]],
   ['_5fpad_4',['_pad',['../structpmm_1_1detail_1_1ManagerHeader.html#a9b82e5962444770066f9be5a66f422c4',1,'pmm::detail::ManagerHeader']]],
