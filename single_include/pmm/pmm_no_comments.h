@@ -3923,6 +3923,225 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         deallocate( raw );
     }
 
+    template <typename T> static pptr<T> reallocate_typed( pptr<T> p, std::size_t old_count, std::size_t new_count ) noexcept
+    {
+        static_assert( std::is_trivially_copyable_v<T>,
+                       "reallocate_typed<T>: T must be trivially copyable for safe memcpy reallocation." );
+        if ( new_count == 0 )
+        {
+            _last_error = PmmError::InvalidSize;
+            return pptr<T>();
+        }
+        if ( p.is_null() )
+            return allocate_typed<T>( new_count );
+        if ( sizeof( T ) > 0 && new_count > ( std::numeric_limits<std::size_t>::max )() / sizeof( T ) )
+        {
+            _last_error = PmmError::Overflow;
+            return pptr<T>();
+        }
+        std::size_t new_user_size = sizeof( T ) * new_count;
+        typename thread_policy::unique_lock_type lock( _mutex );
+        if ( !_initialized )
+        {
+            _last_error = PmmError::NotInitialized;
+            return pptr<T>();
+        }
+        std::uint8_t*                          base    = _backend.base_ptr();
+        detail::ManagerHeader<address_traits>* hdr     = get_header( base );
+        static constexpr index_type kBlkHdrFloorGran =
+            static_cast<index_type>( sizeof( Block<address_traits> ) / address_traits::granule_size );
+        index_type blk_idx = static_cast<index_type>( p.offset() - kBlkHdrFloorGran );
+        void*      blk_raw = detail::block_at<address_traits>( base, blk_idx );
+        index_type old_data_gran = BlockStateBase<address_traits>::get_weight( blk_raw );
+        index_type new_data_gran = detail::bytes_to_granules_t<address_traits>( new_user_size );
+        if ( new_data_gran == 0 )
+            new_data_gran = 1;
+        if ( new_data_gran == old_data_gran )
+        {
+            _last_error = PmmError::Ok;
+            return p;
+        }
+        static constexpr bool kBlockAligned =
+            ( sizeof( Block<address_traits> ) % address_traits::granule_size == 0 );
+        if constexpr ( kBlockAligned )
+        if ( new_data_gran < old_data_gran )
+        {
+            index_type remainder = old_data_gran - new_data_gran;
+            if ( remainder >= kBlockHdrGranules + 1 )
+            {
+                index_type new_free_idx = blk_idx + kBlockHdrGranules + new_data_gran;
+                void*      new_free_blk = detail::block_at<address_traits>( base, new_free_idx );
+                index_type old_next = BlockStateBase<address_traits>::get_next_offset( blk_raw );
+                Block<address_traits>* old_next_blk =
+                    ( old_next != address_traits::no_block ) ? detail::block_at<address_traits>( base, old_next ) : nullptr;
+                std::memset( new_free_blk, 0, sizeof( Block<address_traits> ) );
+                BlockStateBase<address_traits>::init_fields( new_free_blk, blk_idx, old_next, 1, 0, 0 );
+                BlockStateBase<address_traits>::set_next_offset_of( blk_raw, new_free_idx );
+                if ( old_next_blk != nullptr )
+                    BlockStateBase<address_traits>::set_prev_offset_of( old_next_blk, new_free_idx );
+                else
+                    hdr->last_block_offset = new_free_idx;
+                BlockStateBase<address_traits>::set_weight_of( blk_raw, new_data_gran );
+                hdr->block_count++;
+                hdr->free_count++;
+                hdr->used_size += kBlockHdrGranules;
+                hdr->used_size -= ( old_data_gran - new_data_gran );
+                free_block_tree::insert( base, hdr, new_free_idx );
+                index_type nfb_next = BlockStateBase<address_traits>::get_next_offset( new_free_blk );
+                if ( nfb_next != address_traits::no_block )
+                {
+                    const void* nxt_blk = detail::block_at<address_traits>( base, nfb_next );
+                    if ( BlockStateBase<address_traits>::get_weight( nxt_blk ) == 0 )
+                    {
+                        free_block_tree::remove( base, hdr, new_free_idx );
+                        free_block_tree::remove( base, hdr, nfb_next );
+                        index_type nxt_next = BlockStateBase<address_traits>::get_next_offset( nxt_blk );
+                        BlockStateBase<address_traits>::set_next_offset_of( new_free_blk, nxt_next );
+                        if ( nxt_next != address_traits::no_block )
+                            BlockStateBase<address_traits>::set_prev_offset_of(
+                                detail::block_at<address_traits>( base, nxt_next ), new_free_idx );
+                        else
+                            hdr->last_block_offset = new_free_idx;
+                        std::memset( detail::block_at<address_traits>( base, nfb_next ), 0, sizeof( Block<address_traits> ) );
+                        hdr->block_count--;
+                        hdr->free_count--;
+                        if ( hdr->used_size >= kBlockHdrGranules )
+                            hdr->used_size -= kBlockHdrGranules;
+                        BlockStateBase<address_traits>::reset_avl_fields_of( new_free_blk );
+                        BlockStateBase<address_traits>::set_avl_height_of( new_free_blk, 1 );
+                        free_block_tree::insert( base, hdr, new_free_idx );
+                    }
+                }
+            }
+            else
+            {
+                BlockStateBase<address_traits>::set_weight_of( blk_raw, new_data_gran );
+                hdr->used_size -= ( old_data_gran - new_data_gran );
+            }
+            _last_error = PmmError::Ok;
+            return p;
+        }
+        if constexpr ( kBlockAligned )
+        {
+            index_type next_idx = BlockStateBase<address_traits>::get_next_offset( blk_raw );
+            if ( next_idx != address_traits::no_block )
+            {
+                void* next_blk = detail::block_at<address_traits>( base, next_idx );
+                if ( BlockStateBase<address_traits>::get_weight( next_blk ) == 0 )
+                {
+                    index_type next_total_gran = detail::block_total_granules(
+                        base, hdr, detail::block_at<address_traits>( base, next_idx ) );
+                    index_type available = old_data_gran + next_total_gran;
+                    if ( available >= new_data_gran )
+                    {
+                        free_block_tree::remove( base, hdr, next_idx );
+                        index_type next_next = BlockStateBase<address_traits>::get_next_offset( next_blk );
+                        BlockStateBase<address_traits>::set_next_offset_of( blk_raw, next_next );
+                        if ( next_next != address_traits::no_block )
+                            BlockStateBase<address_traits>::set_prev_offset_of(
+                                detail::block_at<address_traits>( base, next_next ), blk_idx );
+                        else
+                            hdr->last_block_offset = blk_idx;
+                        std::memset( next_blk, 0, sizeof( Block<address_traits> ) );
+                        hdr->block_count--;
+                        hdr->free_count--;
+                        if ( hdr->used_size >= kBlockHdrGranules )
+                            hdr->used_size -= kBlockHdrGranules;
+                        index_type new_blk_total = kBlockHdrGranules + available;
+                        index_type needed_total  = kBlockHdrGranules + new_data_gran;
+                        index_type rem           = new_blk_total - needed_total;
+                        if ( rem >= kBlockHdrGranules + 1 )
+                        {
+                            index_type rem_idx = blk_idx + needed_total;
+                            void*      rem_blk = detail::block_at<address_traits>( base, rem_idx );
+                            index_type blk_new_next = BlockStateBase<address_traits>::get_next_offset( blk_raw );
+                            std::memset( rem_blk, 0, sizeof( Block<address_traits> ) );
+                            BlockStateBase<address_traits>::init_fields( rem_blk, blk_idx, blk_new_next, 1, 0, 0 );
+                            BlockStateBase<address_traits>::set_next_offset_of( blk_raw, rem_idx );
+                            if ( blk_new_next != address_traits::no_block )
+                                BlockStateBase<address_traits>::set_prev_offset_of(
+                                    detail::block_at<address_traits>( base, blk_new_next ), rem_idx );
+                            else
+                                hdr->last_block_offset = rem_idx;
+                            hdr->block_count++;
+                            hdr->free_count++;
+                            hdr->used_size += kBlockHdrGranules;
+                            free_block_tree::insert( base, hdr, rem_idx );
+                        }
+                        BlockStateBase<address_traits>::set_weight_of( blk_raw, new_data_gran );
+                        hdr->used_size += ( new_data_gran - old_data_gran );
+                        _last_error = PmmError::Ok;
+                        return p;
+                    }
+                }
+            }
+        }
+        {
+            index_type new_data_gran_alloc = detail::bytes_to_granules_t<address_traits>( new_user_size );
+            if ( new_data_gran_alloc == 0 )
+                new_data_gran_alloc = 1;
+            if ( new_data_gran_alloc > std::numeric_limits<index_type>::max() - kBlockHdrGranules )
+            {
+                _last_error = PmmError::Overflow;
+                return pptr<T>();
+            }
+            index_type needed_alloc = kBlockHdrGranules + new_data_gran_alloc;
+            index_type new_idx      = free_block_tree::find_best_fit( base, hdr, needed_alloc );
+            if ( new_idx == address_traits::no_block )
+            {
+                if ( !do_expand( new_user_size ) )
+                {
+                    _last_error = PmmError::OutOfMemory;
+                    logging_policy::on_allocation_failure( new_user_size, PmmError::OutOfMemory );
+                    return pptr<T>();
+                }
+                base    = _backend.base_ptr();
+                hdr     = get_header( base );
+                new_idx = free_block_tree::find_best_fit( base, hdr, needed_alloc );
+                if ( new_idx == address_traits::no_block )
+                {
+                    _last_error = PmmError::OutOfMemory;
+                    logging_policy::on_allocation_failure( new_user_size, PmmError::OutOfMemory );
+                    return pptr<T>();
+                }
+            }
+            void* new_raw = allocator::allocate_from_block( base, hdr, new_idx, new_user_size );
+            if ( new_raw == nullptr )
+            {
+                _last_error = PmmError::OutOfMemory;
+                return pptr<T>();
+            }
+            pptr<T> new_p = make_pptr_from_raw<T>( new_raw );
+            void*   new_resolve_ptr =
+                base + static_cast<std::size_t>( new_p.offset() ) * address_traits::granule_size;
+            void* old_user_ptr =
+                base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+            std::size_t copy_bytes = old_count * sizeof( T );
+            if ( new_count < old_count )
+                copy_bytes = new_count * sizeof( T );
+            std::memmove( new_resolve_ptr, old_user_ptr, copy_bytes );
+            index_type old_blk_idx_updated = static_cast<index_type>( p.offset() - kBlkHdrFloorGran );
+            void*      old_blk_raw_updated = detail::block_at<address_traits>( base, old_blk_idx_updated );
+            index_type freed_weight = BlockStateBase<address_traits>::get_weight( old_blk_raw_updated );
+            if ( BlockStateBase<address_traits>::get_node_type( old_blk_raw_updated ) != pmm::kNodeReadOnly )
+            {
+                AllocatedBlock<address_traits>* old_alloc =
+                    AllocatedBlock<address_traits>::cast_from_raw( old_blk_raw_updated );
+                if ( old_alloc != nullptr )
+                {
+                    old_alloc->mark_as_free();
+                    hdr->alloc_count--;
+                    hdr->free_count++;
+                    if ( hdr->used_size >= freed_weight )
+                        hdr->used_size -= freed_weight;
+                    allocator::coalesce( base, hdr, old_blk_idx_updated );
+                }
+            }
+            _last_error = PmmError::Ok;
+            return new_p;
+        }
+    }
+
     template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
     {
         

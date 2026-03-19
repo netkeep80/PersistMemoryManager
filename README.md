@@ -878,7 +878,7 @@ PersistMemoryManager/
 
 - ~~`PmmError` — коды ошибок вместо bool~~ ✅ (#201)
 - ~~Хуки логирования~~ ✅ (#202)
-- `reallocate_typed<T>()` — нативное перераспределение
+- ~~`reallocate_typed<T>()` — нативное перераспределение~~ ✅ (#210)
 - Конверсия pptr ↔ байтовые смещения
 
 План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)

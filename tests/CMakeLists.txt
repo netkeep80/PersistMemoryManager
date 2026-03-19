@@ -178,6 +178,9 @@ pmm_add_test(test_issue201_error_codes test_issue201_error_codes.cpp)
 # ─── Тесты хуков логирования (Issue #202, Phase 4.2) ─────────────────────
 pmm_add_test(test_issue202_logging_hooks test_issue202_logging_hooks.cpp)
 
+# ─── Тесты нативного перераспределения reallocate_typed (Issue #210, Phase 4.3) ─
+pmm_add_test(test_issue210_reallocate_typed test_issue210_reallocate_typed.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 

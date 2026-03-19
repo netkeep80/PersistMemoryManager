@@ -278,7 +278,7 @@ STL-контейнеров с ПАП.
 | 13 | ~~Корневой объект в ManagerHeader~~ | 3.7 | ~~Высокий~~ | ~~Низкая~~ | ✅ #200 |
 | 14 | ~~Коды ошибок~~ | 4.1 | ~~Средний~~ | ~~Средняя~~ | ✅ #201 |
 | 15 | ~~Хуки логирования~~ | 4.2 | ~~Средний~~ | ~~Средняя~~ | ✅ #202 |
-| 16 | `reallocate_typed<T>` | 4.3 | Средний | Средняя | |
+| 16 | ~~`reallocate_typed<T>`~~ | 4.3 | ~~Средний~~ | ~~Средняя~~ | ✅ #210 |
 | 17 | Конверсия pptr ↔ байтовые смещения | 4.4 | Средний | Низкая | |
 | 18 | Миграция на Catch2 | 5.1 | Средний | Высокая | |
 | 19 | Fuzz-тестирование | 5.2 | Средний | Средняя | |
@@ -292,4 +292,4 @@ STL-контейнеров с ПАП.
 
 ---
 
-*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202.*
+*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210.*

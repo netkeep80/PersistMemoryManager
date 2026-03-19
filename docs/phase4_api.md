@@ -164,3 +164,81 @@ using MyMgr = pmm::PersistMemoryManager<MyConfig>;
 - on_expand вызывается при расширении бэкенда
 - on_corruption_detected вызывается при InvalidMagic, SizeMismatch, GranuleMismatch, CrcMismatch
 - Работа с SmallAddressTraits (uint16_t) и LargeAddressTraits (uint64_t)
+
+---
+
+## 4.3 Нативное перераспределение `reallocate_typed<T>()` (Issue #210)
+
+### Проблема
+
+Отсутствие нативного перераспределения памяти. Пользователь должен вручную: выделить новый блок, скопировать данные, освободить старый.
+
+### Решение
+
+Добавлен метод `reallocate_typed<T>(pptr<T> p, old_count, new_count)` в `PersistMemoryManager`:
+
+```cpp
+template <typename T>
+static pptr<T> reallocate_typed( pptr<T> p, std::size_t old_count, std::size_t new_count ) noexcept;
+```
+
+**Стратегия:**
+1. **Одинаковый размер** — возврат того же pptr.
+2. **Уменьшение (shrink)** — обновление weight на месте; если остаток достаточен, он выделяется в новый свободный блок с коалесценцией с соседями.
+3. **Расширение (grow)** — если следующий блок свободен и его размер достаточен, расширение на месте (in-place absorb); иначе — fallback.
+4. **Fallback** — аллокация нового блока + `memmove` + деаллокация старого. Выполняется под одним мьютексом для совместимости с `NoLock`.
+
+**Ограничения:**
+- `T` должен быть `trivially_copyable` (проверка через `static_assert`).
+- При неудаче старый блок НЕ освобождается — вызывающий код сохраняет владение.
+- Для `AddressTraits` с `sizeof(Block) % granule_size != 0` (SmallAddressTraits) in-place пути пропускаются, так как `resolve()` возвращает адрес, перекрывающий заголовок блока.
+
+### Использование
+
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+
+Mgr::create(64 * 1024);
+
+// Выделить массив из 10 int
+auto p = Mgr::allocate_typed<int>(10);
+for (std::size_t i = 0; i < 10; ++i)
+    Mgr::resolve(p)[i] = static_cast<int>(i);
+
+// Расширить до 20 int — данные первых 10 элементов сохранены
+auto p2 = Mgr::reallocate_typed(p, 10, 20);
+// p2 может совпадать с p (in-place) или быть новым указателем (fallback)
+
+// Уменьшить до 5 int
+auto p3 = Mgr::reallocate_typed(p2, 20, 5);
+
+Mgr::deallocate_typed(p3);
+Mgr::destroy();
+```
+
+### Коды ошибок
+
+- `PmmError::Ok` — успешное перераспределение.
+- `PmmError::InvalidSize` — `new_count == 0`.
+- `PmmError::Overflow` — арифметическое переполнение `sizeof(T) * new_count`.
+- `PmmError::NotInitialized` — менеджер не инициализирован.
+- `PmmError::OutOfMemory` — недостаточно свободной памяти (fallback path).
+
+### Тесты
+
+15 тестов в `tests/test_issue210_reallocate_typed.cpp`:
+- Расширение с сохранением данных (grow_preserves_data)
+- Уменьшение с сохранением данных (shrink_preserves_data)
+- In-place расширение за счёт соседнего блока (inplace_expansion)
+- Fallback-путь при отсутствии свободного соседа (fallback_allocation)
+- Нулевой указатель → аллокация (null_pointer)
+- Нулевой new_count → ошибка (zero_new_count)
+- Одинаковый размер → тот же pptr (same_size)
+- Уменьшение с созданием свободного блока (shrink_creates_free_block)
+- Работа с SmallAddressTraits (small_address_traits)
+- Работа с LargeAddressTraits (large_address_traits)
+- Последовательные перераспределения (sequential_reallocations)
+- Защита от переполнения (overflow_protection)
+- Ошибка при неинициализированном менеджере (not_initialized)
+- Сохранение старого блока при неудаче (old_block_preserved_on_failure)
+- Уменьшение и расширение (shrink_then_grow)
