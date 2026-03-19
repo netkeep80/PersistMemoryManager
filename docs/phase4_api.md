@@ -242,3 +242,77 @@ Mgr::destroy();
 - Ошибка при неинициализированном менеджере (not_initialized)
 - Сохранение старого блока при неудаче (old_block_preserved_on_failure)
 - Уменьшение и расширение (shrink_then_grow)
+
+---
+
+## 4.4 Конверсия pptr ↔ байтовые смещения ✅ (#211)
+
+### Проблема
+
+BinDiffSynchronizer реализует `pam_adapter.h` для конверсии между гранульными индексами
+и байтовыми смещениями. Отсутствие такого API в pmm вынуждает пользователей вручную
+вычислять `offset * granule_size` и обратно.
+
+### Решение
+
+Добавлены два метода для прямой и обратной конверсии между pptr и байтовыми смещениями:
+
+#### `pptr<T>::byte_offset()` (pptr.h)
+
+```cpp
+/// Получить байтовое смещение из гранульного индекса.
+/// Возвращает offset() * granule_size. Для null pptr возвращает 0.
+constexpr std::size_t byte_offset() const noexcept;
+```
+
+#### `PersistMemoryManager::pptr_from_byte_offset<T>()` (persist_memory_manager.h)
+
+```cpp
+/// Создать pptr<T> из байтового смещения в управляемой области.
+/// Смещение должно быть кратно granule_size.
+template <typename T>
+static pptr<T> pptr_from_byte_offset( std::size_t byte_off ) noexcept;
+```
+
+### Использование
+
+```cpp
+using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
+
+Mgr::create(64 * 1024);
+
+auto p = Mgr::allocate_typed<int>();
+*p = 42;
+
+// Получить байтовое смещение для передачи во внешнюю систему
+std::size_t boff = p.byte_offset();
+
+// Восстановить pptr из байтового смещения (полученного от внешней системы)
+auto p2 = Mgr::pptr_from_byte_offset<int>(boff);
+assert(*p2 == 42);  // данные доступны через восстановленный указатель
+
+Mgr::deallocate_typed(p);
+Mgr::destroy();
+```
+
+### Коды ошибок (pptr_from_byte_offset)
+
+- Байтовое смещение 0 → null pptr (без ошибки).
+- Некратное `granule_size` смещение → null pptr + `PmmError::InvalidPointer`.
+- Смещение, превышающее `index_type::max()` → null pptr + `PmmError::Overflow`.
+
+### Тесты
+
+12 тестов в `tests/test_issue211_byte_offset.cpp`:
+- byte_offset() возвращает offset * granule_size (byte_offset_basic)
+- Null pptr byte_offset() возвращает 0 (byte_offset_null)
+- pptr_from_byte_offset создаёт корректный pptr (from_byte_offset_basic)
+- pptr_from_byte_offset(0) возвращает null (from_byte_offset_zero)
+- Некратное смещение возвращает null с ошибкой (from_byte_offset_unaligned)
+- Round-trip сохраняет идентичность указателя (round_trip)
+- Round-trip с данными: доступ через оба пути (round_trip_data)
+- Работа с SmallAddressTraits (small_address_traits)
+- Работа с LargeAddressTraits (large_address_traits)
+- Защита от переполнения (overflow_protection)
+- Коды ошибок корректны (error_codes)
+- Множественные аллокации round-trip (multiple_allocations)

@@ -181,6 +181,9 @@ pmm_add_test(test_issue202_logging_hooks test_issue202_logging_hooks.cpp)
 # ─── Тесты нативного перераспределения reallocate_typed (Issue #210, Phase 4.3) ─
 pmm_add_test(test_issue210_reallocate_typed test_issue210_reallocate_typed.cpp)
 
+# ─── Тесты конверсии pptr ↔ байтовые смещения (Issue #211, Phase 4.4) ─────────
+pmm_add_test(test_issue211_byte_offset test_issue211_byte_offset.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 

@@ -775,6 +775,38 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
     }
 
+    // ─── Конверсия pptr ↔ байтовые смещения (Issue #211, Phase 4.4) ────────────
+
+    /**
+     * @brief Создать pptr<T> из байтового смещения в управляемой области.
+     *
+     * Обратная операция к `pptr<T>::byte_offset()`. Смещение должно быть кратно
+     * granule_size, иначе возвращается null pptr с ошибкой InvalidPointer.
+     *
+     * @tparam T Тип данных, на который будет указывать pptr.
+     * @param byte_off Байтовое смещение (должно быть кратно granule_size).
+     * @return pptr<T> — персистентный указатель или пустой pptr при ошибке.
+     *
+     * @see pptr::byte_offset()
+     */
+    template <typename T> static pptr<T> pptr_from_byte_offset( std::size_t byte_off ) noexcept
+    {
+        if ( byte_off == 0 )
+            return pptr<T>(); // 0 byte offset → null pptr
+        if ( byte_off % address_traits::granule_size != 0 )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return pptr<T>();
+        }
+        std::size_t idx = byte_off / address_traits::granule_size;
+        if ( idx > static_cast<std::size_t>( std::numeric_limits<index_type>::max() ) )
+        {
+            _last_error = PmmError::Overflow;
+            return pptr<T>();
+        }
+        return pptr<T>( static_cast<index_type>( idx ) );
+    }
+
     /**
      * @brief Проверить, что pptr указывает на валидную область внутри кучи (Issue #43 Phase 1.2).
      *

@@ -31,7 +31,7 @@
  *
  * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
  * @see tree_node.h — TreeNode<A> с публичными методами (Issue #138)
- * @version 0.8 (Issue #164 — удалены избыточные методы tree_node)
+ * @version 0.9 (Issue #211 — Phase 4.4: byte_offset() for pptr ↔ byte offset conversion)
  */
 
 #pragma once
@@ -120,6 +120,17 @@ class pptr
 
     /// @brief Получить гранульный индекс (для сохранения/восстановления).
     constexpr index_type offset() const noexcept { return _idx; }
+
+    /// @brief Получить байтовое смещение из гранульного индекса (Issue #211, Phase 4.4).
+    ///
+    /// Возвращает `offset() * granule_size`. Упрощает интеграцию с внешними системами,
+    /// работающими с байтовыми адресами (например, BinDiffSynchronizer pam_adapter).
+    ///
+    /// @return Байтовое смещение в управляемой области. Для null pptr возвращает 0.
+    constexpr std::size_t byte_offset() const noexcept
+    {
+        return static_cast<std::size_t>( _idx ) * ManagerT::address_traits::granule_size;
+    }
 
     /// @brief Сравнение персистентных указателей одного типа по индексу.
     constexpr bool operator==( const pptr& other ) const noexcept { return _idx == other._idx; }
