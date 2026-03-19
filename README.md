@@ -611,6 +611,48 @@ static pptr<T> get_root() noexcept;
 - Сохраняется при save/load (персистентный)
 - Потокобезопасность: `set_root` под exclusive lock, `get_root` под shared lock
 
+## Коды ошибок — PmmError
+
+`PmmError` — перечисление кодов ошибок, позволяющее диагностировать причину неудачи
+операций `create()`, `load()`, `allocate()` и других. Все существующие методы по-прежнему
+возвращают `bool` / `nullptr`; `last_error()` — дополнительный механизм диагностики.
+
+```cpp
+using Mgr = pmm::presets::SingleThreadedHeap;
+
+bool ok = Mgr::create(64 * 1024);
+if (!ok) {
+    pmm::PmmError err = Mgr::last_error();
+    // err может быть: InvalidSize, Overflow, ExpandFailed, BackendError, ...
+}
+
+void* p = Mgr::allocate(1024);
+if (p == nullptr) {
+    pmm::PmmError err = Mgr::last_error();
+    // err может быть: NotInitialized, InvalidSize, Overflow, OutOfMemory
+}
+
+Mgr::clear_error();  // сброс кода ошибки в Ok
+```
+
+**Коды ошибок:**
+
+| Код | Описание |
+|-----|----------|
+| `Ok` | Операция успешна |
+| `NotInitialized` | Менеджер не инициализирован |
+| `InvalidSize` | Некорректный размер (ноль, слишком мал) |
+| `Overflow` | Арифметическое переполнение |
+| `OutOfMemory` | Недостаточно свободной памяти |
+| `ExpandFailed` | Расширение бэкенда не удалось |
+| `InvalidMagic` | Неверное magic-число при load() |
+| `CrcMismatch` | Несовпадение CRC32 (повреждённый образ) |
+| `SizeMismatch` | total_size не совпадает с бэкендом |
+| `GranuleMismatch` | granule_size не совпадает с address_traits |
+| `BackendError` | Бэкенд в недопустимом состоянии |
+| `InvalidPointer` | Указатель null или вне границ |
+| `BlockLocked` | Блок перманентно заблокирован |
+
 ## Конфигурация
 
 ### Встроенные пресеты
@@ -805,7 +847,7 @@ PersistMemoryManager/
 
 Полный план развития: [docs/plan.md](docs/plan.md)
 
-**Ближайшие приоритеты (Фаза 3)** — типы для [BinDiffSynchronizer](https://github.com/netkeep80/BinDiffSynchronizer):
+**Фаза 3 (завершена)** — типы для [BinDiffSynchronizer](https://github.com/netkeep80/BinDiffSynchronizer):
 
 - ~~`pstring<ManagerT>` — мутабельная персистентная строка~~ ✅ (#45)
 - ~~`parray<T, ManagerT>` — массив с O(1) индексацией~~ ✅ (#195)
@@ -813,6 +855,13 @@ PersistMemoryManager/
 - ~~`pallocator<T>` — STL-совместимый аллокатор~~ ✅ (#198)
 - ~~`ppool<T>` — пул объектов~~ ✅ (#199)
 - ~~`set_root<T>()` / `get_root<T>()` — корневой объект в ManagerHeader~~ ✅ (#200)
+
+**Ближайшие приоритеты (Фаза 4)** — API и удобство использования:
+
+- ~~`PmmError` — коды ошибок вместо bool~~ ✅ (#201)
+- Хуки логирования
+- `reallocate_typed<T>()` — нативное перераспределение
+- Конверсия pptr ↔ байтовые смещения
 
 План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
 

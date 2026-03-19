@@ -209,7 +209,10 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
         std::uint32_t stored_crc   = hdr->crc32;
         std::uint32_t computed_crc = detail::compute_image_crc32<address_traits>( buf, file_size );
         if ( stored_crc != 0 && stored_crc != computed_crc )
+        {
+            MgrT::set_last_error( PmmError::CrcMismatch );
             return false;
+        }
         // Note: stored_crc==0 is accepted for backward compatibility with images
         // saved before Phase 2.1 (which had _reserved[8] zeroed).
     }
