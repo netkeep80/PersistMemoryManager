@@ -1670,7 +1670,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
     std::uint16_t granule_size;       ///< Issue #83: kGranuleSize at creation time; validated on load
     std::uint64_t prev_total_size;    ///< Previous buffer size in bytes (runtime-only)
     std::uint32_t crc32;              ///< Issue #43 Phase 2.1: CRC32 checksum of the persisted image
-    std::uint8_t  _reserved[4];       ///< Reserved bytes (Issue #176: was prev_base_ptr; 4 bytes used for crc32)
+    index_type    root_offset;        ///< Issue #200 Phase 3.7: Root object granule index (no_block = no root set)
 };
 
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
@@ -6971,6 +6971,49 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return byte_off + sizeof( T ) <= _backend.total_size();
     }
 
+    // ─── Root object API (Issue #200, Phase 3.7) ──────────────────────────────
+    //
+    // A single root pointer stored in ManagerHeader. The user can store a pptr<T>
+    // to any object (e.g. pmap<pstringview, pptr<void>>) and retrieve it later,
+    // including after save/load cycles. This enables object discovery by name
+    // without external bookkeeping.
+
+    /**
+     * @brief Установить корневой объект в ManagerHeader.
+     *
+     * Корневой объект — единственный именованный указатель, сохраняемый в заголовке
+     * менеджера. Через него пользователь может хранить реестр (например,
+     * `pmap<pstringview, pptr<void>>`) и находить объекты по имени после загрузки.
+     *
+     * @tparam T Тип объекта.
+     * @param p Персистентный указатель на корневой объект. Пустой pptr сбрасывает корень.
+     */
+    template <typename T> static void set_root( pptr<T> p ) noexcept
+    {
+        typename thread_policy::unique_lock_type lock( _mutex );
+        if ( !_initialized )
+            return;
+        detail::ManagerHeader<address_traits>* hdr = get_header( _backend.base_ptr() );
+        hdr->root_offset                           = p.is_null() ? address_traits::no_block : p.offset();
+    }
+
+    /**
+     * @brief Получить корневой объект из ManagerHeader.
+     *
+     * @tparam T Тип объекта (должен совпадать с типом, переданным в set_root).
+     * @return pptr<T> — корневой указатель или пустой pptr, если корень не установлен.
+     */
+    template <typename T> static pptr<T> get_root() noexcept
+    {
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized )
+            return pptr<T>();
+        const detail::ManagerHeader<address_traits>* hdr = get_header_c( _backend.base_ptr() );
+        if ( hdr->root_offset == address_traits::no_block )
+            return pptr<T>();
+        return pptr<T>( hdr->root_offset );
+    }
+
     // ─── Методы доступа к полям AVL-узла блока (Issue #125) ─────────────────
     //
     // Note (Issue #141): These 10 get_tree_*/set_tree_* methods are intentional
@@ -7517,6 +7560,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         hdr->last_block_offset  = address_traits::no_block;
         hdr->free_tree_root     = address_traits::no_block;
         hdr->granule_size       = static_cast<std::uint16_t>( kGranSz );
+        hdr->root_offset        = address_traits::no_block; // Issue #200: no root object by default
 
         // Инициализация первого свободного блока через state machine утилиты
         void* blk = base + static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz;

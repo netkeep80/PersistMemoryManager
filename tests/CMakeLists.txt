@@ -169,6 +169,9 @@ pmm_add_test(test_issue198_pallocator test_issue198_pallocator.cpp)
 # ─── Тесты персистентного пула объектов ppool (Issue #199, Phase 3.6) ──────
 pmm_add_test(test_issue199_ppool test_issue199_ppool.cpp)
 
+# ─── Тесты корневого объекта в ManagerHeader (Issue #200, Phase 3.7) ───────
+pmm_add_test(test_issue200_root_object test_issue200_root_object.cpp)
+
 # ─── Тесты безопасности и устойчивости Phase 1 (Issue #43) ──────────────────
 pmm_add_test(test_issue43_phase1_safety test_issue43_phase1_safety.cpp)
 

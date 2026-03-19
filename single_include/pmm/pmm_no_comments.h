@@ -779,7 +779,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
     std::uint16_t granule_size;       
     std::uint64_t prev_total_size;    
     std::uint32_t crc32;              
-    std::uint8_t  _reserved[4];       
+    index_type    root_offset;        
 };
 
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
@@ -3809,6 +3809,26 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return byte_off + sizeof( T ) <= _backend.total_size();
     }
 
+    template <typename T> static void set_root( pptr<T> p ) noexcept
+    {
+        typename thread_policy::unique_lock_type lock( _mutex );
+        if ( !_initialized )
+            return;
+        detail::ManagerHeader<address_traits>* hdr = get_header( _backend.base_ptr() );
+        hdr->root_offset                           = p.is_null() ? address_traits::no_block : p.offset();
+    }
+
+    template <typename T> static pptr<T> get_root() noexcept
+    {
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized )
+            return pptr<T>();
+        const detail::ManagerHeader<address_traits>* hdr = get_header_c( _backend.base_ptr() );
+        if ( hdr->root_offset == address_traits::no_block )
+            return pptr<T>();
+        return pptr<T>( hdr->root_offset );
+    }
+
     template <typename T> static index_type get_tree_left_offset( pptr<T> p ) noexcept
     {
         if ( p.is_null() || !_initialized )
@@ -4142,6 +4162,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         hdr->last_block_offset  = address_traits::no_block;
         hdr->free_tree_root     = address_traits::no_block;
         hdr->granule_size       = static_cast<std::uint16_t>( kGranSz );
+        hdr->root_offset        = address_traits::no_block; 
 
         void* blk = base + static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz;
         std::memset( blk, 0, sizeof( Block<address_traits> ) );

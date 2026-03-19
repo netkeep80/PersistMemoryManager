@@ -415,3 +415,67 @@ Mgr::destroy();
 | Использование | STL-контейнеры | Массовое создание однотипных объектов |
 | Overhead | Заголовок блока на каждый объект | Один заголовок блока на чанк |
 | Фрагментация | Возможна | Минимальная (фиксированные слоты) |
+
+## 3.7 Корневой объект в ManagerHeader ✅
+
+**Issue:** #200
+**Файл:** `include/pmm/persist_memory_manager.h`, `include/pmm/types.h`
+**Тесты:** `tests/test_issue200_root_object.cpp` (13 тестов)
+
+### Описание
+
+Единственный именованный указатель `root_offset` в `ManagerHeader`, позволяющий хранить
+корневой объект (например, `pmap<pstringview, pptr<void>>`) и находить его после загрузки
+образа. Заменяет паттерн `pam_pmm.h` из BinDiffSynchronizer.
+
+### Архитектура
+
+```
+ManagerHeader (в ПАП)
+┌─────────────────────┐
+│ magic               │
+│ total_size          │
+│ ... (counters)      │
+│ free_tree_root      │
+│ crc32               │
+│ root_offset  ───────│──→ pptr<T> корневого объекта (или no_block)
+└─────────────────────┘
+```
+
+- **root_offset** (index_type): гранульный индекс корневого объекта
+- При инициализации (`create()`) устанавливается в `no_block` (нет корня)
+- Сохраняется и восстанавливается при `save_manager()`/`load_manager_from_file()`
+- Заменяет поле `_reserved[4]` — размер `ManagerHeader<DefaultAddressTraits>` остаётся 64 байта
+
+### API
+
+```cpp
+using Mgr = pmm::presets::SingleThreadedHeap;
+Mgr::create(64 * 1024);
+
+// Создать корневой объект (например, реестр)
+using Registry = Mgr::pmap<int, int>;
+auto reg = Mgr::create_typed<Registry>();
+reg->insert(1, 100);
+
+// Установить как корень
+Mgr::set_root(reg);
+
+// Получить корень (например, после load)
+auto root = Mgr::get_root<Registry>();
+auto found = root->find(1);
+// found->value == 100
+
+// Сбросить корень
+Mgr::set_root(Mgr::pptr<Registry>());
+
+Mgr::destroy();
+```
+
+### Особенности
+
+- Один корневой указатель на менеджер (мультитон — у каждого экземпляра свой)
+- Типобезопасность: `set_root<T>()` / `get_root<T>()` — тип T должен совпадать
+- Потокобезопасность: `set_root` под `unique_lock`, `get_root` под `shared_lock`
+- Персистентность: корень сохраняется в образе через `root_offset` в `ManagerHeader`
+- Работает со всеми address traits: `SmallAddressTraits`, `DefaultAddressTraits`, `LargeAddressTraits`

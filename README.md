@@ -560,6 +560,57 @@ Mgr::destroy();
 - `free_all()` необходимо вызвать перед `destroy_typed()` для полного освобождения
 - Тип T должен быть trivially copyable
 
+## Корневой объект
+
+Единственный именованный указатель в `ManagerHeader`, позволяющий хранить корневой объект
+и находить его после загрузки образа. Идеально для хранения реестра (например,
+`pmap<pstringview, pptr<void>>`).
+
+```cpp
+using Mgr = pmm::presets::SingleThreadedHeap;
+Mgr::create(64 * 1024);
+
+// Создать корневой объект
+using Registry = Mgr::pmap<int, int>;
+auto reg = Mgr::create_typed<Registry>();
+reg->insert(1, 100);
+reg->insert(2, 200);
+
+// Установить как корень
+Mgr::set_root(reg);
+
+// Сохранить
+pmm::save_manager<Mgr>("heap.dat");
+Mgr::destroy();
+
+// Загрузить и найти корень
+Mgr::create(64 * 1024);
+pmm::load_manager_from_file<Mgr>("heap.dat");
+
+auto root = Mgr::get_root<Registry>();
+auto found = root->find(1);
+// found->value == 100
+
+Mgr::destroy();
+```
+
+**API:**
+
+```cpp
+// Установить корневой объект (пустой pptr сбрасывает корень)
+template <typename T>
+static void set_root(pptr<T> p) noexcept;
+
+// Получить корневой объект (пустой pptr если корень не установлен)
+template <typename T>
+static pptr<T> get_root() noexcept;
+```
+
+**Особенности:**
+- Один корневой указатель на менеджер
+- Сохраняется при save/load (персистентный)
+- Потокобезопасность: `set_root` под exclusive lock, `get_root` под shared lock
+
 ## Конфигурация
 
 ### Встроенные пресеты
@@ -761,6 +812,7 @@ PersistMemoryManager/
 - ~~`pmap::erase()` — удаление из словаря~~ ✅ (#196)
 - ~~`pallocator<T>` — STL-совместимый аллокатор~~ ✅ (#198)
 - ~~`ppool<T>` — пул объектов~~ ✅ (#199)
+- ~~`set_root<T>()` / `get_root<T>()` — корневой объект в ManagerHeader~~ ✅ (#200)
 
 План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
 

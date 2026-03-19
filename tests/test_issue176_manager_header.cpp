@@ -88,24 +88,25 @@ template <typename T> struct has_pad<T, std::void_t<decltype( std::declval<T>().
 {
 };
 
-template <typename T, typename = void> struct has_reserved : std::false_type
+template <typename T, typename = void> struct has_root_offset : std::false_type
 {
 };
-template <typename T> struct has_reserved<T, std::void_t<decltype( std::declval<T>()._reserved )>> : std::true_type
+template <typename T> struct has_root_offset<T, std::void_t<decltype( std::declval<T>().root_offset )>> : std::true_type
 {
 };
 
 static_assert( has_pad<pmm::detail::ManagerHeader<>>::value, "#176-R3: _pad field must be present in ManagerHeader" );
-static_assert( has_reserved<pmm::detail::ManagerHeader<>>::value,
-               "#176-R3: _reserved field must be present in ManagerHeader" );
+static_assert( has_root_offset<pmm::detail::ManagerHeader<>>::value,
+               "#200: root_offset field must be present in ManagerHeader (replaced _reserved)" );
 
 // Issue #43 Phase 2.1: 4 bytes of _reserved were repurposed for crc32 field.
-// _reserved is now 4 bytes, crc32 is 4 bytes — total 8 bytes preserved.
-static_assert( sizeof( pmm::detail::ManagerHeader<>::_reserved ) == 4,
-               "#176-R3/#43-P2.1: _reserved is 4 bytes (4 bytes used for crc32)" );
+// Issue #200: remaining 4 bytes of _reserved repurposed for root_offset (index_type).
+// crc32 is 4 bytes, root_offset is 4 bytes (for DefaultAddressTraits) — total 8 bytes preserved.
+static_assert( sizeof( pmm::detail::ManagerHeader<>::root_offset ) == 4,
+               "#200: root_offset is 4 bytes for DefaultAddressTraits" );
 static_assert( sizeof( pmm::detail::ManagerHeader<>::crc32 ) == 4, "#43-P2.1: crc32 must be exactly 4 bytes" );
-static_assert( sizeof( pmm::detail::ManagerHeader<>::crc32 ) + sizeof( pmm::detail::ManagerHeader<>::_reserved ) == 8,
-               "#176-R3/#43-P2.1: crc32 + _reserved must total 8 bytes" );
+static_assert( sizeof( pmm::detail::ManagerHeader<>::crc32 ) + sizeof( pmm::detail::ManagerHeader<>::root_offset ) == 8,
+               "#200: crc32 + root_offset must total 8 bytes for DefaultAddressTraits" );
 
 // ─── Manager alias for runtime tests ──────────────────────────────────────────
 

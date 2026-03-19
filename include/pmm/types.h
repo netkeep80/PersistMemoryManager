@@ -183,7 +183,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
     std::uint16_t granule_size;       ///< Issue #83: kGranuleSize at creation time; validated on load
     std::uint64_t prev_total_size;    ///< Previous buffer size in bytes (runtime-only)
     std::uint32_t crc32;              ///< Issue #43 Phase 2.1: CRC32 checksum of the persisted image
-    std::uint8_t  _reserved[4];       ///< Reserved bytes (Issue #176: was prev_base_ptr; 4 bytes used for crc32)
+    index_type    root_offset;        ///< Issue #200 Phase 3.7: Root object granule index (no_block = no root set)
 };
 
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
