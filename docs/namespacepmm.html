@@ -249,6 +249,27 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a030e138f0333b3e992a6141a013961b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Узел AVL-дерева для адресного пространства ПАП, использование только через наследование.  <a href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2">More...</a><br /></td></tr>
 <tr class="separator:a030e138f0333b3e992a6141a013961b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b10fe7af34016c8604a3f2b90f8b8c1" id="r_a8b10fe7af34016c8604a3f2b90f8b8c1"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1">PmmError</a> : std::uint8_t { <br />
+&#160;&#160;<a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1aa60852f204ed8028c1c58808b746d115">Ok</a> = 0
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a9646ad3a1c3e708b4fa8b4b4270fbab6">NotInitialized</a> = 1
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1aa5cffdcd7892a263ff87df5783c0d6b6">InvalidSize</a> = 2
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a129e8109f319870e328cc7a1d5b5cae3">Overflow</a> = 3
+, <br />
+&#160;&#160;<a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1ab498327feeb51430af73e07deac268fd">OutOfMemory</a> = 4
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a5f0e34a6c3247a0b8be3eca3ce20d595">ExpandFailed</a> = 5
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a180818c6d53193ec0e26551c5eab121d">InvalidMagic</a> = 6
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a026fda595c441b96def8ef08c0b523c6">CrcMismatch</a> = 7
+, <br />
+&#160;&#160;<a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a87c69361ccd090c9c844e19d08432a26">SizeMismatch</a> = 8
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a705c43bb0a3aaa119d75ed01821d4dd4">GranuleMismatch</a> = 9
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a6005b8268334563b2246f41788e28ff5">BackendError</a> = 10
+, <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a7d4bdc38754ac378503380f7412b2adb">InvalidPointer</a> = 11
+, <br />
+&#160;&#160;<a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a540411a85b2844656be4df386e8d399e">BlockLocked</a> = 12
+<br />
+ }</td></tr>
+<tr class="memdesc:a8b10fe7af34016c8604a3f2b90f8b8c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error codes for PersistMemoryManager operations (Issue #201, Phase 4.1).  <a href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1">More...</a><br /></td></tr>
+<tr class="separator:a8b10fe7af34016c8604a3f2b90f8b8c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -547,6 +568,61 @@ Variables</h2></td></tr>
 </table>
 
 <p class="definition">Definition at line <a class="el" href="tree__node_8h_source.html#l00079">79</a> of file <a class="el" href="tree__node_8h_source.html">tree_node.h</a>.</p>
+
+</div>
+</div>
+<a id="a8b10fe7af34016c8604a3f2b90f8b8c1" name="a8b10fe7af34016c8604a3f2b90f8b8c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b10fe7af34016c8604a3f2b90f8b8c1">&#9670;&#160;</a></span>PmmError</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1">pmm::PmmError</a> : std::uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Error codes for <a class="el" href="classpmm_1_1PersistMemoryManager.html" title="Унифицированный статический менеджер персистентной памяти (Issue #110).">PersistMemoryManager</a> operations (Issue #201, Phase 4.1). </p>
+<p>Provides detailed error information instead of bare bool/nullptr. Use <code><a class="el" href="classpmm_1_1PersistMemoryManager.html#ac6853493c01246da359f277870af8a55" title="Return the error code from the last operation (thread-local per manager specialization).">PersistMemoryManager::last_error()</a></code> to query the most recent error. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1aa60852f204ed8028c1c58808b746d115" name="a8b10fe7af34016c8604a3f2b90f8b8c1aa60852f204ed8028c1c58808b746d115"></a>Ok&#160;</td><td class="fielddoc"><p>Operation succeeded. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a9646ad3a1c3e708b4fa8b4b4270fbab6" name="a8b10fe7af34016c8604a3f2b90f8b8c1a9646ad3a1c3e708b4fa8b4b4270fbab6"></a>NotInitialized&#160;</td><td class="fielddoc"><p>Manager is not initialized. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1aa5cffdcd7892a263ff87df5783c0d6b6" name="a8b10fe7af34016c8604a3f2b90f8b8c1aa5cffdcd7892a263ff87df5783c0d6b6"></a>InvalidSize&#160;</td><td class="fielddoc"><p>Invalid size argument (zero, too small, etc.) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a129e8109f319870e328cc7a1d5b5cae3" name="a8b10fe7af34016c8604a3f2b90f8b8c1a129e8109f319870e328cc7a1d5b5cae3"></a>Overflow&#160;</td><td class="fielddoc"><p>Arithmetic overflow in size/granule computation. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1ab498327feeb51430af73e07deac268fd" name="a8b10fe7af34016c8604a3f2b90f8b8c1ab498327feeb51430af73e07deac268fd"></a>OutOfMemory&#160;</td><td class="fielddoc"><p>Allocation failed — not enough free space. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a5f0e34a6c3247a0b8be3eca3ce20d595" name="a8b10fe7af34016c8604a3f2b90f8b8c1a5f0e34a6c3247a0b8be3eca3ce20d595"></a>ExpandFailed&#160;</td><td class="fielddoc"><p>Backend expand() failed. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a180818c6d53193ec0e26551c5eab121d" name="a8b10fe7af34016c8604a3f2b90f8b8c1a180818c6d53193ec0e26551c5eab121d"></a>InvalidMagic&#160;</td><td class="fielddoc"><p>Magic number mismatch on load() </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a026fda595c441b96def8ef08c0b523c6" name="a8b10fe7af34016c8604a3f2b90f8b8c1a026fda595c441b96def8ef08c0b523c6"></a>CrcMismatch&#160;</td><td class="fielddoc"><p>CRC32 mismatch on load (corrupted image) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a87c69361ccd090c9c844e19d08432a26" name="a8b10fe7af34016c8604a3f2b90f8b8c1a87c69361ccd090c9c844e19d08432a26"></a>SizeMismatch&#160;</td><td class="fielddoc"><p>Stored total_size does not match backend. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a705c43bb0a3aaa119d75ed01821d4dd4" name="a8b10fe7af34016c8604a3f2b90f8b8c1a705c43bb0a3aaa119d75ed01821d4dd4"></a>GranuleMismatch&#160;</td><td class="fielddoc"><p>Stored granule_size does not match address_traits. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a6005b8268334563b2246f41788e28ff5" name="a8b10fe7af34016c8604a3f2b90f8b8c1a6005b8268334563b2246f41788e28ff5"></a>BackendError&#160;</td><td class="fielddoc"><p>Backend returned null or invalid state. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a7d4bdc38754ac378503380f7412b2adb" name="a8b10fe7af34016c8604a3f2b90f8b8c1a7d4bdc38754ac378503380f7412b2adb"></a>InvalidPointer&#160;</td><td class="fielddoc"><p>Pointer is null or out of bounds. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8b10fe7af34016c8604a3f2b90f8b8c1a540411a85b2844656be4df386e8d399e" name="a8b10fe7af34016c8604a3f2b90f8b8c1a540411a85b2844656be4df386e8d399e"></a>BlockLocked&#160;</td><td class="fielddoc"><p><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> is permanently locked (cannot deallocate) </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00048">48</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -886,7 +962,7 @@ template&lt;typename Backend &gt; </div>
 
 <p>Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant. Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a" title="Размер гранулы в байтах.">DefaultAddressTraits::granule_size</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00044">44</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00069">69</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -914,7 +990,7 @@ template&lt;typename Backend &gt; </div>
 </div><!-- fragment -->
 <p>"PMM_V098" (Issue #138: block layout changed — prev/next now after <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a> fields) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00049">49</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00074">74</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
