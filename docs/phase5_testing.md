@@ -165,3 +165,109 @@ endfunction()
 
 70 тестовых исполняемых файлов (67 + 3 новых), все проходят (100% pass rate).
 31 новый тест-кейс суммарно в трёх файлах.
+
+---
+
+## 5.3 Бенчмарки производительности ✅ (#214)
+
+### Проблема
+
+Проект не имел формальных бенчмарков производительности. Существовал только
+`examples/benchmark.cpp` с ручным замером времени и `test_performance.cpp` с
+проверкой «≤ 100 мс». Не было инструмента для систематического измерения
+производительности различных операций и сравнения с базовым аллокатором (malloc).
+
+### Решение
+
+Интеграция Google Benchmark v1.9.1 через CMake FetchContent с опциональной сборкой
+(`PMM_BUILD_BENCHMARKS=ON`). Один бенчмарк-файл `benchmarks/bench_allocator.cpp`
+покрывает все ключевые операции библиотеки.
+
+#### Зависимость (CMakeLists.txt)
+
+```cmake
+option(PMM_BUILD_BENCHMARKS "Build Google Benchmark performance benchmarks" OFF)
+if(PMM_BUILD_BENCHMARKS)
+    FetchContent_Declare(
+        benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG        v1.9.1
+    )
+    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(benchmark)
+    add_subdirectory(benchmarks)
+endif()
+```
+
+#### Бенчмарки
+
+**Аллокатор** (5 бенчмарков):
+- `BM_Allocate` — аллокация одного блока (16, 64, 256, 1024, 4096 байт)
+- `BM_Deallocate` — деаллокация одного блока (64, 256, 1024 байт)
+- `BM_AllocDeallocMixed` — цикл alloc/dealloc со смешанными размерами (32–256 байт)
+- `BM_ReallocateTyped` — нативное перераспределение (64↔128 байт)
+- `BM_AllocateBatch` — пакетная аллокация (1K, 10K, 100K блоков по 64 байт)
+
+**Сравнение с malloc** (2 бенчмарка):
+- `BM_MallocFree` — malloc/free одного блока (16–4096 байт)
+- `BM_MallocBatch` — пакетная аллокация через malloc (1K, 10K, 100K блоков)
+
+**pmap** (3 бенчмарка):
+- `BM_PmapInsert` — вставка N элементов (100, 1K, 10K)
+- `BM_PmapFind` — поиск по ключу в дереве из N элементов
+- `BM_PmapErase` — удаление N элементов (100, 1K)
+
+**pvector** (2 бенчмарка):
+- `BM_PvectorPushBack` — добавление N элементов (100, 1K, 10K)
+- `BM_PvectorAt` — доступ по индексу в O(log n) (AVL order-statistic tree)
+
+**parray** (2 бенчмарка):
+- `BM_ParrayPushBack` — добавление N элементов (100, 1K, 10K)
+- `BM_ParrayRandomAccess` — O(1) произвольный доступ
+
+**ppool** (2 бенчмарка):
+- `BM_PpoolAllocate` — O(1) аллокация/деаллокация одного объекта
+- `BM_PpoolBatch` — пакетная аллокация из пула (100, 1K, 10K объектов)
+
+**pstring** (2 бенчмарка):
+- `BM_PstringAssign` — присвоение строки (16, 256, 4096 символов)
+- `BM_PstringAppend` — amortized O(1) append
+
+**pstringview** (1 бенчмарк):
+- `BM_PstringviewInternExisting` — поиск уже интернированной строки (AVL lookup)
+
+**Многопоточность** (1 бенчмарк):
+- `BM_AllocateMT` — alloc/dealloc с SharedMutexLock (1, 2, 4, 8 потоков)
+
+#### Сборка и запуск
+
+```bash
+cmake -B build -DPMM_BUILD_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target pmm_benchmarks
+./build/benchmarks/pmm_benchmarks
+```
+
+#### Результаты (GCC 13, Linux x86-64, Release)
+
+| Операция | Время (нс) | Примечание |
+|----------|-----------|------------|
+| `allocate(64)` | ~20 | Одиночная аллокация |
+| `deallocate(64)` | ~680 | С PauseTiming на подготовку |
+| `alloc+dealloc mixed` | ~22 | Смешанные размеры 32–256 |
+| `reallocate_typed` | ~12 | Чередование 64↔128 |
+| `malloc+free(64)` | ~7 | Базовый аллокатор |
+| `pmap find(10K)` | ~49 | O(log n) AVL-поиск |
+| `pmap insert(10K)` | ~102 нс/эл | С аллокацией узлов |
+| `pvector at(10K)` | ~43 | O(log n) order-statistic |
+| `parray [](10K)` | ~3 | O(1) произвольный доступ |
+| `ppool allocate` | ~1.4 | O(1) из free-list |
+| `pstring append` | ~1.1 | Amortized O(1) |
+| `pstringview intern(10K)` | ~107 | AVL lookup существующей строки |
+
+### Преимущества
+
+- **Воспроизводимость:** Google Benchmark обеспечивает статистическую надёжность
+- **Сравнимость:** Прямое сравнение pmm с malloc для оценки накладных расходов
+- **Полнота:** Покрыты все ключевые типы и операции библиотеки
+- **Опциональность:** Сборка бенчмарков по флагу `PMM_BUILD_BENCHMARKS=ON`

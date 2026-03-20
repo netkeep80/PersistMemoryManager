@@ -198,7 +198,7 @@ STL-контейнеров с ПАП.
 
 ---
 
-## Фаза 5: Тестирование и качество (приоритет: средний)
+## Фаза 5: Тестирование и качество ✅ ВЫПОЛНЕНО (v0.39.0–v0.42.0)
 
 > Начата в Issue #212. Подробности: [docs/phase5_testing.md](phase5_testing.md)
 
@@ -229,10 +229,22 @@ STL-контейнеров с ПАП.
   на static/heap/16-bit хранилищах, фрагментационный стресс, sweep по seed-ам
 - libFuzzer harness (`tests/fuzz_allocator.cpp`) для покрытие-управляемого фаззинга
 
-### 5.3 Бенчмарки производительности
+### 5.3 Бенчмарки производительности ✅ ВЫПОЛНЕНО (#214)
 
-- Google Benchmark для аллокации, деаллокации, AVL-поиска, pmap insert/find, pvector/parray operations
-- Сравнение с malloc / jemalloc / tcmalloc
+**Проблема:** Нет формальных бенчмарков производительности с Google Benchmark.
+
+**Решение:**
+- Google Benchmark v1.9.1 через FetchContent (опционально: `PMM_BUILD_BENCHMARKS=ON`)
+- 18 бенчмарков в `benchmarks/bench_allocator.cpp`:
+  - Аллокатор: allocate, deallocate, mixed, reallocate_typed, batch (5)
+  - Сравнение с malloc/free (2)
+  - pmap: insert, find, erase (3)
+  - pvector: push_back, at (2)
+  - parray: push_back, random access (2)
+  - ppool: allocate, batch (2)
+  - pstring: assign, append (2)
+  - pstringview: intern existing (1)
+  - Многопоточность: alloc/dealloc с SharedMutexLock (1, 2, 4, 8 потоков) (1)
 
 ---
 
@@ -301,7 +313,7 @@ STL-контейнеров с ПАП.
 | 17 | ~~Конверсия pptr ↔ байтовые смещения~~ | 4.4 | ~~Средний~~ | ~~Низкая~~ | ✅ #211 |
 | 18 | ~~Миграция на Catch2~~ | 5.1 | ~~Средний~~ | ~~Высокая~~ | ✅ #212 |
 | 19 | ~~Fuzz-тестирование~~ | 5.2 | ~~Средний~~ | ~~Средняя~~ | ✅ #213 |
-| 20 | Бенчмарки | 5.3 | Средний | Средняя | |
+| 20 | ~~Бенчмарки~~ | 5.3 | ~~Средний~~ | ~~Средняя~~ | ✅ #214 |
 | 21 | Документация thread safety | 6.1 | Средний | Низкая | |
 | 22 | Документация recovery | 6.2 | Средний | Низкая | |
 | 23 | Транзакции | 7.1 | Низкий | Высокая | |
@@ -311,4 +323,4 @@ STL-контейнеров с ПАП.
 
 ---
 
-*Документ обновлён 2026-03-19. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210. Phase 4.4 (pptr byte offset conversion) реализована в Issue #211. Фаза 4 полностью завершена. Phase 5.1 (Catch2 migration) реализована в Issue #212. Phase 5.2 (extended test coverage) реализована в Issue #213.*
+*Документ обновлён 2026-03-20. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210. Phase 4.4 (pptr byte offset conversion) реализована в Issue #211. Фаза 4 полностью завершена. Phase 5.1 (Catch2 migration) реализована в Issue #212. Phase 5.2 (extended test coverage) реализована в Issue #213. Phase 5.3 (Google Benchmark) реализована в Issue #214. Фаза 5 полностью завершена.*

@@ -16,7 +16,7 @@ pmm_add_example(persistence_demo persistence_demo.cpp)
 pmm_add_example(stress_test      stress_test.cpp)
 
 # ─── Примеры Фазы 6 ───────────────────────────────────────────────────────────
-pmm_add_example(benchmark        benchmark.cpp)
+pmm_add_example(pmm_example_benchmark benchmark.cpp)
 
 # ─── Пример нового API (Issue #97) ────────────────────────────────────────────
 add_executable(new_api_usage new_api_usage.cpp)

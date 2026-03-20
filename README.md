@@ -110,6 +110,14 @@ ctest --test-dir build --output-on-failure
 
 **Требования:** CMake 3.16+, компилятор C++20 (GCC 10+, Clang 10+, MSVC 2019 16.3+).
 
+Бенчмарки производительности (опционально):
+
+```bash
+cmake -B build -DPMM_BUILD_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target pmm_benchmarks
+./build/benchmarks/pmm_benchmarks
+```
+
 Демо-приложение (требует OpenGL + GLFW):
 
 ```bash
@@ -850,6 +858,7 @@ PersistMemoryManager/
 │   └── pmm/                          # Single-header файлы
 │       ├── pmm.h                     # Полная библиотека (v0.10.0)
 │       └── pmm_*.h                   # Файлы пресетов
+├── benchmarks/                       # Бенчмарки Google Benchmark
 ├── examples/                         # Примеры использования
 ├── tests/                            # Тесты Catch2 (160+)
 ├── demo/                             # Визуальное ImGui/OpenGL демо
@@ -881,11 +890,11 @@ PersistMemoryManager/
 - ~~`reallocate_typed<T>()` — нативное перераспределение~~ ✅ (#210)
 - ~~Конверсия pptr ↔ байтовые смещения~~ ✅ (#211)
 
-**Ближайшие приоритеты (Фаза 5)** — Тестирование и качество:
+**Фаза 5 (завершена)** — Тестирование и качество:
 
 - ~~Миграция на Catch2~~ ✅ (#212)
 - ~~Расширение покрытия тестами (overflow, concurrent, fuzz)~~ ✅ (#213)
-- Бенчмарки производительности (Google Benchmark)
+- ~~Бенчмарки производительности (Google Benchmark)~~ ✅ (#214)
 
 План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
 

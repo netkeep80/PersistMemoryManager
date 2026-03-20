@@ -40,6 +40,20 @@ add_subdirectory(tests)
 # ─── Примеры ──────────────────────────────────────────────────────────────────
 add_subdirectory(examples)
 
+# ─── Бенчмарки (опционально, Phase 5.3) ─────────────────────────────────────
+option(PMM_BUILD_BENCHMARKS "Build Google Benchmark performance benchmarks" OFF)
+if(PMM_BUILD_BENCHMARKS)
+    FetchContent_Declare(
+        benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG        v1.9.1
+    )
+    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(benchmark)
+    add_subdirectory(benchmarks)
+endif()
+
 # ─── Визуальное демо (опционально) ────────────────────────────────────────────
 option(PMM_BUILD_DEMO "Build the visual demo application (requires OpenGL + GLFW)" OFF)
 if(PMM_BUILD_DEMO)
