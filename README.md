@@ -864,6 +864,7 @@ PersistMemoryManager/
 ├── demo/                             # Визуальное ImGui/OpenGL демо
 ├── docs/                             # Архитектура, API, план развития
 │   ├── plan.md                       # План развития pmm
+│   ├── thread_safety.md              # Потокобезопасность
 │   ├── phase3_types.md               # Фаза 3: типы для BinDiffSynchronizer
 │   └── plan4BinDiffSynchronizer.md   # План миграции BinDiffSynchronizer
 ├── scripts/                          # Утилиты для релиза
@@ -896,6 +897,11 @@ PersistMemoryManager/
 - ~~Расширение покрытия тестами (overflow, concurrent, fuzz)~~ ✅ (#213)
 - ~~Бенчмарки производительности (Google Benchmark)~~ ✅ (#214)
 
+**Фаза 6 (в процессе)** — Документация:
+
+- ~~Документация потокобезопасности~~ ✅ (#215)
+- Документация восстановления после сбоев
+
 План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
 
 ## Контрибьюция
@@ -925,6 +931,7 @@ cmake -B build && cmake --build build && ctest --test-dir build
 - [Архитектура](docs/architecture.md)
 - [API Reference (Markdown)](docs/api_reference.md)
 - [Changelog](CHANGELOG.md)
+- [Потокобезопасность](docs/thread_safety.md)
 - [План развития](docs/plan.md)
 - [План миграции BinDiffSynchronizer](docs/plan4BinDiffSynchronizer.md)
 
