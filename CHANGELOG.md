@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.43.0] - 2026-03-21
+
+### Added
+- `docs/recovery.md` — полное руководство по восстановлению после сбоев: сценарии сбоев, гарантии целостности, механизм пятифазного восстановления при `load()`, CRC32 верификация, атомарное сохранение, ограничения и примеры кода (#216)
+
+### Changed
+- refactor(#188): eliminate code duplication across persistent containers using C++ template metaprogramming
+  - Extract shared `avl_inorder_successor`, `avl_init_node`, `avl_subtree_count`, `avl_clear_subtree` to `avl_tree_mixin.h` — eliminates ~100 lines of duplicated AVL traversal/initialization code from pvector, pmap, pstringview
+  - Extract `resolve_granule_ptr` and `ptr_to_granule_idx` helpers to `types.h` — eliminates repeated index↔pointer conversion patterns from parray, pstring, ppool, pstringview
+  - Extract `crc32_accumulate_byte` helper — eliminates 4 duplicated CRC32 bit-rotation loops in `types.h`
+  - Deduplicate pvector `front()`/`back()`/`pop_back()`/`begin()` using shared `avl_min_node`/`avl_max_node`
+  - Unify pstringview AVL node initialization to use shared `avl_init_node` with correct `no_block` sentinel
+  - Extract `StaticConfig` base template in `manager_configs.h` — eliminates duplicated struct bodies for `SmallEmbeddedStaticConfig` and `EmbeddedStaticConfig`
+  - Introduce `BlockPPtr` adapter in `avl_tree_mixin.h` — enables `AvlFreeTree` to reuse shared AVL rotation, rebalancing, and min_node via the same generic functions, eliminating ~120 lines of duplicate code from `free_block_tree.h`
+  - Extract `AvlInorderIterator` template in `avl_tree_mixin.h` — eliminates identical in-order iterator structs from pmap and pvector (~35 lines each)
+  - Regenerate `single_include/` headers
+
+
 ## [0.42.0] - 2026-03-20
 
 ### Added
