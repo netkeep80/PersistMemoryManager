@@ -156,6 +156,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6fed4212b4721a5623cc1d80eac3c105" id="r_a6fed4212b4721a5623cc1d80eac3c105"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1parray.html#a6fed4212b4721a5623cc1d80eac3c105">resize</a> (std::size_t n) noexcept</td></tr>
 <tr class="memdesc:a6fed4212b4721a5623cc1d80eac3c105"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resize the array to contain n elements.  <br /></td></tr>
 <tr class="separator:a6fed4212b4721a5623cc1d80eac3c105"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12599796da3030a15e14247443d5829e" id="r_a12599796da3030a15e14247443d5829e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1parray.html#a12599796da3030a15e14247443d5829e">insert</a> (std::size_t index, const T &amp;value) noexcept</td></tr>
+<tr class="memdesc:a12599796da3030a15e14247443d5829e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert an element at the given index, shifting subsequent elements right.  <br /></td></tr>
+<tr class="separator:a12599796da3030a15e14247443d5829e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2da3d8ee7d8cdb852d85f7d73e6a969d" id="r_a2da3d8ee7d8cdb852d85f7d73e6a969d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1parray.html#a2da3d8ee7d8cdb852d85f7d73e6a969d">erase</a> (std::size_t index) noexcept</td></tr>
+<tr class="memdesc:a2da3d8ee7d8cdb852d85f7d73e6a969d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the element at the given index, shifting subsequent elements left.  <br /></td></tr>
+<tr class="separator:a2da3d8ee7d8cdb852d85f7d73e6a969d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8786b4f033f7890b40c3914ffecfec2" id="r_ad8786b4f033f7890b40c3914ffecfec2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1parray.html#ad8786b4f033f7890b40c3914ffecfec2">clear</a> () noexcept</td></tr>
 <tr class="memdesc:ad8786b4f033f7890b40c3914ffecfec2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the array (set size to 0) without freeing the data block.  <br /></td></tr>
 <tr class="separator:ad8786b4f033f7890b40c3914ffecfec2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -521,7 +527,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Clear the array (set size to 0) without freeing the data block. </p>
 <p>Capacity is preserved for potential reuse. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00295">295</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00346">346</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -619,6 +625,46 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 </div>
 </div>
+<a id="a2da3d8ee7d8cdb852d85f7d73e6a969d" name="a2da3d8ee7d8cdb852d85f7d73e6a969d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2da3d8ee7d8cdb852d85f7d73e6a969d">&#9670;&#160;</a></span>erase()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="structpmm_1_1parray.html">pmm::parray</a>&lt; T, ManagerT &gt;::erase </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove the element at the given index, shifting subsequent elements left. </p>
+<p>Elements at positions [index+1, size) are shifted one position to the left. Complexity: O(n) due to element shifting.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>Position to remove (0-based, must be &lt; <a class="el" href="structpmm_1_1parray.html#a97785214a6536bea8d3d4b5c23d2d2fa" title="Number of elements in the array.">size()</a>). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success, false if index is out of range. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00327">327</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+
+</div>
+</div>
 <a id="a3c7b5bba0cdeb5940169cc2ece4f74e8" name="a3c7b5bba0cdeb5940169cc2ece4f74e8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3c7b5bba0cdeb5940169cc2ece4f74e8">&#9670;&#160;</a></span>free_data()</h2>
 
@@ -647,7 +693,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Free the data block. </p>
 <p>Deallocates the data block via the manager. After calling, the array is empty. This method MUST be called before destroy_typed(pptr) for correct resource cleanup. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00303">303</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00354">354</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -714,6 +760,57 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 </div>
 </div>
+<a id="a12599796da3030a15e14247443d5829e" name="a12599796da3030a15e14247443d5829e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12599796da3030a15e14247443d5829e">&#9670;&#160;</a></span>insert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="structpmm_1_1parray.html">pmm::parray</a>&lt; T, ManagerT &gt;::insert </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Insert an element at the given index, shifting subsequent elements right. </p>
+<p>Elements at positions [index, size) are shifted one position to the right. If index == <a class="el" href="structpmm_1_1parray.html#a97785214a6536bea8d3d4b5c23d2d2fa" title="Number of elements in the array.">size()</a>, behaves like <a class="el" href="structpmm_1_1parray.html#a0a9d362642dab06eca74ddad8827b47a" title="Add an element to the end of the array.">push_back()</a>. Complexity: O(n) due to element shifting.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>Position to insert at (0-based, must be &lt;= <a class="el" href="structpmm_1_1parray.html#a97785214a6536bea8d3d4b5c23d2d2fa" title="Number of elements in the array.">size()</a>). </td></tr>
+    <tr><td class="paramname">value</td><td>The element to insert. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success, false if index is out of range or allocation fails. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00301">301</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+
+</div>
+</div>
 <a id="af67cc475c2453248c915de8a57ee1105" name="af67cc475c2453248c915de8a57ee1105"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af67cc475c2453248c915de8a57ee1105">&#9670;&#160;</a></span>operator!=()</h2>
 
@@ -742,7 +839,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Inequality. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00334">334</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00385">385</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -774,7 +871,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Equality: same size and all elements equal. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00318">318</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00369">369</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
