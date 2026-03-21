@@ -253,6 +253,9 @@ target_link_libraries(test_issue213_concurrent PRIVATE pmm Catch2::Catch2WithMai
 add_test(NAME test_issue213_concurrent COMMAND test_issue213_concurrent)
 set_tests_properties(test_issue213_concurrent PROPERTIES TIMEOUT 120)
 
+# Issue #235: code review improvements (typed_guard, HeapStorage, deprecated attrs)
+pmm_add_test(test_issue235_code_review test_issue235_code_review.cpp)
+
 # 5.2.3: Fuzz-style testing of allocator (deterministic, Catch2)
 pmm_add_test(test_issue213_fuzz test_issue213_fuzz.cpp)
 set_tests_properties(test_issue213_fuzz PROPERTIES TIMEOUT 120)

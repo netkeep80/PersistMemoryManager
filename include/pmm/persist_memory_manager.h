@@ -33,6 +33,7 @@
 #include "pmm/pstring.h"
 #include "pmm/pvector.h"
 #include "pmm/pstringview.h"
+#include "pmm/typed_guard.h"
 #include "pmm/types.h"
 
 #include <atomic>
@@ -739,6 +740,14 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
         reinterpret_cast<T*>( raw )->~T();
         deallocate( raw );
+    }
+
+    /// @brief Create a typed object and wrap it in a RAII scope-guard (Issue #235).
+    /// The guard calls free_data()/free_all() + destroy_typed() on scope exit.
+    /// @see typed_guard
+    template <typename T, typename... Args> static typed_guard<T, PersistMemoryManager> make_guard( Args&&... args )
+    {
+        return typed_guard<T, PersistMemoryManager>( create_typed<T>( static_cast<Args&&>( args )... ) );
     }
 
     /**

@@ -351,7 +351,7 @@ TEST_CASE( "    Split creates valid FreeBlock remainder", "[test_issue106_block_
     {
         std::uint8_t*  base = pmm.backend().base_ptr();
         pmm::Block<A>* rem  = reinterpret_cast<pmm::Block<A>*>(
-            base + pmm::detail::idx_to_byte_off( BlockState::get_next_offset( blk ) ) );
+            base + pmm::detail::idx_to_byte_off_t<A>( BlockState::get_next_offset( blk ) ) );
         REQUIRE( BlockState::get_weight( rem ) == 0 );      // FreeBlock: weight == 0
         REQUIRE( BlockState::get_root_offset( rem ) == 0 ); // FreeBlock: root_offset == 0
     }
