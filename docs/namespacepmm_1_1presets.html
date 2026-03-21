@@ -130,9 +130,9 @@ Typedefs</h2></td></tr>
 <p>Использование: </p><div class="fragment"><div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033">pmm::presets::EmbeddedHeap::create</a>(4 * 1024); <span class="comment">// 4 KiB начальный размер</span></div>
 <div class="line"><span class="keywordtype">void</span>* ptr = <a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::presets::EmbeddedHeap::allocate</a>(64);</div>
 <div class="line"><a class="code hl_function" href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::presets::EmbeddedHeap::deallocate</a>(ptr);</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a137ddd1f39a739af82dd2450c02a8208"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::PersistMemoryManager::deallocate</a></div><div class="ttdeci">static void deallocate(void *ptr) noexcept</div><div class="ttdoc">Освободить блок по указателю на пользовательские данные.</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00432">persist_memory_manager.h:432</a></div></div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a4b67c007f4096ead20874e3fb3c39ec8"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::PersistMemoryManager::allocate</a></div><div class="ttdeci">static void * allocate(std::size_t user_size) noexcept</div><div class="ttdoc">Выделить user_size байт в управляемой области.</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00368">persist_memory_manager.h:368</a></div></div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a63dfa95e41be9f62e33ad3e698d4f033"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033">pmm::PersistMemoryManager::create</a></div><div class="ttdeci">static bool create() noexcept</div><div class="ttdoc">Инициализировать поверх готового бэкенда (бэкенд уже содержит буфер).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00277">persist_memory_manager.h:277</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a137ddd1f39a739af82dd2450c02a8208"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208">pmm::PersistMemoryManager::deallocate</a></div><div class="ttdeci">static void deallocate(void *ptr) noexcept</div><div class="ttdoc">Освободить блок по указателю на пользовательские данные.</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00433">persist_memory_manager.h:433</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a4b67c007f4096ead20874e3fb3c39ec8"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">pmm::PersistMemoryManager::allocate</a></div><div class="ttdeci">static void * allocate(std::size_t user_size) noexcept</div><div class="ttdoc">Выделить user_size байт в управляемой области.</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00369">persist_memory_manager.h:369</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html_a63dfa95e41be9f62e33ad3e698d4f033"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033">pmm::PersistMemoryManager::create</a></div><div class="ttdeci">static bool create() noexcept</div><div class="ttdoc">Инициализировать поверх готового бэкенда (бэкенд уже содержит буфер).</div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00278">persist_memory_manager.h:278</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00107">107</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
 
@@ -170,7 +170,7 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <div class="line">MyEmbMgr::create(8192);</div>
 <div class="line"><span class="keywordtype">void</span>* ptr = MyEmbMgr::allocate(64);</div>
 <div class="line">MyEmbMgr::deallocate(ptr);</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00085">persist_memory_manager.h:86</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00086">persist_memory_manager.h:87</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition at line <a class="el" href="pmm__presets_8h_source.html#l00089">89</a> of file <a class="el" href="pmm__presets_8h_source.html">pmm_presets.h</a>.</p>
 
@@ -219,7 +219,7 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <p>Менеджер для крупных баз данных с 64-bit индексом. </p>
 <ul>
 <li>64-bit адресация (LargeAddressTraits), 64-байтная гранула</li>
-<li>pptr&lt;T&gt; хранит 8-байтный индекс — адресует петабайтный масштаб</li>
+<li><a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> хранит 8-байтный индекс — адресует петабайтный масштаб</li>
 <li>Динамическая память через <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a></li>
 <li>Блокировки через std::shared_mutex</li>
 <li>Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений</li>
@@ -307,7 +307,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 <p>Tiny embedded-менеджер с фиксированным статическим буфером и 16-bit индексом. </p>
 <ul>
 <li>16-bit адресация (SmallAddressTraits), 16-байтная гранула</li>
-<li>pptr&lt;T&gt; хранит 2-байтный индекс — экономия памяти на ARM Cortex-M, AVR, ESP32</li>
+<li><a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> хранит 2-байтный индекс — экономия памяти на ARM Cortex-M, AVR, ESP32</li>
 <li>StaticStorage&lt;BufferSize, SmallAddressTraits&gt; — фиксированный буфер, нет malloc</li>
 <li>Максимальный пул: 65535 × 16 = ~1 МБ</li>
 <li>Без блокировок (для однопоточных embedded-систем без heap)</li>

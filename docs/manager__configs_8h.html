@@ -179,11 +179,11 @@ Variables</h2></td></tr>
 <li>uint8_t-индекс не поддерживается (TinyAddressTraits удалена, Issue #146): максимум 255 гранул — практически непригодно для реальных сценариев.</li>
 </ul>
 <p>Архитектурные сценарии:</p><ul>
-<li>Small embedded (16-bit, без heap, статический пул до ~1 МБ): StaticStorage&lt;N, SmallAddressTraits&gt; + NoLock, гранула 16B. pptr&lt;T&gt; хранит uint16_t-индекс (2 байта).</li>
-<li>Embedded (32-bit, без heap, статический пул): StaticStorage&lt;N, DefaultAddressTraits&gt; + NoLock, гранула 16B. pptr&lt;T&gt; хранит uint32_t-индекс (4 байта).</li>
+<li>Small embedded (16-bit, без heap, статический пул до ~1 МБ): StaticStorage&lt;N, SmallAddressTraits&gt; + NoLock, гранула 16B. <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> хранит uint16_t-индекс (2 байта).</li>
+<li>Embedded (32-bit, без heap, статический пул): StaticStorage&lt;N, DefaultAddressTraits&gt; + NoLock, гранула 16B. <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> хранит uint32_t-индекс (4 байта).</li>
 <li>Desktop/server (32-bit, до 64 ГБ): HeapStorage&lt;DefaultAddressTraits&gt; + NoLock/SharedMutexLock, гранула 16B.</li>
 <li>Industrial DB (32-bit, высоконагруженный): HeapStorage&lt;DefaultAddressTraits&gt; + SharedMutexLock + агрессивный рост, гранула 16B.</li>
-<li>Large DB (64-bit, крупные базы данных): HeapStorage&lt;LargeAddressTraits&gt; + SharedMutexLock, гранула 64B. pptr&lt;T&gt; хранит uint64_t-индекс (8 байт).</li>
+<li>Large DB (64-bit, крупные базы данных): HeapStorage&lt;LargeAddressTraits&gt; + SharedMutexLock, гранула 64B. <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> хранит uint64_t-индекс (8 байт).</li>
 </ul>
 <p>Доступные конфигурации: &mdash; Embedded (статическое хранилище, однопоточный) &mdash;</p><ul>
 <li><code>SmallEmbeddedStaticConfig&lt;N&gt;</code> — StaticStorage&lt;N&gt;, NoLock, 16-bit индекс, 16B гранула</li>
@@ -220,7 +220,7 @@ Variables</h2></td></tr>
 <div class="line"><span class="keyword">using </span>BigDB = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::LargeDBConfig&gt;</a>;</div>
 <div class="line">BigDB::create(256 * 1024 * 1024);</div>
 <div class="line"><span class="keywordtype">void</span>* p = BigDB::allocate(4096);</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00085">persist_memory_manager.h:86</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00086">persist_memory_manager.h:87</a></div></div>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — unified static persistent memory manager (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (Issue #110) </dd>
 <dd>
 <a class="el" href="config_8h.html">config.h</a> — базовые политики блокировок (NoLock, SharedMutexLock) </dd>

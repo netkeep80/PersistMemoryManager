@@ -321,7 +321,7 @@ template&lt;typename AddressTraitsT  = pmm::DefaultAddressTraits&gt; </div>
 
 <p>Get const pointer to Block&lt;AddressTraitsT&gt; by granule index (read-only). Issue #175: idx parameter is now index_type (was uint32_t) for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00375">375</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00379">379</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -363,7 +363,7 @@ template&lt;typename AddressTraitsT  = pmm::DefaultAddressTraits&gt; </div>
 
 <p>Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-file <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">blk_at()</a> helpers in <a class="el" href="allocator__policy_8h.html" title="AllocatorPolicy — политика выделения/освобождения памяти (Issue #87 Phase 6).">allocator_policy.h</a> and <a class="el" href="free__block__tree_8h.html" title="FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95, #129).">free_block_tree.h</a> (Issue #141). Uses AddressTraitsT::granule_size for byte-offset computation (Issue #146). Issue #175: idx parameter is now index_type (was uint32_t) for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00365">365</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00369">369</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -403,7 +403,7 @@ template&lt;typename AddressTraitsT  = pmm::DefaultAddressTraits&gt; </div>
 
 <p>Get granule index of Block&lt;DefaultAddressTraits&gt;. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00383">383</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00387">387</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -445,7 +445,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Get granule index of Block&lt;AddressTraitsT&gt; — templated variant for non-default address traits. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00392">392</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00396">396</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -493,7 +493,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Compute total granules of block for AddressTraitsT (Issue #112: <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout). Issue #59: total_size is no longer stored — computed via next_offset. Issue #160: Single templated implementation; non-templated overload delegates here. Issue #175: <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support)....">ManagerHeader</a> parameter is now ManagerHeader&lt;AddressTraitsT&gt;*. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00440">440</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00444">444</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -524,7 +524,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Get granule index from byte offset (must be multiple of kGranuleSize). </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">byte_off_to_idx_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00348">348</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00352">352</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -587,7 +587,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Convert bytes to granules (ceiling). Returns 0 on overflow. </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">bytes_to_granules_t&lt;DefaultAddressTraits&gt;()</a> or <a class="el" href="structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75" title="Перевести байты в гранулы (потолок).">DefaultAddressTraits::bytes_to_granules()</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00327">327</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00328">328</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -819,7 +819,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Translate index_type <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support)....">ManagerHeader</a> index to index_type (identity, Issue #175). Kept for backward compatibility — was uint32_t→index_type, now index_type→index_type. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00430">430</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00434">434</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -850,7 +850,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Convert granules to bytes. </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>Use <a class="el" href="structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7" title="Перевести гранулы в байты.">DefaultAddressTraits::granules_to_bytes()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00334">334</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00336">336</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -898,7 +898,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>O(1) get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - sizeof(Block&lt;AddressTraitsT&gt;)). Issue #112: Block&lt;AddressTraitsT&gt; is the sole block type. Issue #179: unified templated helper replaces the former DefaultAddressTraits-specific overload. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00529">529</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00535">535</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -929,7 +929,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Get byte offset from granule index. </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated:</a></b></dt><dd>Use <a class="el" href="structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2" title="Получить байтовое смещение из гранульного индекса.">DefaultAddressTraits::idx_to_byte_off()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00341">341</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00344">344</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -991,7 +991,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Returns true only for kGranuleSize (16-byte) alignment. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00354">354</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00358">358</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1037,7 +1037,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Issue #69/#106/#112: Structural block validity using Block&lt;DefaultAddressTraits&gt; layout. Invariants: weight&lt;total_gran, prev&lt;idx&lt;next, avl_height&lt;32, distinct AVL refs. Note: this non-templated overload is kept for backward compatibility (DefaultAddressTraits). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00461">461</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00465">465</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1079,7 +1079,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Convert a raw pointer to a granule index (Issue #188 deduplication). Eliminates repeated <code>(ptr - base) / granule_size</code> patterns across parray, pstring, ppool, pstringview. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00510">510</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00516">516</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1110,7 +1110,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Minimum block granules for user_bytes (header + data, minimum 1 data granule). </p>
 <dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">required_block_granules_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00558">558</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00565">565</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1142,7 +1142,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Issue #166: Templated variant of required_block_granules for any AddressTraitsT. Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t&lt;AT&gt; for correct per-AT computation. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00570">570</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00577">577</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1185,7 +1185,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Resolve a granule index to a raw pointer (Issue #188 deduplication). Eliminates repeated <code>base + idx * granule_size</code> patterns across parray, pstring, ppool, pstringview. </p>
 <dl class="section return"><dt>Returns</dt><dd>nullptr if idx is zero (null sentinel). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00500">500</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00506">506</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1217,7 +1217,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Translate an index_type sentinel (AddressTraitsT::no_block) to index_type kNoBlock_v. Issue #175: <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support)....">ManagerHeader</a> fields are now index_type, so this is an identity function. Kept for backward compatibility — callers that used to need uint32_t→index_type translation can now use no_block_v&lt;AT&gt; directly; this function is a no-op pass-through. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00422">422</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00426">426</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1249,7 +1249,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Compute user data address for block (block + sizeof(Block&lt;A&gt;), Issue #106, #112, #141). Single canonical implementation — use this instead of duplicating the cast in each call site. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00520">520</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00526">526</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1282,7 +1282,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><!-- fragment -->
 <p><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header size in granules for AddressTraitsT (Issue #146). Computes ceil(sizeof(Block&lt;AT&gt;) / AT::granule_size). For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00404">404</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00408">408</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1339,7 +1339,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><!-- fragment -->
 <p>Manager header size in granules for AddressTraitsT (Issue #146, #175). Uses ceiling division: ceil(sizeof(ManagerHeader&lt;AT&gt;) / AT::granule_size). For DefaultAddressTraits (16B granule): 64/16 = 4. For LargeAddressTraits (64B granule): ceil(96/64) = 2. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00413">413</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00417">417</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>

@@ -127,7 +127,7 @@ Namespaces</h2></td></tr>
 <li>propagate_on_container traits default to std::true_type (stateless allocator).</li>
 <li>Throws std::bad_alloc on allocation failure (STL containers expect this).</li>
 </ul>
-<dl class="section warning"><dt>Warning</dt><dd>The allocated memory resides in the persistent address space (PAP). Raw pointers returned by allocate() are only valid while the manager is initialized and the PAP is mapped at the same base address. Do NOT store raw pointers across manager destroy/load cycles — use pptr&lt;T&gt; for persistence.</dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>The allocated memory resides in the persistent address space (PAP). Raw pointers returned by allocate() are only valid while the manager is initialized and the PAP is mapped at the same base address. Do NOT store raw pointers across manager destroy/load cycles — use <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> for persistence.</dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — unified static persistent memory manager (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (static model) </dd>
 <dd>
 <a class="el" href="pptr_8h.html" title="pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129).">pptr.h</a> — pptr&lt;T, ManagerT&gt; (persistent pointer) </dd>

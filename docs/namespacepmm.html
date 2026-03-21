@@ -190,6 +190,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1typed__guard.html">typed_guard</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">RAII scope-guard for persistent typed objects.  <a href="classpmm_1_1typed__guard.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="concepts" name="concepts"></a>
 Concepts</h2></td></tr>
@@ -207,6 +210,15 @@ Concepts</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1StorageBackendConcept.html">StorageBackendConcept</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 концепт: проверяет, соответствует ли Backend концепту StorageBackend. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1HasFreeData.html">HasFreeData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detects types with a free_data() method (pstring, parray). <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1HasFreeAll.html">HasFreeAll</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detects types with a free_all() method (ppool). <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1HasPersistentCleanup.html">HasPersistentCleanup</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detects types that need cleanup before destroy_typed(). <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -499,7 +511,7 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <p>Конфигурация крупной базы данных с 64-bit индексом (многопоточный, heap, 64B гранула). </p>
 <p>Предназначена для хранилищ петабайтного масштаба:</p><ul>
 <li>uint64_t индекс (LargeAddressTraits), 64-байтная гранула</li>
-<li>pptr&lt;T&gt; хранит 8-байтный индекс — адресует до 2^64 × 64 байт памяти</li>
+<li><a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> хранит 8-байтный индекс — адресует до 2^64 × 64 байт памяти</li>
 <li>SharedMutexLock — потокобезопасность с поддержкой конкурентного чтения</li>
 <li><a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> — динамическая память</li>
 <li>Агрессивный коэффициент роста 2/1 (100%) для минимизации перевыделений</li>
@@ -510,7 +522,7 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <div class="line">BigDB::create(256 * 1024 * 1024); <span class="comment">// 256 МБ начальный размер</span></div>
 <div class="line"><span class="keywordtype">void</span>* ptr = BigDB::allocate(4096);</div>
 <div class="line"><span class="comment">// sizeof(BigDB::pptr&lt;int&gt;) == 8  (64-bit индекс)</span></div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00085">persist_memory_manager.h:86</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00086">persist_memory_manager.h:87</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00355">355</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
@@ -593,7 +605,7 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 <p>Конфигурация small-embedded-менеджера со статическим буфером и 16-bit индексом. </p>
 <p>Предназначена для малых систем без heap (микроконтроллеры, RTOS, bare-metal) с ограничением памяти до ~1 МБ (Issue #146):</p><ul>
 <li>uint16_t индекс (SmallAddressTraits), 16-байтная гранула</li>
-<li>pptr&lt;T&gt; хранит 2-байтный индекс (вместо 4 байт у DefaultAddressTraits)</li>
+<li><a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> хранит 2-байтный индекс (вместо 4 байт у DefaultAddressTraits)</li>
 <li>StaticStorage&lt;BufferSize, SmallAddressTraits&gt; — фиксированный буфер, нет malloc</li>
 <li>Максимальный пул: 65535 × 16 = ~1 МБ</li>
 <li>Нет блокировок (NoLock) — только однопоточный контекст</li>
