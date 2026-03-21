@@ -380,6 +380,66 @@ static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way,
     return PPtr(); // not found
 }
 
+/// @brief In-order successor: next node in sorted order (Issue #188 deduplication).
+/// Shared between pvector::iterator and pmap::iterator — eliminates ~50 lines of duplication.
+template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
+{
+    if ( cur.is_null() )
+        return PPtr();
+
+    // If there is a right child, go to its leftmost node.
+    PPtr right = pptr_get_right( cur );
+    if ( !right.is_null() )
+        return avl_min_node( right );
+
+    // Otherwise, go up until we come from a left child.
+    while ( true )
+    {
+        PPtr parent = pptr_get_parent( cur );
+        if ( parent.is_null() )
+            return PPtr(); // reached root from right — end of traversal
+        PPtr parent_left = pptr_get_left( parent );
+        if ( !parent_left.is_null() && parent_left.offset() == cur.offset() )
+            return parent; // cur was left child — parent is successor
+        cur = parent;
+    }
+}
+
+/// @brief Initialize AVL tree node fields to empty state (Issue #188 deduplication).
+/// Sets left, right, parent to sentinel and height to 1.
+/// Shared between pvector::push_back, pmap::insert, pstringview::_intern.
+template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
+{
+    auto& tn = p.tree_node();
+    tn.set_left( pptr_no_block<PPtr>() );
+    tn.set_right( pptr_no_block<PPtr>() );
+    tn.set_parent( pptr_no_block<PPtr>() );
+    tn.set_height( static_cast<std::int16_t>( 1 ) );
+}
+
+/// @brief Count nodes in subtree rooted at p (Issue #188 deduplication).
+/// Shared between pmap::size() and any other container that needs subtree counting.
+template <typename PPtr> static std::size_t avl_subtree_count( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return 0;
+    return 1 + avl_subtree_count( pptr_get_left( p ) ) + avl_subtree_count( pptr_get_right( p ) );
+}
+
+/// @brief Recursively deallocate all nodes in subtree (Issue #188 deduplication).
+/// @tparam PPtr   Persistent pointer type.
+/// @tparam DeallocFn  Callable(PPtr) that deallocates a single node.
+template <typename PPtr, typename DeallocFn> static void avl_clear_subtree( PPtr p, DeallocFn&& dealloc ) noexcept
+{
+    if ( p.is_null() )
+        return;
+    PPtr left_p  = pptr_get_left( p );
+    PPtr right_p = pptr_get_right( p );
+    avl_clear_subtree( left_p, dealloc );
+    avl_clear_subtree( right_p, dealloc );
+    dealloc( p );
+}
+
 /// @brief Insert new_node into the AVL tree with the given root.
 /// The caller must resolve the comparison ordering via go_left callback.
 /// @param new_node    The node to insert (must not be null, not already in tree).

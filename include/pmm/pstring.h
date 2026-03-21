@@ -53,6 +53,8 @@
 
 #pragma once
 
+#include "pmm/types.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -205,9 +207,8 @@ template <typename ManagerT> struct pstring
     {
         if ( _data_idx != static_cast<index_type>( 0 ) )
         {
-            std::uint8_t* base = ManagerT::backend().base_ptr();
-            void*         raw  = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( raw );
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+                ManagerT::backend().base_ptr(), _data_idx ) );
             _data_idx = static_cast<index_type>( 0 );
         }
         _length   = 0;
@@ -249,13 +250,11 @@ template <typename ManagerT> struct pstring
     // ─── Внутренние помощники ─────────────────────────────────────────────────
 
     /// @brief Разрешить гранульный индекс данных в сырой указатель.
+    /// Issue #188: delegates to shared resolve_granule_ptr.
     char* resolve_data() const noexcept
     {
-        if ( _data_idx == static_cast<index_type>( 0 ) )
-            return nullptr;
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-        return reinterpret_cast<char*>( base + static_cast<std::size_t>( _data_idx ) *
-                                                   ManagerT::address_traits::granule_size );
+        return reinterpret_cast<char*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+            ManagerT::backend().base_ptr(), _data_idx ) );
     }
 
     /**
@@ -287,10 +286,9 @@ template <typename ManagerT> struct pstring
         if ( new_raw == nullptr )
             return false;
 
-        // Создаём новый индекс.
+        // Создаём новый индекс (Issue #188: shared ptr_to_granule_idx).
         std::uint8_t* base        = ManagerT::backend().base_ptr();
-        std::size_t   byte_off    = static_cast<std::uint8_t*>( new_raw ) - base;
-        index_type    new_dat_idx = static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size );
+        index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
         // Копируем старые данные.
         if ( _length > 0 && _data_idx != static_cast<index_type>( 0 ) )
@@ -305,12 +303,9 @@ template <typename ManagerT> struct pstring
             static_cast<char*>( new_raw )[0] = '\0';
         }
 
-        // Освобождаем старый блок.
+        // Освобождаем старый блок (Issue #188: shared resolve_granule_ptr).
         if ( _data_idx != static_cast<index_type>( 0 ) )
-        {
-            void* old_raw = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( old_raw );
-        }
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 
         _data_idx = new_dat_idx;
         _capacity = new_cap;

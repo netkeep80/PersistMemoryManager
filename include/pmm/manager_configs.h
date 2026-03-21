@@ -197,6 +197,36 @@ struct BasicConfig
     static constexpr std::size_t grow_denominator = GrowDen;
 };
 
+// ─── StaticConfig — базовый шаблон для static-конфигураций (Issue #188) ───────
+
+/**
+ * @brief Базовый шаблон конфигурации менеджера со StaticStorage (Issue #188).
+ *
+ * Устраняет дублирование между SmallEmbeddedStaticConfig и EmbeddedStaticConfig.
+ * Аналогичен BasicConfig, но использует StaticStorage вместо HeapStorage.
+ *
+ * @tparam AddressTraitsT  Тип адресного пространства.
+ * @tparam BufferSize      Размер статического буфера в байтах (кратно granule_size).
+ * @tparam GrowNum         Числитель коэффициента роста (по умолчанию 3).
+ * @tparam GrowDen         Знаменатель коэффициента роста (по умолчанию 2).
+ */
+template <typename AddressTraitsT, std::size_t BufferSize, std::size_t GrowNum = 3, std::size_t GrowDen = 2>
+struct StaticConfig
+{
+    static_assert( ValidPmmAddressTraits<AddressTraitsT>,
+                   "StaticConfig: AddressTraitsT must satisfy ValidPmmAddressTraits" );
+
+    using address_traits                          = AddressTraitsT;
+    using storage_backend                         = StaticStorage<BufferSize, AddressTraitsT>;
+    using free_block_tree                         = AvlFreeTree<AddressTraitsT>;
+    using lock_policy                             = config::NoLock;
+    using logging_policy                          = logging::NoLogging;
+    static constexpr std::size_t granule_size     = AddressTraitsT::granule_size;
+    static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
+    static constexpr std::size_t grow_numerator   = GrowNum;
+    static constexpr std::size_t grow_denominator = GrowDen;
+};
+
 // ─── Embedded / статические конфигурации ─────────────────────────────────────
 
 /**
@@ -211,41 +241,11 @@ struct BasicConfig
  *   - Нет блокировок (NoLock) — только однопоточный контекст
  *   - Не расширяется (StaticStorage::expand() всегда false)
  *
- * Замечание (Issue #146): SmallAddressTraits допустима с потерями:
- *   Block<uint16_t>=18B, ceil(18/16)=2 гранулы выделяется под заголовок = 14 байт/блок потерь.
- *
- * Статические проверки:
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *   - BufferSize кратно granule_size ✓ (проверяется в StaticStorage)
- *
- * Типичный сценарий: ARM Cortex-M, AVR, ESP32, сильно ограниченные embedded-системы.
+ * Issue #188: now an alias for StaticConfig<SmallAddressTraits, BufferSize>.
  *
  * @tparam BufferSize Размер статического буфера в байтах (кратно 16, максимум ~1 МБ).
- *                    По умолчанию 1024 байт (1 КБ).
- *
- * @code
- *   using SmallMgr = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<1024>>;
- *   SmallMgr::create(1024);
- *   void* ptr = SmallMgr::allocate(32);
- *   // sizeof(SmallMgr::pptr<int>) == 2  (16-bit индекс)
- * @endcode
  */
-template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
-{
-    // Issue #166: ValidPmmAddressTraits<SmallAddressTraits> is already verified at namespace scope (line 123).
-    // No redundant static_assert needed here.
-
-    using address_traits                          = SmallAddressTraits;
-    using storage_backend                         = StaticStorage<BufferSize, SmallAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<SmallAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    using logging_policy                          = logging::NoLogging;
-    static constexpr std::size_t granule_size     = SmallAddressTraits::granule_size;
-    static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
-    static constexpr std::size_t grow_numerator   = 3;
-    static constexpr std::size_t grow_denominator = 2;
-};
+template <std::size_t BufferSize = 1024> using SmallEmbeddedStaticConfig = StaticConfig<SmallAddressTraits, BufferSize>;
 
 /**
  * @brief Конфигурация embedded-менеджера со статическим фиксированным буфером.
@@ -256,36 +256,11 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
  *   - Нет блокировок (NoLock) — только однопоточный контекст
  *   - Не расширяется (StaticStorage::expand() всегда false)
  *
- * Статические проверки (Issue #146, #166):
- *   - ValidPmmAddressTraits<DefaultAddressTraits> проверяется на уровне namespace (не дублируется здесь)
- *   - BufferSize кратно granule_size ✓ (проверяется в StaticStorage)
- *
- * Типичный сценарий: встраиваемые системы без heap, Linux bare-metal, фиксированный пул.
+ * Issue #188: now an alias for StaticConfig<DefaultAddressTraits, BufferSize>.
  *
  * @tparam BufferSize Размер статического буфера в байтах (кратно 16).
- *                    По умолчанию 4096 байт (4 КБ).
- *
- * @code
- *   using EmbMgr = pmm::PersistMemoryManager<pmm::EmbeddedStaticConfig<8192>>;
- *   EmbMgr::create(8192);
- *   void* ptr = EmbMgr::allocate(64);
- * @endcode
  */
-template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
-{
-    // Issue #166: ValidPmmAddressTraits<DefaultAddressTraits> is already verified at namespace scope (line 122).
-    // No redundant static_assert needed here.
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = StaticStorage<BufferSize, DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    using logging_policy                          = logging::NoLogging;
-    static constexpr std::size_t granule_size     = DefaultAddressTraits::granule_size;
-    static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
-    static constexpr std::size_t grow_numerator   = 3;
-    static constexpr std::size_t grow_denominator = 2;
-};
+template <std::size_t BufferSize = 4096> using EmbeddedStaticConfig = StaticConfig<DefaultAddressTraits, BufferSize>;
 
 // ─── Desktop / динамические конфигурации ─────────────────────────────────────
 

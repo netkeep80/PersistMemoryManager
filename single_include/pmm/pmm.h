@@ -1622,17 +1622,23 @@ namespace detail
 // Software CRC32 (ISO 3309 / ITU-T V.42 polynomial 0xEDB88320).
 // Header-only, no external dependencies.  Used by io.h save/load functions.
 
+/// @brief CRC32 single byte accumulation (Issue #188 deduplication).
+/// Extracts the inner loop from compute_crc32 and compute_image_crc32.
+inline std::uint32_t crc32_accumulate_byte( std::uint32_t crc, std::uint8_t byte ) noexcept
+{
+    crc ^= byte;
+    for ( int bit = 0; bit < 8; ++bit )
+        crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    return crc;
+}
+
 /// @brief Compute CRC32 over a byte range.
 /// Uses the standard Ethernet/zlib polynomial (0xEDB88320, reflected).
 inline std::uint32_t compute_crc32( const std::uint8_t* data, std::size_t length ) noexcept
 {
     std::uint32_t crc = 0xFFFFFFFFU;
     for ( std::size_t i = 0; i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     return crc ^ 0xFFFFFFFFU;
 }
 
@@ -1722,25 +1728,13 @@ inline std::uint32_t compute_image_crc32( const std::uint8_t* data, std::size_t 
     // CRC everything before the crc32 field
     std::uint32_t crc = 0xFFFFFFFFU;
     for ( std::size_t i = 0; i < kCrcOffset && i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     // Skip the crc32 field (treat as 4 zero bytes)
     for ( std::size_t i = 0; i < kCrcSize; ++i )
-    {
-        crc ^= 0x00U;
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, 0x00U );
     // CRC everything after the crc32 field
     for ( std::size_t i = kAfterCrc; i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     return crc ^ 0xFFFFFFFFU;
 }
 
@@ -1985,6 +1979,27 @@ inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader<pmm::D
                               ( r && p && right_off == parent_off ) ) )
         return false;
     return true;
+}
+
+/// @brief Resolve a granule index to a raw pointer (Issue #188 deduplication).
+/// Eliminates repeated `base + idx * granule_size` patterns across parray, pstring, ppool, pstringview.
+/// @return nullptr if idx is zero (null sentinel).
+template <typename AddressTraitsT>
+inline void* resolve_granule_ptr( std::uint8_t* base, typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( idx == static_cast<typename AddressTraitsT::index_type>( 0 ) )
+        return nullptr;
+    return base + static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
+}
+
+/// @brief Convert a raw pointer to a granule index (Issue #188 deduplication).
+/// Eliminates repeated `(ptr - base) / granule_size` patterns across parray, pstring, ppool, pstringview.
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type ptr_to_granule_idx( const std::uint8_t* base, const void* ptr ) noexcept
+{
+    using IndexT         = typename AddressTraitsT::index_type;
+    std::size_t byte_off = static_cast<const std::uint8_t*>( ptr ) - base;
+    return static_cast<IndexT>( byte_off / AddressTraitsT::granule_size );
 }
 
 /// @brief Compute user data address for block (block + sizeof(Block<A>), Issue #106, #112, #141).
@@ -2886,6 +2901,36 @@ struct BasicConfig
     static constexpr std::size_t grow_denominator = GrowDen;
 };
 
+// ─── StaticConfig — базовый шаблон для static-конфигураций (Issue #188) ───────
+
+/**
+ * @brief Базовый шаблон конфигурации менеджера со StaticStorage (Issue #188).
+ *
+ * Устраняет дублирование между SmallEmbeddedStaticConfig и EmbeddedStaticConfig.
+ * Аналогичен BasicConfig, но использует StaticStorage вместо HeapStorage.
+ *
+ * @tparam AddressTraitsT  Тип адресного пространства.
+ * @tparam BufferSize      Размер статического буфера в байтах (кратно granule_size).
+ * @tparam GrowNum         Числитель коэффициента роста (по умолчанию 3).
+ * @tparam GrowDen         Знаменатель коэффициента роста (по умолчанию 2).
+ */
+template <typename AddressTraitsT, std::size_t BufferSize, std::size_t GrowNum = 3, std::size_t GrowDen = 2>
+struct StaticConfig
+{
+    static_assert( ValidPmmAddressTraits<AddressTraitsT>,
+                   "StaticConfig: AddressTraitsT must satisfy ValidPmmAddressTraits" );
+
+    using address_traits                          = AddressTraitsT;
+    using storage_backend                         = StaticStorage<BufferSize, AddressTraitsT>;
+    using free_block_tree                         = AvlFreeTree<AddressTraitsT>;
+    using lock_policy                             = config::NoLock;
+    using logging_policy                          = logging::NoLogging;
+    static constexpr std::size_t granule_size     = AddressTraitsT::granule_size;
+    static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
+    static constexpr std::size_t grow_numerator   = GrowNum;
+    static constexpr std::size_t grow_denominator = GrowDen;
+};
+
 // ─── Embedded / статические конфигурации ─────────────────────────────────────
 
 /**
@@ -2900,41 +2945,11 @@ struct BasicConfig
  *   - Нет блокировок (NoLock) — только однопоточный контекст
  *   - Не расширяется (StaticStorage::expand() всегда false)
  *
- * Замечание (Issue #146): SmallAddressTraits допустима с потерями:
- *   Block<uint16_t>=18B, ceil(18/16)=2 гранулы выделяется под заголовок = 14 байт/блок потерь.
- *
- * Статические проверки:
- *   - granule_size >= kMinGranuleSize (16 >= 4) ✓
- *   - granule_size — степень двойки ✓
- *   - BufferSize кратно granule_size ✓ (проверяется в StaticStorage)
- *
- * Типичный сценарий: ARM Cortex-M, AVR, ESP32, сильно ограниченные embedded-системы.
+ * Issue #188: now an alias for StaticConfig<SmallAddressTraits, BufferSize>.
  *
  * @tparam BufferSize Размер статического буфера в байтах (кратно 16, максимум ~1 МБ).
- *                    По умолчанию 1024 байт (1 КБ).
- *
- * @code
- *   using SmallMgr = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<1024>>;
- *   SmallMgr::create(1024);
- *   void* ptr = SmallMgr::allocate(32);
- *   // sizeof(SmallMgr::pptr<int>) == 2  (16-bit индекс)
- * @endcode
  */
-template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
-{
-    // Issue #166: ValidPmmAddressTraits<SmallAddressTraits> is already verified at namespace scope (line 123).
-    // No redundant static_assert needed here.
-
-    using address_traits                          = SmallAddressTraits;
-    using storage_backend                         = StaticStorage<BufferSize, SmallAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<SmallAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    using logging_policy                          = logging::NoLogging;
-    static constexpr std::size_t granule_size     = SmallAddressTraits::granule_size;
-    static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
-    static constexpr std::size_t grow_numerator   = 3;
-    static constexpr std::size_t grow_denominator = 2;
-};
+template <std::size_t BufferSize = 1024> using SmallEmbeddedStaticConfig = StaticConfig<SmallAddressTraits, BufferSize>;
 
 /**
  * @brief Конфигурация embedded-менеджера со статическим фиксированным буфером.
@@ -2945,36 +2960,11 @@ template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
  *   - Нет блокировок (NoLock) — только однопоточный контекст
  *   - Не расширяется (StaticStorage::expand() всегда false)
  *
- * Статические проверки (Issue #146, #166):
- *   - ValidPmmAddressTraits<DefaultAddressTraits> проверяется на уровне namespace (не дублируется здесь)
- *   - BufferSize кратно granule_size ✓ (проверяется в StaticStorage)
- *
- * Типичный сценарий: встраиваемые системы без heap, Linux bare-metal, фиксированный пул.
+ * Issue #188: now an alias for StaticConfig<DefaultAddressTraits, BufferSize>.
  *
  * @tparam BufferSize Размер статического буфера в байтах (кратно 16).
- *                    По умолчанию 4096 байт (4 КБ).
- *
- * @code
- *   using EmbMgr = pmm::PersistMemoryManager<pmm::EmbeddedStaticConfig<8192>>;
- *   EmbMgr::create(8192);
- *   void* ptr = EmbMgr::allocate(64);
- * @endcode
  */
-template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
-{
-    // Issue #166: ValidPmmAddressTraits<DefaultAddressTraits> is already verified at namespace scope (line 122).
-    // No redundant static_assert needed here.
-
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = StaticStorage<BufferSize, DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    using logging_policy                          = logging::NoLogging;
-    static constexpr std::size_t granule_size     = DefaultAddressTraits::granule_size;
-    static constexpr std::size_t max_memory_gb    = 0; // Нет расширения — StaticStorage
-    static constexpr std::size_t grow_numerator   = 3;
-    static constexpr std::size_t grow_denominator = 2;
-};
+template <std::size_t BufferSize = 4096> using EmbeddedStaticConfig = StaticConfig<DefaultAddressTraits, BufferSize>;
 
 // ─── Desktop / динамические конфигурации ─────────────────────────────────────
 
@@ -4033,9 +4023,8 @@ template <typename T, typename ManagerT> struct parray
     {
         if ( _data_idx != static_cast<index_type>( 0 ) )
         {
-            std::uint8_t* base = ManagerT::backend().base_ptr();
-            void*         raw  = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( raw );
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+                ManagerT::backend().base_ptr(), _data_idx ) );
             _data_idx = static_cast<index_type>( 0 );
         }
         _size     = 0;
@@ -4067,13 +4056,11 @@ template <typename T, typename ManagerT> struct parray
     // --- Internal helpers -------------------------------------------------------
 
     /// @brief Resolve the granule index to a raw pointer to the data block.
+    /// Issue #188: delegates to shared resolve_granule_ptr.
     T* resolve_data() const noexcept
     {
-        if ( _data_idx == static_cast<index_type>( 0 ) )
-            return nullptr;
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-        return reinterpret_cast<T*>( base +
-                                     static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size );
+        return reinterpret_cast<T*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+            ManagerT::backend().base_ptr(), _data_idx ) );
     }
 
     /**
@@ -4108,10 +4095,9 @@ template <typename T, typename ManagerT> struct parray
         if ( new_raw == nullptr )
             return false;
 
-        // Compute new index.
+        // Compute new index (Issue #188: shared ptr_to_granule_idx).
         std::uint8_t* base        = ManagerT::backend().base_ptr();
-        std::size_t   byte_off    = static_cast<std::uint8_t*>( new_raw ) - base;
-        index_type    new_dat_idx = static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size );
+        index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
         // Copy old data.
         if ( _size > 0 && _data_idx != static_cast<index_type>( 0 ) )
@@ -4121,12 +4107,9 @@ template <typename T, typename ManagerT> struct parray
                 std::memcpy( new_raw, old_data, static_cast<std::size_t>( _size ) * sizeof( T ) );
         }
 
-        // Free old block.
+        // Free old block (Issue #188: shared resolve_granule_ptr).
         if ( _data_idx != static_cast<index_type>( 0 ) )
-        {
-            void* old_raw = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( old_raw );
-        }
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 
         _data_idx = new_dat_idx;
         _capacity = new_cap;
@@ -4596,6 +4579,66 @@ static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way,
     return PPtr(); // not found
 }
 
+/// @brief In-order successor: next node in sorted order (Issue #188 deduplication).
+/// Shared between pvector::iterator and pmap::iterator — eliminates ~50 lines of duplication.
+template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
+{
+    if ( cur.is_null() )
+        return PPtr();
+
+    // If there is a right child, go to its leftmost node.
+    PPtr right = pptr_get_right( cur );
+    if ( !right.is_null() )
+        return avl_min_node( right );
+
+    // Otherwise, go up until we come from a left child.
+    while ( true )
+    {
+        PPtr parent = pptr_get_parent( cur );
+        if ( parent.is_null() )
+            return PPtr(); // reached root from right — end of traversal
+        PPtr parent_left = pptr_get_left( parent );
+        if ( !parent_left.is_null() && parent_left.offset() == cur.offset() )
+            return parent; // cur was left child — parent is successor
+        cur = parent;
+    }
+}
+
+/// @brief Initialize AVL tree node fields to empty state (Issue #188 deduplication).
+/// Sets left, right, parent to sentinel and height to 1.
+/// Shared between pvector::push_back, pmap::insert, pstringview::_intern.
+template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
+{
+    auto& tn = p.tree_node();
+    tn.set_left( pptr_no_block<PPtr>() );
+    tn.set_right( pptr_no_block<PPtr>() );
+    tn.set_parent( pptr_no_block<PPtr>() );
+    tn.set_height( static_cast<std::int16_t>( 1 ) );
+}
+
+/// @brief Count nodes in subtree rooted at p (Issue #188 deduplication).
+/// Shared between pmap::size() and any other container that needs subtree counting.
+template <typename PPtr> static std::size_t avl_subtree_count( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return 0;
+    return 1 + avl_subtree_count( pptr_get_left( p ) ) + avl_subtree_count( pptr_get_right( p ) );
+}
+
+/// @brief Recursively deallocate all nodes in subtree (Issue #188 deduplication).
+/// @tparam PPtr   Persistent pointer type.
+/// @tparam DeallocFn  Callable(PPtr) that deallocates a single node.
+template <typename PPtr, typename DeallocFn> static void avl_clear_subtree( PPtr p, DeallocFn&& dealloc ) noexcept
+{
+    if ( p.is_null() )
+        return;
+    PPtr left_p  = pptr_get_left( p );
+    PPtr right_p = pptr_get_right( p );
+    avl_clear_subtree( left_p, dealloc );
+    avl_clear_subtree( right_p, dealloc );
+    dealloc( p );
+}
+
 /// @brief Insert new_node into the AVL tree with the given root.
 /// The caller must resolve the comparison ordering via go_left callback.
 /// @param new_node    The node to insert (must not be null, not already in tree).
@@ -4734,7 +4777,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return 0;
-        return _subtree_count( node_pptr( _root_idx ) );
+        return detail::avl_subtree_count( node_pptr( _root_idx ) );
     }
 
     // ─── Операции со словарём ─────────────────────────────────────────────────
@@ -4774,12 +4817,8 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         obj->key   = key;
         obj->value = val;
 
-        // Инициализируем AVL-поля нового узла (no_block = нет связи).
-        auto& tn = new_node.tree_node();
-        tn.set_left( no_block );
-        tn.set_right( no_block );
-        tn.set_parent( no_block );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
+        // Инициализируем AVL-поля нового узла (Issue #188: shared avl_init_node).
+        detail::avl_init_node( new_node );
 
         // Вставляем в AVL-дерево.
         _avl_insert( new_node );
@@ -4831,7 +4870,8 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     void clear() noexcept
     {
         if ( _root_idx != static_cast<index_type>( 0 ) )
-            _clear_subtree( node_pptr( _root_idx ) );
+            detail::avl_clear_subtree( node_pptr( _root_idx ),
+                                       []( node_pptr p ) { ManagerT::template deallocate_typed<node_type>( p ); } );
         _root_idx = static_cast<index_type>( 0 );
     }
 
@@ -4872,49 +4912,15 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         }
 
         /// @brief Переход к следующему элементу (in-order successor).
+        /// Issue #188: delegates to shared avl_inorder_successor.
         iterator& operator++() noexcept
         {
             if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
                 return *this;
 
-            node_pptr cur( _current_idx );
-
-            // Если есть правый потомок — идём в его крайний левый узел.
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx != no_block )
-            {
-                node_pptr right( right_idx );
-                while ( true )
-                {
-                    auto left_idx = right.tree_node().get_left();
-                    if ( left_idx == no_block )
-                        break;
-                    right = node_pptr( left_idx );
-                }
-                _current_idx = right.offset();
-                return *this;
-            }
-
-            // Иначе — идём вверх, пока не окажемся левым потомком.
-            while ( true )
-            {
-                auto parent_idx = cur.tree_node().get_parent();
-                if ( parent_idx == no_block )
-                {
-                    // Достигли корня снизу справа — конец обхода.
-                    _current_idx = static_cast<index_type>( 0 );
-                    return *this;
-                }
-                node_pptr parent( parent_idx );
-                auto      parent_left = parent.tree_node().get_left();
-                if ( parent_left == cur.offset() )
-                {
-                    // cur — левый потомок: parent — следующий.
-                    _current_idx = parent_idx;
-                    return *this;
-                }
-                cur = parent;
-            }
+            node_pptr next = detail::avl_inorder_successor( node_pptr( _current_idx ) );
+            _current_idx   = next.is_null() ? static_cast<index_type>( 0 ) : next.offset();
+            return *this;
         }
     };
 
@@ -4964,30 +4970,8 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
             []( node_pptr p ) -> node_type* { return ManagerT::template resolve<node_type>( p ); } );
     }
 
-    /// @brief Подсчитать количество узлов в поддереве (Issue #196).
-    static std::size_t _subtree_count( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return 0;
-        std::size_t count   = 1;
-        auto        left_p  = detail::pptr_get_left( p );
-        auto        right_p = detail::pptr_get_right( p );
-        count += _subtree_count( left_p );
-        count += _subtree_count( right_p );
-        return count;
-    }
-
-    /// @brief Рекурсивно деаллоцировать все узлы поддерева (Issue #196).
-    static void _clear_subtree( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return;
-        auto left_p  = detail::pptr_get_left( p );
-        auto right_p = detail::pptr_get_right( p );
-        _clear_subtree( left_p );
-        _clear_subtree( right_p );
-        ManagerT::template deallocate_typed<node_type>( p );
-    }
+    // Issue #188: _subtree_count and _clear_subtree replaced by shared
+    // detail::avl_subtree_count and detail::avl_clear_subtree.
 };
 
 } // namespace pmm
@@ -5187,9 +5171,10 @@ template <typename T, typename ManagerT> struct ppool
                 return nullptr;
         }
 
-        // Pop from free-list.
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
-        std::uint8_t* slot_raw = base + static_cast<std::size_t>( _free_head_idx ) * granule_size;
+        // Pop from free-list (Issue #188: shared resolve_granule_ptr).
+        std::uint8_t* slot_raw =
+            reinterpret_cast<std::uint8_t*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+                ManagerT::backend().base_ptr(), _free_head_idx ) );
 
         // Read the next free index from the slot.
         index_type next_free;
@@ -5217,12 +5202,11 @@ template <typename T, typename ManagerT> struct ppool
         if ( ptr == nullptr )
             return;
 
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
         std::uint8_t* slot_raw = reinterpret_cast<std::uint8_t*>( ptr );
 
-        // Compute the granule index of this slot.
-        std::size_t byte_off = static_cast<std::size_t>( slot_raw - base );
-        index_type  slot_idx = static_cast<index_type>( byte_off / granule_size );
+        // Compute the granule index of this slot (Issue #188: shared ptr_to_granule_idx).
+        index_type slot_idx =
+            detail::ptr_to_granule_idx<typename ManagerT::address_traits>( ManagerT::backend().base_ptr(), slot_raw );
 
         // Push onto free-list: store current free_head in the slot.
         std::memcpy( slot_raw, &_free_head_idx, sizeof( index_type ) );
@@ -5239,13 +5223,13 @@ template <typename T, typename ManagerT> struct ppool
      */
     void free_all() noexcept
     {
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-
-        // Walk the chunk list and deallocate each chunk.
-        index_type chunk_idx = _chunk_head_idx;
+        // Walk the chunk list and deallocate each chunk (Issue #188: shared resolve_granule_ptr).
+        std::uint8_t* base      = ManagerT::backend().base_ptr();
+        index_type    chunk_idx = _chunk_head_idx;
         while ( chunk_idx != static_cast<index_type>( 0 ) )
         {
-            std::uint8_t* chunk_raw = base + static_cast<std::size_t>( chunk_idx ) * granule_size;
+            std::uint8_t* chunk_raw = reinterpret_cast<std::uint8_t*>(
+                detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, chunk_idx ) );
 
             // Read the next chunk index from the chunk header.
             index_type next_chunk;
@@ -5295,9 +5279,8 @@ template <typename T, typename ManagerT> struct ppool
         std::uint8_t* chunk_raw = static_cast<std::uint8_t*>( raw );
         std::uint8_t* base      = ManagerT::backend().base_ptr();
 
-        // Compute chunk granule index.
-        std::size_t chunk_byte_off = static_cast<std::size_t>( chunk_raw - base );
-        index_type  chunk_idx      = static_cast<index_type>( chunk_byte_off / granule_size );
+        // Compute chunk granule index (Issue #188: shared ptr_to_granule_idx).
+        index_type chunk_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, chunk_raw );
 
         // Write chunk header: link to previous chunk head.
         // Zero the full header granule first, then write the index.
@@ -5311,9 +5294,8 @@ template <typename T, typename ManagerT> struct ppool
 
         for ( std::size_t i = 0; i < n_objects; ++i )
         {
-            std::uint8_t* slot          = slots_start + i * slot_bytes;
-            std::size_t   slot_byte_off = static_cast<std::size_t>( slot - base );
-            index_type    slot_idx      = static_cast<index_type>( slot_byte_off / granule_size );
+            std::uint8_t* slot     = slots_start + i * slot_bytes;
+            index_type    slot_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, slot );
 
             // Store current free_head in the slot (push onto free-list).
             std::memset( slot, 0, slot_bytes );
@@ -5756,9 +5738,8 @@ template <typename ManagerT> struct pstring
     {
         if ( _data_idx != static_cast<index_type>( 0 ) )
         {
-            std::uint8_t* base = ManagerT::backend().base_ptr();
-            void*         raw  = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( raw );
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+                ManagerT::backend().base_ptr(), _data_idx ) );
             _data_idx = static_cast<index_type>( 0 );
         }
         _length   = 0;
@@ -5800,13 +5781,11 @@ template <typename ManagerT> struct pstring
     // ─── Внутренние помощники ─────────────────────────────────────────────────
 
     /// @brief Разрешить гранульный индекс данных в сырой указатель.
+    /// Issue #188: delegates to shared resolve_granule_ptr.
     char* resolve_data() const noexcept
     {
-        if ( _data_idx == static_cast<index_type>( 0 ) )
-            return nullptr;
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-        return reinterpret_cast<char*>( base + static_cast<std::size_t>( _data_idx ) *
-                                                   ManagerT::address_traits::granule_size );
+        return reinterpret_cast<char*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+            ManagerT::backend().base_ptr(), _data_idx ) );
     }
 
     /**
@@ -5838,10 +5817,9 @@ template <typename ManagerT> struct pstring
         if ( new_raw == nullptr )
             return false;
 
-        // Создаём новый индекс.
+        // Создаём новый индекс (Issue #188: shared ptr_to_granule_idx).
         std::uint8_t* base        = ManagerT::backend().base_ptr();
-        std::size_t   byte_off    = static_cast<std::uint8_t*>( new_raw ) - base;
-        index_type    new_dat_idx = static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size );
+        index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
         // Копируем старые данные.
         if ( _length > 0 && _data_idx != static_cast<index_type>( 0 ) )
@@ -5856,12 +5834,9 @@ template <typename ManagerT> struct pstring
             static_cast<char*>( new_raw )[0] = '\0';
         }
 
-        // Освобождаем старый блок.
+        // Освобождаем старый блок (Issue #188: shared resolve_granule_ptr).
         if ( _data_idx != static_cast<index_type>( 0 ) )
-        {
-            void* old_raw = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( old_raw );
-        }
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 
         _data_idx = new_dat_idx;
         _capacity = new_cap;
@@ -6033,13 +6008,9 @@ template <typename T, typename ManagerT> struct pvector
 
         obj->value = val;
 
-        // Инициализируем поля нового узла.
-        auto& tn = new_node.tree_node();
-        tn.set_left( no_block );
-        tn.set_right( no_block );
-        tn.set_parent( no_block );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
-        tn.set_weight( static_cast<index_type>( 1 ) ); // поддерево размером 1
+        // Инициализируем поля нового узла (Issue #188: shared avl_init_node).
+        detail::avl_init_node( new_node );
+        new_node.tree_node().set_weight( static_cast<index_type>( 1 ) ); // поддерево размером 1
 
         _avl_insert_rightmost( new_node );
 
@@ -6075,16 +6046,7 @@ template <typename T, typename ManagerT> struct pvector
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return node_pptr();
-        // Самый левый узел
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto left_idx = cur.tree_node().get_left();
-            if ( left_idx == no_block )
-                break;
-            cur = node_pptr( left_idx );
-        }
-        return cur;
+        return detail::avl_min_node( node_pptr( _root_idx ) );
     }
 
     /**
@@ -6096,16 +6058,7 @@ template <typename T, typename ManagerT> struct pvector
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return node_pptr();
-        // Самый правый узел
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx == no_block )
-                break;
-            cur = node_pptr( right_idx );
-        }
-        return cur;
+        return detail::avl_max_node( node_pptr( _root_idx ) );
     }
 
     /**
@@ -6120,15 +6073,8 @@ template <typename T, typename ManagerT> struct pvector
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return false;
 
-        // Находим крайний правый узел.
-        node_pptr target( _root_idx );
-        while ( true )
-        {
-            auto right_idx = target.tree_node().get_right();
-            if ( right_idx == no_block )
-                break;
-            target = node_pptr( right_idx );
-        }
+        // Находим крайний правый узел (Issue #188: shared avl_max_node).
+        node_pptr target = detail::avl_max_node( node_pptr( _root_idx ) );
 
         _avl_remove( target );
         ManagerT::template deallocate_typed<node_type>( target );
@@ -6212,67 +6158,26 @@ template <typename T, typename ManagerT> struct pvector
         }
 
         /// @brief Переход к следующему элементу (in-order successor).
+        /// Issue #188: delegates to shared avl_inorder_successor.
         iterator& operator++() noexcept
         {
             if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
                 return *this;
 
-            node_pptr cur( _current_idx );
-
-            // Если есть правый потомок — идём в его крайний левый узел.
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx != no_block )
-            {
-                node_pptr right( right_idx );
-                while ( true )
-                {
-                    auto left_idx = right.tree_node().get_left();
-                    if ( left_idx == no_block )
-                        break;
-                    right = node_pptr( left_idx );
-                }
-                _current_idx = right.offset();
-                return *this;
-            }
-
-            // Иначе — идём вверх, пока не окажемся левым потомком.
-            while ( true )
-            {
-                auto parent_idx = cur.tree_node().get_parent();
-                if ( parent_idx == no_block )
-                {
-                    // Достигли корня снизу справа — конец обхода.
-                    _current_idx = static_cast<index_type>( 0 );
-                    return *this;
-                }
-                node_pptr parent( parent_idx );
-                auto      parent_left = parent.tree_node().get_left();
-                if ( parent_left == cur.offset() )
-                {
-                    // cur — левый потомок: parent — следующий.
-                    _current_idx = parent_idx;
-                    return *this;
-                }
-                cur = parent;
-            }
+            node_pptr next = detail::avl_inorder_successor( node_pptr( _current_idx ) );
+            _current_idx   = next.is_null() ? static_cast<index_type>( 0 ) : next.offset();
+            return *this;
         }
     };
 
     /// @brief Начало итерации (самый левый узел = первый элемент).
+    /// Issue #188: delegates to shared avl_min_node.
     iterator begin() const noexcept
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return iterator();
-        // Самый левый узел.
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto left_idx = cur.tree_node().get_left();
-            if ( left_idx == no_block )
-                break;
-            cur = node_pptr( left_idx );
-        }
-        return iterator( cur.offset() );
+        node_pptr min = detail::avl_min_node( node_pptr( _root_idx ) );
+        return iterator( min.offset() );
     }
 
     /// @brief Конец итерации (sentinel = 0).
@@ -6598,22 +6503,17 @@ template <typename ManagerT> struct pstringview
         if ( raw == nullptr )
             return psview_pptr();
 
-        // Создаём pptr вручную из raw указателя.
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
-        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        psview_pptr   new_node( static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size ) );
+        // Создаём pptr вручную из raw указателя (Issue #188: shared ptr_to_granule_idx).
+        std::uint8_t* base = ManagerT::backend().base_ptr();
+        psview_pptr   new_node( detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, raw ) );
 
         pstringview* obj = static_cast<pstringview*>( raw );
         obj->length      = len;
         // Копируем строку включая null-terminator.
         std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
 
-        // Инициализируем AVL-поля нового узла (пустые ссылки, высота 1).
-        auto& tn = new_node.tree_node();
-        tn.set_left( static_cast<index_type>( 0 ) );
-        tn.set_right( static_cast<index_type>( 0 ) );
-        tn.set_parent( static_cast<index_type>( 0 ) );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
+        // Инициализируем AVL-поля нового узла (Issue #188: shared avl_init_node).
+        detail::avl_init_node( new_node );
 
         // Блокируем блок pstringview навечно (Issue #151, Issue #126).
         ManagerT::lock_block_permanent( obj );

@@ -134,17 +134,23 @@ namespace detail
 // Software CRC32 (ISO 3309 / ITU-T V.42 polynomial 0xEDB88320).
 // Header-only, no external dependencies.  Used by io.h save/load functions.
 
+/// @brief CRC32 single byte accumulation (Issue #188 deduplication).
+/// Extracts the inner loop from compute_crc32 and compute_image_crc32.
+inline std::uint32_t crc32_accumulate_byte( std::uint32_t crc, std::uint8_t byte ) noexcept
+{
+    crc ^= byte;
+    for ( int bit = 0; bit < 8; ++bit )
+        crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    return crc;
+}
+
 /// @brief Compute CRC32 over a byte range.
 /// Uses the standard Ethernet/zlib polynomial (0xEDB88320, reflected).
 inline std::uint32_t compute_crc32( const std::uint8_t* data, std::size_t length ) noexcept
 {
     std::uint32_t crc = 0xFFFFFFFFU;
     for ( std::size_t i = 0; i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     return crc ^ 0xFFFFFFFFU;
 }
 
@@ -234,25 +240,13 @@ inline std::uint32_t compute_image_crc32( const std::uint8_t* data, std::size_t 
     // CRC everything before the crc32 field
     std::uint32_t crc = 0xFFFFFFFFU;
     for ( std::size_t i = 0; i < kCrcOffset && i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     // Skip the crc32 field (treat as 4 zero bytes)
     for ( std::size_t i = 0; i < kCrcSize; ++i )
-    {
-        crc ^= 0x00U;
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, 0x00U );
     // CRC everything after the crc32 field
     for ( std::size_t i = kAfterCrc; i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     return crc ^ 0xFFFFFFFFU;
 }
 
@@ -497,6 +491,27 @@ inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader<pmm::D
                               ( r && p && right_off == parent_off ) ) )
         return false;
     return true;
+}
+
+/// @brief Resolve a granule index to a raw pointer (Issue #188 deduplication).
+/// Eliminates repeated `base + idx * granule_size` patterns across parray, pstring, ppool, pstringview.
+/// @return nullptr if idx is zero (null sentinel).
+template <typename AddressTraitsT>
+inline void* resolve_granule_ptr( std::uint8_t* base, typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( idx == static_cast<typename AddressTraitsT::index_type>( 0 ) )
+        return nullptr;
+    return base + static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
+}
+
+/// @brief Convert a raw pointer to a granule index (Issue #188 deduplication).
+/// Eliminates repeated `(ptr - base) / granule_size` patterns across parray, pstring, ppool, pstringview.
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type ptr_to_granule_idx( const std::uint8_t* base, const void* ptr ) noexcept
+{
+    using IndexT         = typename AddressTraitsT::index_type;
+    std::size_t byte_off = static_cast<const std::uint8_t*>( ptr ) - base;
+    return static_cast<IndexT>( byte_off / AddressTraitsT::granule_size );
 }
 
 /// @brief Compute user data address for block (block + sizeof(Block<A>), Issue #106, #112, #141).

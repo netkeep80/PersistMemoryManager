@@ -160,7 +160,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return 0;
-        return _subtree_count( node_pptr( _root_idx ) );
+        return detail::avl_subtree_count( node_pptr( _root_idx ) );
     }
 
     // ─── Операции со словарём ─────────────────────────────────────────────────
@@ -200,12 +200,8 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         obj->key   = key;
         obj->value = val;
 
-        // Инициализируем AVL-поля нового узла (no_block = нет связи).
-        auto& tn = new_node.tree_node();
-        tn.set_left( no_block );
-        tn.set_right( no_block );
-        tn.set_parent( no_block );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
+        // Инициализируем AVL-поля нового узла (Issue #188: shared avl_init_node).
+        detail::avl_init_node( new_node );
 
         // Вставляем в AVL-дерево.
         _avl_insert( new_node );
@@ -257,7 +253,8 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     void clear() noexcept
     {
         if ( _root_idx != static_cast<index_type>( 0 ) )
-            _clear_subtree( node_pptr( _root_idx ) );
+            detail::avl_clear_subtree( node_pptr( _root_idx ),
+                                       []( node_pptr p ) { ManagerT::template deallocate_typed<node_type>( p ); } );
         _root_idx = static_cast<index_type>( 0 );
     }
 
@@ -298,49 +295,15 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         }
 
         /// @brief Переход к следующему элементу (in-order successor).
+        /// Issue #188: delegates to shared avl_inorder_successor.
         iterator& operator++() noexcept
         {
             if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
                 return *this;
 
-            node_pptr cur( _current_idx );
-
-            // Если есть правый потомок — идём в его крайний левый узел.
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx != no_block )
-            {
-                node_pptr right( right_idx );
-                while ( true )
-                {
-                    auto left_idx = right.tree_node().get_left();
-                    if ( left_idx == no_block )
-                        break;
-                    right = node_pptr( left_idx );
-                }
-                _current_idx = right.offset();
-                return *this;
-            }
-
-            // Иначе — идём вверх, пока не окажемся левым потомком.
-            while ( true )
-            {
-                auto parent_idx = cur.tree_node().get_parent();
-                if ( parent_idx == no_block )
-                {
-                    // Достигли корня снизу справа — конец обхода.
-                    _current_idx = static_cast<index_type>( 0 );
-                    return *this;
-                }
-                node_pptr parent( parent_idx );
-                auto      parent_left = parent.tree_node().get_left();
-                if ( parent_left == cur.offset() )
-                {
-                    // cur — левый потомок: parent — следующий.
-                    _current_idx = parent_idx;
-                    return *this;
-                }
-                cur = parent;
-            }
+            node_pptr next = detail::avl_inorder_successor( node_pptr( _current_idx ) );
+            _current_idx   = next.is_null() ? static_cast<index_type>( 0 ) : next.offset();
+            return *this;
         }
     };
 
@@ -390,30 +353,8 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
             []( node_pptr p ) -> node_type* { return ManagerT::template resolve<node_type>( p ); } );
     }
 
-    /// @brief Подсчитать количество узлов в поддереве (Issue #196).
-    static std::size_t _subtree_count( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return 0;
-        std::size_t count   = 1;
-        auto        left_p  = detail::pptr_get_left( p );
-        auto        right_p = detail::pptr_get_right( p );
-        count += _subtree_count( left_p );
-        count += _subtree_count( right_p );
-        return count;
-    }
-
-    /// @brief Рекурсивно деаллоцировать все узлы поддерева (Issue #196).
-    static void _clear_subtree( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return;
-        auto left_p  = detail::pptr_get_left( p );
-        auto right_p = detail::pptr_get_right( p );
-        _clear_subtree( left_p );
-        _clear_subtree( right_p );
-        ManagerT::template deallocate_typed<node_type>( p );
-    }
+    // Issue #188: _subtree_count and _clear_subtree replaced by shared
+    // detail::avl_subtree_count and detail::avl_clear_subtree.
 };
 
 } // namespace pmm

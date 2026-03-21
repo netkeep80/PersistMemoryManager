@@ -51,6 +51,7 @@
 #pragma once
 
 #include "pmm/avl_tree_mixin.h"
+#include "pmm/types.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -226,22 +227,17 @@ template <typename ManagerT> struct pstringview
         if ( raw == nullptr )
             return psview_pptr();
 
-        // Создаём pptr вручную из raw указателя.
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
-        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        psview_pptr   new_node( static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size ) );
+        // Создаём pptr вручную из raw указателя (Issue #188: shared ptr_to_granule_idx).
+        std::uint8_t* base = ManagerT::backend().base_ptr();
+        psview_pptr   new_node( detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, raw ) );
 
         pstringview* obj = static_cast<pstringview*>( raw );
         obj->length      = len;
         // Копируем строку включая null-terminator.
         std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
 
-        // Инициализируем AVL-поля нового узла (пустые ссылки, высота 1).
-        auto& tn = new_node.tree_node();
-        tn.set_left( static_cast<index_type>( 0 ) );
-        tn.set_right( static_cast<index_type>( 0 ) );
-        tn.set_parent( static_cast<index_type>( 0 ) );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
+        // Инициализируем AVL-поля нового узла (Issue #188: shared avl_init_node).
+        detail::avl_init_node( new_node );
 
         // Блокируем блок pstringview навечно (Issue #151, Issue #126).
         ManagerT::lock_block_permanent( obj );
