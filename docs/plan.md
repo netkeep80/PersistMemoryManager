@@ -257,7 +257,7 @@ STL-контейнеров с ПАП.
 - `docs/thread_safety.md` — контракт для `pptr`, `resolve()`, concurrent access
 - Примеры корректного и некорректного использования
 
-### 6.2 Документация восстановления после сбоев
+### 6.2 Документация восстановления после сбоев ✅ ВЫПОЛНЕНО (#216)
 
 - `docs/recovery.md` — сценарии сбоя, гарантии и ограничения
 
@@ -317,7 +317,7 @@ STL-контейнеров с ПАП.
 | 19 | ~~Fuzz-тестирование~~ | 5.2 | ~~Средний~~ | ~~Средняя~~ | ✅ #213 |
 | 20 | ~~Бенчмарки~~ | 5.3 | ~~Средний~~ | ~~Средняя~~ | ✅ #214 |
 | 21 | ~~Документация thread safety~~ | 6.1 | ~~Средний~~ | ~~Низкая~~ | ✅ #215 |
-| 22 | Документация recovery | 6.2 | Средний | Низкая | |
+| 22 | ~~Документация recovery~~ | 6.2 | ~~Средний~~ | ~~Низкая~~ | ✅ #216 |
 | 23 | Транзакции | 7.1 | Низкий | Высокая | |
 | 24 | Сборщик мусора | 7.2 | Низкий | Высокая | |
 | 25 | Shared memory IPC | 7.3 | Низкий | Высокая | |
@@ -325,4 +325,4 @@ STL-контейнеров с ПАП.
 
 ---
 
-*Документ обновлён 2026-03-20. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210. Phase 4.4 (pptr byte offset conversion) реализована в Issue #211. Фаза 4 полностью завершена. Phase 5.1 (Catch2 migration) реализована в Issue #212. Phase 5.2 (extended test coverage) реализована в Issue #213. Phase 5.3 (Google Benchmark) реализована в Issue #214. Фаза 5 полностью завершена. Phase 6.1 (thread safety documentation) реализована в Issue #215.*
+*Документ обновлён 2026-03-21. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210. Phase 4.4 (pptr byte offset conversion) реализована в Issue #211. Фаза 4 полностью завершена. Phase 5.1 (Catch2 migration) реализована в Issue #212. Phase 5.2 (extended test coverage) реализована в Issue #213. Phase 5.3 (Google Benchmark) реализована в Issue #214. Фаза 5 полностью завершена. Phase 6.1 (thread safety documentation) реализована в Issue #215. Phase 6.2 (recovery documentation) реализована в Issue #216.*

@@ -900,7 +900,7 @@ PersistMemoryManager/
 **Фаза 6 (в процессе)** — Документация:
 
 - ~~Документация потокобезопасности~~ ✅ (#215)
-- Документация восстановления после сбоев
+- ~~Документация восстановления после сбоев~~ ✅ (#216)
 
 План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
 
@@ -932,6 +932,7 @@ cmake -B build && cmake --build build && ctest --test-dir build
 - [API Reference (Markdown)](docs/api_reference.md)
 - [Changelog](CHANGELOG.md)
 - [Потокобезопасность](docs/thread_safety.md)
+- [Восстановление после сбоев](docs/recovery.md)
 - [План развития](docs/plan.md)
 - [План миграции BinDiffSynchronizer](docs/plan4BinDiffSynchronizer.md)
 
