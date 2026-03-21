@@ -20,7 +20,7 @@ instances of the same configuration can coexist through the `InstanceId` templat
 #include "pmm/manager_configs.h"         // predefined configurations
 #include "pmm/pmm_presets.h"             // named preset aliases
 #include "pmm/io.h"                      // file save / load utilities
-#include "pmm/avl_tree_mixin.h"          // shared AVL helpers (included via pmap/pstringview)
+#include "pmm/avl_tree_mixin.h"          // shared AVL helpers (included via pmap/pstringview/pvector)
 ```
 
 **Single-header presets** (include one file, get a ready-to-use manager type).
@@ -680,12 +680,28 @@ pmap() noexcept;  // creates an empty map (_root_idx = 0)
 ### Methods
 
 ```cpp
-bool      empty()                     const noexcept;
-node_pptr insert(const _K& key, const _V& val) noexcept;  // insert or update; returns node pptr
-node_pptr find  (const _K& key)       const noexcept;     // returns null pptr if not found
-bool      contains(const _K& key)     const noexcept;
-void      reset()                     noexcept;           // reset root for test isolation
+bool        empty()                          const noexcept;
+node_pptr   insert(const _K& key, const _V& val) noexcept;  // insert or update; returns node pptr
+node_pptr   find  (const _K& key)            const noexcept; // returns null pptr if not found
+bool        contains(const _K& key)          const noexcept;
+bool        erase(const _K& key)             noexcept;       // O(log n) remove by key; returns false if not found
+std::size_t size()                           const noexcept; // O(n) element count via avl_subtree_count
+void        clear()                          noexcept;       // O(n) remove all elements with deallocation
+void        reset()                          noexcept;       // reset root for test isolation
 ```
+
+### Iterator
+
+Uses the shared `AvlInorderIterator<NodePPtr>` template from `avl_tree_mixin.h`:
+
+```cpp
+using iterator = pmm::detail::AvlInorderIterator<node_pptr>;
+
+iterator begin() const noexcept;  // leftmost node (smallest key)
+iterator end()   const noexcept;  // sentinel (null)
+```
+
+The iterator traverses nodes in ascending key order via `avl_inorder_successor`.
 
 ### `pmap_node<_K, _V>`
 
@@ -721,6 +737,18 @@ assert(!p.is_null() && p->value == 300);
 assert(map.contains(10));
 assert(!map.contains(99));
 
+// Size and iteration
+assert(map.size() == 2);
+for (auto it = map.begin(); it != map.end(); ++it) {
+    auto node = *it;
+    // node->key, node->value — in ascending key order
+}
+
+// Erase and clear
+map.erase(42);       // true — removes node and deallocates
+map.clear();         // removes all remaining elements
+assert(map.empty());
+
 Mgr::destroy();
 ```
 
@@ -751,8 +779,9 @@ namespace pmm {
 ```
 
 A persistent sequential container (vector) for PAP. Each element is stored in a separate
-PAP block. Elements are linked using the built-in `TreeNode` fields to form a doubly-linked
-list, enabling O(1) push_back with a tail pointer.
+PAP block containing a `pvector_node<T>`. Elements are organized as an AVL order-statistic
+tree using the built-in `TreeNode` fields, with a `weight` field storing the subtree size.
+This enables O(log n) indexed access, push_back, pop_back, and erase.
 
 **Accessed via manager nested alias:**
 ```cpp
@@ -764,9 +793,7 @@ vec.push_back(42);
 ### Data fields
 
 ```cpp
-index_type _head_idx;  // granule index of first element; 0 = empty vector
-index_type _tail_idx;  // granule index of last element; 0 = empty vector
-index_type _size;      // cached element count
+index_type _root_idx;  // granule index of AVL tree root; 0 = empty vector
 ```
 
 ### Constructors
@@ -779,14 +806,15 @@ pvector() noexcept;  // creates an empty vector
 
 ```cpp
 bool      empty()                   const noexcept;
-std::size_t size()                  const noexcept;  // O(1) cached size
-node_pptr push_back(const T& val)   noexcept;        // O(1) append; returns node pptr
-node_pptr at(std::size_t index)     const noexcept;  // O(n) access; null pptr if out of range
-node_pptr front()                   const noexcept;  // O(1) first element
-node_pptr back()                    const noexcept;  // O(1) last element
-bool      pop_back()                noexcept;        // O(1) remove last; returns false if empty
+std::size_t size()                  const noexcept;  // O(1) from root's weight field
+node_pptr push_back(const T& val)   noexcept;        // O(log n) rightmost insertion
+node_pptr at(std::size_t index)     const noexcept;  // O(log n) access via order-statistic tree
+node_pptr front()                   const noexcept;  // O(log n) leftmost node (min)
+node_pptr back()                    const noexcept;  // O(log n) rightmost node (max)
+bool      pop_back()                noexcept;        // O(log n) remove last
+bool      erase(std::size_t index)  noexcept;        // O(log n) erase by index; false if out of range
 void      clear()                   noexcept;        // O(n) remove all elements
-void      reset()                   noexcept;        // reset indices for test isolation
+void      reset()                   noexcept;        // reset root for test isolation
 ```
 
 ### `pvector_node<T>`
@@ -808,17 +836,16 @@ if (!p.is_null()) {
 
 ### Iterator
 
-```cpp
-struct iterator {
-    bool operator==(const iterator& other) const noexcept;
-    bool operator!=(const iterator& other) const noexcept;
-    node_pptr operator*() const noexcept;  // returns pptr to current node
-    iterator& operator++() noexcept;       // advance to next element
-};
+Uses the shared `AvlInorderIterator<NodePPtr>` template from `avl_tree_mixin.h`:
 
-iterator begin() const noexcept;
+```cpp
+using iterator = pmm::detail::AvlInorderIterator<node_pptr>;
+
+iterator begin() const noexcept;  // leftmost node (smallest index)
 iterator end()   const noexcept;  // sentinel (null)
 ```
+
+The iterator traverses nodes in-order (ascending by position) via `avl_inorder_successor`.
 
 ### Example
 
@@ -844,8 +871,9 @@ for (auto it = vec.begin(); it != vec.end(); ++it) {
     std::cout << node->value << "\n";
 }
 
-vec.pop_back();
-assert(vec.size() == 2);
+vec.pop_back();     // O(log n) — remove last
+vec.erase(0);       // O(log n) — erase by index
+assert(vec.size() == 1);
 
 vec.clear();
 assert(vec.empty());
@@ -854,9 +882,9 @@ Mgr::destroy();
 ```
 
 **Notes:**
-- Nodes are **not** permanently locked — they can be freed via `pop_back()` or `clear()`.
-- `at(i)` is O(i) — linear traversal from head.
-- `push_back()`, `front()`, `back()`, `pop_back()` are O(1).
+- Nodes are **not** permanently locked — they can be freed via `pop_back()`, `erase()`, or `clear()`.
+- All operations are O(log n) except `size()` which is O(1) and `clear()` which is O(n).
+- Uses the shared AVL order-statistic tree: each node's `weight` field stores subtree size.
 
 ---
 
@@ -1100,4 +1128,4 @@ Thread safety depends on the `lock_policy` in the configuration:
 
 ---
 
-*Document version 0.13.0. Reflects the library API as of v0.13.0.*
+*Document updated for Issue #188. Reflects the library API after code deduplication refactoring (avl_tree_mixin.h shared helpers, AvlInorderIterator, BlockPPtr adapter).*
