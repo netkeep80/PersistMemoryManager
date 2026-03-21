@@ -75,8 +75,8 @@ TEST_CASE( "I235-A4: typed_guard move semantics", "[test_issue235]" )
 
         // Move construction
         auto guard2 = std::move( guard1 );
-        // cppcheck-suppress accessMoved ; deliberately testing moved-from state
-        REQUIRE( !guard1 );
+        // cppcheck-suppress accessMoved
+        REQUIRE( !guard1 ); // deliberately testing moved-from state
         REQUIRE( guard2 );
         REQUIRE( guard2->size() == 4 );
     }
