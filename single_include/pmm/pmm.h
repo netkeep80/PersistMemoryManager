@@ -4226,6 +4226,7 @@ template <typename T, typename ManagerT> struct parray
  * @version 0.4 (Issue #188 — NodeUpdateFn hook, avl_remove, avl_min_node for pvector deduplication)
  */
 
+#include <cstddef>
 #include <cstdint>
 
 namespace pmm

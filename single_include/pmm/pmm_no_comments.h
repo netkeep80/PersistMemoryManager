@@ -2247,6 +2247,7 @@ template <typename T, typename ManagerT> struct parray
 
 } 
 
+#include <cstddef>
 #include <cstdint>
 
 namespace pmm
