@@ -12,6 +12,7 @@ var searchData=
   ['compute_5fcrc32_9',['compute_crc32',['../namespacepmm_1_1detail.html#a8e3d57757aa16e8e7861ea21eee6bda9',1,'pmm::detail']]],
   ['compute_5fimage_5fcrc32_10',['compute_image_crc32',['../namespacepmm_1_1detail.html#ac1cf8e9ae2bc405fa096d1cc343a8d02',1,'pmm::detail']]],
   ['contains_11',['contains',['../structpmm_1_1pmap.html#aa48dab6f34fb84746e3f83ee38cc84b5',1,'pmm::pmap']]],
-  ['create_12',['create',['../classpmm_1_1PersistMemoryManager.html#aa013ea3a201ed0b5a7aca5548540e071',1,'pmm::PersistMemoryManager::create(std::size_t initial_size) noexcept'],['../classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033',1,'pmm::PersistMemoryManager::create() noexcept']]],
-  ['create_5ftyped_13',['create_typed',['../classpmm_1_1PersistMemoryManager.html#a3df6aef4d5b95860ebff95be49a67905',1,'pmm::PersistMemoryManager']]]
+  ['crc32_5faccumulate_5fbyte_12',['crc32_accumulate_byte',['../namespacepmm_1_1detail.html#a294dc5ddd6e37b094611f75d9b22b46b',1,'pmm::detail']]],
+  ['create_13',['create',['../classpmm_1_1PersistMemoryManager.html#aa013ea3a201ed0b5a7aca5548540e071',1,'pmm::PersistMemoryManager::create(std::size_t initial_size) noexcept'],['../classpmm_1_1PersistMemoryManager.html#a63dfa95e41be9f62e33ad3e698d4f033',1,'pmm::PersistMemoryManager::create() noexcept']]],
+  ['create_5ftyped_14',['create_typed',['../classpmm_1_1PersistMemoryManager.html#a3df6aef4d5b95860ebff95be49a67905',1,'pmm::PersistMemoryManager']]]
 ];

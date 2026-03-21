@@ -9,7 +9,7 @@ var searchData=
   ['managerinfo_6',['ManagerInfo',['../structpmm_1_1ManagerInfo.html',1,'pmm']]],
   ['mark_5fas_5fallocated_7',['mark_as_allocated',['../classpmm_1_1FreeBlockRemovedAVL.html#a4eeee6090df0f5333ee5f2aee8496204',1,'pmm::FreeBlockRemovedAVL']]],
   ['mark_5fas_5ffree_8',['mark_as_free',['../classpmm_1_1AllocatedBlock.html#a115d7215d185da8532b047fa0e269dd9',1,'pmm::AllocatedBlock']]],
-  ['max_5fmemory_5fgb_9',['max_memory_gb',['../structpmm_1_1BasicConfig.html#af4f301b27fff801e5944c7685520eee3',1,'pmm::BasicConfig::max_memory_gb'],['../structpmm_1_1SmallEmbeddedStaticConfig.html#acb06ca843f1e86fa1384f06a0329d4c1',1,'pmm::SmallEmbeddedStaticConfig::max_memory_gb'],['../structpmm_1_1EmbeddedStaticConfig.html#a4335c12336bad3be346f17ba0ff14696',1,'pmm::EmbeddedStaticConfig::max_memory_gb']]],
+  ['max_5fmemory_5fgb_9',['max_memory_gb',['../structpmm_1_1BasicConfig.html#af4f301b27fff801e5944c7685520eee3',1,'pmm::BasicConfig::max_memory_gb'],['../structpmm_1_1StaticConfig.html#a95e7b4763e35e5e9dbece61efd57b506',1,'pmm::StaticConfig::max_memory_gb']]],
   ['max_5fsize_10',['max_size',['../structpmm_1_1pallocator.html#abb47a3073b732bbbc83ddec23349bea9',1,'pmm::pallocator']]],
   ['memorystats_11',['MemoryStats',['../structpmm_1_1MemoryStats.html',1,'pmm']]],
   ['min_5fslot_5fbytes_12',['min_slot_bytes',['../structpmm_1_1ppool.html#a9d7f5705455da79b9b132ac44d0a88d0',1,'pmm::ppool']]],

@@ -198,10 +198,10 @@ struct pmm::parray&lt; T, ManagerT &gt;</div><p>Persistent dynamic array with O(
 <div class="line">| <a class="code hl_variable" href="structpmm_1_1parray.html#ae612a24f38e9d6e9454b8dbe669b9e9d">_capacity</a>: u32 |---idx---&gt; |                          |</div>
 <div class="line">| <a class="code hl_variable" href="structpmm_1_1parray.html#a08cbfce3ebe82b3e48b4461ef31b6558">_data_idx</a>      |           +--------------------------+</div>
 <div class="line">+----------------+</div>
-<div class="ttc" id="astructpmm_1_1parray_html"><div class="ttname"><a href="structpmm_1_1parray.html">pmm::parray</a></div><div class="ttdoc">Persistent dynamic array with O(1) random access (Issue #195, Phase 3.2).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00098">parray.h:99</a></div></div>
-<div class="ttc" id="astructpmm_1_1parray_html_a08cbfce3ebe82b3e48b4461ef31b6558"><div class="ttname"><a href="structpmm_1_1parray.html#a08cbfce3ebe82b3e48b4461ef31b6558">pmm::parray::_data_idx</a></div><div class="ttdeci">index_type _data_idx</div><div class="ttdoc">Granule index of the data block (0 = no data).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00108">parray.h:108</a></div></div>
-<div class="ttc" id="astructpmm_1_1parray_html_a0b741418c33c41dcdedcd6101b3bf41f"><div class="ttname"><a href="structpmm_1_1parray.html#a0b741418c33c41dcdedcd6101b3bf41f">pmm::parray::_size</a></div><div class="ttdeci">std::uint32_t _size</div><div class="ttdoc">Number of elements currently stored.</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00106">parray.h:106</a></div></div>
-<div class="ttc" id="astructpmm_1_1parray_html_ae612a24f38e9d6e9454b8dbe669b9e9d"><div class="ttname"><a href="structpmm_1_1parray.html#ae612a24f38e9d6e9454b8dbe669b9e9d">pmm::parray::_capacity</a></div><div class="ttdeci">std::uint32_t _capacity</div><div class="ttdoc">Capacity of the data block (number of T elements).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00107">parray.h:107</a></div></div>
+<div class="ttc" id="astructpmm_1_1parray_html"><div class="ttname"><a href="structpmm_1_1parray.html">pmm::parray</a></div><div class="ttdoc">Persistent dynamic array with O(1) random access (Issue #195, Phase 3.2).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00100">parray.h:101</a></div></div>
+<div class="ttc" id="astructpmm_1_1parray_html_a08cbfce3ebe82b3e48b4461ef31b6558"><div class="ttname"><a href="structpmm_1_1parray.html#a08cbfce3ebe82b3e48b4461ef31b6558">pmm::parray::_data_idx</a></div><div class="ttdeci">index_type _data_idx</div><div class="ttdoc">Granule index of the data block (0 = no data).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00110">parray.h:110</a></div></div>
+<div class="ttc" id="astructpmm_1_1parray_html_a0b741418c33c41dcdedcd6101b3bf41f"><div class="ttname"><a href="structpmm_1_1parray.html#a0b741418c33c41dcdedcd6101b3bf41f">pmm::parray::_size</a></div><div class="ttdeci">std::uint32_t _size</div><div class="ttdoc">Number of elements currently stored.</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00108">parray.h:108</a></div></div>
+<div class="ttc" id="astructpmm_1_1parray_html_ae612a24f38e9d6e9454b8dbe669b9e9d"><div class="ttname"><a href="structpmm_1_1parray.html#ae612a24f38e9d6e9454b8dbe669b9e9d">pmm::parray::_capacity</a></div><div class="ttdeci">std::uint32_t _capacity</div><div class="ttdoc">Capacity of the data block (number of T elements).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00109">parray.h:109</a></div></div>
 </div><!-- fragment --><dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Element type. Must be trivially copyable for PAP persistence. </td></tr>
@@ -210,7 +210,7 @@ struct pmm::parray&lt; T, ManagerT &gt;</div><p>Persistent dynamic array with O(
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00098">98</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00100">100</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a1881a92cb6b4feac81b72b5515688012" name="a1881a92cb6b4feac81b72b5515688012"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1881a92cb6b4feac81b72b5515688012">&#9670;&#160;</a></span>index_type</h2>
@@ -226,7 +226,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00103">103</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00105">105</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -244,7 +244,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00102">102</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00104">104</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -262,7 +262,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00104">104</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00106">106</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -294,7 +294,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Default constructor — empty array. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00113">113</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00115">115</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -356,7 +356,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Const version of <a class="el" href="structpmm_1_1parray.html#a30114309a4aa8433fc79c626ef78027e" title="Access element by index with bounds checking.">at()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00144">144</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00146">146</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -395,7 +395,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the element, or nullptr if index is out of range or no data. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00135">135</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00137">137</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -426,7 +426,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Const version of <a class="el" href="structpmm_1_1parray.html#a7faf36b7bba11175a8d6519ec42bbf73" title="Access the last element.">back()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00182">182</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00184">184</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -458,7 +458,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Access the last element. </p>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the last element, or nullptr if empty. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00179">179</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00181">181</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -489,7 +489,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Current capacity (number of elements that fit without reallocation). </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00127">127</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00129">129</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -521,7 +521,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Clear the array (set size to 0) without freeing the data block. </p>
 <p>Capacity is preserved for potential reuse. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00293">293</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00295">295</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -552,7 +552,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Const version of <a class="el" href="structpmm_1_1parray.html#aa1801663589092a38f7c14d3e51f1a36" title="Get a raw pointer to the underlying data block.">data()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00192">192</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00194">194</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -584,7 +584,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Get a raw pointer to the underlying data block. </p>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the first element, or nullptr if empty. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00189">189</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00191">191</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -615,7 +615,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Check if the array is empty. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00124">124</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00126">126</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -647,7 +647,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Free the data block. </p>
 <p>Deallocates the data block via the manager. After calling, the array is empty. This method MUST be called before destroy_typed(pptr) for correct resource cleanup. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00301">301</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00303">303</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -678,7 +678,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Const version of <a class="el" href="structpmm_1_1parray.html#a2dcbfa513bab6e8a1f08157db4ea0dfc" title="Access the first element.">front()</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00172">172</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00174">174</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -710,7 +710,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Access the first element. </p>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the first element, or nullptr if empty. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00169">169</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00171">171</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -742,7 +742,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Inequality. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00333">333</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00334">334</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -774,7 +774,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Equality: same size and all elements equal. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00317">317</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00318">318</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -813,7 +813,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Copy of the element. If data is not resolved, returns T{}. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00158">158</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00160">160</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -845,7 +845,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Remove the last element from the array. </p>
 <p>Does nothing if the array is empty. Does not shrink the data block. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00221">221</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00223">223</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -885,7 +885,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true on success, false on allocation failure. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00204">204</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00206">206</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -925,7 +925,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true on success, false on allocation failure. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00253">253</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00255">255</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -965,7 +965,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true on success, false on allocation failure. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00269">269</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00271">271</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -1015,7 +1015,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true on success, false if index is out of range. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00234">234</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00236">236</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -1046,7 +1046,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Number of elements in the array. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00121">121</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00123">123</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -1067,7 +1067,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Capacity of the data block (number of T elements). </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00107">107</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00109">109</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -1087,7 +1087,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Granule index of the data block (0 = no data). </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00108">108</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00110">110</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>
@@ -1107,7 +1107,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Number of elements currently stored. </p>
 
-<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00106">106</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parray_8h_source.html#l00108">108</a> of file <a class="el" href="parray_8h_source.html">parray.h</a>.</p>
 
 </div>
 </div>

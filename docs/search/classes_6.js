@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['is_5fpersist_5fmemory_5fmanager_0',['is_persist_memory_manager',['../structpmm_1_1is__persist__memory__manager.html',1,'pmm']]],
-  ['iterator_1',['iterator',['../structpmm_1_1pmap_1_1iterator.html',1,'pmm::pmap&lt; _K, _V, ManagerT &gt;::iterator'],['../structpmm_1_1pvector_1_1iterator.html',1,'pmm::pvector&lt; T, ManagerT &gt;::iterator']]]
+  ['managerheader_0',['ManagerHeader',['../structpmm_1_1detail_1_1ManagerHeader.html',1,'pmm::detail']]],
+  ['managerinfo_1',['ManagerInfo',['../structpmm_1_1ManagerInfo.html',1,'pmm']]],
+  ['memorystats_2',['MemoryStats',['../structpmm_1_1MemoryStats.html',1,'pmm']]],
+  ['mmapstorage_3',['MMapStorage',['../classpmm_1_1MMapStorage.html',1,'pmm']]],
+  ['mutex_5ftype_4',['mutex_type',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html',1,'pmm::config::NoLock']]]
 ];

@@ -90,12 +90,6 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="pvector_8h_source.html">pvector.h</a>&gt;</code></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector_1_1iterator.html">iterator</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Простой итератор для обхода вектора в порядке индексов (in-order).  <a href="structpmm_1_1pvector_1_1iterator.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:acec9c7000ccb6327b4bbbe57b5b06c95" id="r_acec9c7000ccb6327b4bbbe57b5b06c95"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#acec9c7000ccb6327b4bbbe57b5b06c95">manager_type</a> = ManagerT</td></tr>
@@ -106,6 +100,9 @@ Public Types</h2></td></tr>
 <tr class="separator:ac8eeb36aafece642667585c646ab9a50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61ec4d59745c2c668ee9fc0141117011" id="r_a61ec4d59745c2c668ee9fc0141117011"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#a61ec4d59745c2c668ee9fc0141117011">node_pptr</a> = typename ManagerT::template <a class="el" href="classpmm_1_1pptr.html">pptr</a>&lt; <a class="el" href="structpmm_1_1pvector.html#ac8eeb36aafece642667585c646ab9a50">node_type</a> &gt;</td></tr>
 <tr class="separator:a61ec4d59745c2c668ee9fc0141117011"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08aae718d59d26dce1a2b13020585fda" id="r_a08aae718d59d26dce1a2b13020585fda"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#a08aae718d59d26dce1a2b13020585fda">iterator</a> = <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">detail::AvlInorderIterator</a>&lt; <a class="el" href="structpmm_1_1pvector.html#a61ec4d59745c2c668ee9fc0141117011">node_pptr</a> &gt;</td></tr>
+<tr class="memdesc:a08aae718d59d26dce1a2b13020585fda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Простой итератор для обхода вектора в порядке индексов (in-order). Issue #188: uses shared AvlInorderIterator template to eliminate duplication.  <br /></td></tr>
+<tr class="separator:a08aae718d59d26dce1a2b13020585fda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -142,10 +139,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a121d759eaf298126998812055c611576" id="r_a121d759eaf298126998812055c611576"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#a121d759eaf298126998812055c611576">reset</a> () noexcept</td></tr>
 <tr class="memdesc:a121d759eaf298126998812055c611576"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить вектор (для тестов).  <br /></td></tr>
 <tr class="separator:a121d759eaf298126998812055c611576"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad19a7029bd0191e048c2b39403ce0855" id="r_ad19a7029bd0191e048c2b39403ce0855"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1pvector_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#ad19a7029bd0191e048c2b39403ce0855">begin</a> () const noexcept</td></tr>
-<tr class="memdesc:ad19a7029bd0191e048c2b39403ce0855"><td class="mdescLeft">&#160;</td><td class="mdescRight">Начало итерации (самый левый узел = первый элемент).  <br /></td></tr>
+<tr class="memitem:ad19a7029bd0191e048c2b39403ce0855" id="r_ad19a7029bd0191e048c2b39403ce0855"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1pvector.html#a08aae718d59d26dce1a2b13020585fda">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#ad19a7029bd0191e048c2b39403ce0855">begin</a> () const noexcept</td></tr>
+<tr class="memdesc:ad19a7029bd0191e048c2b39403ce0855"><td class="mdescLeft">&#160;</td><td class="mdescRight">Начало итерации (самый левый узел = первый элемент). Issue #188: delegates to shared avl_min_node.  <br /></td></tr>
 <tr class="separator:ad19a7029bd0191e048c2b39403ce0855"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3ff09ad6e3d38cfd82c1063c06702bbd" id="r_a3ff09ad6e3d38cfd82c1063c06702bbd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1pvector_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#a3ff09ad6e3d38cfd82c1063c06702bbd">end</a> () const noexcept</td></tr>
+<tr class="memitem:a3ff09ad6e3d38cfd82c1063c06702bbd" id="r_a3ff09ad6e3d38cfd82c1063c06702bbd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1pvector.html#a08aae718d59d26dce1a2b13020585fda">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pvector.html#a3ff09ad6e3d38cfd82c1063c06702bbd">end</a> () const noexcept</td></tr>
 <tr class="memdesc:a3ff09ad6e3d38cfd82c1063c06702bbd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конец итерации (sentinel = 0).  <br /></td></tr>
 <tr class="separator:a3ff09ad6e3d38cfd82c1063c06702bbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -199,6 +196,26 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00112">112</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+
+</div>
+</div>
+<a id="a08aae718d59d26dce1a2b13020585fda" name="a08aae718d59d26dce1a2b13020585fda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08aae718d59d26dce1a2b13020585fda">&#9670;&#160;</a></span>iterator</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename ManagerT &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="structpmm_1_1pvector.html">pmm::pvector</a>&lt; T, ManagerT &gt;::iterator =  <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">detail::AvlInorderIterator</a>&lt;<a class="el" href="structpmm_1_1pvector.html#a61ec4d59745c2c668ee9fc0141117011">node_pptr</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Простой итератор для обхода вектора в порядке индексов (in-order). Issue #188: uses shared AvlInorderIterator template to eliminate duplication. </p>
+
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00288">288</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -325,7 +342,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pptr на узел с данным индексом, или нулевой pptr если индекс вне диапазона. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00185">185</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00181">181</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -357,7 +374,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Получить последний элемент вектора за O(log n). </p>
 <dl class="section return"><dt>Returns</dt><dd>pptr на последний узел, или нулевой pptr если вектор пуст. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00223">223</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00210">210</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -373,7 +390,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structpmm_1_1pvector_1_1iterator.html">iterator</a> <a class="el" href="structpmm_1_1pvector.html">pmm::pvector</a>&lt; T, ManagerT &gt;::begin </td>
+          <td class="memname"><a class="el" href="structpmm_1_1pvector.html#a08aae718d59d26dce1a2b13020585fda">iterator</a> <a class="el" href="structpmm_1_1pvector.html">pmm::pvector</a>&lt; T, ManagerT &gt;::begin </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -386,9 +403,9 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Начало итерации (самый левый узел = первый элемент). </p>
+<p>Начало итерации (самый левый узел = первый элемент). Issue #188: delegates to shared avl_min_node. </p>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00390">390</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00292">292</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -420,7 +437,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Очистить вектор (удалить все элементы). </p>
 <p>Освобождает память всех узлов в ПАП. </p>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00298">298</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00269">269</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -467,7 +484,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structpmm_1_1pvector_1_1iterator.html">iterator</a> <a class="el" href="structpmm_1_1pvector.html">pmm::pvector</a>&lt; T, ManagerT &gt;::end </td>
+          <td class="memname"><a class="el" href="structpmm_1_1pvector.html#a08aae718d59d26dce1a2b13020585fda">iterator</a> <a class="el" href="structpmm_1_1pvector.html">pmm::pvector</a>&lt; T, ManagerT &gt;::end </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -482,7 +499,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Конец итерации (sentinel = 0). </p>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00407">407</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00301">301</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -522,7 +539,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если элемент был удалён, false если индекс вне диапазона. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00275">275</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00246">246</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -554,7 +571,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Получить первый элемент вектора за O(log n). </p>
 <dl class="section return"><dt>Returns</dt><dd>pptr на первый узел, или нулевой pptr если вектор пуст. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00202">202</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00198">198</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -587,7 +604,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Освобождает память узла в ПАП и перебалансирует AVL-дерево.</p>
 <dl class="section return"><dt>Returns</dt><dd>true если элемент был удалён, false если вектор пуст. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00246">246</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00224">224</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>
@@ -659,7 +676,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Сбросить вектор (для тестов). </p>
 <p>Сбрасывает _root_idx, но не освобождает данные в ПАП. </p>
 
-<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00311">311</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pvector_8h_source.html#l00282">282</a> of file <a class="el" href="pvector_8h_source.html">pvector.h</a>.</p>
 
 </div>
 </div>

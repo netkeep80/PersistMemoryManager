@@ -4,6 +4,7 @@ var searchData=
   ['singlethreadedheap_1',['SingleThreadedHeap',['../namespacepmm_1_1presets.html#a26c22130e79e20183d2df7c4bec45b00',1,'pmm::presets']]],
   ['size_5ftype_2',['size_type',['../structpmm_1_1pallocator.html#a214e6396375a21ee81c3de47894ac20e',1,'pmm::pallocator']]],
   ['smalladdresstraits_3',['SmallAddressTraits',['../namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2',1,'pmm']]],
-  ['smallembeddedstaticheap_4',['SmallEmbeddedStaticHeap',['../namespacepmm_1_1presets.html#ade25fcb828ded3abc954f5a7196bf4fd',1,'pmm::presets']]],
-  ['storage_5fbackend_5',['storage_backend',['../structpmm_1_1BasicConfig.html#ae54d665359a0d820ae9fe93b346c9048',1,'pmm::BasicConfig::storage_backend'],['../structpmm_1_1SmallEmbeddedStaticConfig.html#ae3a9a228d6098df8cc40ad5730e16121',1,'pmm::SmallEmbeddedStaticConfig::storage_backend'],['../structpmm_1_1EmbeddedStaticConfig.html#a446ee4f33c478384f99727a095db2c1d',1,'pmm::EmbeddedStaticConfig::storage_backend'],['../classpmm_1_1PersistMemoryManager.html#a21a29f95d2f488d380f006c4187af55f',1,'pmm::PersistMemoryManager::storage_backend']]]
+  ['smallembeddedstaticconfig_4',['SmallEmbeddedStaticConfig',['../namespacepmm.html#a96a68a0f555166cd33e2261e8aec95cc',1,'pmm']]],
+  ['smallembeddedstaticheap_5',['SmallEmbeddedStaticHeap',['../namespacepmm_1_1presets.html#ade25fcb828ded3abc954f5a7196bf4fd',1,'pmm::presets']]],
+  ['storage_5fbackend_6',['storage_backend',['../structpmm_1_1BasicConfig.html#ae54d665359a0d820ae9fe93b346c9048',1,'pmm::BasicConfig::storage_backend'],['../structpmm_1_1StaticConfig.html#a1a5c97ce31768b74c5872b386a022010',1,'pmm::StaticConfig::storage_backend'],['../classpmm_1_1PersistMemoryManager.html#a21a29f95d2f488d380f006c4187af55f',1,'pmm::PersistMemoryManager::storage_backend']]]
 ];

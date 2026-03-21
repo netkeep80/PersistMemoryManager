@@ -12,9 +12,8 @@ var searchData=
   ['is_5finitialized_9',['is_initialized',['../classpmm_1_1PersistMemoryManager.html#a55c4db722ac210db29a7cfc73d4cc544',1,'pmm::PersistMemoryManager']]],
   ['is_5fnull_10',['is_null',['../classpmm_1_1pptr.html#a2cb78c12fac91ef44774308b0a7fc952',1,'pmm::pptr']]],
   ['is_5fopen_11',['is_open',['../classpmm_1_1MMapStorage.html#a7b6756bbf0a7929a36a227d59f098890',1,'pmm::MMapStorage']]],
-  ['is_5fpermanently_5flocked_12',['is_permanently_locked',['../classpmm_1_1PersistMemoryManager.html#ab3d073c0cdff0cf27816432777c01053',1,'pmm::PersistMemoryManager::is_permanently_locked()'],['../classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda',1,'pmm::BlockStateBase::is_permanently_locked()']]],
+  ['is_5fpermanently_5flocked_12',['is_permanently_locked',['../classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda',1,'pmm::BlockStateBase::is_permanently_locked()'],['../classpmm_1_1PersistMemoryManager.html#ab3d073c0cdff0cf27816432777c01053',1,'pmm::PersistMemoryManager::is_permanently_locked()']]],
   ['is_5fvalid_5falignment_13',['is_valid_alignment',['../namespacepmm_1_1detail.html#a570c97994ec416915edafdbb1ed080b6',1,'pmm::detail']]],
   ['is_5fvalid_5fblock_14',['is_valid_block',['../namespacepmm_1_1detail.html#a691ef48013a7a305e4c467028432cd2a',1,'pmm::detail']]],
-  ['is_5fvalid_5fptr_15',['is_valid_ptr',['../classpmm_1_1PersistMemoryManager.html#a27d4816b2748eeecf20a35c73104784d',1,'pmm::PersistMemoryManager']]],
-  ['iterator_16',['iterator',['../structpmm_1_1pmap_1_1iterator.html#a84228a0b543930cd80f622b8ffd95e59',1,'pmm::pmap::iterator::iterator() noexcept'],['../structpmm_1_1pmap_1_1iterator.html#a1b24462189aca312b07b3a4ab79f3b54',1,'pmm::pmap::iterator::iterator(index_type idx) noexcept'],['../structpmm_1_1pvector_1_1iterator.html#a1a93d1af9b6cf6e5dd6b1a185c90589c',1,'pmm::pvector::iterator::iterator() noexcept'],['../structpmm_1_1pvector_1_1iterator.html#a83350205893038583588d84ac212d5f1',1,'pmm::pvector::iterator::iterator(index_type idx) noexcept']]]
+  ['is_5fvalid_5fptr_15',['is_valid_ptr',['../classpmm_1_1PersistMemoryManager.html#a27d4816b2748eeecf20a35c73104784d',1,'pmm::PersistMemoryManager']]]
 ];

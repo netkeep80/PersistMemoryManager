@@ -145,7 +145,7 @@ Public Attributes</h2></td></tr>
 struct pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</div><p>Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support). All _offset and counter fields use index_type, so LargeDBConfig uses uint64_t indices and DefaultAddressTraits keeps uint32_t with exactly 64 bytes as before. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields). </p>
 <p>Layout for DefaultAddressTraits (uint32_t): magic (8) + total_size (8) + 7×uint32_t + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#abdc1b2c0302cbf107c498e37ca620c70" title="Manager owns buffer (runtime-only)">owns_memory(1)</a> + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a9b82e5962444770066f9be5a66f422c4" title="Reserved padding byte (Issue #176: was prev_owns_memory)">_pad(1)</a> + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a51fef3fead651864410af3bcde223308" title="Issue #83: kGranuleSize at creation time; validated on load.">granule_size(2)</a> + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a73648a0a9110ff96d9880d8fa8a24878" title="Previous buffer size in bytes (runtime-only)">prev_total_size(8)</a> + _reserved[8] = 64 bytes For LargeAddressTraits (uint64_t): sizeof = 16 + 56 + 4*(+4 padding) + 16 = 96 bytes → occupies ceil(96/64) = 2 granules = 128 bytes via kManagerHeaderGranules_t&lt;AT&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00193">193</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00199">199</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="af9a78db8736e1b359bf614e2cbad739c" name="af9a78db8736e1b359bf614e2cbad739c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af9a78db8736e1b359bf614e2cbad739c">&#9670;&#160;</a></span>index_type</h2>
@@ -161,7 +161,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00195">195</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00201">201</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -182,7 +182,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Reserved padding byte (Issue #176: was prev_owns_memory) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00207">207</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00213">213</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -202,7 +202,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Number of allocated blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00202">202</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00208">208</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -222,7 +222,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Total number of blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00200">200</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00206">206</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -242,7 +242,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Issue #43 Phase 2.1: CRC32 checksum of the persisted image. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00210">210</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00216">216</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -262,7 +262,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>First block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00203">203</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00209">209</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -282,7 +282,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Number of free blocks. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00201">201</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00207">207</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -302,7 +302,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Root of AVL tree of free blocks (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00205">205</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00211">211</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -322,7 +322,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Issue #83: kGranuleSize at creation time; validated on load. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00208">208</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00214">214</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -342,7 +342,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>[Issue #57 opt 4] Last block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00204">204</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00210">210</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -362,7 +362,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Manager magic number. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00197">197</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00203">203</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -382,7 +382,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Manager owns buffer (runtime-only) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00206">206</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00212">212</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -402,7 +402,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Previous buffer size in bytes (runtime-only) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00209">209</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00215">215</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -422,7 +422,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Issue #200 Phase 3.7: Root object granule index (no_block = no root set) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00211">211</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00217">217</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -442,7 +442,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Total size of managed area in bytes. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00198">198</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00204">204</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -462,7 +462,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Used size in granules (Issue #59) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00199">199</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00205">205</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>

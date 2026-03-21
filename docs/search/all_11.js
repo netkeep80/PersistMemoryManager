@@ -40,14 +40,15 @@ var searchData=
   ['sizemismatch_37',['SizeMismatch',['../namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1a87c69361ccd090c9c844e19d08432a26',1,'pmm']]],
   ['slot_5fbytes_38',['slot_bytes',['../structpmm_1_1ppool.html#a8b53921f2880b06865a6442dc036422c',1,'pmm::ppool']]],
   ['smalladdresstraits_39',['SmallAddressTraits',['../namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2',1,'pmm']]],
-  ['smallembeddedstaticconfig_40',['SmallEmbeddedStaticConfig',['../structpmm_1_1SmallEmbeddedStaticConfig.html',1,'pmm']]],
+  ['smallembeddedstaticconfig_40',['SmallEmbeddedStaticConfig',['../namespacepmm.html#a96a68a0f555166cd33e2261e8aec95cc',1,'pmm']]],
   ['smallembeddedstaticheap_41',['SmallEmbeddedStaticHeap',['../namespacepmm_1_1presets.html#ade25fcb828ded3abc954f5a7196bf4fd',1,'pmm::presets']]],
   ['smallest_5ffree_42',['smallest_free',['../structpmm_1_1MemoryStats.html#a0ef3c7b4b7385778f7e7874f27444433',1,'pmm::MemoryStats']]],
   ['splittingblock_43',['SplittingBlock',['../classpmm_1_1SplittingBlock.html',1,'pmm']]],
   ['static_5fstorage_2eh_44',['static_storage.h',['../static__storage_8h.html',1,'']]],
-  ['staticstorage_45',['staticstorage',['../classpmm_1_1StaticStorage.html#ac49e4f5931e81a137c30ca0d3d79debf',1,'pmm::StaticStorage::StaticStorage(StaticStorage &amp;&amp;)=delete'],['../classpmm_1_1StaticStorage.html#abddd193aef5b482d840e2e591c4d4464',1,'pmm::StaticStorage::StaticStorage(const StaticStorage &amp;)=delete'],['../classpmm_1_1StaticStorage.html#a159d8a0b5b4b4cfb373ab243a3aaf946',1,'pmm::StaticStorage::StaticStorage() noexcept=default'],['../classpmm_1_1StaticStorage.html',1,'pmm::StaticStorage&lt; Size, AddressTraitsT &gt;']]],
-  ['stderrlogging_46',['StderrLogging',['../structpmm_1_1logging_1_1StderrLogging.html',1,'pmm::logging']]],
-  ['storage_5fbackend_47',['storage_backend',['../structpmm_1_1BasicConfig.html#ae54d665359a0d820ae9fe93b346c9048',1,'pmm::BasicConfig::storage_backend'],['../structpmm_1_1SmallEmbeddedStaticConfig.html#ae3a9a228d6098df8cc40ad5730e16121',1,'pmm::SmallEmbeddedStaticConfig::storage_backend'],['../structpmm_1_1EmbeddedStaticConfig.html#a446ee4f33c478384f99727a095db2c1d',1,'pmm::EmbeddedStaticConfig::storage_backend'],['../classpmm_1_1PersistMemoryManager.html#a21a29f95d2f488d380f006c4187af55f',1,'pmm::PersistMemoryManager::storage_backend']]],
-  ['storage_5fbackend_2eh_48',['storage_backend.h',['../storage__backend_8h.html',1,'']]],
-  ['str_49',['str',['../structpmm_1_1pstringview.html#af26d985e30baf7e996ff428548d4a691',1,'pmm::pstringview']]]
+  ['staticconfig_45',['StaticConfig',['../structpmm_1_1StaticConfig.html',1,'pmm']]],
+  ['staticstorage_46',['staticstorage',['../classpmm_1_1StaticStorage.html#ac49e4f5931e81a137c30ca0d3d79debf',1,'pmm::StaticStorage::StaticStorage(StaticStorage &amp;&amp;)=delete'],['../classpmm_1_1StaticStorage.html#abddd193aef5b482d840e2e591c4d4464',1,'pmm::StaticStorage::StaticStorage(const StaticStorage &amp;)=delete'],['../classpmm_1_1StaticStorage.html#a159d8a0b5b4b4cfb373ab243a3aaf946',1,'pmm::StaticStorage::StaticStorage() noexcept=default'],['../classpmm_1_1StaticStorage.html',1,'pmm::StaticStorage&lt; Size, AddressTraitsT &gt;']]],
+  ['stderrlogging_47',['StderrLogging',['../structpmm_1_1logging_1_1StderrLogging.html',1,'pmm::logging']]],
+  ['storage_5fbackend_48',['storage_backend',['../structpmm_1_1BasicConfig.html#ae54d665359a0d820ae9fe93b346c9048',1,'pmm::BasicConfig::storage_backend'],['../structpmm_1_1StaticConfig.html#a1a5c97ce31768b74c5872b386a022010',1,'pmm::StaticConfig::storage_backend'],['../classpmm_1_1PersistMemoryManager.html#a21a29f95d2f488d380f006c4187af55f',1,'pmm::PersistMemoryManager::storage_backend']]],
+  ['storage_5fbackend_2eh_49',['storage_backend.h',['../storage__backend_8h.html',1,'']]],
+  ['str_50',['str',['../structpmm_1_1pstringview.html#af26d985e30baf7e996ff428548d4a691',1,'pmm::pstringview']]]
 ];

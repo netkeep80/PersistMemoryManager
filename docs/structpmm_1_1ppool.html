@@ -195,14 +195,14 @@ struct pmm::ppool&lt; T, ManagerT &gt;</div><p>Persistent object pool with O(1) 
 <div class="line"> </div>
 <div class="line">Free slots store the granule index of the next free slot in their</div>
 <div class="line">first <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="structpmm_1_1ppool.html#a266c5ab3e49e2860888c739e8b0713b6">index_type</a>) bytes (embedded free-list).</div>
-<div class="ttc" id="astructpmm_1_1ppool_html"><div class="ttname"><a href="structpmm_1_1ppool.html">pmm::ppool</a></div><div class="ttdoc">Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00109">ppool.h:110</a></div></div>
-<div class="ttc" id="astructpmm_1_1ppool_html_a266c5ab3e49e2860888c739e8b0713b6"><div class="ttname"><a href="structpmm_1_1ppool.html#a266c5ab3e49e2860888c739e8b0713b6">pmm::ppool::index_type</a></div><div class="ttdeci">typename ManagerT::index_type index_type</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00114">ppool.h:114</a></div></div>
-<div class="ttc" id="astructpmm_1_1ppool_html_a53b7816ae2d7d7e72cebf4f3606d0dd3"><div class="ttname"><a href="structpmm_1_1ppool.html#a53b7816ae2d7d7e72cebf4f3606d0dd3">pmm::ppool::_total_capacity</a></div><div class="ttdeci">std::uint32_t _total_capacity</div><div class="ttdoc">Total slot count across all chunks.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00136">ppool.h:136</a></div></div>
-<div class="ttc" id="astructpmm_1_1ppool_html_a5bb76745e30e99ebdfc68928ec8a0df7"><div class="ttname"><a href="structpmm_1_1ppool.html#a5bb76745e30e99ebdfc68928ec8a0df7">pmm::ppool::_objects_per_chunk</a></div><div class="ttdeci">std::uint32_t _objects_per_chunk</div><div class="ttdoc">Number of T objects per chunk.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00134">ppool.h:134</a></div></div>
-<div class="ttc" id="astructpmm_1_1ppool_html_a5cbc364da17453e07c91cd1dd4804e3d"><div class="ttname"><a href="structpmm_1_1ppool.html#a5cbc364da17453e07c91cd1dd4804e3d">pmm::ppool::granule_size</a></div><div class="ttdeci">static constexpr std::size_t granule_size</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00117">ppool.h:117</a></div></div>
-<div class="ttc" id="astructpmm_1_1ppool_html_a765989d2882e279b02791d8f4d7ffada"><div class="ttname"><a href="structpmm_1_1ppool.html#a765989d2882e279b02791d8f4d7ffada">pmm::ppool::_total_allocated</a></div><div class="ttdeci">std::uint32_t _total_allocated</div><div class="ttdoc">Number of currently allocated (live) objects.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00135">ppool.h:135</a></div></div>
-<div class="ttc" id="astructpmm_1_1ppool_html_a868c64b67200dbcdce3f658b1401f04c"><div class="ttname"><a href="structpmm_1_1ppool.html#a868c64b67200dbcdce3f658b1401f04c">pmm::ppool::_chunk_head_idx</a></div><div class="ttdeci">index_type _chunk_head_idx</div><div class="ttdoc">Granule index of the first chunk (0 = none).</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00133">ppool.h:133</a></div></div>
-<div class="ttc" id="astructpmm_1_1ppool_html_acdc410e3fbd71eb8f6c61a24b883cbd6"><div class="ttname"><a href="structpmm_1_1ppool.html#acdc410e3fbd71eb8f6c61a24b883cbd6">pmm::ppool::_free_head_idx</a></div><div class="ttdeci">index_type _free_head_idx</div><div class="ttdoc">Granule index of the first free slot (0 = empty).</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00132">ppool.h:132</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html"><div class="ttname"><a href="structpmm_1_1ppool.html">pmm::ppool</a></div><div class="ttdoc">Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00111">ppool.h:112</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html_a266c5ab3e49e2860888c739e8b0713b6"><div class="ttname"><a href="structpmm_1_1ppool.html#a266c5ab3e49e2860888c739e8b0713b6">pmm::ppool::index_type</a></div><div class="ttdeci">typename ManagerT::index_type index_type</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00116">ppool.h:116</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html_a53b7816ae2d7d7e72cebf4f3606d0dd3"><div class="ttname"><a href="structpmm_1_1ppool.html#a53b7816ae2d7d7e72cebf4f3606d0dd3">pmm::ppool::_total_capacity</a></div><div class="ttdeci">std::uint32_t _total_capacity</div><div class="ttdoc">Total slot count across all chunks.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00138">ppool.h:138</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html_a5bb76745e30e99ebdfc68928ec8a0df7"><div class="ttname"><a href="structpmm_1_1ppool.html#a5bb76745e30e99ebdfc68928ec8a0df7">pmm::ppool::_objects_per_chunk</a></div><div class="ttdeci">std::uint32_t _objects_per_chunk</div><div class="ttdoc">Number of T objects per chunk.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00136">ppool.h:136</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html_a5cbc364da17453e07c91cd1dd4804e3d"><div class="ttname"><a href="structpmm_1_1ppool.html#a5cbc364da17453e07c91cd1dd4804e3d">pmm::ppool::granule_size</a></div><div class="ttdeci">static constexpr std::size_t granule_size</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00119">ppool.h:119</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html_a765989d2882e279b02791d8f4d7ffada"><div class="ttname"><a href="structpmm_1_1ppool.html#a765989d2882e279b02791d8f4d7ffada">pmm::ppool::_total_allocated</a></div><div class="ttdeci">std::uint32_t _total_allocated</div><div class="ttdoc">Number of currently allocated (live) objects.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00137">ppool.h:137</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html_a868c64b67200dbcdce3f658b1401f04c"><div class="ttname"><a href="structpmm_1_1ppool.html#a868c64b67200dbcdce3f658b1401f04c">pmm::ppool::_chunk_head_idx</a></div><div class="ttdeci">index_type _chunk_head_idx</div><div class="ttdoc">Granule index of the first chunk (0 = none).</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00135">ppool.h:135</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html_acdc410e3fbd71eb8f6c61a24b883cbd6"><div class="ttname"><a href="structpmm_1_1ppool.html#acdc410e3fbd71eb8f6c61a24b883cbd6">pmm::ppool::_free_head_idx</a></div><div class="ttdeci">index_type _free_head_idx</div><div class="ttdoc">Granule index of the first free slot (0 = empty).</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00134">ppool.h:134</a></div></div>
 </div><!-- fragment --><dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Element type. Must be trivially copyable for PAP persistence. </td></tr>
@@ -211,7 +211,7 @@ struct pmm::ppool&lt; T, ManagerT &gt;</div><p>Persistent object pool with O(1) 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00109">109</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00111">111</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a266c5ab3e49e2860888c739e8b0713b6" name="a266c5ab3e49e2860888c739e8b0713b6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a266c5ab3e49e2860888c739e8b0713b6">&#9670;&#160;</a></span>index_type</h2>
@@ -227,7 +227,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00114">114</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00116">116</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -245,7 +245,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00113">113</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00115">115</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -263,7 +263,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00115">115</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00117">117</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -295,7 +295,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Default constructor — empty pool with default chunk size. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00141">141</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00143">143</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -358,7 +358,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>If the free-list is empty, a new chunk is allocated from the manager. The returned memory is zero-initialized.</p>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to a slot for one T object, or nullptr on allocation failure. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00189">189</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00191">191</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -389,7 +389,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Number of currently allocated (live) objects. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00168">168</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00170">170</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -428,7 +428,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00223">223</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00226">226</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -459,7 +459,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Check if the pool has no allocated objects. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00177">177</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00179">179</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -491,7 +491,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 <p>Free all chunks allocated by this pool. </p>
 <p>All slots (both free and allocated) become invalid after this call. This method MUST be called before destroy_typed(pptr) for correct resource cleanup. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00248">248</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00250">250</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -522,7 +522,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Number of free slots available without allocating a new chunk. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00174">174</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00176">176</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -561,7 +561,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00159">159</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00161">161</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -592,7 +592,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Total slot count across all chunks. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00171">171</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00173">173</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -613,7 +613,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Granule index of the first chunk (0 = none). </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00133">133</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00135">135</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -633,7 +633,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Granule index of the first free slot (0 = empty). </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00132">132</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00134">134</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -653,7 +653,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Number of T objects per chunk. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00134">134</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00136">136</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -673,7 +673,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Number of currently allocated (live) objects. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00135">135</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00137">137</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -693,7 +693,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Total slot count across all chunks. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00136">136</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00138">138</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -721,7 +721,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Default number of objects per chunk. </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00130">130</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00132">132</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -747,7 +747,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00117">117</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00119">119</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -775,7 +775,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Number of granules per slot (rounded up for granule alignment). </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00124">124</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00126">126</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -805,7 +805,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 </div><!-- fragment -->
 <p>Minimum byte size per slot: must hold at least T and an index_type (for free-list link). </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00120">120</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00122">122</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
@@ -833,7 +833,7 @@ template&lt;typename T , typename ManagerT &gt; </div>
 
 <p>Actual slot size in bytes (granule-aligned). </p>
 
-<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00127">127</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ppool_8h_source.html#l00129">129</a> of file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 
 </div>
 </div>
