@@ -324,6 +324,7 @@ template <typename AddressTraitsT> inline typename AddressTraitsT::index_type by
 
 /// @brief Convert bytes to granules (ceiling). Returns 0 on overflow.
 /// @deprecated Use bytes_to_granules_t<DefaultAddressTraits>() or DefaultAddressTraits::bytes_to_granules().
+[[deprecated( "Use bytes_to_granules_t<DefaultAddressTraits>() — will be removed in v1.0" )]]
 inline std::uint32_t bytes_to_granules( std::size_t bytes )
 {
     return bytes_to_granules_t<pmm::DefaultAddressTraits>( bytes );
@@ -331,6 +332,7 @@ inline std::uint32_t bytes_to_granules( std::size_t bytes )
 
 /// @brief Convert granules to bytes.
 /// @deprecated Use DefaultAddressTraits::granules_to_bytes() for new code.
+[[deprecated( "Use DefaultAddressTraits::granules_to_bytes() — will be removed in v1.0" )]]
 inline std::size_t granules_to_bytes( std::uint32_t granules )
 {
     return pmm::DefaultAddressTraits::granules_to_bytes( granules );
@@ -338,6 +340,7 @@ inline std::size_t granules_to_bytes( std::uint32_t granules )
 
 /// @brief Get byte offset from granule index.
 /// @deprecated Use DefaultAddressTraits::idx_to_byte_off() for new code.
+[[deprecated( "Use DefaultAddressTraits::idx_to_byte_off() — will be removed in v1.0" )]]
 inline std::size_t idx_to_byte_off( std::uint32_t idx )
 {
     return pmm::DefaultAddressTraits::idx_to_byte_off( idx );
@@ -345,6 +348,7 @@ inline std::size_t idx_to_byte_off( std::uint32_t idx )
 
 /// @brief Get granule index from byte offset (must be multiple of kGranuleSize).
 /// @deprecated Use byte_off_to_idx_t<DefaultAddressTraits>() for new code.
+[[deprecated( "Use byte_off_to_idx_t<DefaultAddressTraits>() — will be removed in v1.0" )]]
 inline std::uint32_t byte_off_to_idx( std::size_t byte_off )
 {
     return byte_off_to_idx_t<pmm::DefaultAddressTraits>( byte_off );
@@ -464,14 +468,16 @@ inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader<pmm::D
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     if ( idx == kNoBlock )
         return false;
-    if ( idx_to_byte_off( idx ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) > hdr->total_size )
+    if ( idx_to_byte_off_t<pmm::DefaultAddressTraits>( idx ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) >
+         hdr->total_size )
         return false;
 
-    const void*   blk        = base + idx_to_byte_off( idx );
-    auto          next_off   = BlockState::get_next_offset( blk );
-    std::uint32_t total_gran = ( next_off != kNoBlock )
-                                   ? ( next_off - idx )
-                                   : ( byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - idx );
+    const void*   blk      = base + idx_to_byte_off_t<pmm::DefaultAddressTraits>( idx );
+    auto          next_off = BlockState::get_next_offset( blk );
+    std::uint32_t total_gran =
+        ( next_off != kNoBlock )
+            ? ( next_off - idx )
+            : ( byte_off_to_idx_t<pmm::DefaultAddressTraits>( static_cast<std::size_t>( hdr->total_size ) ) - idx );
     if ( BlockState::get_weight( blk ) >= total_gran )
         return false;
     auto prev_off = BlockState::get_prev_offset( blk );
@@ -555,9 +561,10 @@ inline pmm::Block<AddressTraitsT>* header_from_ptr_t( std::uint8_t* base, void* 
 
 /// @brief Minimum block granules for user_bytes (header + data, minimum 1 data granule).
 /// @deprecated Use required_block_granules_t<DefaultAddressTraits>() for new code.
+[[deprecated( "Use required_block_granules_t<DefaultAddressTraits>() — will be removed in v1.0" )]]
 inline std::uint32_t required_block_granules( std::size_t user_bytes )
 {
-    std::uint32_t data_granules = bytes_to_granules( user_bytes );
+    std::uint32_t data_granules = bytes_to_granules_t<pmm::DefaultAddressTraits>( user_bytes );
     if ( data_granules == 0 )
         data_granules = 1;
     return kBlockHeaderGranules_t<pmm::DefaultAddressTraits> + data_granules;

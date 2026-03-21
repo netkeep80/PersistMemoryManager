@@ -214,8 +214,8 @@ TEST_CASE( "on_expand hook", "[test_issue202_logging_hooks]" )
     MgrLogExpand::create( 256 );
     TestHookCounters::reset();
 
-    // Allocate enough to trigger expansion.
-    void* p = MgrLogExpand::allocate( 512 );
+    // Allocate enough to trigger expansion (must exceed HeapStorage initial minimum).
+    void* p = MgrLogExpand::allocate( 8192 );
     REQUIRE( p != nullptr );
     REQUIRE( TestHookCounters::expand_count >= 1 );
     REQUIRE( TestHookCounters::last_expand_new > TestHookCounters::last_expand_old );

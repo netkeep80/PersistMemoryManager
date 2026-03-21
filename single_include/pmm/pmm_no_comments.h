@@ -876,21 +876,25 @@ template <typename AddressTraitsT> inline typename AddressTraitsT::index_type by
     return static_cast<IndexT>( byte_off / AddressTraitsT::granule_size );
 }
 
+[[deprecated( "Use bytes_to_granules_t<DefaultAddressTraits>() — will be removed in v1.0" )]]
 inline std::uint32_t bytes_to_granules( std::size_t bytes )
 {
     return bytes_to_granules_t<pmm::DefaultAddressTraits>( bytes );
 }
 
+[[deprecated( "Use DefaultAddressTraits::granules_to_bytes() — will be removed in v1.0" )]]
 inline std::size_t granules_to_bytes( std::uint32_t granules )
 {
     return pmm::DefaultAddressTraits::granules_to_bytes( granules );
 }
 
+[[deprecated( "Use DefaultAddressTraits::idx_to_byte_off() — will be removed in v1.0" )]]
 inline std::size_t idx_to_byte_off( std::uint32_t idx )
 {
     return pmm::DefaultAddressTraits::idx_to_byte_off( idx );
 }
 
+[[deprecated( "Use byte_off_to_idx_t<DefaultAddressTraits>() — will be removed in v1.0" )]]
 inline std::uint32_t byte_off_to_idx( std::size_t byte_off )
 {
     return byte_off_to_idx_t<pmm::DefaultAddressTraits>( byte_off );
@@ -980,14 +984,16 @@ inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader<pmm::D
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
     if ( idx == kNoBlock )
         return false;
-    if ( idx_to_byte_off( idx ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) > hdr->total_size )
+    if ( idx_to_byte_off_t<pmm::DefaultAddressTraits>( idx ) + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) >
+         hdr->total_size )
         return false;
 
-    const void*   blk        = base + idx_to_byte_off( idx );
-    auto          next_off   = BlockState::get_next_offset( blk );
-    std::uint32_t total_gran = ( next_off != kNoBlock )
-                                   ? ( next_off - idx )
-                                   : ( byte_off_to_idx( static_cast<std::size_t>( hdr->total_size ) ) - idx );
+    const void*   blk      = base + idx_to_byte_off_t<pmm::DefaultAddressTraits>( idx );
+    auto          next_off = BlockState::get_next_offset( blk );
+    std::uint32_t total_gran =
+        ( next_off != kNoBlock )
+            ? ( next_off - idx )
+            : ( byte_off_to_idx_t<pmm::DefaultAddressTraits>( static_cast<std::size_t>( hdr->total_size ) ) - idx );
     if ( BlockState::get_weight( blk ) >= total_gran )
         return false;
     auto prev_off = BlockState::get_prev_offset( blk );
@@ -1059,9 +1065,10 @@ inline pmm::Block<AddressTraitsT>* header_from_ptr_t( std::uint8_t* base, void* 
     return reinterpret_cast<pmm::Block<AddressTraitsT>*>( cand_addr );
 }
 
+[[deprecated( "Use required_block_granules_t<DefaultAddressTraits>() — will be removed in v1.0" )]]
 inline std::uint32_t required_block_granules( std::size_t user_bytes )
 {
-    std::uint32_t data_granules = bytes_to_granules( user_bytes );
+    std::uint32_t data_granules = bytes_to_granules_t<pmm::DefaultAddressTraits>( user_bytes );
     if ( data_granules == 0 )
         data_granules = 1;
     return kBlockHeaderGranules_t<pmm::DefaultAddressTraits> + data_granules;
@@ -1840,7 +1847,9 @@ template <typename AddressTraitsT = DefaultAddressTraits> class HeapStorage
         if ( additional_bytes == 0 )
             return _size > 0;
         
-        std::size_t growth   = ( _size > 0 ) ? ( _size / 4 + additional_bytes ) : additional_bytes;
+        static constexpr std::size_t kMinInitialSize = 4096;
+        std::size_t                  growth =
+            ( _size > 0 ) ? ( _size / 4 + additional_bytes ) : std::max( additional_bytes, kMinInitialSize );
         std::size_t new_size = _size + growth;
         
         new_size = ( ( new_size + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size ) *
@@ -3568,6 +3577,91 @@ template <typename ManagerT> struct pstringview
 
 } 
 
+#include <type_traits>
+#include <utility>
+
+namespace pmm
+{
+
+template <typename T>
+concept HasFreeData = requires( T& t ) {
+    { t.free_data() } noexcept;
+};
+
+template <typename T>
+concept HasFreeAll = requires( T& t ) {
+    { t.free_all() } noexcept;
+};
+
+template <typename T>
+concept HasPersistentCleanup = HasFreeData<T> || HasFreeAll<T>;
+
+template <typename T, typename ManagerT> class typed_guard
+{
+  public:
+    using pptr_type = typename ManagerT::template pptr<T>;
+
+    explicit typed_guard( pptr_type p ) noexcept : _ptr( p ) {}
+
+    typed_guard() noexcept = default;
+
+    typed_guard( const typed_guard& )            = delete;
+    typed_guard& operator=( const typed_guard& ) = delete;
+
+    typed_guard( typed_guard&& other ) noexcept : _ptr( other._ptr ) { other._ptr = pptr_type(); }
+
+    typed_guard& operator=( typed_guard&& other ) noexcept
+    {
+        if ( this != &other )
+        {
+            reset();
+            _ptr       = other._ptr;
+            other._ptr = pptr_type();
+        }
+        return *this;
+    }
+
+    ~typed_guard() { reset(); }
+
+    void reset() noexcept
+    {
+        if ( !_ptr.is_null() )
+        {
+            cleanup( *_ptr );
+            ManagerT::destroy_typed( _ptr );
+            _ptr = pptr_type();
+        }
+    }
+
+    pptr_type release() noexcept
+    {
+        pptr_type p = _ptr;
+        _ptr        = pptr_type();
+        return p;
+    }
+
+    T* operator->() const noexcept { return &( *_ptr ); }
+    T& operator*() const noexcept { return *_ptr; }
+
+    pptr_type get() const noexcept { return _ptr; }
+
+    explicit operator bool() const noexcept { return !_ptr.is_null(); }
+
+  private:
+    pptr_type _ptr;
+
+    static void cleanup( T& obj ) noexcept
+    {
+        if constexpr ( HasFreeData<T> )
+            obj.free_data();
+        else if constexpr ( HasFreeAll<T> )
+            obj.free_all();
+        
+    }
+};
+
+} 
+
 #include <atomic>
 #include <cassert>
 #include <cstddef>
@@ -4032,6 +4126,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
         reinterpret_cast<T*>( raw )->~T();
         deallocate( raw );
+    }
+
+    template <typename T, typename... Args> static typed_guard<T, PersistMemoryManager> make_guard( Args&&... args )
+    {
+        return typed_guard<T, PersistMemoryManager>( create_typed<T>( static_cast<Args&&>( args )... ) );
     }
 
     template <typename T> static T* resolve( pptr<T> p ) noexcept

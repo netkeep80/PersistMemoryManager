@@ -43,6 +43,11 @@ jobs:
         run: sudo apt-get install -y cppcheck
 
       - name: Run cppcheck
+        # Issue #235: suppression rationale:
+        #   missingIncludeSystem  — system headers not shipped with the repo
+        #   unmatchedSuppression  — keeps CI green when cppcheck version changes
+        #   throwInNoexceptFunction — Catch2 REQUIRE macros may throw in noexcept test wrappers
+        #   uninitMemberVarPrivate — false positive on in-class member initializers (C++20)
         run: |
           cppcheck \
             --enable=warning,performance \
@@ -162,6 +167,53 @@ jobs:
         with:
           files: coverage.info
           fail_ci_if_error: false
+
+  # ─── Sanitizer builds (Issue #235: ASan+UBSan, TSan) ────────────────────────
+  sanitizers:
+    name: ${{ matrix.sanitizer }} / ${{ matrix.compiler }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+            sanitizer: ASan+UBSan
+            cmake_flags: "-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
+          - os: ubuntu-latest
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            sanitizer: ASan+UBSan
+            cmake_flags: "-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
+          - os: ubuntu-latest
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            sanitizer: TSan
+            cmake_flags: "-fsanitize=thread -fno-omit-frame-pointer"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=${{ matrix.cc }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+            -DCMAKE_CXX_FLAGS="${{ matrix.cmake_flags }}" \
+            -DCMAKE_C_FLAGS="${{ matrix.cmake_flags }}" \
+            -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.cmake_flags }}"
+
+      - name: Build
+        run: cmake --build build --config Debug
+
+      - name: Test
+        run: ctest --test-dir build --build-config Debug --output-on-failure
 
   # ─── Single-header freshness check ──────────────────────────────────────────
   single-headers:

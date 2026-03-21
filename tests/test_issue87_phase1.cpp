@@ -1,3 +1,12 @@
+// Issue #235: suppress deprecation warnings — this test deliberately exercises deprecated functions.
+#if defined( __GNUC__ ) || defined( __clang__ )
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined( _MSC_VER )
+#pragma warning( push )
+#pragma warning( disable : 4996 )
+#endif
+
 /**
  * @file test_issue87_phase1.cpp
  * @brief Тесты Phase 1: AddressTraits<IndexType, GranuleSize> (Issue #87).
@@ -237,3 +246,10 @@ TEST_CASE( "P1-F: Various power-of-2 granule sizes (1, 4, 32, 512)", "[test_issu
 // =============================================================================
 // main
 // =============================================================================
+
+// Issue #235: restore deprecation warnings
+#if defined( __GNUC__ ) || defined( __clang__ )
+#pragma GCC diagnostic pop
+#elif defined( _MSC_VER )
+#pragma warning( pop )
+#endif

@@ -121,9 +121,12 @@ template <typename AddressTraitsT = DefaultAddressTraits> class HeapStorage
     {
         if ( additional_bytes == 0 )
             return _size > 0;
-        // Grow by 25% or by additional_bytes, whichever is larger
-        // Handle initial allocation from zero (_size == 0)
-        std::size_t growth   = ( _size > 0 ) ? ( _size / 4 + additional_bytes ) : additional_bytes;
+        // Grow by 25% or by additional_bytes, whichever is larger.
+        // Issue #235: for initial allocation from zero, use a minimum of 4096 bytes
+        // (or additional_bytes if larger) to avoid inefficient tiny allocations.
+        static constexpr std::size_t kMinInitialSize = 4096;
+        std::size_t                  growth =
+            ( _size > 0 ) ? ( _size / 4 + additional_bytes ) : std::max( additional_bytes, kMinInitialSize );
         std::size_t new_size = _size + growth;
         // Align to granule_size
         new_size = ( ( new_size + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size ) *
