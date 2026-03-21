@@ -52,6 +52,8 @@
 
 #pragma once
 
+#include "pmm/types.h"
+
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -195,9 +197,10 @@ template <typename T, typename ManagerT> struct ppool
                 return nullptr;
         }
 
-        // Pop from free-list.
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
-        std::uint8_t* slot_raw = base + static_cast<std::size_t>( _free_head_idx ) * granule_size;
+        // Pop from free-list (Issue #188: shared resolve_granule_ptr).
+        std::uint8_t* slot_raw =
+            reinterpret_cast<std::uint8_t*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+                ManagerT::backend().base_ptr(), _free_head_idx ) );
 
         // Read the next free index from the slot.
         index_type next_free;
@@ -225,12 +228,11 @@ template <typename T, typename ManagerT> struct ppool
         if ( ptr == nullptr )
             return;
 
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
         std::uint8_t* slot_raw = reinterpret_cast<std::uint8_t*>( ptr );
 
-        // Compute the granule index of this slot.
-        std::size_t byte_off = static_cast<std::size_t>( slot_raw - base );
-        index_type  slot_idx = static_cast<index_type>( byte_off / granule_size );
+        // Compute the granule index of this slot (Issue #188: shared ptr_to_granule_idx).
+        index_type slot_idx =
+            detail::ptr_to_granule_idx<typename ManagerT::address_traits>( ManagerT::backend().base_ptr(), slot_raw );
 
         // Push onto free-list: store current free_head in the slot.
         std::memcpy( slot_raw, &_free_head_idx, sizeof( index_type ) );
@@ -247,13 +249,13 @@ template <typename T, typename ManagerT> struct ppool
      */
     void free_all() noexcept
     {
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-
-        // Walk the chunk list and deallocate each chunk.
-        index_type chunk_idx = _chunk_head_idx;
+        // Walk the chunk list and deallocate each chunk (Issue #188: shared resolve_granule_ptr).
+        std::uint8_t* base      = ManagerT::backend().base_ptr();
+        index_type    chunk_idx = _chunk_head_idx;
         while ( chunk_idx != static_cast<index_type>( 0 ) )
         {
-            std::uint8_t* chunk_raw = base + static_cast<std::size_t>( chunk_idx ) * granule_size;
+            std::uint8_t* chunk_raw = reinterpret_cast<std::uint8_t*>(
+                detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, chunk_idx ) );
 
             // Read the next chunk index from the chunk header.
             index_type next_chunk;
@@ -303,9 +305,8 @@ template <typename T, typename ManagerT> struct ppool
         std::uint8_t* chunk_raw = static_cast<std::uint8_t*>( raw );
         std::uint8_t* base      = ManagerT::backend().base_ptr();
 
-        // Compute chunk granule index.
-        std::size_t chunk_byte_off = static_cast<std::size_t>( chunk_raw - base );
-        index_type  chunk_idx      = static_cast<index_type>( chunk_byte_off / granule_size );
+        // Compute chunk granule index (Issue #188: shared ptr_to_granule_idx).
+        index_type chunk_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, chunk_raw );
 
         // Write chunk header: link to previous chunk head.
         // Zero the full header granule first, then write the index.
@@ -319,9 +320,8 @@ template <typename T, typename ManagerT> struct ppool
 
         for ( std::size_t i = 0; i < n_objects; ++i )
         {
-            std::uint8_t* slot          = slots_start + i * slot_bytes;
-            std::size_t   slot_byte_off = static_cast<std::size_t>( slot - base );
-            index_type    slot_idx      = static_cast<index_type>( slot_byte_off / granule_size );
+            std::uint8_t* slot     = slots_start + i * slot_bytes;
+            index_type    slot_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, slot );
 
             // Store current free_head in the slot (push onto free-list).
             std::memset( slot, 0, slot_bytes );

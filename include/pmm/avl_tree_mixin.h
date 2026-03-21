@@ -19,14 +19,28 @@
  *   - offset()
  *   - PPtr::manager_type::address_traits::no_block sentinel
  *
+ * Also provides BlockPPtr<AddressTraitsT> — a lightweight adapter that wraps
+ * raw (base_ptr, index) pairs and delegates to BlockStateBase<AT> static methods,
+ * enabling AvlFreeTree to reuse the shared AVL operations instead of maintaining
+ * its own duplicate rotation/rebalancing code (Issue #188).
+ *
+ * Additionally provides AvlInorderIterator<NodePPtr> — a shared in-order
+ * iterator template used by both pmap and pvector (Issue #188).
+ *
  * @see pmap.h — pmap<_K,_V,ManagerT> (Issue #153)
  * @see pstringview.h — pstringview<ManagerT> (Issue #151)
  * @see pvector.h — pvector<T,ManagerT> (Issue #186, #188)
- * @version 0.4 (Issue #188 — NodeUpdateFn hook, avl_remove, avl_min_node for pvector deduplication)
+ * @see free_block_tree.h — AvlFreeTree<AT> uses BlockPPtr adapter (Issue #188)
+ * @version 0.5 (Issue #188 — BlockPPtr adapter for free_block_tree, AvlInorderIterator)
  */
 
 #pragma once
 
+#include "pmm/block.h"
+#include "pmm/block_state.h"
+#include "pmm/types.h"
+
+#include <cstddef>
 #include <cstdint>
 
 namespace pmm
@@ -42,25 +56,32 @@ template <typename PPtr> static constexpr auto pptr_no_block() noexcept
     return PPtr::manager_type::address_traits::no_block;
 }
 
+/// @brief Construct a sibling PPtr from an existing one with a different index.
+/// For regular pptr, returns PPtr(idx). For BlockPPtr, propagates base_ptr.
+template <typename PPtr> static PPtr pptr_make( PPtr /*source*/, typename PPtr::index_type idx ) noexcept
+{
+    return PPtr( idx );
+}
+
 /// @brief Get left child as PPtr (translates no_block sentinel to null PPtr).
 template <typename PPtr> static PPtr pptr_get_left( PPtr p ) noexcept
 {
     auto idx = p.tree_node().get_left();
-    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : PPtr( idx );
+    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : pptr_make( p, idx );
 }
 
 /// @brief Get right child as PPtr (translates no_block sentinel to null PPtr).
 template <typename PPtr> static PPtr pptr_get_right( PPtr p ) noexcept
 {
     auto idx = p.tree_node().get_right();
-    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : PPtr( idx );
+    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : pptr_make( p, idx );
 }
 
 /// @brief Get parent as PPtr (translates no_block sentinel to null PPtr).
 template <typename PPtr> static PPtr pptr_get_parent( PPtr p ) noexcept
 {
     auto idx = p.tree_node().get_parent();
-    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : PPtr( idx );
+    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : pptr_make( p, idx );
 }
 
 /// @brief Set left child from PPtr (translates null PPtr to no_block sentinel).
@@ -380,6 +401,66 @@ static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way,
     return PPtr(); // not found
 }
 
+/// @brief In-order successor: next node in sorted order (Issue #188 deduplication).
+/// Shared between pvector::iterator and pmap::iterator — eliminates ~50 lines of duplication.
+template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
+{
+    if ( cur.is_null() )
+        return PPtr();
+
+    // If there is a right child, go to its leftmost node.
+    PPtr right = pptr_get_right( cur );
+    if ( !right.is_null() )
+        return avl_min_node( right );
+
+    // Otherwise, go up until we come from a left child.
+    while ( true )
+    {
+        PPtr parent = pptr_get_parent( cur );
+        if ( parent.is_null() )
+            return PPtr(); // reached root from right — end of traversal
+        PPtr parent_left = pptr_get_left( parent );
+        if ( !parent_left.is_null() && parent_left.offset() == cur.offset() )
+            return parent; // cur was left child — parent is successor
+        cur = parent;
+    }
+}
+
+/// @brief Initialize AVL tree node fields to empty state (Issue #188 deduplication).
+/// Sets left, right, parent to sentinel and height to 1.
+/// Shared between pvector::push_back, pmap::insert, pstringview::_intern.
+template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
+{
+    auto& tn = p.tree_node();
+    tn.set_left( pptr_no_block<PPtr>() );
+    tn.set_right( pptr_no_block<PPtr>() );
+    tn.set_parent( pptr_no_block<PPtr>() );
+    tn.set_height( static_cast<std::int16_t>( 1 ) );
+}
+
+/// @brief Count nodes in subtree rooted at p (Issue #188 deduplication).
+/// Shared between pmap::size() and any other container that needs subtree counting.
+template <typename PPtr> static std::size_t avl_subtree_count( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return 0;
+    return 1 + avl_subtree_count( pptr_get_left( p ) ) + avl_subtree_count( pptr_get_right( p ) );
+}
+
+/// @brief Recursively deallocate all nodes in subtree (Issue #188 deduplication).
+/// @tparam PPtr   Persistent pointer type.
+/// @tparam DeallocFn  Callable(PPtr) that deallocates a single node.
+template <typename PPtr, typename DeallocFn> static void avl_clear_subtree( PPtr p, DeallocFn&& dealloc ) noexcept
+{
+    if ( p.is_null() )
+        return;
+    PPtr left_p  = pptr_get_left( p );
+    PPtr right_p = pptr_get_right( p );
+    avl_clear_subtree( left_p, dealloc );
+    avl_clear_subtree( right_p, dealloc );
+    dealloc( p );
+}
+
 /// @brief Insert new_node into the AVL tree with the given root.
 /// The caller must resolve the comparison ordering via go_left callback.
 /// @param new_node    The node to insert (must not be null, not already in tree).
@@ -432,6 +513,137 @@ static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, 
 
     avl_rebalance_up( parent, root_idx, update_node );
 }
+
+// ─── BlockPPtr: adapter for free_block_tree to reuse shared AVL operations ───
+
+/**
+ * @brief Fake "manager type" that provides address_traits for BlockPPtr (Issue #188).
+ *
+ * BlockPPtr needs PPtr::manager_type::address_traits::no_block for the sentinel.
+ * This minimal struct provides exactly that, without coupling to a real manager.
+ */
+template <typename AddressTraitsT> struct BlockPPtrManagerTag
+{
+    using address_traits = AddressTraitsT;
+};
+
+/**
+ * @brief Proxy object returned by BlockPPtr::tree_node() (Issue #188).
+ *
+ * Wraps a raw void* block pointer and delegates get/set calls to
+ * BlockStateBase<AT> static methods, matching the TreeNode interface
+ * expected by avl_tree_mixin functions.
+ */
+template <typename AddressTraitsT> struct BlockTreeNodeProxy
+{
+    using index_type = typename AddressTraitsT::index_type;
+    void* _blk;
+
+    explicit BlockTreeNodeProxy( void* blk ) noexcept : _blk( blk ) {}
+
+    index_type   get_left() const noexcept { return BlockStateBase<AddressTraitsT>::get_left_offset( _blk ); }
+    index_type   get_right() const noexcept { return BlockStateBase<AddressTraitsT>::get_right_offset( _blk ); }
+    index_type   get_parent() const noexcept { return BlockStateBase<AddressTraitsT>::get_parent_offset( _blk ); }
+    std::int16_t get_height() const noexcept { return BlockStateBase<AddressTraitsT>::get_avl_height( _blk ); }
+
+    void set_left( index_type v ) noexcept { BlockStateBase<AddressTraitsT>::set_left_offset_of( _blk, v ); }
+    void set_right( index_type v ) noexcept { BlockStateBase<AddressTraitsT>::set_right_offset_of( _blk, v ); }
+    void set_parent( index_type v ) noexcept { BlockStateBase<AddressTraitsT>::set_parent_offset_of( _blk, v ); }
+    void set_height( std::int16_t v ) noexcept { BlockStateBase<AddressTraitsT>::set_avl_height_of( _blk, v ); }
+};
+
+/**
+ * @brief Lightweight adapter making (base_ptr, block_index) behave like PPtr (Issue #188).
+ *
+ * Enables AvlFreeTree to delegate rotation, rebalancing, and min_node operations
+ * to the shared AVL functions in avl_tree_mixin.h, eliminating ~120 lines of
+ * duplicate code from free_block_tree.h.
+ *
+ * Satisfies the PPtr concept expected by avl_tree_mixin functions:
+ *   - is_null(), offset(), tree_node(), operator==
+ *   - manager_type::address_traits::no_block sentinel
+ *   - Default and index-based construction
+ *
+ * @tparam AddressTraitsT  Address space traits (e.g. DefaultAddressTraits).
+ */
+template <typename AddressTraitsT> struct BlockPPtr
+{
+    using manager_type = BlockPPtrManagerTag<AddressTraitsT>;
+    using index_type   = typename AddressTraitsT::index_type;
+
+    std::uint8_t* _base;
+    index_type    _idx;
+
+    /// Null construction.
+    BlockPPtr() noexcept : _base( nullptr ), _idx( AddressTraitsT::no_block ) {}
+
+    /// Construct from base pointer and block index.
+    BlockPPtr( std::uint8_t* base, index_type idx ) noexcept : _base( base ), _idx( idx ) {}
+
+    bool       is_null() const noexcept { return _idx == AddressTraitsT::no_block; }
+    index_type offset() const noexcept { return _idx; }
+
+    bool operator==( const BlockPPtr& other ) const noexcept { return _idx == other._idx; }
+    bool operator!=( const BlockPPtr& other ) const noexcept { return _idx != other._idx; }
+
+    /// Returns a proxy that delegates TreeNode-like get/set calls to BlockStateBase.
+    BlockTreeNodeProxy<AddressTraitsT> tree_node() const noexcept
+    {
+        return BlockTreeNodeProxy<AddressTraitsT>( block_at<AddressTraitsT>( _base, _idx ) );
+    }
+};
+
+/// @brief pptr_make overload for BlockPPtr: propagates base_ptr from source to new index.
+template <typename AddressTraitsT>
+static BlockPPtr<AddressTraitsT> pptr_make( BlockPPtr<AddressTraitsT>           source,
+                                            typename AddressTraitsT::index_type idx ) noexcept
+{
+    return BlockPPtr<AddressTraitsT>( source._base, idx );
+}
+
+// ─── AvlInorderIterator: shared in-order iterator for pmap and pvector ───────
+
+/**
+ * @brief Shared in-order AVL tree iterator template (Issue #188).
+ *
+ * Eliminates identical iterator structs in pmap and pvector (~35 lines each).
+ * Both containers can use this template directly or as a base.
+ *
+ * @tparam NodePPtr  Persistent pointer type to tree nodes (e.g. pptr<node_type, ManagerT>).
+ */
+template <typename NodePPtr> struct AvlInorderIterator
+{
+    using index_type = typename NodePPtr::index_type;
+    using value_type = typename NodePPtr::element_type;
+    using pointer    = NodePPtr;
+
+    static constexpr index_type no_block = NodePPtr::manager_type::address_traits::no_block;
+
+    index_type _current_idx;
+
+    AvlInorderIterator() noexcept : _current_idx( static_cast<index_type>( 0 ) ) {}
+    explicit AvlInorderIterator( index_type idx ) noexcept : _current_idx( idx ) {}
+
+    bool operator==( const AvlInorderIterator& other ) const noexcept { return _current_idx == other._current_idx; }
+    bool operator!=( const AvlInorderIterator& other ) const noexcept { return _current_idx != other._current_idx; }
+
+    NodePPtr operator*() const noexcept
+    {
+        if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
+            return NodePPtr();
+        return NodePPtr( _current_idx );
+    }
+
+    AvlInorderIterator& operator++() noexcept
+    {
+        if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
+            return *this;
+
+        NodePPtr next = avl_inorder_successor( NodePPtr( _current_idx ) );
+        _current_idx  = next.is_null() ? static_cast<index_type>( 0 ) : next.offset();
+        return *this;
+    }
+};
 
 /// @endcond
 

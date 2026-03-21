@@ -24,8 +24,8 @@ coexist through the `InstanceId` template parameter (multiton pattern).
 │  pstringview<ManagerT> / pmap<_K,_V,ManagerT>                        │
 ├───────────────────────────────────────────────────────────────────────┤
 │  avl_tree_mixin.h (detail::avl_*)                                     │
-│  (shared AVL helpers: height, balance, rotate, rebalance, insert)     │
-│  used by both pmap and pstringview                                    │
+│  (shared AVL: rotate, rebalance, insert, remove, find, iterators)    │
+│  used by pmap, pstringview, pvector, AvlFreeTree (via BlockPPtr)     │
 ├───────────────────────────────────────────────────────────────────────┤
 │  AllocatorPolicy<FreeBlockTreeT, AddressTraitsT>                      │
 │  (best-fit via AVL tree, splitting, coalescing,                       │
@@ -302,19 +302,58 @@ pmap::_root_idx
 
 ### Shared AVL operations (`avl_tree_mixin.h`)
 
-Both `pstringview` and `pmap` share the same AVL implementation via free template
-functions in `pmm::detail`:
+All persistent containers (`pstringview`, `pmap`, `pvector`) and the free block tree
+(`AvlFreeTree`) share a single AVL implementation via free template functions in
+`pmm::detail`. This eliminates ~250 lines of previously duplicated code through
+C++ template metaprogramming (Issue #188).
+
+#### Core AVL functions
 
 - `avl_height(p)` — get height (0 if null)
 - `avl_update_height(p)` — recompute height from children
 - `avl_balance_factor(p)` — `height(left) - height(right)`
-- `avl_rotate_right(y, root_idx)` — right rotation
-- `avl_rotate_left(x, root_idx)` — left rotation
-- `avl_rebalance_up(p, root_idx)` — walk up the tree, fixing balance
-- `avl_insert(new_node, root_idx, go_left, resolve)` — insert and rebalance
+- `avl_rotate_right(y, root_idx, update_node)` — right rotation with custom node update
+- `avl_rotate_left(x, root_idx, update_node)` — left rotation with custom node update
+- `avl_rebalance_up(p, root_idx, update_node)` — walk up the tree, fixing balance
+- `avl_insert(new_node, root_idx, go_left, resolve, update_node)` — insert and rebalance
+- `avl_remove(target, root_idx, update_node)` — BST removal with in-order successor
+- `avl_find(root_idx, compare_three_way, resolve)` — generic search with custom comparison
+- `avl_min_node(p)` / `avl_max_node(p)` — subtree min/max
+- `avl_inorder_successor(cur)` — next node in sorted order
+- `avl_init_node(p)` — initialize node (left/right/parent = `no_block` sentinel, height = 1)
+- `avl_subtree_count(p)` — recursive subtree size
+- `avl_clear_subtree(p, dealloc)` — recursive deallocation with custom callback
 
 All functions are parameterized by `PPtr` (the persistent pointer type) and `IndexType`,
 making them usable with any `pptr<T, ManagerT>` specialization.
+
+#### Custom node update callbacks (`NodeUpdateFn`)
+
+All rotation and rebalancing functions accept an optional `NodeUpdateFn` callback
+invoked after structural changes. This enables different containers to maintain
+different node invariants:
+
+- **`pmap`, `pstringview`**: use default `AvlUpdateHeightOnly` (height field only)
+- **`pvector`**: uses `PvectorNodeUpdateFn` that updates both height **and** the
+  order-statistic weight field (subtree size), enabling O(log n) indexed access
+- **`AvlFreeTree`**: uses `AvlUpdateHeightOnly` via `BlockPPtr` adapter
+
+#### `BlockPPtr<AT>` adapter (for free block tree)
+
+`BlockPPtr<AddressTraitsT>` is a lightweight adapter wrapping raw `(base_ptr, block_index)`
+pairs, making them behave like `pptr` for the shared AVL functions. This enables
+`AvlFreeTree` to reuse shared rotation, rebalancing, and min_node operations instead
+of maintaining ~120 lines of duplicate code.
+
+- `BlockPPtrManagerTag<AT>` — provides `address_traits` for template resolution
+- `BlockTreeNodeProxy<AT>` — proxy for `TreeNode`-like interface, delegating to `BlockStateBase`
+- `pptr_make(BlockPPtr, idx)` — specialization propagating `base_ptr`
+
+#### `AvlInorderIterator<NodePPtr>`
+
+A shared in-order AVL tree iterator template that replaces identical iterator structs
+previously duplicated in `pmap` and `pvector`. Provides `operator*`, `operator++`
+(via `avl_inorder_successor`), and comparison operators.
 
 ---
 

@@ -161,13 +161,9 @@ template <typename T, typename ManagerT> struct pvector
 
         obj->value = val;
 
-        // Инициализируем поля нового узла.
-        auto& tn = new_node.tree_node();
-        tn.set_left( no_block );
-        tn.set_right( no_block );
-        tn.set_parent( no_block );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
-        tn.set_weight( static_cast<index_type>( 1 ) ); // поддерево размером 1
+        // Инициализируем поля нового узла (Issue #188: shared avl_init_node).
+        detail::avl_init_node( new_node );
+        new_node.tree_node().set_weight( static_cast<index_type>( 1 ) ); // поддерево размером 1
 
         _avl_insert_rightmost( new_node );
 
@@ -203,16 +199,7 @@ template <typename T, typename ManagerT> struct pvector
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return node_pptr();
-        // Самый левый узел
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto left_idx = cur.tree_node().get_left();
-            if ( left_idx == no_block )
-                break;
-            cur = node_pptr( left_idx );
-        }
-        return cur;
+        return detail::avl_min_node( node_pptr( _root_idx ) );
     }
 
     /**
@@ -224,16 +211,7 @@ template <typename T, typename ManagerT> struct pvector
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return node_pptr();
-        // Самый правый узел
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx == no_block )
-                break;
-            cur = node_pptr( right_idx );
-        }
-        return cur;
+        return detail::avl_max_node( node_pptr( _root_idx ) );
     }
 
     /**
@@ -248,15 +226,8 @@ template <typename T, typename ManagerT> struct pvector
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return false;
 
-        // Находим крайний правый узел.
-        node_pptr target( _root_idx );
-        while ( true )
-        {
-            auto right_idx = target.tree_node().get_right();
-            if ( right_idx == no_block )
-                break;
-            target = node_pptr( right_idx );
-        }
+        // Находим крайний правый узел (Issue #188: shared avl_max_node).
+        node_pptr target = detail::avl_max_node( node_pptr( _root_idx ) );
 
         _avl_remove( target );
         ManagerT::template deallocate_typed<node_type>( target );
@@ -312,95 +283,18 @@ template <typename T, typename ManagerT> struct pvector
 
     // ─── Итератор ─────────────────────────────────────────────────────────────
 
-    /**
-     * @brief Простой итератор для обхода вектора в порядке индексов (in-order).
-     *
-     * Реализует in-order обход AVL-дерева (левый → корень → правый),
-     * что соответствует порядку элементов вектора.
-     */
-    struct iterator
-    {
-        using value_type = node_type;
-        using pointer    = node_pptr;
-
-        index_type _current_idx; ///< Текущий узел (no_block/0 = конец).
-
-        iterator() noexcept : _current_idx( static_cast<index_type>( 0 ) ) {}
-        explicit iterator( index_type idx ) noexcept : _current_idx( idx ) {}
-
-        bool operator==( const iterator& other ) const noexcept { return _current_idx == other._current_idx; }
-        bool operator!=( const iterator& other ) const noexcept { return _current_idx != other._current_idx; }
-
-        /// @brief Разыменование — возвращает pptr на текущий узел.
-        node_pptr operator*() const noexcept
-        {
-            if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
-                return node_pptr();
-            return node_pptr( _current_idx );
-        }
-
-        /// @brief Переход к следующему элементу (in-order successor).
-        iterator& operator++() noexcept
-        {
-            if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
-                return *this;
-
-            node_pptr cur( _current_idx );
-
-            // Если есть правый потомок — идём в его крайний левый узел.
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx != no_block )
-            {
-                node_pptr right( right_idx );
-                while ( true )
-                {
-                    auto left_idx = right.tree_node().get_left();
-                    if ( left_idx == no_block )
-                        break;
-                    right = node_pptr( left_idx );
-                }
-                _current_idx = right.offset();
-                return *this;
-            }
-
-            // Иначе — идём вверх, пока не окажемся левым потомком.
-            while ( true )
-            {
-                auto parent_idx = cur.tree_node().get_parent();
-                if ( parent_idx == no_block )
-                {
-                    // Достигли корня снизу справа — конец обхода.
-                    _current_idx = static_cast<index_type>( 0 );
-                    return *this;
-                }
-                node_pptr parent( parent_idx );
-                auto      parent_left = parent.tree_node().get_left();
-                if ( parent_left == cur.offset() )
-                {
-                    // cur — левый потомок: parent — следующий.
-                    _current_idx = parent_idx;
-                    return *this;
-                }
-                cur = parent;
-            }
-        }
-    };
+    /// @brief Простой итератор для обхода вектора в порядке индексов (in-order).
+    /// Issue #188: uses shared AvlInorderIterator template to eliminate duplication.
+    using iterator = detail::AvlInorderIterator<node_pptr>;
 
     /// @brief Начало итерации (самый левый узел = первый элемент).
+    /// Issue #188: delegates to shared avl_min_node.
     iterator begin() const noexcept
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return iterator();
-        // Самый левый узел.
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto left_idx = cur.tree_node().get_left();
-            if ( left_idx == no_block )
-                break;
-            cur = node_pptr( left_idx );
-        }
-        return iterator( cur.offset() );
+        node_pptr min = detail::avl_min_node( node_pptr( _root_idx ) );
+        return iterator( min.offset() );
     }
 
     /// @brief Конец итерации (sentinel = 0).

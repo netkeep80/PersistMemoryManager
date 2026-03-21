@@ -261,7 +261,26 @@ STL-контейнеров с ПАП.
 
 - `docs/recovery.md` — сценарии сбоя, гарантии и ограничения
 
-### 6.3 Обновление версий в документации
+### 6.3 Устранение дублирования кода (метапрограммирование) ✅ ВЫПОЛНЕНО (#188)
+
+**Проблема:** AVL-код (ротации, ребалансировка, обход, итераторы) дублировался в
+`pmap`, `pstringview`, `pvector` и `free_block_tree`. Аналогично, конверсии
+индекс↔указатель и CRC32-вычисления дублировались в нескольких контейнерах.
+
+**Решение:**
+- Расширен `avl_tree_mixin.h` — все AVL-операции (rotate, rebalance, insert, remove,
+  find, min/max, init_node, subtree_count, clear_subtree) вынесены в общие шаблонные
+  функции с настраиваемым `NodeUpdateFn` callback
+- Добавлен `BlockPPtr<AT>` адаптер — позволяет `AvlFreeTree` использовать общие
+  AVL-операции через легковесную обёртку вместо дублирования ~120 строк кода
+- Добавлен `AvlInorderIterator<NodePPtr>` — общий итератор для pmap и pvector
+- Вынесены `resolve_granule_ptr()` / `ptr_to_granule_idx()` в `types.h`
+- Вынесен `crc32_accumulate_byte()` в `types.h`
+- Конфигурации `SmallEmbeddedStaticConfig` и `EmbeddedStaticConfig` сведены к
+  алиасам базового шаблона `StaticConfig`
+- **Результат:** −383 строки (4029 вставок, 4412 удалений)
+
+### 6.4 Обновление версий в документации
 
 - Автоматизация обновления badge-ов версий через CI
 
@@ -318,11 +337,12 @@ STL-контейнеров с ПАП.
 | 20 | ~~Бенчмарки~~ | 5.3 | ~~Средний~~ | ~~Средняя~~ | ✅ #214 |
 | 21 | ~~Документация thread safety~~ | 6.1 | ~~Средний~~ | ~~Низкая~~ | ✅ #215 |
 | 22 | ~~Документация recovery~~ | 6.2 | ~~Средний~~ | ~~Низкая~~ | ✅ #216 |
-| 23 | Транзакции | 7.1 | Низкий | Высокая | |
-| 24 | Сборщик мусора | 7.2 | Низкий | Высокая | |
-| 25 | Shared memory IPC | 7.3 | Низкий | Высокая | |
-| 26 | Сжатие/шифрование | 7.4 | Низкий | Средняя | |
+| 23 | ~~Устранение дублирования кода~~ | 6.3 | ~~Средний~~ | ~~Высокая~~ | ✅ #188 |
+| 24 | Транзакции | 7.1 | Низкий | Высокая | |
+| 25 | Сборщик мусора | 7.2 | Низкий | Высокая | |
+| 26 | Shared memory IPC | 7.3 | Низкий | Высокая | |
+| 27 | Сжатие/шифрование | 7.4 | Низкий | Средняя | |
 
 ---
 
-*Документ обновлён 2026-03-21. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210. Phase 4.4 (pptr byte offset conversion) реализована в Issue #211. Фаза 4 полностью завершена. Phase 5.1 (Catch2 migration) реализована в Issue #212. Phase 5.2 (extended test coverage) реализована в Issue #213. Phase 5.3 (Google Benchmark) реализована в Issue #214. Фаза 5 полностью завершена. Phase 6.1 (thread safety documentation) реализована в Issue #215. Phase 6.2 (recovery documentation) реализована в Issue #216.*
+*Документ обновлён 2026-03-21. Phase 3.1 (pstring) реализована в Issue #45. Phase 3.2 (parray) реализована в Issue #195. Phase 3.3 (pmap erase/size/iterator/clear) реализована в Issue #196. Phase 3.4 (pvector erase(index)) реализована в Issue #197. Phase 3.5 (pallocator) реализована в Issue #198. Phase 3.6 (ppool) реализована в Issue #199. Phase 3.7 (root object) реализована в Issue #200. Фаза 3 полностью завершена. Phase 4.1 (error codes) реализована в Issue #201. Phase 4.2 (logging hooks) реализована в Issue #202. Phase 4.3 (reallocate_typed) реализована в Issue #210. Phase 4.4 (pptr byte offset conversion) реализована в Issue #211. Фаза 4 полностью завершена. Phase 5.1 (Catch2 migration) реализована в Issue #212. Phase 5.2 (extended test coverage) реализована в Issue #213. Phase 5.3 (Google Benchmark) реализована в Issue #214. Фаза 5 полностью завершена. Phase 6.1 (thread safety documentation) реализована в Issue #215. Phase 6.2 (recovery documentation) реализована в Issue #216. Phase 6.3 (code deduplication via template metaprogramming) реализована в Issue #188.*

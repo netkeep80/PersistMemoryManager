@@ -747,15 +747,19 @@ struct FreeBlockView
 namespace detail
 {
 
+inline std::uint32_t crc32_accumulate_byte( std::uint32_t crc, std::uint8_t byte ) noexcept
+{
+    crc ^= byte;
+    for ( int bit = 0; bit < 8; ++bit )
+        crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
+    return crc;
+}
+
 inline std::uint32_t compute_crc32( const std::uint8_t* data, std::size_t length ) noexcept
 {
     std::uint32_t crc = 0xFFFFFFFFU;
     for ( std::size_t i = 0; i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     return crc ^ 0xFFFFFFFFU;
 }
 
@@ -815,25 +819,13 @@ inline std::uint32_t compute_image_crc32( const std::uint8_t* data, std::size_t 
 
     std::uint32_t crc = 0xFFFFFFFFU;
     for ( std::size_t i = 0; i < kCrcOffset && i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     
     for ( std::size_t i = 0; i < kCrcSize; ++i )
-    {
-        crc ^= 0x00U;
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, 0x00U );
     
     for ( std::size_t i = kAfterCrc; i < length; ++i )
-    {
-        crc ^= data[i];
-        for ( int bit = 0; bit < 8; ++bit )
-            crc = ( crc >> 1 ) ^ ( 0xEDB88320U & ( ~( crc & 1U ) + 1U ) );
-    }
+        crc = crc32_accumulate_byte( crc, data[i] );
     return crc ^ 0xFFFFFFFFU;
 }
 
@@ -1017,6 +1009,22 @@ inline bool is_valid_block( const std::uint8_t* base, const ManagerHeader<pmm::D
     return true;
 }
 
+template <typename AddressTraitsT>
+inline void* resolve_granule_ptr( std::uint8_t* base, typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( idx == static_cast<typename AddressTraitsT::index_type>( 0 ) )
+        return nullptr;
+    return base + static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
+}
+
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type ptr_to_granule_idx( const std::uint8_t* base, const void* ptr ) noexcept
+{
+    using IndexT         = typename AddressTraitsT::index_type;
+    std::size_t byte_off = static_cast<const std::uint8_t*>( ptr ) - base;
+    return static_cast<IndexT>( byte_off / AddressTraitsT::granule_size );
+}
+
 template <typename AddressTraitsT = pmm::DefaultAddressTraits>
 inline void* user_ptr( pmm::Block<AddressTraitsT>* block )
 {
@@ -1073,10 +1081,484 @@ inline typename AddressTraitsT::index_type required_block_granules_t( std::size_
 
 } 
 
-#include <cassert>
+#include <cstddef>
+#include <cstdint>
+
+namespace pmm
+{
+namespace detail
+{
+
+template <typename PPtr> static constexpr auto pptr_no_block() noexcept
+{
+    return PPtr::manager_type::address_traits::no_block;
+}
+
+template <typename PPtr> static PPtr pptr_make( PPtr , typename PPtr::index_type idx ) noexcept
+{
+    return PPtr( idx );
+}
+
+template <typename PPtr> static PPtr pptr_get_left( PPtr p ) noexcept
+{
+    auto idx = p.tree_node().get_left();
+    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : pptr_make( p, idx );
+}
+
+template <typename PPtr> static PPtr pptr_get_right( PPtr p ) noexcept
+{
+    auto idx = p.tree_node().get_right();
+    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : pptr_make( p, idx );
+}
+
+template <typename PPtr> static PPtr pptr_get_parent( PPtr p ) noexcept
+{
+    auto idx = p.tree_node().get_parent();
+    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : pptr_make( p, idx );
+}
+
+template <typename PPtr> static void pptr_set_left( PPtr p, PPtr child ) noexcept
+{
+    auto idx = child.is_null() ? pptr_no_block<PPtr>() : child.offset();
+    p.tree_node().set_left( idx );
+}
+
+template <typename PPtr> static void pptr_set_right( PPtr p, PPtr child ) noexcept
+{
+    auto idx = child.is_null() ? pptr_no_block<PPtr>() : child.offset();
+    p.tree_node().set_right( idx );
+}
+
+template <typename PPtr> static void pptr_set_parent( PPtr p, PPtr parent ) noexcept
+{
+    auto idx = parent.is_null() ? pptr_no_block<PPtr>() : parent.offset();
+    p.tree_node().set_parent( idx );
+}
+
+template <typename PPtr> static std::int16_t avl_height( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return 0;
+    return p.tree_node().get_height();
+}
+
+template <typename PPtr> static void avl_update_height( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return;
+    std::int16_t lh = avl_height( pptr_get_left( p ) );
+    std::int16_t rh = avl_height( pptr_get_right( p ) );
+    std::int16_t h  = static_cast<std::int16_t>( 1 + ( lh > rh ? lh : rh ) );
+    p.tree_node().set_height( h );
+}
+
+template <typename PPtr> static std::int16_t avl_balance_factor( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return 0;
+    std::int16_t lh = avl_height( pptr_get_left( p ) );
+    std::int16_t rh = avl_height( pptr_get_right( p ) );
+    return static_cast<std::int16_t>( lh - rh );
+}
+
+template <typename PPtr, typename IndexType>
+static void avl_set_child( PPtr parent, PPtr old_child, PPtr new_child, IndexType& root_idx ) noexcept
+{
+    if ( parent.is_null() )
+    {
+        root_idx = new_child.offset();
+        return;
+    }
+    PPtr left_of_parent = pptr_get_left( parent );
+    if ( left_of_parent == old_child )
+        pptr_set_left( parent, new_child );
+    else
+        pptr_set_right( parent, new_child );
+}
+
+struct AvlUpdateHeightOnly
+{
+    template <typename PPtr> void operator()( PPtr p ) const noexcept { avl_update_height( p ); }
+};
+
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static PPtr avl_rotate_right( PPtr y, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
+{
+    PPtr x     = pptr_get_left( y );
+    PPtr b     = pptr_get_right( x );
+    PPtr y_par = pptr_get_parent( y );
+
+    pptr_set_right( x, y );
+    pptr_set_parent( y, x );
+
+    pptr_set_left( y, b );
+    if ( !b.is_null() )
+        pptr_set_parent( b, y );
+
+    pptr_set_parent( x, y_par );
+
+    avl_set_child( y_par, y, x, root_idx );
+
+    update_node( y );
+    update_node( x );
+    return x;
+}
+
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static PPtr avl_rotate_left( PPtr x, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
+{
+    PPtr y     = pptr_get_right( x );
+    PPtr b     = pptr_get_left( y );
+    PPtr x_par = pptr_get_parent( x );
+
+    pptr_set_left( y, x );
+    pptr_set_parent( x, y );
+
+    pptr_set_right( x, b );
+    if ( !b.is_null() )
+        pptr_set_parent( b, x );
+
+    pptr_set_parent( y, x_par );
+
+    avl_set_child( x_par, x, y, root_idx );
+
+    update_node( x );
+    update_node( y );
+    return y;
+}
+
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_rebalance_up( PPtr p, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
+{
+    while ( !p.is_null() )
+    {
+        update_node( p );
+        std::int16_t bf = avl_balance_factor( p );
+        if ( bf > 1 )
+        {
+            PPtr left = pptr_get_left( p );
+            if ( avl_balance_factor( left ) < 0 )
+                avl_rotate_left( left, root_idx, update_node );
+            p = avl_rotate_right( p, root_idx, update_node );
+        }
+        else if ( bf < -1 )
+        {
+            PPtr right = pptr_get_right( p );
+            if ( avl_balance_factor( right ) > 0 )
+                avl_rotate_right( right, root_idx, update_node );
+            p = avl_rotate_left( p, root_idx, update_node );
+        }
+        p = pptr_get_parent( p );
+    }
+}
+
+template <typename PPtr> static PPtr avl_min_node( PPtr p ) noexcept
+{
+    while ( !p.is_null() )
+    {
+        PPtr left = pptr_get_left( p );
+        if ( left.is_null() )
+            break;
+        p = left;
+    }
+    return p;
+}
+
+template <typename PPtr> static PPtr avl_max_node( PPtr p ) noexcept
+{
+    while ( !p.is_null() )
+    {
+        PPtr right = pptr_get_right( p );
+        if ( right.is_null() )
+            break;
+        p = right;
+    }
+    return p;
+}
+
+template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_remove( PPtr target, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
+{
+    PPtr left_p  = pptr_get_left( target );
+    PPtr right_p = pptr_get_right( target );
+    PPtr par_p   = pptr_get_parent( target );
+
+    if ( left_p.is_null() && right_p.is_null() )
+    {
+        
+        avl_set_child( par_p, target, PPtr(), root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+    }
+    else if ( left_p.is_null() )
+    {
+        
+        pptr_set_parent( right_p, par_p );
+        avl_set_child( par_p, target, right_p, root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+        else
+            update_node( right_p );
+    }
+    else if ( right_p.is_null() )
+    {
+        
+        pptr_set_parent( left_p, par_p );
+        avl_set_child( par_p, target, left_p, root_idx );
+        if ( !par_p.is_null() )
+            avl_rebalance_up( par_p, root_idx, update_node );
+        else
+            update_node( left_p );
+    }
+    else
+    {
+        
+        PPtr successor = avl_min_node( right_p );
+
+        auto succ_par_idx = successor.tree_node().get_parent();
+        PPtr succ_rgt     = pptr_get_right( successor );
+
+        if ( succ_par_idx == target.offset() )
+        {
+            
+            pptr_set_left( successor, left_p );
+            pptr_set_parent( left_p, successor );
+            
+            pptr_set_parent( successor, par_p );
+            avl_set_child( par_p, target, successor, root_idx );
+            avl_rebalance_up( successor, root_idx, update_node );
+        }
+        else
+        {
+            
+            PPtr succ_par( succ_par_idx );
+            if ( !succ_rgt.is_null() )
+            {
+                pptr_set_parent( succ_rgt, succ_par );
+                pptr_set_left( succ_par, succ_rgt );
+            }
+            else
+            {
+                pptr_set_left( succ_par, PPtr() );
+            }
+
+            pptr_set_left( successor, left_p );
+            pptr_set_parent( left_p, successor );
+            pptr_set_right( successor, right_p );
+            pptr_set_parent( right_p, successor );
+            pptr_set_parent( successor, par_p );
+            avl_set_child( par_p, target, successor, root_idx );
+
+            avl_rebalance_up( succ_par, root_idx, update_node );
+        }
+    }
+}
+
+template <typename PPtr, typename IndexType, typename CompareThreeWayFn, typename ResolveFn>
+static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way, ResolveFn&& resolve ) noexcept
+{
+    PPtr cur( root_idx );
+    while ( !cur.is_null() )
+    {
+        if ( resolve( cur ) == nullptr )
+            break;
+        int cmp = compare_three_way( cur );
+        if ( cmp == 0 )
+            return cur;
+        else if ( cmp < 0 )
+            cur = pptr_get_left( cur );
+        else
+            cur = pptr_get_right( cur );
+    }
+    return PPtr(); 
+}
+
+template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
+{
+    if ( cur.is_null() )
+        return PPtr();
+
+    PPtr right = pptr_get_right( cur );
+    if ( !right.is_null() )
+        return avl_min_node( right );
+
+    while ( true )
+    {
+        PPtr parent = pptr_get_parent( cur );
+        if ( parent.is_null() )
+            return PPtr(); 
+        PPtr parent_left = pptr_get_left( parent );
+        if ( !parent_left.is_null() && parent_left.offset() == cur.offset() )
+            return parent; 
+        cur = parent;
+    }
+}
+
+template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
+{
+    auto& tn = p.tree_node();
+    tn.set_left( pptr_no_block<PPtr>() );
+    tn.set_right( pptr_no_block<PPtr>() );
+    tn.set_parent( pptr_no_block<PPtr>() );
+    tn.set_height( static_cast<std::int16_t>( 1 ) );
+}
+
+template <typename PPtr> static std::size_t avl_subtree_count( PPtr p ) noexcept
+{
+    if ( p.is_null() )
+        return 0;
+    return 1 + avl_subtree_count( pptr_get_left( p ) ) + avl_subtree_count( pptr_get_right( p ) );
+}
+
+template <typename PPtr, typename DeallocFn> static void avl_clear_subtree( PPtr p, DeallocFn&& dealloc ) noexcept
+{
+    if ( p.is_null() )
+        return;
+    PPtr left_p  = pptr_get_left( p );
+    PPtr right_p = pptr_get_right( p );
+    avl_clear_subtree( left_p, dealloc );
+    avl_clear_subtree( right_p, dealloc );
+    dealloc( p );
+}
+
+template <typename PPtr, typename IndexType, typename GoLeftFn, typename ResolveFn,
+          typename NodeUpdateFn = AvlUpdateHeightOnly>
+static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, ResolveFn&& resolve,
+                        NodeUpdateFn update_node = {} ) noexcept
+{
+    if ( new_node.is_null() )
+        return;
+    if ( resolve( new_node ) == nullptr )
+        return;
+
+    if ( root_idx == static_cast<IndexType>( 0 ) )
+    {
+        pptr_set_left( new_node, PPtr() );
+        pptr_set_right( new_node, PPtr() );
+        pptr_set_parent( new_node, PPtr() );
+        new_node.tree_node().set_height( static_cast<std::int16_t>( 1 ) );
+        root_idx = new_node.offset();
+        return;
+    }
+
+    PPtr cur( root_idx );
+    PPtr parent;
+    bool left = false;
+
+    while ( !cur.is_null() )
+    {
+        if ( resolve( cur ) == nullptr )
+            break;
+        parent = cur;
+        left   = go_left( cur );
+        if ( left )
+            cur = pptr_get_left( cur );
+        else
+            cur = pptr_get_right( cur );
+    }
+
+    pptr_set_parent( new_node, parent );
+    if ( left )
+        pptr_set_left( parent, new_node );
+    else
+        pptr_set_right( parent, new_node );
+
+    avl_rebalance_up( parent, root_idx, update_node );
+}
+
+template <typename AddressTraitsT> struct BlockPPtrManagerTag
+{
+    using address_traits = AddressTraitsT;
+};
+
+template <typename AddressTraitsT> struct BlockTreeNodeProxy
+{
+    using index_type = typename AddressTraitsT::index_type;
+    void* _blk;
+
+    explicit BlockTreeNodeProxy( void* blk ) noexcept : _blk( blk ) {}
+
+    index_type   get_left() const noexcept { return BlockStateBase<AddressTraitsT>::get_left_offset( _blk ); }
+    index_type   get_right() const noexcept { return BlockStateBase<AddressTraitsT>::get_right_offset( _blk ); }
+    index_type   get_parent() const noexcept { return BlockStateBase<AddressTraitsT>::get_parent_offset( _blk ); }
+    std::int16_t get_height() const noexcept { return BlockStateBase<AddressTraitsT>::get_avl_height( _blk ); }
+
+    void set_left( index_type v ) noexcept { BlockStateBase<AddressTraitsT>::set_left_offset_of( _blk, v ); }
+    void set_right( index_type v ) noexcept { BlockStateBase<AddressTraitsT>::set_right_offset_of( _blk, v ); }
+    void set_parent( index_type v ) noexcept { BlockStateBase<AddressTraitsT>::set_parent_offset_of( _blk, v ); }
+    void set_height( std::int16_t v ) noexcept { BlockStateBase<AddressTraitsT>::set_avl_height_of( _blk, v ); }
+};
+
+template <typename AddressTraitsT> struct BlockPPtr
+{
+    using manager_type = BlockPPtrManagerTag<AddressTraitsT>;
+    using index_type   = typename AddressTraitsT::index_type;
+
+    std::uint8_t* _base;
+    index_type    _idx;
+
+    BlockPPtr() noexcept : _base( nullptr ), _idx( AddressTraitsT::no_block ) {}
+
+    BlockPPtr( std::uint8_t* base, index_type idx ) noexcept : _base( base ), _idx( idx ) {}
+
+    bool       is_null() const noexcept { return _idx == AddressTraitsT::no_block; }
+    index_type offset() const noexcept { return _idx; }
+
+    bool operator==( const BlockPPtr& other ) const noexcept { return _idx == other._idx; }
+    bool operator!=( const BlockPPtr& other ) const noexcept { return _idx != other._idx; }
+
+    BlockTreeNodeProxy<AddressTraitsT> tree_node() const noexcept
+    {
+        return BlockTreeNodeProxy<AddressTraitsT>( block_at<AddressTraitsT>( _base, _idx ) );
+    }
+};
+
+template <typename AddressTraitsT>
+static BlockPPtr<AddressTraitsT> pptr_make( BlockPPtr<AddressTraitsT>           source,
+                                            typename AddressTraitsT::index_type idx ) noexcept
+{
+    return BlockPPtr<AddressTraitsT>( source._base, idx );
+}
+
+template <typename NodePPtr> struct AvlInorderIterator
+{
+    using index_type = typename NodePPtr::index_type;
+    using value_type = typename NodePPtr::element_type;
+    using pointer    = NodePPtr;
+
+    static constexpr index_type no_block = NodePPtr::manager_type::address_traits::no_block;
+
+    index_type _current_idx;
+
+    AvlInorderIterator() noexcept : _current_idx( static_cast<index_type>( 0 ) ) {}
+    explicit AvlInorderIterator( index_type idx ) noexcept : _current_idx( idx ) {}
+
+    bool operator==( const AvlInorderIterator& other ) const noexcept { return _current_idx == other._current_idx; }
+    bool operator!=( const AvlInorderIterator& other ) const noexcept { return _current_idx != other._current_idx; }
+
+    NodePPtr operator*() const noexcept
+    {
+        if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
+            return NodePPtr();
+        return NodePPtr( _current_idx );
+    }
+
+    AvlInorderIterator& operator++() noexcept
+    {
+        if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
+            return *this;
+
+        NodePPtr next = avl_inorder_successor( NodePPtr( _current_idx ) );
+        _current_idx  = next.is_null() ? static_cast<index_type>( 0 ) : next.offset();
+        return *this;
+    }
+};
+
+} 
+} 
+
 #include <concepts>
 #include <cstdint>
-#include <limits>
 #include <type_traits>
 
 namespace pmm
@@ -1101,6 +1583,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
     using index_type     = typename AddressTraitsT::index_type;
     using BlockT         = Block<AddressTraitsT>;
     using BlockState     = BlockStateBase<AddressTraitsT>;
+    using BPPtr          = detail::BlockPPtr<AddressTraitsT>;
 
     AvlFreeTree()                                = delete;
     AvlFreeTree( const AvlFreeTree& )            = delete;
@@ -1140,7 +1623,8 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             BlockState::set_left_offset_of( detail::block_at<AddressTraitsT>( base, parent ), blk_idx );
         else
             BlockState::set_right_offset_of( detail::block_at<AddressTraitsT>( base, parent ), blk_idx );
-        rebalance_up( base, hdr, parent );
+        
+        detail::avl_rebalance_up( BPPtr( base, parent ), hdr->free_tree_root );
     }
 
     static void remove( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx )
@@ -1165,10 +1649,12 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
         }
         else
         {
-            index_type succ_idx    = min_node( base, right );
-            void*      succ        = detail::block_at<AddressTraitsT>( base, succ_idx );
-            index_type succ_parent = BlockState::get_parent_offset( succ );
-            index_type succ_right  = BlockState::get_right_offset( succ );
+            
+            BPPtr      succ        = detail::avl_min_node( BPPtr( base, right ) );
+            index_type succ_idx    = succ.offset();
+            void*      succ_raw    = detail::block_at<AddressTraitsT>( base, succ_idx );
+            index_type succ_parent = BlockState::get_parent_offset( succ_raw );
+            index_type succ_right  = BlockState::get_right_offset( succ_raw );
 
             if ( succ_parent != blk_idx )
             {
@@ -1176,7 +1662,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
                 if ( succ_right != AddressTraitsT::no_block )
                     BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, succ_right ),
                                                       succ_parent );
-                BlockState::set_right_offset_of( succ, right );
+                BlockState::set_right_offset_of( succ_raw, right );
                 BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, right ), succ_idx );
                 rebal = succ_parent;
             }
@@ -1184,17 +1670,19 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             {
                 rebal = succ_idx;
             }
-            BlockState::set_left_offset_of( succ, left );
+            BlockState::set_left_offset_of( succ_raw, left );
             BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, left ), succ_idx );
-            BlockState::set_parent_offset_of( succ, parent );
+            BlockState::set_parent_offset_of( succ_raw, parent );
             set_child( base, hdr, parent, blk_idx, succ_idx );
-            update_height( base, succ_idx );
+            
+            detail::avl_update_height( BPPtr( base, succ_idx ) );
         }
         BlockState::set_left_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_right_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_parent_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_avl_height_of( blk, 0 );
-        rebalance_up( base, hdr, rebal );
+        
+        detail::avl_rebalance_up( BPPtr( base, rebal ), hdr->free_tree_root );
     }
 
     static index_type find_best_fit( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
@@ -1224,29 +1712,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
     }
 
   private:
-    static std::int32_t height( std::uint8_t* base, index_type idx )
-    {
-        return ( idx == AddressTraitsT::no_block ) ? 0
-                                                   : static_cast<std::int32_t>( BlockState::get_avl_height(
-                                                         detail::block_at<AddressTraitsT>( base, idx ) ) );
-    }
-
-    static void update_height( std::uint8_t* base, index_type node_idx )
-    {
-        void*        node = detail::block_at<AddressTraitsT>( base, node_idx );
-        std::int32_t h    = 1 + ( std::max )( height( base, BlockState::get_left_offset( node ) ),
-                                           height( base, BlockState::get_right_offset( node ) ) );
-        assert( h <= std::numeric_limits<std::int16_t>::max() ); 
-        BlockState::set_avl_height_of( node, static_cast<std::int16_t>( h ) );
-    }
-
-    static std::int32_t balance_factor( std::uint8_t* base, index_type node_idx )
-    {
-        const void* node = detail::block_at<AddressTraitsT>( base, node_idx );
-        return height( base, BlockState::get_left_offset( node ) ) -
-               height( base, BlockState::get_right_offset( node ) );
-    }
-
+    
     static void set_child( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type parent,
                            index_type old_child, index_type new_child )
     {
@@ -1260,87 +1726,6 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             BlockState::set_left_offset_of( p, new_child );
         else
             BlockState::set_right_offset_of( p, new_child );
-    }
-
-    static index_type rotate_right( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type y_idx )
-    {
-        void*      y        = detail::block_at<AddressTraitsT>( base, y_idx );
-        index_type x_idx    = BlockState::get_left_offset( y );
-        void*      x        = detail::block_at<AddressTraitsT>( base, x_idx );
-        index_type t2       = BlockState::get_right_offset( x );
-        index_type y_parent = BlockState::get_parent_offset( y );
-
-        BlockState::set_right_offset_of( x, y_idx );
-        BlockState::set_left_offset_of( y, t2 );
-        
-        BlockState::set_parent_offset_of( x, y_parent );
-        BlockState::set_parent_offset_of( y, x_idx );
-        if ( t2 != AddressTraitsT::no_block )
-            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, t2 ), y_idx );
-        set_child( base, hdr, y_parent, y_idx, x_idx );
-        update_height( base, y_idx );
-        update_height( base, x_idx );
-        return x_idx;
-    }
-
-    static index_type rotate_left( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type x_idx )
-    {
-        void*      x        = detail::block_at<AddressTraitsT>( base, x_idx );
-        index_type y_idx    = BlockState::get_right_offset( x );
-        void*      y        = detail::block_at<AddressTraitsT>( base, y_idx );
-        index_type t2       = BlockState::get_left_offset( y );
-        index_type x_parent = BlockState::get_parent_offset( x );
-
-        BlockState::set_left_offset_of( y, x_idx );
-        BlockState::set_right_offset_of( x, t2 );
-        
-        BlockState::set_parent_offset_of( y, x_parent );
-        BlockState::set_parent_offset_of( x, y_idx );
-        if ( t2 != AddressTraitsT::no_block )
-            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, t2 ), x_idx );
-        set_child( base, hdr, x_parent, x_idx, y_idx );
-        update_height( base, x_idx );
-        update_height( base, y_idx );
-        return y_idx;
-    }
-
-    static void rebalance_up( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type node_idx )
-    {
-        index_type cur = node_idx;
-        while ( cur != AddressTraitsT::no_block )
-        {
-            update_height( base, cur );
-            std::int32_t bf = balance_factor( base, cur );
-            if ( bf > 1 )
-            {
-                void*      node     = detail::block_at<AddressTraitsT>( base, cur );
-                index_type left_idx = BlockState::get_left_offset( node );
-                if ( balance_factor( base, left_idx ) < 0 )
-                    rotate_left( base, hdr, left_idx );
-                cur = rotate_right( base, hdr, cur );
-            }
-            else if ( bf < -1 )
-            {
-                void*      node      = detail::block_at<AddressTraitsT>( base, cur );
-                index_type right_idx = BlockState::get_right_offset( node );
-                if ( balance_factor( base, right_idx ) > 0 )
-                    rotate_right( base, hdr, right_idx );
-                cur = rotate_left( base, hdr, cur );
-            }
-            cur = BlockState::get_parent_offset( detail::block_at<AddressTraitsT>( base, cur ) );
-        }
-    }
-
-    static index_type min_node( std::uint8_t* base, index_type node_idx )
-    {
-        while ( node_idx != AddressTraitsT::no_block )
-        {
-            index_type left = BlockState::get_left_offset( detail::block_at<AddressTraitsT>( base, node_idx ) );
-            if ( left == AddressTraitsT::no_block )
-                break;
-            node_idx = left;
-        }
-        return node_idx;
     }
 };
 
@@ -1614,33 +1999,26 @@ struct BasicConfig
     static constexpr std::size_t grow_denominator = GrowDen;
 };
 
-template <std::size_t BufferSize = 1024> struct SmallEmbeddedStaticConfig
+template <typename AddressTraitsT, std::size_t BufferSize, std::size_t GrowNum = 3, std::size_t GrowDen = 2>
+struct StaticConfig
 {
-    
-    using address_traits                          = SmallAddressTraits;
-    using storage_backend                         = StaticStorage<BufferSize, SmallAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<SmallAddressTraits>;
+    static_assert( ValidPmmAddressTraits<AddressTraitsT>,
+                   "StaticConfig: AddressTraitsT must satisfy ValidPmmAddressTraits" );
+
+    using address_traits                          = AddressTraitsT;
+    using storage_backend                         = StaticStorage<BufferSize, AddressTraitsT>;
+    using free_block_tree                         = AvlFreeTree<AddressTraitsT>;
     using lock_policy                             = config::NoLock;
     using logging_policy                          = logging::NoLogging;
-    static constexpr std::size_t granule_size     = SmallAddressTraits::granule_size;
+    static constexpr std::size_t granule_size     = AddressTraitsT::granule_size;
     static constexpr std::size_t max_memory_gb    = 0; 
-    static constexpr std::size_t grow_numerator   = 3;
-    static constexpr std::size_t grow_denominator = 2;
+    static constexpr std::size_t grow_numerator   = GrowNum;
+    static constexpr std::size_t grow_denominator = GrowDen;
 };
 
-template <std::size_t BufferSize = 4096> struct EmbeddedStaticConfig
-{
-    
-    using address_traits                          = DefaultAddressTraits;
-    using storage_backend                         = StaticStorage<BufferSize, DefaultAddressTraits>;
-    using free_block_tree                         = AvlFreeTree<DefaultAddressTraits>;
-    using lock_policy                             = config::NoLock;
-    using logging_policy                          = logging::NoLogging;
-    static constexpr std::size_t granule_size     = DefaultAddressTraits::granule_size;
-    static constexpr std::size_t max_memory_gb    = 0; 
-    static constexpr std::size_t grow_numerator   = 3;
-    static constexpr std::size_t grow_denominator = 2;
-};
+template <std::size_t BufferSize = 1024> using SmallEmbeddedStaticConfig = StaticConfig<SmallAddressTraits, BufferSize>;
+
+template <std::size_t BufferSize = 4096> using EmbeddedStaticConfig = StaticConfig<DefaultAddressTraits, BufferSize>;
 
 using CacheManagerConfig = BasicConfig<DefaultAddressTraits, config::NoLock, config::kDefaultGrowNumerator,
                                        config::kDefaultGrowDenominator, 64>;
@@ -2173,9 +2551,8 @@ template <typename T, typename ManagerT> struct parray
     {
         if ( _data_idx != static_cast<index_type>( 0 ) )
         {
-            std::uint8_t* base = ManagerT::backend().base_ptr();
-            void*         raw  = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( raw );
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+                ManagerT::backend().base_ptr(), _data_idx ) );
             _data_idx = static_cast<index_type>( 0 );
         }
         _size     = 0;
@@ -2203,11 +2580,8 @@ template <typename T, typename ManagerT> struct parray
     
     T* resolve_data() const noexcept
     {
-        if ( _data_idx == static_cast<index_type>( 0 ) )
-            return nullptr;
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-        return reinterpret_cast<T*>( base +
-                                     static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size );
+        return reinterpret_cast<T*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+            ManagerT::backend().base_ptr(), _data_idx ) );
     }
 
     bool ensure_capacity( std::uint32_t required ) noexcept
@@ -2230,8 +2604,7 @@ template <typename T, typename ManagerT> struct parray
             return false;
 
         std::uint8_t* base        = ManagerT::backend().base_ptr();
-        std::size_t   byte_off    = static_cast<std::uint8_t*>( new_raw ) - base;
-        index_type    new_dat_idx = static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size );
+        index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
         if ( _size > 0 && _data_idx != static_cast<index_type>( 0 ) )
         {
@@ -2241,10 +2614,7 @@ template <typename T, typename ManagerT> struct parray
         }
 
         if ( _data_idx != static_cast<index_type>( 0 ) )
-        {
-            void* old_raw = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( old_raw );
-        }
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 
         _data_idx = new_dat_idx;
         _capacity = new_cap;
@@ -2252,340 +2622,6 @@ template <typename T, typename ManagerT> struct parray
     }
 };
 
-} 
-
-#include <cstdint>
-
-namespace pmm
-{
-namespace detail
-{
-
-template <typename PPtr> static constexpr auto pptr_no_block() noexcept
-{
-    return PPtr::manager_type::address_traits::no_block;
-}
-
-template <typename PPtr> static PPtr pptr_get_left( PPtr p ) noexcept
-{
-    auto idx = p.tree_node().get_left();
-    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : PPtr( idx );
-}
-
-template <typename PPtr> static PPtr pptr_get_right( PPtr p ) noexcept
-{
-    auto idx = p.tree_node().get_right();
-    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : PPtr( idx );
-}
-
-template <typename PPtr> static PPtr pptr_get_parent( PPtr p ) noexcept
-{
-    auto idx = p.tree_node().get_parent();
-    return ( idx == pptr_no_block<PPtr>() ) ? PPtr() : PPtr( idx );
-}
-
-template <typename PPtr> static void pptr_set_left( PPtr p, PPtr child ) noexcept
-{
-    auto idx = child.is_null() ? pptr_no_block<PPtr>() : child.offset();
-    p.tree_node().set_left( idx );
-}
-
-template <typename PPtr> static void pptr_set_right( PPtr p, PPtr child ) noexcept
-{
-    auto idx = child.is_null() ? pptr_no_block<PPtr>() : child.offset();
-    p.tree_node().set_right( idx );
-}
-
-template <typename PPtr> static void pptr_set_parent( PPtr p, PPtr parent ) noexcept
-{
-    auto idx = parent.is_null() ? pptr_no_block<PPtr>() : parent.offset();
-    p.tree_node().set_parent( idx );
-}
-
-template <typename PPtr> static std::int16_t avl_height( PPtr p ) noexcept
-{
-    if ( p.is_null() )
-        return 0;
-    return p.tree_node().get_height();
-}
-
-template <typename PPtr> static void avl_update_height( PPtr p ) noexcept
-{
-    if ( p.is_null() )
-        return;
-    std::int16_t lh = avl_height( pptr_get_left( p ) );
-    std::int16_t rh = avl_height( pptr_get_right( p ) );
-    std::int16_t h  = static_cast<std::int16_t>( 1 + ( lh > rh ? lh : rh ) );
-    p.tree_node().set_height( h );
-}
-
-template <typename PPtr> static std::int16_t avl_balance_factor( PPtr p ) noexcept
-{
-    if ( p.is_null() )
-        return 0;
-    std::int16_t lh = avl_height( pptr_get_left( p ) );
-    std::int16_t rh = avl_height( pptr_get_right( p ) );
-    return static_cast<std::int16_t>( lh - rh );
-}
-
-template <typename PPtr, typename IndexType>
-static void avl_set_child( PPtr parent, PPtr old_child, PPtr new_child, IndexType& root_idx ) noexcept
-{
-    if ( parent.is_null() )
-    {
-        root_idx = new_child.offset();
-        return;
-    }
-    PPtr left_of_parent = pptr_get_left( parent );
-    if ( left_of_parent == old_child )
-        pptr_set_left( parent, new_child );
-    else
-        pptr_set_right( parent, new_child );
-}
-
-struct AvlUpdateHeightOnly
-{
-    template <typename PPtr> void operator()( PPtr p ) const noexcept { avl_update_height( p ); }
-};
-
-template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
-static PPtr avl_rotate_right( PPtr y, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
-{
-    PPtr x     = pptr_get_left( y );
-    PPtr b     = pptr_get_right( x );
-    PPtr y_par = pptr_get_parent( y );
-
-    pptr_set_right( x, y );
-    pptr_set_parent( y, x );
-
-    pptr_set_left( y, b );
-    if ( !b.is_null() )
-        pptr_set_parent( b, y );
-
-    pptr_set_parent( x, y_par );
-
-    avl_set_child( y_par, y, x, root_idx );
-
-    update_node( y );
-    update_node( x );
-    return x;
-}
-
-template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
-static PPtr avl_rotate_left( PPtr x, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
-{
-    PPtr y     = pptr_get_right( x );
-    PPtr b     = pptr_get_left( y );
-    PPtr x_par = pptr_get_parent( x );
-
-    pptr_set_left( y, x );
-    pptr_set_parent( x, y );
-
-    pptr_set_right( x, b );
-    if ( !b.is_null() )
-        pptr_set_parent( b, x );
-
-    pptr_set_parent( y, x_par );
-
-    avl_set_child( x_par, x, y, root_idx );
-
-    update_node( x );
-    update_node( y );
-    return y;
-}
-
-template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
-static void avl_rebalance_up( PPtr p, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
-{
-    while ( !p.is_null() )
-    {
-        update_node( p );
-        std::int16_t bf = avl_balance_factor( p );
-        if ( bf > 1 )
-        {
-            PPtr left = pptr_get_left( p );
-            if ( avl_balance_factor( left ) < 0 )
-                avl_rotate_left( left, root_idx, update_node );
-            p = avl_rotate_right( p, root_idx, update_node );
-        }
-        else if ( bf < -1 )
-        {
-            PPtr right = pptr_get_right( p );
-            if ( avl_balance_factor( right ) > 0 )
-                avl_rotate_right( right, root_idx, update_node );
-            p = avl_rotate_left( p, root_idx, update_node );
-        }
-        p = pptr_get_parent( p );
-    }
-}
-
-template <typename PPtr> static PPtr avl_min_node( PPtr p ) noexcept
-{
-    while ( !p.is_null() )
-    {
-        PPtr left = pptr_get_left( p );
-        if ( left.is_null() )
-            break;
-        p = left;
-    }
-    return p;
-}
-
-template <typename PPtr> static PPtr avl_max_node( PPtr p ) noexcept
-{
-    while ( !p.is_null() )
-    {
-        PPtr right = pptr_get_right( p );
-        if ( right.is_null() )
-            break;
-        p = right;
-    }
-    return p;
-}
-
-template <typename PPtr, typename IndexType, typename NodeUpdateFn = AvlUpdateHeightOnly>
-static void avl_remove( PPtr target, IndexType& root_idx, NodeUpdateFn update_node = {} ) noexcept
-{
-    PPtr left_p  = pptr_get_left( target );
-    PPtr right_p = pptr_get_right( target );
-    PPtr par_p   = pptr_get_parent( target );
-
-    if ( left_p.is_null() && right_p.is_null() )
-    {
-        
-        avl_set_child( par_p, target, PPtr(), root_idx );
-        if ( !par_p.is_null() )
-            avl_rebalance_up( par_p, root_idx, update_node );
-    }
-    else if ( left_p.is_null() )
-    {
-        
-        pptr_set_parent( right_p, par_p );
-        avl_set_child( par_p, target, right_p, root_idx );
-        if ( !par_p.is_null() )
-            avl_rebalance_up( par_p, root_idx, update_node );
-        else
-            update_node( right_p );
-    }
-    else if ( right_p.is_null() )
-    {
-        
-        pptr_set_parent( left_p, par_p );
-        avl_set_child( par_p, target, left_p, root_idx );
-        if ( !par_p.is_null() )
-            avl_rebalance_up( par_p, root_idx, update_node );
-        else
-            update_node( left_p );
-    }
-    else
-    {
-        
-        PPtr successor = avl_min_node( right_p );
-
-        auto succ_par_idx = successor.tree_node().get_parent();
-        PPtr succ_rgt     = pptr_get_right( successor );
-
-        if ( succ_par_idx == target.offset() )
-        {
-            
-            pptr_set_left( successor, left_p );
-            pptr_set_parent( left_p, successor );
-            
-            pptr_set_parent( successor, par_p );
-            avl_set_child( par_p, target, successor, root_idx );
-            avl_rebalance_up( successor, root_idx, update_node );
-        }
-        else
-        {
-            
-            PPtr succ_par( succ_par_idx );
-            if ( !succ_rgt.is_null() )
-            {
-                pptr_set_parent( succ_rgt, succ_par );
-                pptr_set_left( succ_par, succ_rgt );
-            }
-            else
-            {
-                pptr_set_left( succ_par, PPtr() );
-            }
-
-            pptr_set_left( successor, left_p );
-            pptr_set_parent( left_p, successor );
-            pptr_set_right( successor, right_p );
-            pptr_set_parent( right_p, successor );
-            pptr_set_parent( successor, par_p );
-            avl_set_child( par_p, target, successor, root_idx );
-
-            avl_rebalance_up( succ_par, root_idx, update_node );
-        }
-    }
-}
-
-template <typename PPtr, typename IndexType, typename CompareThreeWayFn, typename ResolveFn>
-static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way, ResolveFn&& resolve ) noexcept
-{
-    PPtr cur( root_idx );
-    while ( !cur.is_null() )
-    {
-        if ( resolve( cur ) == nullptr )
-            break;
-        int cmp = compare_three_way( cur );
-        if ( cmp == 0 )
-            return cur;
-        else if ( cmp < 0 )
-            cur = pptr_get_left( cur );
-        else
-            cur = pptr_get_right( cur );
-    }
-    return PPtr(); 
-}
-
-template <typename PPtr, typename IndexType, typename GoLeftFn, typename ResolveFn,
-          typename NodeUpdateFn = AvlUpdateHeightOnly>
-static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, ResolveFn&& resolve,
-                        NodeUpdateFn update_node = {} ) noexcept
-{
-    if ( new_node.is_null() )
-        return;
-    if ( resolve( new_node ) == nullptr )
-        return;
-
-    if ( root_idx == static_cast<IndexType>( 0 ) )
-    {
-        pptr_set_left( new_node, PPtr() );
-        pptr_set_right( new_node, PPtr() );
-        pptr_set_parent( new_node, PPtr() );
-        new_node.tree_node().set_height( static_cast<std::int16_t>( 1 ) );
-        root_idx = new_node.offset();
-        return;
-    }
-
-    PPtr cur( root_idx );
-    PPtr parent;
-    bool left = false;
-
-    while ( !cur.is_null() )
-    {
-        if ( resolve( cur ) == nullptr )
-            break;
-        parent = cur;
-        left   = go_left( cur );
-        if ( left )
-            cur = pptr_get_left( cur );
-        else
-            cur = pptr_get_right( cur );
-    }
-
-    pptr_set_parent( new_node, parent );
-    if ( left )
-        pptr_set_left( parent, new_node );
-    else
-        pptr_set_right( parent, new_node );
-
-    avl_rebalance_up( parent, root_idx, update_node );
-}
-
-} 
 } 
 
 #include <cstddef>
@@ -2622,7 +2658,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return 0;
-        return _subtree_count( node_pptr( _root_idx ) );
+        return detail::avl_subtree_count( node_pptr( _root_idx ) );
     }
 
     node_pptr insert( const _K& key, const _V& val ) noexcept
@@ -2649,11 +2685,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         obj->key   = key;
         obj->value = val;
 
-        auto& tn = new_node.tree_node();
-        tn.set_left( no_block );
-        tn.set_right( no_block );
-        tn.set_parent( no_block );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
+        detail::avl_init_node( new_node );
 
         _avl_insert( new_node );
 
@@ -2678,75 +2710,14 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     void clear() noexcept
     {
         if ( _root_idx != static_cast<index_type>( 0 ) )
-            _clear_subtree( node_pptr( _root_idx ) );
+            detail::avl_clear_subtree( node_pptr( _root_idx ),
+                                       []( node_pptr p ) { ManagerT::template deallocate_typed<node_type>( p ); } );
         _root_idx = static_cast<index_type>( 0 );
     }
 
     void reset() noexcept { _root_idx = static_cast<index_type>( 0 ); }
 
-    struct iterator
-    {
-        using value_type = node_type;
-        using pointer    = node_pptr;
-
-        index_type _current_idx; 
-
-        iterator() noexcept : _current_idx( static_cast<index_type>( 0 ) ) {}
-        explicit iterator( index_type idx ) noexcept : _current_idx( idx ) {}
-
-        bool operator==( const iterator& other ) const noexcept { return _current_idx == other._current_idx; }
-        bool operator!=( const iterator& other ) const noexcept { return _current_idx != other._current_idx; }
-
-        node_pptr operator*() const noexcept
-        {
-            if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
-                return node_pptr();
-            return node_pptr( _current_idx );
-        }
-
-        iterator& operator++() noexcept
-        {
-            if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
-                return *this;
-
-            node_pptr cur( _current_idx );
-
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx != no_block )
-            {
-                node_pptr right( right_idx );
-                while ( true )
-                {
-                    auto left_idx = right.tree_node().get_left();
-                    if ( left_idx == no_block )
-                        break;
-                    right = node_pptr( left_idx );
-                }
-                _current_idx = right.offset();
-                return *this;
-            }
-
-            while ( true )
-            {
-                auto parent_idx = cur.tree_node().get_parent();
-                if ( parent_idx == no_block )
-                {
-                    
-                    _current_idx = static_cast<index_type>( 0 );
-                    return *this;
-                }
-                node_pptr parent( parent_idx );
-                auto      parent_left = parent.tree_node().get_left();
-                if ( parent_left == cur.offset() )
-                {
-                    
-                    _current_idx = parent_idx;
-                    return *this;
-                }
-                cur = parent;
-            }
-        }
-    };
+    using iterator = detail::AvlInorderIterator<node_pptr>;
 
     iterator begin() const noexcept
     {
@@ -2789,28 +2760,6 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
             []( node_pptr p ) -> node_type* { return ManagerT::template resolve<node_type>( p ); } );
     }
 
-    static std::size_t _subtree_count( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return 0;
-        std::size_t count   = 1;
-        auto        left_p  = detail::pptr_get_left( p );
-        auto        right_p = detail::pptr_get_right( p );
-        count += _subtree_count( left_p );
-        count += _subtree_count( right_p );
-        return count;
-    }
-
-    static void _clear_subtree( node_pptr p ) noexcept
-    {
-        if ( p.is_null() )
-            return;
-        auto left_p  = detail::pptr_get_left( p );
-        auto right_p = detail::pptr_get_right( p );
-        _clear_subtree( left_p );
-        _clear_subtree( right_p );
-        ManagerT::template deallocate_typed<node_type>( p );
-    }
 };
 
 } 
@@ -2880,8 +2829,9 @@ template <typename T, typename ManagerT> struct ppool
                 return nullptr;
         }
 
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
-        std::uint8_t* slot_raw = base + static_cast<std::size_t>( _free_head_idx ) * granule_size;
+        std::uint8_t* slot_raw =
+            reinterpret_cast<std::uint8_t*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+                ManagerT::backend().base_ptr(), _free_head_idx ) );
 
         index_type next_free;
         std::memcpy( &next_free, slot_raw, sizeof( index_type ) );
@@ -2899,11 +2849,10 @@ template <typename T, typename ManagerT> struct ppool
         if ( ptr == nullptr )
             return;
 
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
         std::uint8_t* slot_raw = reinterpret_cast<std::uint8_t*>( ptr );
 
-        std::size_t byte_off = static_cast<std::size_t>( slot_raw - base );
-        index_type  slot_idx = static_cast<index_type>( byte_off / granule_size );
+        index_type slot_idx =
+            detail::ptr_to_granule_idx<typename ManagerT::address_traits>( ManagerT::backend().base_ptr(), slot_raw );
 
         std::memcpy( slot_raw, &_free_head_idx, sizeof( index_type ) );
 
@@ -2913,12 +2862,13 @@ template <typename T, typename ManagerT> struct ppool
 
     void free_all() noexcept
     {
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-
-        index_type chunk_idx = _chunk_head_idx;
+        
+        std::uint8_t* base      = ManagerT::backend().base_ptr();
+        index_type    chunk_idx = _chunk_head_idx;
         while ( chunk_idx != static_cast<index_type>( 0 ) )
         {
-            std::uint8_t* chunk_raw = base + static_cast<std::size_t>( chunk_idx ) * granule_size;
+            std::uint8_t* chunk_raw = reinterpret_cast<std::uint8_t*>(
+                detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, chunk_idx ) );
 
             index_type next_chunk;
             std::memcpy( &next_chunk, chunk_raw, sizeof( index_type ) );
@@ -2953,8 +2903,7 @@ template <typename T, typename ManagerT> struct ppool
         std::uint8_t* chunk_raw = static_cast<std::uint8_t*>( raw );
         std::uint8_t* base      = ManagerT::backend().base_ptr();
 
-        std::size_t chunk_byte_off = static_cast<std::size_t>( chunk_raw - base );
-        index_type  chunk_idx      = static_cast<index_type>( chunk_byte_off / granule_size );
+        index_type chunk_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, chunk_raw );
 
         std::memset( chunk_raw, 0, granule_size );
         std::memcpy( chunk_raw, &_chunk_head_idx, sizeof( index_type ) );
@@ -2964,9 +2913,8 @@ template <typename T, typename ManagerT> struct ppool
 
         for ( std::size_t i = 0; i < n_objects; ++i )
         {
-            std::uint8_t* slot          = slots_start + i * slot_bytes;
-            std::size_t   slot_byte_off = static_cast<std::size_t>( slot - base );
-            index_type    slot_idx      = static_cast<index_type>( slot_byte_off / granule_size );
+            std::uint8_t* slot     = slots_start + i * slot_bytes;
+            index_type    slot_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, slot );
 
             std::memset( slot, 0, slot_bytes );
             std::memcpy( slot, &_free_head_idx, sizeof( index_type ) );
@@ -3159,9 +3107,8 @@ template <typename ManagerT> struct pstring
     {
         if ( _data_idx != static_cast<index_type>( 0 ) )
         {
-            std::uint8_t* base = ManagerT::backend().base_ptr();
-            void*         raw  = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( raw );
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+                ManagerT::backend().base_ptr(), _data_idx ) );
             _data_idx = static_cast<index_type>( 0 );
         }
         _length   = 0;
@@ -3196,11 +3143,8 @@ template <typename ManagerT> struct pstring
     
     char* resolve_data() const noexcept
     {
-        if ( _data_idx == static_cast<index_type>( 0 ) )
-            return nullptr;
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-        return reinterpret_cast<char*>( base + static_cast<std::size_t>( _data_idx ) *
-                                                   ManagerT::address_traits::granule_size );
+        return reinterpret_cast<char*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
+            ManagerT::backend().base_ptr(), _data_idx ) );
     }
 
     bool ensure_capacity( std::uint32_t required ) noexcept
@@ -3220,8 +3164,7 @@ template <typename ManagerT> struct pstring
             return false;
 
         std::uint8_t* base        = ManagerT::backend().base_ptr();
-        std::size_t   byte_off    = static_cast<std::uint8_t*>( new_raw ) - base;
-        index_type    new_dat_idx = static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size );
+        index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
         if ( _length > 0 && _data_idx != static_cast<index_type>( 0 ) )
         {
@@ -3236,10 +3179,7 @@ template <typename ManagerT> struct pstring
         }
 
         if ( _data_idx != static_cast<index_type>( 0 ) )
-        {
-            void* old_raw = base + static_cast<std::size_t>( _data_idx ) * ManagerT::address_traits::granule_size;
-            ManagerT::deallocate( old_raw );
-        }
+            ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 
         _data_idx = new_dat_idx;
         _capacity = new_cap;
@@ -3298,12 +3238,8 @@ template <typename T, typename ManagerT> struct pvector
 
         obj->value = val;
 
-        auto& tn = new_node.tree_node();
-        tn.set_left( no_block );
-        tn.set_right( no_block );
-        tn.set_parent( no_block );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
-        tn.set_weight( static_cast<index_type>( 1 ) ); 
+        detail::avl_init_node( new_node );
+        new_node.tree_node().set_weight( static_cast<index_type>( 1 ) ); 
 
         _avl_insert_rightmost( new_node );
 
@@ -3326,32 +3262,14 @@ template <typename T, typename ManagerT> struct pvector
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return node_pptr();
-        
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto left_idx = cur.tree_node().get_left();
-            if ( left_idx == no_block )
-                break;
-            cur = node_pptr( left_idx );
-        }
-        return cur;
+        return detail::avl_min_node( node_pptr( _root_idx ) );
     }
 
     node_pptr back() const noexcept
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return node_pptr();
-        
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx == no_block )
-                break;
-            cur = node_pptr( right_idx );
-        }
-        return cur;
+        return detail::avl_max_node( node_pptr( _root_idx ) );
     }
 
     bool pop_back() noexcept
@@ -3359,14 +3277,7 @@ template <typename T, typename ManagerT> struct pvector
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return false;
 
-        node_pptr target( _root_idx );
-        while ( true )
-        {
-            auto right_idx = target.tree_node().get_right();
-            if ( right_idx == no_block )
-                break;
-            target = node_pptr( right_idx );
-        }
+        node_pptr target = detail::avl_max_node( node_pptr( _root_idx ) );
 
         _avl_remove( target );
         ManagerT::template deallocate_typed<node_type>( target );
@@ -3401,84 +3312,14 @@ template <typename T, typename ManagerT> struct pvector
 
     void reset() noexcept { _root_idx = static_cast<index_type>( 0 ); }
 
-    struct iterator
-    {
-        using value_type = node_type;
-        using pointer    = node_pptr;
-
-        index_type _current_idx; 
-
-        iterator() noexcept : _current_idx( static_cast<index_type>( 0 ) ) {}
-        explicit iterator( index_type idx ) noexcept : _current_idx( idx ) {}
-
-        bool operator==( const iterator& other ) const noexcept { return _current_idx == other._current_idx; }
-        bool operator!=( const iterator& other ) const noexcept { return _current_idx != other._current_idx; }
-
-        node_pptr operator*() const noexcept
-        {
-            if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
-                return node_pptr();
-            return node_pptr( _current_idx );
-        }
-
-        iterator& operator++() noexcept
-        {
-            if ( _current_idx == static_cast<index_type>( 0 ) || _current_idx == no_block )
-                return *this;
-
-            node_pptr cur( _current_idx );
-
-            auto right_idx = cur.tree_node().get_right();
-            if ( right_idx != no_block )
-            {
-                node_pptr right( right_idx );
-                while ( true )
-                {
-                    auto left_idx = right.tree_node().get_left();
-                    if ( left_idx == no_block )
-                        break;
-                    right = node_pptr( left_idx );
-                }
-                _current_idx = right.offset();
-                return *this;
-            }
-
-            while ( true )
-            {
-                auto parent_idx = cur.tree_node().get_parent();
-                if ( parent_idx == no_block )
-                {
-                    
-                    _current_idx = static_cast<index_type>( 0 );
-                    return *this;
-                }
-                node_pptr parent( parent_idx );
-                auto      parent_left = parent.tree_node().get_left();
-                if ( parent_left == cur.offset() )
-                {
-                    
-                    _current_idx = parent_idx;
-                    return *this;
-                }
-                cur = parent;
-            }
-        }
-    };
+    using iterator = detail::AvlInorderIterator<node_pptr>;
 
     iterator begin() const noexcept
     {
         if ( _root_idx == static_cast<index_type>( 0 ) )
             return iterator();
-        
-        node_pptr cur( _root_idx );
-        while ( true )
-        {
-            auto left_idx = cur.tree_node().get_left();
-            if ( left_idx == no_block )
-                break;
-            cur = node_pptr( left_idx );
-        }
-        return iterator( cur.offset() );
+        node_pptr min = detail::avl_min_node( node_pptr( _root_idx ) );
+        return iterator( min.offset() );
     }
 
     iterator end() const noexcept { return iterator( static_cast<index_type>( 0 ) ); }
@@ -3644,20 +3485,15 @@ template <typename ManagerT> struct pstringview
         if ( raw == nullptr )
             return psview_pptr();
 
-        std::uint8_t* base     = ManagerT::backend().base_ptr();
-        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        psview_pptr   new_node( static_cast<index_type>( byte_off / ManagerT::address_traits::granule_size ) );
+        std::uint8_t* base = ManagerT::backend().base_ptr();
+        psview_pptr   new_node( detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, raw ) );
 
         pstringview* obj = static_cast<pstringview*>( raw );
         obj->length      = len;
         
         std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
 
-        auto& tn = new_node.tree_node();
-        tn.set_left( static_cast<index_type>( 0 ) );
-        tn.set_right( static_cast<index_type>( 0 ) );
-        tn.set_parent( static_cast<index_type>( 0 ) );
-        tn.set_height( static_cast<std::int16_t>( 1 ) );
+        detail::avl_init_node( new_node );
 
         ManagerT::lock_block_permanent( obj );
 

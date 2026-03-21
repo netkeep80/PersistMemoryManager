@@ -19,19 +19,19 @@
  *
  * @see plan_issue87.md "Phase 4: FreeBlockTree as template policy"
  * @see block_state.h — BlockState machine (Issue #93, #106)
- * @version 1.4 (Issue #175 — index variables use index_type; ManagerHeader templated)
+ * @see avl_tree_mixin.h — shared AVL operations via BlockPPtr adapter (Issue #188)
+ * @version 1.5 (Issue #188 — deduplicate AVL operations via BlockPPtr adapter)
  */
 
 #pragma once
 
+#include "pmm/avl_tree_mixin.h"
 #include "pmm/block.h"
 #include "pmm/block_state.h"
 #include "pmm/types.h"
 
-#include <cassert>
 #include <concepts>
 #include <cstdint>
-#include <limits>
 #include <type_traits>
 
 namespace pmm
@@ -89,8 +89,8 @@ template <typename Policy> inline constexpr bool is_free_block_tree_policy_v = F
  *
  * Issue #106/#112: Uses Block<AddressTraitsT> layout (BlockHeader struct removed).
  * Issue #126: Fields reordered — weight moved to first TreeNode field.
- * Fields: prev_offset(0), next_offset(4), weight(8), left_offset(12), right_offset(16),
- *         parent_offset(20), root_offset(24), avl_height(28), node_type(30).
+ * Issue #188: Rotation, rebalancing, and min_node operations delegate to shared
+ *   AVL functions via BlockPPtr adapter, eliminating ~120 lines of duplicate code.
  *
  * @tparam AddressTraitsT  Address space traits (compatible with DefaultAddressTraits).
  */
@@ -100,6 +100,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
     using index_type     = typename AddressTraitsT::index_type;
     using BlockT         = Block<AddressTraitsT>;
     using BlockState     = BlockStateBase<AddressTraitsT>;
+    using BPPtr          = detail::BlockPPtr<AddressTraitsT>;
 
     AvlFreeTree()                                = delete;
     AvlFreeTree( const AvlFreeTree& )            = delete;
@@ -141,7 +142,8 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             BlockState::set_left_offset_of( detail::block_at<AddressTraitsT>( base, parent ), blk_idx );
         else
             BlockState::set_right_offset_of( detail::block_at<AddressTraitsT>( base, parent ), blk_idx );
-        rebalance_up( base, hdr, parent );
+        // Issue #188: delegate rebalancing to shared AVL function via BlockPPtr adapter.
+        detail::avl_rebalance_up( BPPtr( base, parent ), hdr->free_tree_root );
     }
 
     /// @brief Remove block from AVL tree of free blocks.
@@ -167,10 +169,12 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
         }
         else
         {
-            index_type succ_idx    = min_node( base, right );
-            void*      succ        = detail::block_at<AddressTraitsT>( base, succ_idx );
-            index_type succ_parent = BlockState::get_parent_offset( succ );
-            index_type succ_right  = BlockState::get_right_offset( succ );
+            // Issue #188: delegate min_node to shared AVL function via BlockPPtr.
+            BPPtr      succ        = detail::avl_min_node( BPPtr( base, right ) );
+            index_type succ_idx    = succ.offset();
+            void*      succ_raw    = detail::block_at<AddressTraitsT>( base, succ_idx );
+            index_type succ_parent = BlockState::get_parent_offset( succ_raw );
+            index_type succ_right  = BlockState::get_right_offset( succ_raw );
 
             if ( succ_parent != blk_idx )
             {
@@ -178,7 +182,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
                 if ( succ_right != AddressTraitsT::no_block )
                     BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, succ_right ),
                                                       succ_parent );
-                BlockState::set_right_offset_of( succ, right );
+                BlockState::set_right_offset_of( succ_raw, right );
                 BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, right ), succ_idx );
                 rebal = succ_parent;
             }
@@ -186,17 +190,19 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             {
                 rebal = succ_idx;
             }
-            BlockState::set_left_offset_of( succ, left );
+            BlockState::set_left_offset_of( succ_raw, left );
             BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, left ), succ_idx );
-            BlockState::set_parent_offset_of( succ, parent );
+            BlockState::set_parent_offset_of( succ_raw, parent );
             set_child( base, hdr, parent, blk_idx, succ_idx );
-            update_height( base, succ_idx );
+            // Issue #188: delegate height update to shared AVL function via BlockPPtr.
+            detail::avl_update_height( BPPtr( base, succ_idx ) );
         }
         BlockState::set_left_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_right_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_parent_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_avl_height_of( blk, 0 );
-        rebalance_up( base, hdr, rebal );
+        // Issue #188: delegate rebalancing to shared AVL function via BlockPPtr adapter.
+        detail::avl_rebalance_up( BPPtr( base, rebal ), hdr->free_tree_root );
     }
 
     /// @brief Find smallest block >= needed granules (best-fit, O(log n)).
@@ -229,29 +235,6 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
     }
 
   private:
-    static std::int32_t height( std::uint8_t* base, index_type idx )
-    {
-        return ( idx == AddressTraitsT::no_block ) ? 0
-                                                   : static_cast<std::int32_t>( BlockState::get_avl_height(
-                                                         detail::block_at<AddressTraitsT>( base, idx ) ) );
-    }
-
-    static void update_height( std::uint8_t* base, index_type node_idx )
-    {
-        void*        node = detail::block_at<AddressTraitsT>( base, node_idx );
-        std::int32_t h    = 1 + ( std::max )( height( base, BlockState::get_left_offset( node ) ),
-                                           height( base, BlockState::get_right_offset( node ) ) );
-        assert( h <= std::numeric_limits<std::int16_t>::max() ); // tree height must fit in int16_t
-        BlockState::set_avl_height_of( node, static_cast<std::int16_t>( h ) );
-    }
-
-    static std::int32_t balance_factor( std::uint8_t* base, index_type node_idx )
-    {
-        const void* node = detail::block_at<AddressTraitsT>( base, node_idx );
-        return height( base, BlockState::get_left_offset( node ) ) -
-               height( base, BlockState::get_right_offset( node ) );
-    }
-
     /// @brief Update parent → child link in tree.
     static void set_child( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type parent,
                            index_type old_child, index_type new_child )
@@ -266,87 +249,6 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             BlockState::set_left_offset_of( p, new_child );
         else
             BlockState::set_right_offset_of( p, new_child );
-    }
-
-    static index_type rotate_right( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type y_idx )
-    {
-        void*      y        = detail::block_at<AddressTraitsT>( base, y_idx );
-        index_type x_idx    = BlockState::get_left_offset( y );
-        void*      x        = detail::block_at<AddressTraitsT>( base, x_idx );
-        index_type t2       = BlockState::get_right_offset( x );
-        index_type y_parent = BlockState::get_parent_offset( y );
-
-        BlockState::set_right_offset_of( x, y_idx );
-        BlockState::set_left_offset_of( y, t2 );
-        // x takes y's old parent; y's new parent is x.
-        BlockState::set_parent_offset_of( x, y_parent );
-        BlockState::set_parent_offset_of( y, x_idx );
-        if ( t2 != AddressTraitsT::no_block )
-            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, t2 ), y_idx );
-        set_child( base, hdr, y_parent, y_idx, x_idx );
-        update_height( base, y_idx );
-        update_height( base, x_idx );
-        return x_idx;
-    }
-
-    static index_type rotate_left( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type x_idx )
-    {
-        void*      x        = detail::block_at<AddressTraitsT>( base, x_idx );
-        index_type y_idx    = BlockState::get_right_offset( x );
-        void*      y        = detail::block_at<AddressTraitsT>( base, y_idx );
-        index_type t2       = BlockState::get_left_offset( y );
-        index_type x_parent = BlockState::get_parent_offset( x );
-
-        BlockState::set_left_offset_of( y, x_idx );
-        BlockState::set_right_offset_of( x, t2 );
-        // y takes x's old parent; x's new parent is y.
-        BlockState::set_parent_offset_of( y, x_parent );
-        BlockState::set_parent_offset_of( x, y_idx );
-        if ( t2 != AddressTraitsT::no_block )
-            BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, t2 ), x_idx );
-        set_child( base, hdr, x_parent, x_idx, y_idx );
-        update_height( base, x_idx );
-        update_height( base, y_idx );
-        return y_idx;
-    }
-
-    static void rebalance_up( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type node_idx )
-    {
-        index_type cur = node_idx;
-        while ( cur != AddressTraitsT::no_block )
-        {
-            update_height( base, cur );
-            std::int32_t bf = balance_factor( base, cur );
-            if ( bf > 1 )
-            {
-                void*      node     = detail::block_at<AddressTraitsT>( base, cur );
-                index_type left_idx = BlockState::get_left_offset( node );
-                if ( balance_factor( base, left_idx ) < 0 )
-                    rotate_left( base, hdr, left_idx );
-                cur = rotate_right( base, hdr, cur );
-            }
-            else if ( bf < -1 )
-            {
-                void*      node      = detail::block_at<AddressTraitsT>( base, cur );
-                index_type right_idx = BlockState::get_right_offset( node );
-                if ( balance_factor( base, right_idx ) > 0 )
-                    rotate_right( base, hdr, right_idx );
-                cur = rotate_left( base, hdr, cur );
-            }
-            cur = BlockState::get_parent_offset( detail::block_at<AddressTraitsT>( base, cur ) );
-        }
-    }
-
-    static index_type min_node( std::uint8_t* base, index_type node_idx )
-    {
-        while ( node_idx != AddressTraitsT::no_block )
-        {
-            index_type left = BlockState::get_left_offset( detail::block_at<AddressTraitsT>( base, node_idx ) );
-            if ( left == AddressTraitsT::no_block )
-                break;
-            node_idx = left;
-        }
-        return node_idx;
     }
 };
 

@@ -789,9 +789,14 @@ static_assert(pmm::StorageBackendConcept<MyStorage>);
 │  create / load / destroy / allocate / deallocate        │
 │  pptr<T> / pstring / pstringview / pmap<K,V> / pvector<T> / parray<T> / pallocator<T> / ppool<T> │
 ├─────────────────────────────────────────────────────────┤
+│        avl_tree_mixin.h (detail::avl_*)                  │
+│  Общие AVL-операции: rotate, rebalance, insert, remove  │
+│  BlockPPtr адаптер · AvlInorderIterator · NodeUpdateFn  │
+│  → pmap, pstringview, pvector, AvlFreeTree              │
+├─────────────────────────────────────────────────────────┤
 │             AllocatorPolicy                              │
 │  best-fit поиск · разделение блоков · коалесценция      │
-│  авто-расширение · AVL-ребалансировка                   │
+│  авто-расширение · AvlFreeTree (через BlockPPtr)        │
 ├─────────────────────────────────────────────────────────┤
 │              Слой сырой памяти                           │
 │  StorageBackend → непрерывный буфер байтов              │
@@ -864,8 +869,12 @@ PersistMemoryManager/
 ├── demo/                             # Визуальное ImGui/OpenGL демо
 ├── docs/                             # Архитектура, API, план развития
 │   ├── plan.md                       # План развития pmm
+│   ├── architecture.md               # Архитектура и внутреннее устройство
+│   ├── api_reference.md              # Справочник API (Markdown)
 │   ├── thread_safety.md              # Потокобезопасность
+│   ├── recovery.md                   # Восстановление после сбоев
 │   ├── phase3_types.md               # Фаза 3: типы для BinDiffSynchronizer
+│   ├── phase6_documentation.md       # Фаза 6: документация и рефакторинг
 │   └── plan4BinDiffSynchronizer.md   # План миграции BinDiffSynchronizer
 ├── scripts/                          # Утилиты для релиза
 └── CMakeLists.txt
@@ -897,10 +906,11 @@ PersistMemoryManager/
 - ~~Расширение покрытия тестами (overflow, concurrent, fuzz)~~ ✅ (#213)
 - ~~Бенчмарки производительности (Google Benchmark)~~ ✅ (#214)
 
-**Фаза 6 (в процессе)** — Документация:
+**Фаза 6 (в процессе)** — Документация и рефакторинг:
 
 - ~~Документация потокобезопасности~~ ✅ (#215)
 - ~~Документация восстановления после сбоев~~ ✅ (#216)
+- ~~Устранение дублирования кода (метапрограммирование)~~ ✅ (#188)
 
 План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
 

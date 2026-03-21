@@ -210,14 +210,19 @@ Mgr::destroy();
 
 ### Детали реализации
 
-- **erase(key)**: находит узел через `_avl_find()`, удаляет из AVL-дерева через
+- **erase(key)**: находит узел через `avl_find()`, удаляет из AVL-дерева через
   `detail::avl_remove()`, деаллоцирует блок в ПАП через `deallocate_typed()`
-- **size()**: рекурсивный обход поддерева за O(n) (pmap не хранит weight в узлах)
-- **iterator**: in-order обход AVL-дерева (левый → корень → правый), аналогичен
-  итератору `pvector`, но обходит узлы в порядке ключей
-- **clear()**: рекурсивная post-order деаллокация всех узлов
-- **Исправление**: инициализация AVL-полей нового узла теперь использует `no_block`
+- **size()**: подсчёт элементов за O(n) через `detail::avl_subtree_count()`
+- **iterator**: используется общий `detail::AvlInorderIterator<NodePPtr>` из
+  `avl_tree_mixin.h` — in-order обход AVL-дерева в порядке ключей
+- **clear()**: рекурсивная post-order деаллокация через `detail::avl_clear_subtree()`
+- **Инициализация**: AVL-полей нового узла через `detail::avl_init_node()` с `no_block`
   sentinel вместо 0 для корректной работы итератора и AVL-операций
+
+> **Примечание (Issue #188):** Все AVL-операции в pmap делегированы общим шаблонным
+> функциям из `avl_tree_mixin.h`. pmap использует стандартный `AvlUpdateHeightOnly`
+> callback (обновление только высоты), в отличие от `pvector`, который дополнительно
+> обновляет поле weight.
 
 ## 3.4 Доработка `pvector<T>` — метод `erase(index)` ✅
 
@@ -261,11 +266,16 @@ Mgr::destroy();
 ### Детали реализации
 
 - **erase(index)**: находит узел через `_avl_find_by_index()` (O(log n) по полю weight),
-  удаляет из AVL-дерева через `detail::avl_remove()` с `_WeightUpdateFn` для обновления
+  удаляет из AVL-дерева через `detail::avl_remove()` с `PvectorNodeUpdateFn` для обновления
   весов поддеревьев, деаллоцирует блок в ПАП через `deallocate_typed()`
-- **Перебалансировка**: `_WeightUpdateFn` обновляет и высоту, и вес (размер поддерева)
+- **Перебалансировка**: `PvectorNodeUpdateFn` обновляет и высоту, и вес (размер поддерева)
   при каждой ротации, что гарантирует корректность order-statistic tree после удаления
 - **Граничные случаи**: возвращает `false` для пустого вектора и для индекса >= size()
+
+> **Примечание (Issue #188):** Все AVL-операции в pvector делегированы общим шаблонным
+> функциям из `avl_tree_mixin.h`. pvector передаёт пользовательский callback
+> `PvectorNodeUpdateFn`, обновляющий и высоту, и weight (размер поддерева) при
+> каждой ротации. Итератор использует общий `AvlInorderIterator<NodePPtr>`.
 
 ## 3.5 STL-совместимый аллокатор `pallocator<T, ManagerT>` ✅
 
