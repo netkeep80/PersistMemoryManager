@@ -147,6 +147,12 @@ class pptr
      */
     bool operator<( const pptr& other ) const noexcept
     {
+        // Issue #235: compile-time check — T must support operator< for pptr ordering.
+        static_assert(
+            requires( const T& a, const T& b ) {
+                { a < b } -> std::convertible_to<bool>;
+            }, "pptr<T>::operator< requires T to support operator<. "
+               "Provide bool operator<(const T&, const T&) or use pptr::offset() for index-based ordering." );
         // Null pptr меньше любого ненулевого
         if ( is_null() && !other.is_null() )
             return true;
