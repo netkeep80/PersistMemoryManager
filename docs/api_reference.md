@@ -20,7 +20,7 @@ instances of the same configuration can coexist through the `InstanceId` templat
 #include "pmm/manager_configs.h"         // predefined configurations
 #include "pmm/pmm_presets.h"             // named preset aliases
 #include "pmm/io.h"                      // file save / load utilities
-#include "pmm/avl_tree_mixin.h"          // shared AVL helpers (included via pmap/pstringview/pvector)
+#include "pmm/avl_tree_mixin.h"          // shared AVL helpers (included via pmap/pstringview)
 ```
 
 **Single-header presets** (include one file, get a ready-to-use manager type).
@@ -77,9 +77,6 @@ using pstringview = pmm::pstringview<PersistMemoryManager>;
 template <typename _K, typename _V>
 using pmap = pmm::pmap<_K, _V, PersistMemoryManager>;
 
-// Persistent vector
-template <typename T>
-using pvector = pmm::pvector<T, PersistMemoryManager>;
 ```
 
 ### Lifecycle
@@ -766,125 +763,6 @@ assert(!p.is_null() && p->value == 42);
 
 Mgr::destroy();
 ```
-
----
-
-## Class `pvector<T, ManagerT>`
-
-```cpp
-namespace pmm {
-    template <typename T, typename ManagerT>
-    struct pvector;
-}
-```
-
-A persistent sequential container (vector) for PAP. Each element is stored in a separate
-PAP block containing a `pvector_node<T>`. Elements are organized as an AVL order-statistic
-tree using the built-in `TreeNode` fields, with a `weight` field storing the subtree size.
-This enables O(log n) indexed access, push_back, pop_back, and erase.
-
-**Accessed via manager nested alias:**
-```cpp
-using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
-Mgr::pvector<int> vec;
-vec.push_back(42);
-```
-
-### Data fields
-
-```cpp
-index_type _root_idx;  // granule index of AVL tree root; 0 = empty vector
-```
-
-### Constructors
-
-```cpp
-pvector() noexcept;  // creates an empty vector
-```
-
-### Methods
-
-```cpp
-bool      empty()                   const noexcept;
-std::size_t size()                  const noexcept;  // O(1) from root's weight field
-node_pptr push_back(const T& val)   noexcept;        // O(log n) rightmost insertion
-node_pptr at(std::size_t index)     const noexcept;  // O(log n) access via order-statistic tree
-node_pptr front()                   const noexcept;  // O(log n) leftmost node (min)
-node_pptr back()                    const noexcept;  // O(log n) rightmost node (max)
-bool      pop_back()                noexcept;        // O(log n) remove last
-bool      erase(std::size_t index)  noexcept;        // O(log n) erase by index; false if out of range
-void      clear()                   noexcept;        // O(n) remove all elements
-void      reset()                   noexcept;        // reset root for test isolation
-```
-
-### `pvector_node<T>`
-
-```cpp
-template <typename T>
-struct pvector_node {
-    T value;
-};
-```
-
-Each node is a separate PAP block. Access via the returned `pptr`:
-```cpp
-auto p = vec.at(0);
-if (!p.is_null()) {
-    int val = p->value;  // 42
-}
-```
-
-### Iterator
-
-Uses the shared `AvlInorderIterator<NodePPtr>` template from `avl_tree_mixin.h`:
-
-```cpp
-using iterator = pmm::detail::AvlInorderIterator<node_pptr>;
-
-iterator begin() const noexcept;  // leftmost node (smallest index)
-iterator end()   const noexcept;  // sentinel (null)
-```
-
-The iterator traverses nodes in-order (ascending by position) via `avl_inorder_successor`.
-
-### Example
-
-```cpp
-using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
-Mgr::create(64 * 1024);
-
-Mgr::pvector<int> vec;
-vec.push_back(10);
-vec.push_back(20);
-vec.push_back(30);
-
-assert(vec.size() == 3);
-assert(vec.front()->value == 10);
-assert(vec.back()->value == 30);
-
-auto p = vec.at(1);
-assert(!p.is_null() && p->value == 20);
-
-// Iteration
-for (auto it = vec.begin(); it != vec.end(); ++it) {
-    auto node = *it;
-    std::cout << node->value << "\n";
-}
-
-vec.pop_back();     // O(log n) — remove last
-vec.erase(0);       // O(log n) — erase by index
-assert(vec.size() == 1);
-
-vec.clear();
-assert(vec.empty());
-
-Mgr::destroy();
-```
-
-**Notes:**
-- Nodes are **not** permanently locked — they can be freed via `pop_back()`, `erase()`, or `clear()`.
-- All operations are O(log n) except `size()` which is O(1) and `clear()` which is O(n).
-- Uses the shared AVL order-statistic tree: each node's `weight` field stores subtree size.
 
 ---
 

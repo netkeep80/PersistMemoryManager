@@ -108,7 +108,6 @@ cat > "$TMP_ENTRY_DIR/entry_pmm.h" << 'EOF'
 #include "pmm/persist_memory_manager.h"
 #include "pmm/pmap.h"
 #include "pmm/pstringview.h"
-#include "pmm/pvector.h"
 #include "pmm/io.h"
 #include "pmm/static_storage.h"
 #include "pmm/mmap_storage.h"

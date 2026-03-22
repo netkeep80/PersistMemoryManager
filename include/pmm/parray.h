@@ -3,8 +3,7 @@
  * @brief parray<T, ManagerT> — persistent dynamic array with O(1) random access (Issue #195, Phase 3.2).
  *
  * Implements a dynamic array in the persistent address space (PAP).
- * Unlike pvector<T> (AVL-tree based, O(log n) random access), parray provides
- * O(1) indexed access via a contiguous data block, similar to std::vector.
+ * Provides O(1) indexed access via a contiguous data block, similar to std::vector.
  *
  * Key properties:
  *   - O(1) random access: at(i) / operator[] resolve directly to the i-th element.
@@ -49,7 +48,6 @@
  *   Mgr::destroy();
  * @endcode
  *
- * @see pvector.h  — pvector<T, ManagerT> (AVL-tree based persistent vector)
  * @see pstring.h  — pstring<ManagerT> (mutable persistent string)
  * @see persist_memory_manager.h — PersistMemoryManager (static model)
  * @see pptr.h — pptr<T, ManagerT> (persistent pointer)

@@ -31,7 +31,6 @@
 #include "pmm/ppool.h"
 #include "pmm/pptr.h"
 #include "pmm/pstring.h"
-#include "pmm/pvector.h"
 #include "pmm/pstringview.h"
 #include "pmm/typed_guard.h"
 #include "pmm/types.h"
@@ -147,21 +146,6 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * @tparam _V Тип значения.
      */
     template <typename _K, typename _V> using pmap = pmm::pmap<_K, _V, manager_type>;
-
-    /**
-     * @brief Алиас для персистентного вектора, привязанного к данному менеджеру (Issue #186).
-     *
-     * Позволяет писать:
-     * @code
-     *   Mgr::pvector<int> vec;
-     *   vec.push_back(42);
-     *   auto p = vec.at(0);
-     * @endcode
-     * вместо `pmm::pvector<int, Mgr> vec;`
-     *
-     * @tparam T Тип элемента.
-     */
-    template <typename T> using pvector = pmm::pvector<T, manager_type>;
 
     /**
      * @brief Алиас для персистентного массива с O(1) индексацией (Issue #195, Phase 3.2).

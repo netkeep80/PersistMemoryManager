@@ -1,16 +1,14 @@
 /**
  * @file pmm/avl_tree_mixin.h
- * @brief Shared AVL tree helper functions for pmap, pstringview and pvector (Issue #155, #162, #188).
+ * @brief Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162, #188).
  *
  * Provides a set of free static template functions implementing the core AVL
  * tree operations (height, balance factor, rotations, rebalancing, insert, find,
- * remove) that are shared between pmap<_K,_V,ManagerT>, pstringview<ManagerT>
- * and pvector<T,ManagerT>.
+ * remove) that are shared between pmap<_K,_V,ManagerT> and pstringview<ManagerT>.
  *
  * All rotation and rebalance functions accept an optional NodeUpdateFn callback
  * that is invoked after structural changes to update derived node attributes.
- * By default avl_update_height is used (height-only). pvector passes a custom
- * callback that also updates the order-statistic weight field (Issue #188).
+ * By default avl_update_height is used (height-only).
  *
  * Template parameter PPtr must support:
  *   - is_null()
@@ -25,11 +23,10 @@
  * its own duplicate rotation/rebalancing code (Issue #188).
  *
  * Additionally provides AvlInorderIterator<NodePPtr> — a shared in-order
- * iterator template used by both pmap and pvector (Issue #188).
+ * iterator template used by pmap (Issue #188).
  *
  * @see pmap.h — pmap<_K,_V,ManagerT> (Issue #153)
  * @see pstringview.h — pstringview<ManagerT> (Issue #151)
- * @see pvector.h — pvector<T,ManagerT> (Issue #186, #188)
  * @see free_block_tree.h — AvlFreeTree<AT> uses BlockPPtr adapter (Issue #188)
  * @version 0.5 (Issue #188 — BlockPPtr adapter for free_block_tree, AvlInorderIterator)
  */
@@ -402,7 +399,7 @@ static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way,
 }
 
 /// @brief In-order successor: next node in sorted order (Issue #188 deduplication).
-/// Shared between pvector::iterator and pmap::iterator — eliminates ~50 lines of duplication.
+/// Shared between pmap::iterator and other AVL-based containers.
 template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
 {
     if ( cur.is_null() )
@@ -428,7 +425,7 @@ template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
 
 /// @brief Initialize AVL tree node fields to empty state (Issue #188 deduplication).
 /// Sets left, right, parent to sentinel and height to 1.
-/// Shared between pvector::push_back, pmap::insert, pstringview::_intern.
+/// Shared between pmap::insert, pstringview::_intern.
 template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
 {
     auto& tn = p.tree_node();
@@ -601,12 +598,12 @@ static BlockPPtr<AddressTraitsT> pptr_make( BlockPPtr<AddressTraitsT>           
     return BlockPPtr<AddressTraitsT>( source._base, idx );
 }
 
-// ─── AvlInorderIterator: shared in-order iterator for pmap and pvector ───────
+// ─── AvlInorderIterator: shared in-order iterator for pmap ───────────────────
 
 /**
  * @brief Shared in-order AVL tree iterator template (Issue #188).
  *
- * Eliminates identical iterator structs in pmap and pvector (~35 lines each).
+ * Eliminates identical iterator structs in AVL-based containers.
  * Both containers can use this template directly or as a base.
  *
  * @tparam NodePPtr  Persistent pointer type to tree nodes (e.g. pptr<node_type, ManagerT>).

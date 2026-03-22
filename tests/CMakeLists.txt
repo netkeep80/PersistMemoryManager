@@ -130,9 +130,6 @@ pmm_add_test(test_issue151_pstringview test_issue151_pstringview.cpp)
 # ─── Тесты pmap — персистентного словаря на AVL-дереве (Issue #153) ──────────
 pmm_add_test(test_issue153_pmap test_issue153_pmap.cpp)
 
-# ─── Тесты pvector — персистентного вектора (Issue #186) ──────────────────────
-pmm_add_test(test_issue186_pvector test_issue186_pvector.cpp)
-
 # ─── Тесты дедупликации функциональности (Issue #160) ─────────────────────────
 pmm_add_test(test_issue160_deduplication test_issue160_deduplication.cpp)
 
@@ -148,7 +145,7 @@ pmm_add_test(test_issue168_deduplication test_issue168_deduplication.cpp)
 # ─── Тесты дедупликации blk_raw-вычислений (Issue #179) ─────────────────────
 pmm_add_test(test_issue179_deduplication test_issue179_deduplication.cpp)
 
-# ─── Тесты дедупликации AVL-операций pvector через avl_tree_mixin (Issue #188) ─
+# ─── Тесты дедупликации AVL-операций через avl_tree_mixin (Issue #188) ────────
 pmm_add_test(test_issue188_deduplication test_issue188_deduplication.cpp)
 
 # ─── Тесты мутабельной персистентной строки pstring (Issue #45, Phase 3.1) ───
@@ -159,9 +156,6 @@ pmm_add_test(test_issue195_parray test_issue195_parray.cpp)
 
 # ─── Тесты pmap erase/size/iterator/clear (Issue #196, Phase 3.3) ──────────
 pmm_add_test(test_issue196_pmap_erase test_issue196_pmap_erase.cpp)
-
-# ─── Тесты pvector erase(index) (Issue #197, Phase 3.4) ─────────────────────
-pmm_add_test(test_issue197_pvector_erase test_issue197_pvector_erase.cpp)
 
 # ─── Тесты STL-совместимого аллокатора pallocator (Issue #198, Phase 3.5) ───
 pmm_add_test(test_issue198_pallocator test_issue198_pallocator.cpp)

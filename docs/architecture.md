@@ -25,7 +25,7 @@ coexist through the `InstanceId` template parameter (multiton pattern).
 ├───────────────────────────────────────────────────────────────────────┤
 │  avl_tree_mixin.h (detail::avl_*)                                     │
 │  (shared AVL: rotate, rebalance, insert, remove, find, iterators)    │
-│  used by pmap, pstringview, pvector, AvlFreeTree (via BlockPPtr)     │
+│  used by pmap, pstringview, AvlFreeTree (via BlockPPtr)              │
 ├───────────────────────────────────────────────────────────────────────┤
 │  AllocatorPolicy<FreeBlockTreeT, AddressTraitsT>                      │
 │  (best-fit via AVL tree, splitting, coalescing,                       │
@@ -302,7 +302,7 @@ pmap::_root_idx
 
 ### Shared AVL operations (`avl_tree_mixin.h`)
 
-All persistent containers (`pstringview`, `pmap`, `pvector`) and the free block tree
+All persistent containers (`pstringview`, `pmap`) and the free block tree
 (`AvlFreeTree`) share a single AVL implementation via free template functions in
 `pmm::detail`. This eliminates ~250 lines of previously duplicated code through
 C++ template metaprogramming (Issue #188).
@@ -334,8 +334,6 @@ invoked after structural changes. This enables different containers to maintain
 different node invariants:
 
 - **`pmap`, `pstringview`**: use default `AvlUpdateHeightOnly` (height field only)
-- **`pvector`**: uses `PvectorNodeUpdateFn` that updates both height **and** the
-  order-statistic weight field (subtree size), enabling O(log n) indexed access
 - **`AvlFreeTree`**: uses `AvlUpdateHeightOnly` via `BlockPPtr` adapter
 
 #### `BlockPPtr<AT>` adapter (for free block tree)
@@ -352,7 +350,7 @@ of maintaining ~120 lines of duplicate code.
 #### `AvlInorderIterator<NodePPtr>`
 
 A shared in-order AVL tree iterator template that replaces identical iterator structs
-previously duplicated in `pmap` and `pvector`. Provides `operator*`, `operator++`
+previously duplicated in AVL-based containers. Provides `operator*`, `operator++`
 (via `avl_inorder_successor`), and comparison operators.
 
 ---
