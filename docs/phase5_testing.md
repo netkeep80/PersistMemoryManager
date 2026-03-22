@@ -218,9 +218,6 @@ endif()
 - `BM_PmapFind` — поиск по ключу в дереве из N элементов
 - `BM_PmapErase` — удаление N элементов (100, 1K)
 
-**pvector** (2 бенчмарка):
-- `BM_PvectorPushBack` — добавление N элементов (100, 1K, 10K)
-- `BM_PvectorAt` — доступ по индексу в O(log n) (AVL order-statistic tree)
 
 **parray** (2 бенчмарка):
 - `BM_ParrayPushBack` — добавление N элементов (100, 1K, 10K)
@@ -259,7 +256,6 @@ cmake --build build --target pmm_benchmarks
 | `malloc+free(64)` | ~7 | Базовый аллокатор |
 | `pmap find(10K)` | ~49 | O(log n) AVL-поиск |
 | `pmap insert(10K)` | ~102 нс/эл | С аллокацией узлов |
-| `pvector at(10K)` | ~43 | O(log n) order-statistic |
 | `parray [](10K)` | ~3 | O(1) произвольный доступ |
 | `ppool allocate` | ~1.4 | O(1) из free-list |
 | `pstring append` | ~1.1 | Amortized O(1) |

@@ -5,7 +5,6 @@
  * Benchmarks:
  *   - Allocator: allocate, deallocate, reallocate_typed, mixed alloc/dealloc
  *   - pmap<K,V>: insert, find, erase
- *   - pvector<T>: push_back, at
  *   - parray<T>: push_back, random access
  *   - ppool<T>: allocate, deallocate
  *   - pstring: assign, append
@@ -29,7 +28,6 @@
 #include "pmm/ppool.h"
 #include "pmm/pstring.h"
 #include "pmm/pstringview.h"
-#include "pmm/pvector.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -44,7 +42,6 @@ using MgrMixed   = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 102>;
 using MgrRealloc = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 103>;
 using MgrBatch   = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 104>;
 using MgrPmap    = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 105>;
-using MgrPvec    = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 106>;
 using MgrParray  = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 107>;
 using MgrPpool   = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 108>;
 using MgrPstring = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 109>;
@@ -298,58 +295,6 @@ static void BM_PmapErase( benchmark::State& state )
     MgrPmap::destroy();
 }
 BENCHMARK( BM_PmapErase )->Arg( 100 )->Arg( 1000 );
-
-// ═════════════════════════════════════════════════════════════════════════════
-//  pvector benchmarks (AVL order-statistic tree, O(log n))
-// ═════════════════════════════════════════════════════════════════════════════
-
-static void BM_PvectorPushBack( benchmark::State& state )
-{
-    const auto N = static_cast<int>( state.range( 0 ) );
-    MgrPvec::create( HEAP_64MB );
-
-    using MyVec = pmm::pvector<int, MgrPvec>;
-    MyVec vec;
-
-    for ( auto _ : state )
-    {
-        for ( int i = 0; i < N; i++ )
-            vec.push_back( i );
-
-        state.PauseTiming();
-        vec.clear();
-        state.ResumeTiming();
-    }
-
-    state.SetItemsProcessed( state.iterations() * N );
-    vec.clear();
-    MgrPvec::destroy();
-}
-BENCHMARK( BM_PvectorPushBack )->Arg( 100 )->Arg( 1000 )->Arg( 10000 );
-
-static void BM_PvectorAt( benchmark::State& state )
-{
-    const auto N = static_cast<int>( state.range( 0 ) );
-    MgrPvec::create( HEAP_64MB );
-
-    using MyVec = pmm::pvector<int, MgrPvec>;
-    MyVec vec;
-
-    for ( int i = 0; i < N; i++ )
-        vec.push_back( i );
-
-    int idx = 0;
-    for ( auto _ : state )
-    {
-        auto p = vec.at( idx );
-        benchmark::DoNotOptimize( p );
-        idx = ( idx + 1 ) % static_cast<int>( vec.size() );
-    }
-
-    vec.clear();
-    MgrPvec::destroy();
-}
-BENCHMARK( BM_PvectorAt )->Arg( 100 )->Arg( 1000 )->Arg( 10000 );
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  parray benchmarks (contiguous storage, O(1) access)

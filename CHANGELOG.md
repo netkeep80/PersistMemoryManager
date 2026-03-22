@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.46.0] - 2026-03-22
+
+### Removed
+- `pvector<T, ManagerT>` persistent vector type — fully replaced by `parray<T>` with O(1) random access (Issue #224)
+  - Deleted `include/pmm/pvector.h` header
+  - Deleted `tests/test_issue186_pvector.cpp` and `tests/test_issue197_pvector_erase.cpp` test files
+  - Removed `Mgr::pvector<T>` type alias from `PersistMemoryManager`
+  - Removed pvector benchmarks (`BM_PvectorPushBack`, `BM_PvectorAt`) from `bench_allocator.cpp`
+  - Cleaned all pvector references from documentation, README, and CHANGELOG
+  - Regenerated `single_include/` headers
+
 ## [0.45.0] - 2026-03-21
 
 ### Added
@@ -50,14 +61,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - refactor(#188): eliminate code duplication across persistent containers using C++ template metaprogramming
-  - Extract shared `avl_inorder_successor`, `avl_init_node`, `avl_subtree_count`, `avl_clear_subtree` to `avl_tree_mixin.h` — eliminates ~100 lines of duplicated AVL traversal/initialization code from pvector, pmap, pstringview
+  - Extract shared `avl_inorder_successor`, `avl_init_node`, `avl_subtree_count`, `avl_clear_subtree` to `avl_tree_mixin.h` — eliminates ~100 lines of duplicated AVL traversal/initialization code from pmap, pstringview
   - Extract `resolve_granule_ptr` and `ptr_to_granule_idx` helpers to `types.h` — eliminates repeated index↔pointer conversion patterns from parray, pstring, ppool, pstringview
   - Extract `crc32_accumulate_byte` helper — eliminates 4 duplicated CRC32 bit-rotation loops in `types.h`
-  - Deduplicate pvector `front()`/`back()`/`pop_back()`/`begin()` using shared `avl_min_node`/`avl_max_node`
   - Unify pstringview AVL node initialization to use shared `avl_init_node` with correct `no_block` sentinel
   - Extract `StaticConfig` base template in `manager_configs.h` — eliminates duplicated struct bodies for `SmallEmbeddedStaticConfig` and `EmbeddedStaticConfig`
   - Introduce `BlockPPtr` adapter in `avl_tree_mixin.h` — enables `AvlFreeTree` to reuse shared AVL rotation, rebalancing, and min_node via the same generic functions, eliminating ~120 lines of duplicate code from `free_block_tree.h`
-  - Extract `AvlInorderIterator` template in `avl_tree_mixin.h` — eliminates identical in-order iterator structs from pmap and pvector (~35 lines each)
+  - Extract `AvlInorderIterator` template in `avl_tree_mixin.h` — eliminates identical in-order iterator structs from AVL-based containers
   - Regenerate `single_include/` headers
 
 
@@ -65,7 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Google Benchmark v1.9.1 integration for performance benchmarks (Issue #214, Phase 5.3):
-  - 18 benchmarks covering allocator, pmap, pvector, parray, ppool, pstring, pstringview, and multi-threaded operations
+  - 16 benchmarks covering allocator, pmap, parray, ppool, pstring, pstringview, and multi-threaded operations
   - Comparison with malloc/free baseline
   - Optional build via `PMM_BUILD_BENCHMARKS=ON`
   - `benchmarks/bench_allocator.cpp` — single benchmark file
@@ -163,12 +173,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `pallocator<T, ManagerT>` — STL-compatible allocator for persistent address space (Issue #198, Phase 3.5). Allows using STL containers like `std::vector<T, Mgr::pallocator<T>>` with persistent memory managed by PersistMemoryManager.
 
 
-## [0.30.0] - 2026-03-19
-
-### Added
-- `pvector::erase(index)` — O(log n) removal by index with AVL tree rebalancing (#197, Phase 3.4)
-
-
 ## [0.29.0] - 2026-03-19
 
 ### Added
@@ -235,21 +239,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **avl_tree_mixin.h**: Added `NodeUpdateFn` hook parameter to `avl_rotate_right`, `avl_rotate_left`, `avl_rebalance_up`, and `avl_insert` — enables custom node-attribute updates (e.g. order-statistic weight) without duplicating rotation/rebalance code (Issue #188).
 - **avl_tree_mixin.h**: Added shared `avl_remove`, `avl_min_node`, `avl_max_node` functions for reuse across persistent containers (Issue #188).
-- **pvector.h**: Refactored to delegate AVL rotation, rebalancing, insertion and removal to `avl_tree_mixin.h` via `_WeightUpdateFn`, eliminating ~280 lines of duplicated AVL code (Issue #188).
-
-
-## [0.22.0] - 2026-03-12
-
-### Added
-- New persistent container `pvector<T>` — a sequential container (vector) for the persistent address space (Issue #186)
-  - O(1) `push_back()`, `front()`, `back()`, `pop_back()` operations with tail pointer
-  - O(n) `at(i)` access via linear traversal from head
-  - Iterator support via `begin()`/`end()` for range-based for loops
-  - `clear()` method to remove all elements and free memory
-  - Nodes are NOT permanently locked — can be freed via `pop_back()` or `clear()`
-- `Mgr::pvector<T>` type alias in PersistMemoryManager for convenient access
-- Comprehensive test suite for pvector (test_issue186_pvector.cpp)
-- Documentation for pvector in README.md and docs/api_reference.md
 
 
 ## [0.21.0] - 2026-03-11
