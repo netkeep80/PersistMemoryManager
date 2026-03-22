@@ -22,5 +22,5 @@ var searchData=
   ['freeblockremovedavl_19',['FreeBlockRemovedAVL',['../classpmm_1_1FreeBlockRemovedAVL.html',1,'pmm']]],
   ['freeblockview_20',['FreeBlockView',['../structpmm_1_1FreeBlockView.html',1,'pmm']]],
   ['from_5fu32_5fidx_21',['from_u32_idx',['../namespacepmm_1_1detail.html#ad4a291437e5155ad28954d355946ff9f',1,'pmm::detail']]],
-  ['front_22',['front',['../structpmm_1_1parray.html#a2dcbfa513bab6e8a1f08157db4ea0dfc',1,'pmm::parray::front() noexcept'],['../structpmm_1_1parray.html#ae894b48d86971900bbab065b5be352ec',1,'pmm::parray::front() const noexcept'],['../structpmm_1_1pvector.html#a89a3682abdf25a420f12917765a0ef0b',1,'pmm::pvector::front()']]]
+  ['front_22',['front',['../structpmm_1_1parray.html#a2dcbfa513bab6e8a1f08157db4ea0dfc',1,'pmm::parray::front() noexcept'],['../structpmm_1_1parray.html#ae894b48d86971900bbab065b5be352ec',1,'pmm::parray::front() const noexcept']]]
 ];

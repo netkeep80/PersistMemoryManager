@@ -13,6 +13,5 @@ var searchData=
   ['propagate_5fon_5fcontainer_5fswap_10',['propagate_on_container_swap',['../structpmm_1_1pallocator.html#a942714a7ae7eb324f01a5643861628df',1,'pmm::pallocator']]],
   ['pstring_11',['pstring',['../classpmm_1_1PersistMemoryManager.html#ad3a667ca3868eeb1a6ae0075c5bbfd42',1,'pmm::PersistMemoryManager']]],
   ['pstringview_12',['pstringview',['../classpmm_1_1PersistMemoryManager.html#a3ffaacff7d4795badd3889736bb2f063',1,'pmm::PersistMemoryManager']]],
-  ['psview_5fpptr_13',['psview_pptr',['../structpmm_1_1pstringview.html#a9c83b90b16bea5f9a82f99e00eeb2fe1',1,'pmm::pstringview']]],
-  ['pvector_14',['pvector',['../classpmm_1_1PersistMemoryManager.html#aab265177939578aeb5b90ee56ecbe079',1,'pmm::PersistMemoryManager']]]
+  ['psview_5fpptr_13',['psview_pptr',['../structpmm_1_1pstringview.html#a9c83b90b16bea5f9a82f99e00eeb2fe1',1,'pmm::pstringview']]]
 ];

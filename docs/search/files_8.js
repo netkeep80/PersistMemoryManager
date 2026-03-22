@@ -8,6 +8,5 @@ var searchData=
   ['ppool_2eh_5',['ppool.h',['../ppool_8h.html',1,'']]],
   ['pptr_2eh_6',['pptr.h',['../pptr_8h.html',1,'']]],
   ['pstring_2eh_7',['pstring.h',['../pstring_8h.html',1,'']]],
-  ['pstringview_2eh_8',['pstringview.h',['../pstringview_8h.html',1,'']]],
-  ['pvector_2eh_9',['pvector.h',['../pvector_8h.html',1,'']]]
+  ['pstringview_2eh_8',['pstringview.h',['../pstringview_8h.html',1,'']]]
 ];

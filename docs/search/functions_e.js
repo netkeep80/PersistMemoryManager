@@ -15,7 +15,7 @@ var searchData=
   ['required_5fblock_5fgranules_12',['required_block_granules',['../namespacepmm_1_1detail.html#ab890535579b00c765044db90a2f4a642',1,'pmm::detail']]],
   ['required_5fblock_5fgranules_5ft_13',['required_block_granules_t',['../namespacepmm_1_1detail.html#aaa1cc91dd46ee4f2058806edd8007c29',1,'pmm::detail']]],
   ['reserve_14',['reserve',['../structpmm_1_1parray.html#ab8443e9eb7b6105ec1c073a0b5faca70',1,'pmm::parray']]],
-  ['reset_15',['reset',['../structpmm_1_1pvector.html#a121d759eaf298126998812055c611576',1,'pmm::pvector::reset()'],['../classpmm_1_1typed__guard.html#af5c7469962eeb50c1c3f27e223a58f6c',1,'pmm::typed_guard::reset()'],['../structpmm_1_1pstringview.html#a900efcbfca8adfab8beea909d3ff8124',1,'pmm::pstringview::reset()'],['../structpmm_1_1pmap.html#a606608889b1f241f01e030095fbd4627',1,'pmm::pmap::reset()']]],
+  ['reset_15',['reset',['../structpmm_1_1pstringview.html#a900efcbfca8adfab8beea909d3ff8124',1,'pmm::pstringview::reset()'],['../classpmm_1_1typed__guard.html#af5c7469962eeb50c1c3f27e223a58f6c',1,'pmm::typed_guard::reset()'],['../structpmm_1_1pmap.html#a606608889b1f241f01e030095fbd4627',1,'pmm::pmap::reset()']]],
   ['reset_5favl_5ffields_16',['reset_avl_fields',['../classpmm_1_1BlockStateBase.html#ab043ddadf86501b14fca872e3edbba2d',1,'pmm::BlockStateBase']]],
   ['reset_5favl_5ffields_5fof_17',['reset_avl_fields_of',['../classpmm_1_1BlockStateBase.html#a2208935a3d222b4564c7c53adf52ed2a',1,'pmm::BlockStateBase']]],
   ['resize_18',['resize',['../structpmm_1_1parray.html#a6fed4212b4721a5623cc1d80eac3c105',1,'pmm::parray']]],

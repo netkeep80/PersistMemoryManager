@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Shared AVL tree helper functions for pmap, pstringview and pvector (Issue #155, #162, #188).  
+<p>Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162, #188).  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="block_8h_source.html">pmm/block.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="block__state_8h_source.html">pmm/block_state.h</a>&quot;</code><br />
@@ -99,9 +99,9 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Shared AVL tree helper functions for pmap, pstringview and pvector (Issue #155, #162, #188). </p>
-<p>Provides a set of free static template functions implementing the core AVL tree operations (height, balance factor, rotations, rebalancing, insert, find, remove) that are shared between pmap&lt;_K,_V,ManagerT&gt;, pstringview&lt;ManagerT&gt; and pvector&lt;T,ManagerT&gt;.</p>
-<p>All rotation and rebalance functions accept an optional NodeUpdateFn callback that is invoked after structural changes to update derived node attributes. By default avl_update_height is used (height-only). pvector passes a custom callback that also updates the order-statistic weight field (Issue #188).</p>
+<div class="textblock"><p>Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162, #188). </p>
+<p>Provides a set of free static template functions implementing the core AVL tree operations (height, balance factor, rotations, rebalancing, insert, find, remove) that are shared between pmap&lt;_K,_V,ManagerT&gt; and pstringview&lt;ManagerT&gt;.</p>
+<p>All rotation and rebalance functions accept an optional NodeUpdateFn callback that is invoked after structural changes to update derived node attributes. By default avl_update_height is used (height-only).</p>
 <p>Template parameter PPtr must support:</p><ul>
 <li>is_null()</li>
 <li>tree_node() returning a TreeNode&amp; with get_left/set_left/get_right/set_right/ get_parent/set_parent/get_height/set_height</li>
@@ -109,12 +109,10 @@ Namespaces</h2></td></tr>
 <li>PPtr::manager_type::address_traits::no_block sentinel</li>
 </ul>
 <p>Also provides BlockPPtr&lt;AddressTraitsT&gt; — a lightweight adapter that wraps raw (base_ptr, index) pairs and delegates to BlockStateBase&lt;AT&gt; static methods, enabling AvlFreeTree to reuse the shared AVL operations instead of maintaining its own duplicate rotation/rebalancing code (Issue #188).</p>
-<p>Additionally provides AvlInorderIterator&lt;NodePPtr&gt; — a shared in-order iterator template used by both pmap and pvector (Issue #188).</p>
+<p>Additionally provides AvlInorderIterator&lt;NodePPtr&gt; — a shared in-order iterator template used by pmap (Issue #188).</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="pmap_8h.html" title="pmap&lt;_K,_V,ManagerT&gt; — персистентный словарь на основе AVL-дерева (Issue #153, #196).">pmap.h</a> — pmap&lt;_K,_V,ManagerT&gt; (Issue #153) </dd>
 <dd>
 <a class="el" href="pstringview_8h.html" title="pstringview&lt;ManagerT&gt; — персистентная строка только для чтения с интернированием (Issue #151,...">pstringview.h</a> — pstringview&lt;ManagerT&gt; (Issue #151) </dd>
-<dd>
-<a class="el" href="pvector_8h.html" title="pvector&lt;T,ManagerT&gt; — персистентный вектор для менеджера ПАП (Issue #186).">pvector.h</a> — pvector&lt;T,ManagerT&gt; (Issue #186, #188) </dd>
 <dd>
 <a class="el" href="free__block__tree_8h.html" title="FreeBlockTree — AVL tree policy for free blocks (Issue #87 Phase 4, #95, #129).">free_block_tree.h</a> — AvlFreeTree&lt;AT&gt; uses BlockPPtr adapter (Issue #188) </dd></dl>
 <dl class="section version"><dt>Version</dt><dd>0.5 (Issue #188 — BlockPPtr adapter for free_block_tree, AvlInorderIterator) </dd></dl>

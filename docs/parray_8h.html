@@ -105,7 +105,7 @@ Namespaces</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>parray&lt;T, ManagerT&gt; — persistent dynamic array with O(1) random access (Issue #195, Phase 3.2). </p>
-<p>Implements a dynamic array in the persistent address space (PAP). Unlike pvector&lt;T&gt; (AVL-tree based, O(log n) random access), parray provides O(1) indexed access via a contiguous data block, similar to std::vector.</p>
+<p>Implements a dynamic array in the persistent address space (PAP). Provides O(1) indexed access via a contiguous data block, similar to std::vector.</p>
 <p>Key properties:</p><ul>
 <li>O(1) random access: at(i) / operator[] resolve directly to the i-th element.</li>
 <li>Amortized O(1) push_back: capacity doubles on growth.</li>
@@ -144,10 +144,8 @@ Namespaces</h2></td></tr>
 <div class="line">Mgr::destroy_typed(p);</div>
 <div class="line"> </div>
 <div class="line">Mgr::destroy();</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00086">persist_memory_manager.h:87</a></div></div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="pvector_8h.html" title="pvector&lt;T,ManagerT&gt; — персистентный вектор для менеджера ПАП (Issue #186).">pvector.h</a> — pvector&lt;T, ManagerT&gt; (AVL-tree based persistent vector) </dd>
-<dd>
-<a class="el" href="pstring_8h.html" title="pstring&lt;ManagerT&gt; — мутабельная персистентная строка (Issue #45, Phase 3.1).">pstring.h</a> — pstring&lt;ManagerT&gt; (mutable persistent string) </dd>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00085">persist_memory_manager.h:86</a></div></div>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="pstring_8h.html" title="pstring&lt;ManagerT&gt; — мутабельная персистентная строка (Issue #45, Phase 3.1).">pstring.h</a> — pstring&lt;ManagerT&gt; (mutable persistent string) </dd>
 <dd>
 <a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — unified static persistent memory manager (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (static model) </dd>
 <dd>

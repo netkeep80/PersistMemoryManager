@@ -10,7 +10,5 @@ var searchData=
   ['pptr_3c_20pstringview_20_3e_7',['pptr&lt; pstringview &gt;',['../classpmm_1_1pptr.html',1,'pmm']]],
   ['pptr_3c_20t_20_3e_8',['pptr&lt; T &gt;',['../classpmm_1_1pptr.html',1,'pmm']]],
   ['pstring_9',['pstring',['../structpmm_1_1pstring.html',1,'pmm']]],
-  ['pstringview_10',['pstringview',['../structpmm_1_1pstringview.html',1,'pmm']]],
-  ['pvector_11',['pvector',['../structpmm_1_1pvector.html',1,'pmm']]],
-  ['pvector_5fnode_12',['pvector_node',['../structpmm_1_1pvector__node.html',1,'pmm']]]
+  ['pstringview_10',['pstringview',['../structpmm_1_1pstringview.html',1,'pmm']]]
 ];
