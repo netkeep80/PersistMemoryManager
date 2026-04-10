@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['magic_0',['magic',['../structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9',1,'pmm::ManagerInfo::magic'],['../structpmm_1_1detail_1_1ManagerHeader.html#a942739e4796800acfdf773a17ca51758',1,'pmm::detail::ManagerHeader::magic']]],
+  ['magic_0',['magic',['../structpmm_1_1detail_1_1ForestDomainRegistry.html#ac66d4d78597bdfa95c9b07d2638f67b2',1,'pmm::detail::ForestDomainRegistry::magic'],['../structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9',1,'pmm::ManagerInfo::magic'],['../structpmm_1_1detail_1_1ManagerHeader.html#a942739e4796800acfdf773a17ca51758',1,'pmm::detail::ManagerHeader::magic']]],
   ['make_5fguard_1',['make_guard',['../classpmm_1_1PersistMemoryManager.html#a36771449706607318c6da56083968d26',1,'pmm::PersistMemoryManager']]],
   ['manager_5fconcept_2eh_2',['manager_concept.h',['../manager__concept_8h.html',1,'']]],
   ['manager_5fconfigs_2eh_3',['manager_configs.h',['../manager__configs_8h.html',1,'']]],

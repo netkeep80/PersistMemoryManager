@@ -79,7 +79,6 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="structpmm_1_1pstringview-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">pmm::pstringview&lt; ManagerT &gt; Struct Template Reference</div></div>
 </div><!--header-->
@@ -140,8 +139,11 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a7aefdee1ff0d676d7752ef570a4c3bd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Интернировать строку s: найти существующий pstringview или создать новый.  <br /></td></tr>
 <tr class="separator:a7aefdee1ff0d676d7752ef570a4c3bd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a900efcbfca8adfab8beea909d3ff8124" id="r_a900efcbfca8adfab8beea909d3ff8124"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pstringview.html#a900efcbfca8adfab8beea909d3ff8124">reset</a> () noexcept</td></tr>
-<tr class="memdesc:a900efcbfca8adfab8beea909d3ff8124"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить синглтон словаря (для тестов).  <br /></td></tr>
+<tr class="memdesc:a900efcbfca8adfab8beea909d3ff8124"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить persistent root словаря (для тестов).  <br /></td></tr>
 <tr class="separator:a900efcbfca8adfab8beea909d3ff8124"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76e0187528e18669c5677ab7cbf91f0d" id="r_a76e0187528e18669c5677ab7cbf91f0d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structpmm_1_1pstringview.html#a08ad6d2502896e6dde8c667494454fef">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pstringview.html#a76e0187528e18669c5677ab7cbf91f0d">root_index</a> () noexcept</td></tr>
+<tr class="memdesc:a76e0187528e18669c5677ab7cbf91f0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Текущий persistent root словаря интернирования; 0 = пустое дерево.  <br /></td></tr>
+<tr class="separator:a76e0187528e18669c5677ab7cbf91f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -151,12 +153,6 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:af26d985e30baf7e996ff428548d4a691" id="r_af26d985e30baf7e996ff428548d4a691"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pstringview.html#af26d985e30baf7e996ff428548d4a691">str</a> [1]</td></tr>
 <tr class="memdesc:af26d985e30baf7e996ff428548d4a691"><td class="mdescLeft">&#160;</td><td class="mdescRight">Строковые данные (flexible array member pattern)  <br /></td></tr>
 <tr class="separator:af26d985e30baf7e996ff428548d4a691"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
-Static Public Attributes</h2></td></tr>
-<tr class="memitem:a1875b7f238768665cb881b991bd28c62" id="r_a1875b7f238768665cb881b991bd28c62"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structpmm_1_1pstringview.html#a08ad6d2502896e6dde8c667494454fef">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pstringview.html#a1875b7f238768665cb881b991bd28c62">_root_idx</a> = static_cast&lt;<a class="el" href="structpmm_1_1pstringview.html#a08ad6d2502896e6dde8c667494454fef">index_type</a>&gt;( 0 )</td></tr>
-<tr class="memdesc:a1875b7f238768665cb881b991bd28c62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Granule-индекс корня AVL-дерева интернирования; 0 = пустое дерево.  <br /></td></tr>
-<tr class="separator:a1875b7f238768665cb881b991bd28c62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename ManagerT&gt;<br />
@@ -623,10 +619,41 @@ template&lt;typename ManagerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Сбросить синглтон словаря (для тестов). </p>
-<p>Сбрасывает статическую переменную _root_idx, но не освобождает данные в ПАП (блоки заблокированы навечно). </p>
+<p>Сбросить persistent root словаря (для тестов). </p>
+<p>Не освобождает сами pstringview-блоки в ПАП, а только очищает root binding системного domain <code>system/symbols</code>. </p>
 
 <p class="definition">Definition at line <a class="el" href="pstringview_8h_source.html#l00194">194</a> of file <a class="el" href="pstringview_8h_source.html">pstringview.h</a>.</p>
+
+</div>
+</div>
+<a id="a76e0187528e18669c5677ab7cbf91f0d" name="a76e0187528e18669c5677ab7cbf91f0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76e0187528e18669c5677ab7cbf91f0d">&#9670;&#160;</a></span>root_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ManagerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structpmm_1_1pstringview.html#a08ad6d2502896e6dde8c667494454fef">index_type</a> <a class="el" href="structpmm_1_1pstringview.html">pmm::pstringview</a>&lt; ManagerT &gt;::root_index </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Текущий persistent root словаря интернирования; 0 = пустое дерево. </p>
+
+<p class="definition">Definition at line <a class="el" href="pstringview_8h_source.html#l00203">203</a> of file <a class="el" href="pstringview_8h_source.html">pstringview.h</a>.</p>
 
 </div>
 </div>
@@ -662,34 +689,6 @@ template&lt;typename ManagerT &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a1875b7f238768665cb881b991bd28c62" name="a1875b7f238768665cb881b991bd28c62"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1875b7f238768665cb881b991bd28c62">&#9670;&#160;</a></span>_root_idx</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename ManagerT &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structpmm_1_1pstringview.html#a08ad6d2502896e6dde8c667494454fef">index_type</a> <a class="el" href="structpmm_1_1pstringview.html">pmm::pstringview</a>&lt; ManagerT &gt;::_root_idx = static_cast&lt;<a class="el" href="structpmm_1_1pstringview.html#a08ad6d2502896e6dde8c667494454fef">index_type</a>&gt;( 0 )</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Granule-индекс корня AVL-дерева интернирования; 0 = пустое дерево. </p>
-
-<p class="definition">Definition at line <a class="el" href="pstringview_8h_source.html#l00197">197</a> of file <a class="el" href="pstringview_8h_source.html">pstringview.h</a>.</p>
-
-</div>
-</div>
 <a id="aa8535e226c5c2e70338e44356d6c1d44" name="aa8535e226c5c2e70338e44356d6c1d44"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa8535e226c5c2e70338e44356d6c1d44">&#9670;&#160;</a></span>length</h2>
 

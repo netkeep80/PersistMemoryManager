@@ -9,8 +9,9 @@ var indexSectionsWithContent =
   6: "abcdefilmnpstuv",
   7: "p",
   8: "bcegiknos",
-  9: "dl",
-  10: "p"
+  9: "p",
+  10: "dl",
+  11: "p"
 };
 
 var indexSectionNames =
@@ -24,8 +25,9 @@ var indexSectionNames =
   6: "typedefs",
   7: "enums",
   8: "enumvalues",
-  9: "pages",
-  10: "concepts"
+  9: "related",
+  10: "pages",
+  11: "concepts"
 };
 
 var indexSectionLabels =
@@ -39,7 +41,8 @@ var indexSectionLabels =
   6: "Typedefs",
   7: "Enumerations",
   8: "Enumerator",
-  9: "Pages",
-  10: "Concepts"
+  9: "Friends",
+  10: "Pages",
+  11: "Concepts"
 };
 

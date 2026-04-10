@@ -80,7 +80,7 @@ $(function() {
 <li>_length&#160;:&#160;<a class="el" href="structpmm_1_1pstring.html#a906ae169bec879634baf80b2d981b12b">pmm::pstring&lt; ManagerT &gt;</a></li>
 <li>_objects_per_chunk&#160;:&#160;<a class="el" href="structpmm_1_1ppool.html#a5bb76745e30e99ebdfc68928ec8a0df7">pmm::ppool&lt; T, ManagerT &gt;</a></li>
 <li>_pad&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a9b82e5962444770066f9be5a66f422c4">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a></li>
-<li>_root_idx&#160;:&#160;<a class="el" href="structpmm_1_1pmap.html#a47c56cc56749ed033d17b398dbe86cfb">pmm::pmap&lt; _K, _V, ManagerT &gt;</a>, <a class="el" href="structpmm_1_1pstringview.html#a1875b7f238768665cb881b991bd28c62">pmm::pstringview&lt; ManagerT &gt;</a></li>
+<li>_root_idx&#160;:&#160;<a class="el" href="structpmm_1_1pmap.html#a47c56cc56749ed033d17b398dbe86cfb">pmm::pmap&lt; _K, _V, ManagerT &gt;</a></li>
 <li>_size&#160;:&#160;<a class="el" href="structpmm_1_1parray.html#a0b741418c33c41dcdedcd6101b3bf41f">pmm::parray&lt; T, ManagerT &gt;</a></li>
 <li>_total_allocated&#160;:&#160;<a class="el" href="structpmm_1_1ppool.html#a765989d2882e279b02791d8f4d7ffada">pmm::ppool&lt; T, ManagerT &gt;</a></li>
 <li>_total_capacity&#160;:&#160;<a class="el" href="structpmm_1_1ppool.html#a53b7816ae2d7d7e72cebf4f3606d0dd3">pmm::ppool&lt; T, ManagerT &gt;</a></li>
@@ -97,6 +97,8 @@ $(function() {
 
 
 <h3><a id="index_b" name="index_b"></a>- b -</h3><ul>
+<li>binding_id&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html#a9ef0b3783b59daa19543ddcdc42898f3">pmm::detail::ForestDomainRecord&lt; AddressTraitsT &gt;</a></li>
+<li>binding_kind&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html#a5c1af8000fc021036e96995454831870">pmm::detail::ForestDomainRecord&lt; AddressTraitsT &gt;</a></li>
 <li>block_count&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a98e908fb35db2b1d9d0f7d316d335cb1">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1ManagerInfo.html#a010c99560178075ba7a9dd55bd75e135">pmm::ManagerInfo</a></li>
 </ul>
 
@@ -108,12 +110,15 @@ $(function() {
 
 <h3><a id="index_d" name="index_d"></a>- d -</h3><ul>
 <li>default_objects_per_chunk&#160;:&#160;<a class="el" href="structpmm_1_1ppool.html#a7a2061ea5928e5855cf68d954de16fa4">pmm::ppool&lt; T, ManagerT &gt;</a></li>
+<li>domain_count&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRegistry.html#a561f3b5095c855740f746d1d423be490">pmm::detail::ForestDomainRegistry&lt; AddressTraitsT &gt;</a></li>
+<li>domains&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRegistry.html#aeeb93c601517a29fdce59c6e3a29cb6d">pmm::detail::ForestDomainRegistry&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_f" name="index_f"></a>- f -</h3><ul>
 <li>first_block_offset&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#aa3ab14572b4497c20617262c3b8dbd7d">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1ManagerInfo.html#ae96d28fab8cdb8150f7987b3948c1b69">pmm::ManagerInfo</a></li>
 <li>first_free_offset&#160;:&#160;<a class="el" href="structpmm_1_1ManagerInfo.html#a9619f531a4e79e0daa75890d3e9fb70c">pmm::ManagerInfo</a></li>
+<li>flags&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html#a9afc538a2ff015f1783cfa1968369146">pmm::detail::ForestDomainRecord&lt; AddressTraitsT &gt;</a></li>
 <li>free_blocks&#160;:&#160;<a class="el" href="structpmm_1_1MemoryStats.html#a808dba4b6508e2e29232179ef2bb8ff6">pmm::MemoryStats</a></li>
 <li>free_count&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ac2f687e0f64c73dbb41cc520b58daa28">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1ManagerInfo.html#afb8d76713463278cc61106748f391e08">pmm::ManagerInfo</a></li>
 <li>free_size&#160;:&#160;<a class="el" href="structpmm_1_1FreeBlockView.html#ab5d38aaf78225dd8579bdd85180afb92">pmm::FreeBlockView</a></li>
@@ -157,12 +162,13 @@ $(function() {
 <li>largest_free&#160;:&#160;<a class="el" href="structpmm_1_1MemoryStats.html#af04f85408e3c8518f4cab238be67d6e8">pmm::MemoryStats</a></li>
 <li>last_block_offset&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ac506fd403b8f6b2761177bfb13821204">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a></li>
 <li>left_offset&#160;:&#160;<a class="el" href="structpmm_1_1FreeBlockView.html#a7016b91ed1e6775949a50d003bc297bf">pmm::FreeBlockView</a>, <a class="el" href="structpmm_1_1TreeNode.html#a7ef6c85c74806fb9e9558b72d267a92c">pmm::TreeNode&lt; AddressTraitsT &gt;</a></li>
+<li>legacy_root_offset&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRegistry.html#ac5562bcd09967f3d23450f6d1cee12b6">pmm::detail::ForestDomainRegistry&lt; AddressTraitsT &gt;</a></li>
 <li>length&#160;:&#160;<a class="el" href="structpmm_1_1pstringview.html#aa8535e226c5c2e70338e44356d6c1d44">pmm::pstringview&lt; ManagerT &gt;</a></li>
 </ul>
 
 
 <h3><a id="index_m" name="index_m"></a>- m -</h3><ul>
-<li>magic&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a942739e4796800acfdf773a17ca51758">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9">pmm::ManagerInfo</a></li>
+<li>magic&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRegistry.html#ac66d4d78597bdfa95c9b07d2638f67b2">pmm::detail::ForestDomainRegistry&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#a942739e4796800acfdf773a17ca51758">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1ManagerInfo.html#ac41b07f026edfba4c22c12e43a9eb4b9">pmm::ManagerInfo</a></li>
 <li>manager_header_size&#160;:&#160;<a class="el" href="structpmm_1_1ManagerInfo.html#a1a91c550f4030d535209fed061b903e4">pmm::ManagerInfo</a></li>
 <li>max_memory_gb&#160;:&#160;<a class="el" href="structpmm_1_1BasicConfig.html#af4f301b27fff801e5944c7685520eee3">pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;</a>, <a class="el" href="structpmm_1_1StaticConfig.html#a95e7b4763e35e5e9dbece61efd57b506">pmm::StaticConfig&lt; AddressTraitsT, BufferSize, GrowNum, GrowDen &gt;</a></li>
 <li>min_slot_bytes&#160;:&#160;<a class="el" href="structpmm_1_1ppool.html#a9d7f5705455da79b9b132ac44d0a88d0">pmm::ppool&lt; T, ManagerT &gt;</a></li>
@@ -170,6 +176,8 @@ $(function() {
 
 
 <h3><a id="index_n" name="index_n"></a>- n -</h3><ul>
+<li>name&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html#ad2fd378b38231bfeca72ce4b5aba5402">pmm::detail::ForestDomainRecord&lt; AddressTraitsT &gt;</a></li>
+<li>next_binding_id&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRegistry.html#a31638d992087a3fe9a8078a57c009b92">pmm::detail::ForestDomainRegistry&lt; AddressTraitsT &gt;</a></li>
 <li>next_offset&#160;:&#160;<a class="el" href="structpmm_1_1Block.html#aab975af03a107ec6e6bad3af1b4187ef">pmm::Block&lt; AddressTraitsT &gt;</a></li>
 <li>no_block&#160;:&#160;<a class="el" href="structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc">pmm::AddressTraits&lt; IndexT, GranuleSz &gt;</a>, <a class="el" href="structpmm_1_1pmap.html#a9a5a04d0c78d5a2a4d0b86d1cb7a1619">pmm::pmap&lt; _K, _V, ManagerT &gt;</a></li>
 <li>node_type&#160;:&#160;<a class="el" href="structpmm_1_1TreeNode.html#a036af7961dcc42d6e9adb84e37d85d02">pmm::TreeNode&lt; AddressTraitsT &gt;</a></li>
@@ -190,8 +198,9 @@ $(function() {
 
 
 <h3><a id="index_r" name="index_r"></a>- r -</h3><ul>
+<li>reserved&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html#aab3e87fe49bc66482eb6c3dbeca3c316">pmm::detail::ForestDomainRecord&lt; AddressTraitsT &gt;</a></li>
 <li>right_offset&#160;:&#160;<a class="el" href="structpmm_1_1FreeBlockView.html#a4f24c808c2f295e8e12359ec81852f66">pmm::FreeBlockView</a>, <a class="el" href="structpmm_1_1TreeNode.html#ab6ae7671df0fedb158e026d2a1f0e9b3">pmm::TreeNode&lt; AddressTraitsT &gt;</a></li>
-<li>root_offset&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ad96008f70312466dfde8705f46ba1c9f">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1TreeNode.html#a92e947e3d6cbb9a54d2765b4a525c26c">pmm::TreeNode&lt; AddressTraitsT &gt;</a></li>
+<li>root_offset&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html#a8866741818e292fb5b8c56b296c03f01">pmm::detail::ForestDomainRecord&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html#ad96008f70312466dfde8705f46ba1c9f">pmm::detail::ManagerHeader&lt; AddressTraitsT &gt;</a>, <a class="el" href="structpmm_1_1TreeNode.html#a92e947e3d6cbb9a54d2765b4a525c26c">pmm::TreeNode&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
 
@@ -199,6 +208,7 @@ $(function() {
 <li>slot_bytes&#160;:&#160;<a class="el" href="structpmm_1_1ppool.html#a8b53921f2880b06865a6442dc036422c">pmm::ppool&lt; T, ManagerT &gt;</a></li>
 <li>smallest_free&#160;:&#160;<a class="el" href="structpmm_1_1MemoryStats.html#a0ef3c7b4b7385778f7e7874f27444433">pmm::MemoryStats</a></li>
 <li>str&#160;:&#160;<a class="el" href="structpmm_1_1pstringview.html#af26d985e30baf7e996ff428548d4a691">pmm::pstringview&lt; ManagerT &gt;</a></li>
+<li>symbol_offset&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html#a5a49a6193ea7801fb5f6c6ab7e860191">pmm::detail::ForestDomainRecord&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
 
@@ -218,6 +228,7 @@ $(function() {
 
 <h3><a id="index_v" name="index_v"></a>- v -</h3><ul>
 <li>value&#160;:&#160;<a class="el" href="structpmm_1_1pmap__node.html#a9bf0fa400dab525be4256ad650bd975b">pmm::pmap_node&lt; _K, _V &gt;</a></li>
+<li>version&#160;:&#160;<a class="el" href="structpmm_1_1detail_1_1ForestDomainRegistry.html#afe02953f24d7c967b69c2a0f0aeb8705">pmm::detail::ForestDomainRegistry&lt; AddressTraitsT &gt;</a></li>
 </ul>
 
 

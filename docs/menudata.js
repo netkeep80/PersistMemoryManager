@@ -153,6 +153,7 @@ var menudata={children:[
 {text:"s",url:"functions_type.html#index_s"},
 {text:"t",url:"functions_type.html#index_t"},
 {text:"u",url:"functions_type.html#index_u"},
-{text:"v",url:"functions_type.html#index_v"}]}]}]},
+{text:"v",url:"functions_type.html#index_v"}]},
+{text:"Related Symbols",url:"functions_rela.html"}]}]},
 {text:"Files",url:"files.html",children:[
 {text:"File List",url:"files.html"}]}]}

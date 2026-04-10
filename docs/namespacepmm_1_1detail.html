@@ -91,12 +91,24 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1config__logging__policy_3_01C_00_01std_1_1void__t_3_01typename_01C_1_1logging__policy_01_4_01_4.html">config_logging_policy&lt; C, std::void_t&lt; typename C::logging_policy &gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html">ForestDomainRecord</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ForestDomainRegistry.html">ForestDomainRegistry</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager header parameterized on AddressTraitsT (Issue #175: 64-bit index support). All _offset and counter fields use index_type, so LargeDBConfig uses uint64_t indices and DefaultAddressTraits keeps uint32_t with exactly 64 bytes as before. prev_total_size is runtime-only (zeroed by load() — not persisted). Issue #176: removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).  <a href="structpmm_1_1detail_1_1ManagerHeader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ac062e3ea22e7bec91aa4649f5439a045" id="r_ac062e3ea22e7bec91aa4649f5439a045"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:ac062e3ea22e7bec91aa4649f5439a045"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ac062e3ea22e7bec91aa4649f5439a045">forest_domain_name_equals</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html">ForestDomainRecord</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; &amp;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">rec</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *name) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="separator:ac062e3ea22e7bec91aa4649f5439a045"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6331d10879f07643f8297c7961c85c2d" id="r_a6331d10879f07643f8297c7961c85c2d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a6331d10879f07643f8297c7961c85c2d">forest_domain_name_fits</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *name) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="separator:a6331d10879f07643f8297c7961c85c2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fe1bc12e05a09e51f571873159ac1e3" id="r_a1fe1bc12e05a09e51f571873159ac1e3"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:a1fe1bc12e05a09e51f571873159ac1e3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a1fe1bc12e05a09e51f571873159ac1e3">forest_domain_name_copy</a> (<a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html">ForestDomainRecord</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; &amp;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">rec</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *name) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="separator:a1fe1bc12e05a09e51f571873159ac1e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02099bcb0dd9e581347c38d4ac4d9671" id="r_a02099bcb0dd9e581347c38d4ac4d9671"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a02099bcb0dd9e581347c38d4ac4d9671">atomic_rename</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">tmp_path</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">final_path</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
 <tr class="memdesc:a02099bcb0dd9e581347c38d4ac4d9671"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #43 Phase 2.2: Atomic file rename (write-then-rename pattern). On POSIX: std::rename is atomic if source and dest are on the same filesystem. On Windows: MoveFileExA with MOVEFILE_REPLACE_EXISTING.  <br /></td></tr>
 <tr class="separator:a02099bcb0dd9e581347c38d4ac4d9671"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,6 +209,26 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:a3adcf3fdfd0d174d30455d7f87da3c99" id="r_a3adcf3fdfd0d174d30455d7f87da3c99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a3adcf3fdfd0d174d30455d7f87da3c99">kForestDomainNameCapacity</a> = 48</td></tr>
+<tr class="separator:a3adcf3fdfd0d174d30455d7f87da3c99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3160eafbe16e5ee78c56dcc9d363b05b" id="r_a3160eafbe16e5ee78c56dcc9d363b05b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a3160eafbe16e5ee78c56dcc9d363b05b">kMaxForestDomains</a> = 32</td></tr>
+<tr class="separator:a3160eafbe16e5ee78c56dcc9d363b05b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12b1b2872e33d1bb8f3d5af138027f69" id="r_a12b1b2872e33d1bb8f3d5af138027f69"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a12b1b2872e33d1bb8f3d5af138027f69">kSystemDomainFreeTree</a> = &quot;system/<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">free_tree&quot;</a></td></tr>
+<tr class="separator:a12b1b2872e33d1bb8f3d5af138027f69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9162305079583624332980246ef18335" id="r_a9162305079583624332980246ef18335"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a9162305079583624332980246ef18335">kSystemDomainSymbols</a> = &quot;system/<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">symbols&quot;</a></td></tr>
+<tr class="separator:a9162305079583624332980246ef18335"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab25e9d52817c32ae29ff35cb068b804a" id="r_ab25e9d52817c32ae29ff35cb068b804a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ab25e9d52817c32ae29ff35cb068b804a">kSystemDomainRegistry</a> = &quot;system/<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">domain_registry&quot;</a></td></tr>
+<tr class="separator:ab25e9d52817c32ae29ff35cb068b804a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7aa59f61699d125a3fa5af1530f88eda" id="r_a7aa59f61699d125a3fa5af1530f88eda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a7aa59f61699d125a3fa5af1530f88eda">kForestRegistryMagic</a> = 0x50465247U</td></tr>
+<tr class="separator:a7aa59f61699d125a3fa5af1530f88eda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac51e24ad5fcc165b1297f9e2fc1000c2" id="r_ac51e24ad5fcc165b1297f9e2fc1000c2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ac51e24ad5fcc165b1297f9e2fc1000c2">kForestRegistryVersion</a> = 1</td></tr>
+<tr class="separator:ac51e24ad5fcc165b1297f9e2fc1000c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99b5dc74bbe7b7e8f1585769aef80667" id="r_a99b5dc74bbe7b7e8f1585769aef80667"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a99b5dc74bbe7b7e8f1585769aef80667">kForestBindingDirectRoot</a> = 0</td></tr>
+<tr class="separator:a99b5dc74bbe7b7e8f1585769aef80667"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae49822d46dcf29a91ac4a8f5679de7b7" id="r_ae49822d46dcf29a91ac4a8f5679de7b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ae49822d46dcf29a91ac4a8f5679de7b7">kForestBindingFreeTree</a> = 1</td></tr>
+<tr class="separator:ae49822d46dcf29a91ac4a8f5679de7b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a218d37e121f8f960fa88bc984e80ca62" id="r_a218d37e121f8f960fa88bc984e80ca62"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a218d37e121f8f960fa88bc984e80ca62">kForestDomainFlagSystem</a> = 0x01</td></tr>
+<tr class="separator:a218d37e121f8f960fa88bc984e80ca62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23294eec2b364ce17d1ec029963d885e" id="r_a23294eec2b364ce17d1ec029963d885e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e">kNoBlock</a> = 0xFFFFFFFFU</td></tr>
 <tr class="memdesc:a23294eec2b364ce17d1ec029963d885e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #87 Phase 1: matches <a class="el" href="structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc" title="Sentinel «нет блока» — максимальное значение index_type.">DefaultAddressTraits::no_block</a>.  <br /></td></tr>
 <tr class="separator:a23294eec2b364ce17d1ec029963d885e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -791,6 +823,114 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 </div>
 </div>
+<a id="a1fe1bc12e05a09e51f571873159ac1e3" name="a1fe1bc12e05a09e51f571873159ac1e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fe1bc12e05a09e51f571873159ac1e3">&#9670;&#160;</a></span>forest_domain_name_copy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a> pmm::detail::forest_domain_name_copy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html">ForestDomainRecord</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>rec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00078">78</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="ac062e3ea22e7bec91aa4649f5439a045" name="ac062e3ea22e7bec91aa4649f5439a045"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac062e3ea22e7bec91aa4649f5439a045">&#9670;&#160;</a></span>forest_domain_name_equals()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a> pmm::detail::forest_domain_name_equals </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="structpmm_1_1detail_1_1ForestDomainRecord.html">ForestDomainRecord</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>rec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00063">63</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="a6331d10879f07643f8297c7961c85c2d" name="a6331d10879f07643f8297c7961c85c2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6331d10879f07643f8297c7961c85c2d">&#9670;&#160;</a></span>forest_domain_name_fits()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a> pmm::detail::forest_domain_name_fits </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00070">70</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
 <a id="ad4a291437e5155ad28954d355946ff9f" name="ad4a291437e5155ad28954d355946ff9f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad4a291437e5155ad28954d355946ff9f">&#9670;&#160;</a></span>from_u32_idx()</h2>
 
@@ -1286,6 +1426,150 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 </div>
 </div>
+<a id="a99b5dc74bbe7b7e8f1585769aef80667" name="a99b5dc74bbe7b7e8f1585769aef80667"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99b5dc74bbe7b7e8f1585769aef80667">&#9670;&#160;</a></span>kForestBindingDirectRoot</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint8_t pmm::detail::kForestBindingDirectRoot = 0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00021">21</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="ae49822d46dcf29a91ac4a8f5679de7b7" name="ae49822d46dcf29a91ac4a8f5679de7b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae49822d46dcf29a91ac4a8f5679de7b7">&#9670;&#160;</a></span>kForestBindingFreeTree</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint8_t pmm::detail::kForestBindingFreeTree = 1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00022">22</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="a218d37e121f8f960fa88bc984e80ca62" name="a218d37e121f8f960fa88bc984e80ca62"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a218d37e121f8f960fa88bc984e80ca62">&#9670;&#160;</a></span>kForestDomainFlagSystem</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint8_t pmm::detail::kForestDomainFlagSystem = 0x01</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00023">23</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="a3adcf3fdfd0d174d30455d7f87da3c99" name="a3adcf3fdfd0d174d30455d7f87da3c99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3adcf3fdfd0d174d30455d7f87da3c99">&#9670;&#160;</a></span>kForestDomainNameCapacity</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::size_t pmm::detail::kForestDomainNameCapacity = 48</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00013">13</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="a7aa59f61699d125a3fa5af1530f88eda" name="a7aa59f61699d125a3fa5af1530f88eda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7aa59f61699d125a3fa5af1530f88eda">&#9670;&#160;</a></span>kForestRegistryMagic</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint32_t pmm::detail::kForestRegistryMagic = 0x50465247U</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00019">19</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="ac51e24ad5fcc165b1297f9e2fc1000c2" name="ac51e24ad5fcc165b1297f9e2fc1000c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac51e24ad5fcc165b1297f9e2fc1000c2">&#9670;&#160;</a></span>kForestRegistryVersion</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint16_t pmm::detail::kForestRegistryVersion = 1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00020">20</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
 <a id="adda9afd5ae768545d32151ed800eb699" name="adda9afd5ae768545d32151ed800eb699"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adda9afd5ae768545d32151ed800eb699">&#9670;&#160;</a></span>kManagerHeaderGranules</h2>
 
@@ -1340,6 +1624,30 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Manager header size in granules for AddressTraitsT (Issue #146, #175). Uses ceiling division: ceil(sizeof(ManagerHeader&lt;AT&gt;) / AT::granule_size). For DefaultAddressTraits (16B granule): 64/16 = 4. For LargeAddressTraits (64B granule): ceil(96/64) = 2. </p>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00417">417</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a3160eafbe16e5ee78c56dcc9d363b05b" name="a3160eafbe16e5ee78c56dcc9d363b05b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3160eafbe16e5ee78c56dcc9d363b05b">&#9670;&#160;</a></span>kMaxForestDomains</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::size_t pmm::detail::kMaxForestDomains = 32</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00014">14</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
 
 </div>
 </div>
@@ -1450,6 +1758,78 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Issue #166: Template alias for AddressTraitsT::no_block sentinel. Use this instead of <a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e" title="Issue #87 Phase 1: matches DefaultAddressTraits::no_block.">detail::kNoBlock</a> in generic (templated) code that works with any AT. For DefaultAddressTraits, kNoBlock_v&lt;DefaultAddressTraits&gt; == kNoBlock == 0xFFFFFFFFU. </p>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00186">186</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a12b1b2872e33d1bb8f3d5af138027f69" name="a12b1b2872e33d1bb8f3d5af138027f69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12b1b2872e33d1bb8f3d5af138027f69">&#9670;&#160;</a></span>kSystemDomainFreeTree</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a>* pmm::detail::kSystemDomainFreeTree = &quot;system/<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">free_tree&quot;</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00016">16</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="ab25e9d52817c32ae29ff35cb068b804a" name="ab25e9d52817c32ae29ff35cb068b804a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab25e9d52817c32ae29ff35cb068b804a">&#9670;&#160;</a></span>kSystemDomainRegistry</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a>* pmm::detail::kSystemDomainRegistry = &quot;system/<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">domain_registry&quot;</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00018">18</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
+
+</div>
+</div>
+<a id="a9162305079583624332980246ef18335" name="a9162305079583624332980246ef18335"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9162305079583624332980246ef18335">&#9670;&#160;</a></span>kSystemDomainSymbols</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a>* pmm::detail::kSystemDomainSymbols = &quot;system/<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">symbols&quot;</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="forest__registry_8h_source.html#l00017">17</a> of file <a class="el" href="forest__registry_8h_source.html">forest_registry.h</a>.</p>
 
 </div>
 </div>

@@ -10,5 +10,7 @@ var searchData=
   ['destroy_7',['destroy',['../classpmm_1_1PersistMemoryManager.html#a001123ac8daaf9da6e882fa6559a3131',1,'pmm::PersistMemoryManager']]],
   ['destroy_5ftyped_8',['destroy_typed',['../classpmm_1_1PersistMemoryManager.html#a30e91e045b6e24a22313cebce340ed33',1,'pmm::PersistMemoryManager']]],
   ['detect_5fblock_5fstate_9',['detect_block_state',['../namespacepmm.html#a0b6c0f639691913c3e5d08e8961efa6b',1,'pmm']]],
-  ['difference_5ftype_10',['difference_type',['../structpmm_1_1pallocator.html#a6d2e009b720190205b83a18bbdbc971b',1,'pmm::pallocator']]]
+  ['difference_5ftype_10',['difference_type',['../structpmm_1_1pallocator.html#a6d2e009b720190205b83a18bbdbc971b',1,'pmm::pallocator']]],
+  ['domain_5fcount_11',['domain_count',['../structpmm_1_1detail_1_1ForestDomainRegistry.html#a561f3b5095c855740f746d1d423be490',1,'pmm::detail::ForestDomainRegistry']]],
+  ['domains_12',['domains',['../structpmm_1_1detail_1_1ForestDomainRegistry.html#aeeb93c601517a29fdce59c6e3a29cb6d',1,'pmm::detail::ForestDomainRegistry']]]
 ];
