@@ -339,7 +339,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _initialized = false;
             return false;
         }
-        _last_error  = PmmError::Ok;
+        _last_error = PmmError::Ok;
         logging_policy::on_load();
         return true;
     }
@@ -1266,9 +1266,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( hdr->root_offset == address_traits::no_block ||
              !is_valid_user_offset_unlocked( hdr->root_offset, sizeof( forest_registry ) ) )
             return nullptr;
-        auto* reg =
-            reinterpret_cast<forest_registry*>( _backend.base_ptr() +
-                                               static_cast<std::size_t>( hdr->root_offset ) * address_traits::granule_size );
+        auto* reg = reinterpret_cast<forest_registry*>(
+            _backend.base_ptr() + static_cast<std::size_t>( hdr->root_offset ) * address_traits::granule_size );
         if ( reg->magic != detail::kForestRegistryMagic || reg->version != detail::kForestRegistryVersion ||
              reg->domain_count > detail::kMaxForestDomains )
             return nullptr;
@@ -1327,13 +1326,14 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return nullptr;
     }
 
-    static index_type domain_root_offset_unlocked( const forest_domain* rec,
+    static index_type domain_root_offset_unlocked( const forest_domain*                         rec,
                                                    const detail::ManagerHeader<address_traits>* hdr ) noexcept
     {
         if ( rec == nullptr || hdr == nullptr )
             return 0;
         if ( rec->binding_kind == detail::kForestBindingFreeTree )
-            return ( hdr->free_tree_root == address_traits::no_block ) ? static_cast<index_type>( 0 ) : hdr->free_tree_root;
+            return ( hdr->free_tree_root == address_traits::no_block ) ? static_cast<index_type>( 0 )
+                                                                       : hdr->free_tree_root;
         return rec->root_offset;
     }
 
@@ -1400,10 +1400,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !detail::forest_domain_name_copy( rec, name ) )
             return false;
 
-        rec.binding_id   = reg->next_binding_id++;
-        rec.root_offset  = ( binding_kind == detail::kForestBindingDirectRoot ) ? initial_root : static_cast<index_type>( 0 );
-        rec.binding_kind = binding_kind;
-        rec.flags        = flags;
+        rec.binding_id = reg->next_binding_id++;
+        rec.root_offset =
+            ( binding_kind == detail::kForestBindingDirectRoot ) ? initial_root : static_cast<index_type>( 0 );
+        rec.binding_kind  = binding_kind;
+        rec.flags         = flags;
         rec.symbol_offset = 0;
 
         pptr<pstringview> symbol = intern_symbol_unlocked( name );
@@ -1440,7 +1441,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( raw == nullptr )
             return pptr<pstringview>();
 
-        std::uint8_t* base = _backend.base_ptr();
+        std::uint8_t*     base = _backend.base_ptr();
         pptr<pstringview> new_node( detail::ptr_to_granule_idx<address_traits>( base, raw ) );
         pstringview*      obj = static_cast<pstringview*>( raw );
         obj->length           = len;
@@ -1466,15 +1467,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static bool bootstrap_system_symbols_unlocked() noexcept
     {
         static constexpr const char* kBootstrapSymbols[] = {
-            detail::kSystemDomainFreeTree,
-            detail::kSystemDomainSymbols,
-            detail::kSystemDomainRegistry,
-            detail::kSystemTypeForestRegistry,
-            detail::kSystemTypeForestDomainRecord,
-            detail::kSystemTypePstringview,
-            detail::kServiceNameLegacyRoot,
-            detail::kServiceNameDomainRoot,
-            detail::kServiceNameDomainSymbol,
+            detail::kSystemDomainFreeTree,     detail::kSystemDomainSymbols,          detail::kSystemDomainRegistry,
+            detail::kSystemTypeForestRegistry, detail::kSystemTypeForestDomainRecord, detail::kSystemTypePstringview,
+            detail::kServiceNameLegacyRoot,    detail::kServiceNameDomainRoot,        detail::kServiceNameDomainSymbol,
         };
 
         for ( const char* sym : kBootstrapSymbols )
@@ -1513,10 +1508,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             return false;
         }
 
-        std::uint8_t* base          = _backend.base_ptr();
-        std::size_t   raw_off       = static_cast<std::size_t>( static_cast<std::uint8_t*>( raw ) - base );
-        std::size_t   aligned_off   = ( raw_off + ( kGranSz - 1 ) ) & ~( kGranSz - 1 );
-        forest_registry* reg        = reinterpret_cast<forest_registry*>( base + aligned_off );
+        std::uint8_t*    base        = _backend.base_ptr();
+        std::size_t      raw_off     = static_cast<std::size_t>( static_cast<std::uint8_t*>( raw ) - base );
+        std::size_t      aligned_off = ( raw_off + ( kGranSz - 1 ) ) & ~( kGranSz - 1 );
+        forest_registry* reg         = reinterpret_cast<forest_registry*>( base + aligned_off );
         if ( reg == nullptr )
         {
             _last_error = PmmError::InvalidPointer;
@@ -1524,11 +1519,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         }
 
         std::memset( reg, 0, sizeof( forest_registry ) );
-        reg->magic           = detail::kForestRegistryMagic;
-        reg->version         = detail::kForestRegistryVersion;
-        reg->domain_count    = 0;
+        reg->magic              = detail::kForestRegistryMagic;
+        reg->version            = detail::kForestRegistryVersion;
+        reg->domain_count       = 0;
         reg->legacy_root_offset = legacy_root_offset;
-        reg->next_binding_id = 1;
+        reg->next_binding_id    = 1;
 
         if ( !lock_block_permanent_unlocked( raw ) )
         {
@@ -1595,8 +1590,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( reg->domain_count < 3 )
             return false; // at least free_tree, symbols, registry
         // 3. System domains present with correct flags
-        static constexpr const char* kRequired[] = {
-            detail::kSystemDomainFreeTree, detail::kSystemDomainSymbols, detail::kSystemDomainRegistry };
+        static constexpr const char* kRequired[] = { detail::kSystemDomainFreeTree, detail::kSystemDomainSymbols,
+                                                     detail::kSystemDomainRegistry };
         for ( const char* name : kRequired )
         {
             const forest_domain* rec = find_domain_by_name_unlocked( name );
@@ -1666,10 +1661,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             }
             else
             {
-                auto* candidate =
-                    reinterpret_cast<const forest_registry*>( _backend.base_ptr() +
-                                                             static_cast<std::size_t>( hdr->root_offset ) *
-                                                                 address_traits::granule_size );
+                auto* candidate = reinterpret_cast<const forest_registry*>(
+                    _backend.base_ptr() + static_cast<std::size_t>( hdr->root_offset ) * address_traits::granule_size );
                 if ( candidate->magic != detail::kForestRegistryMagic )
                     legacy_root = hdr->root_offset;
             }

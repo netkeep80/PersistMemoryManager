@@ -50,7 +50,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> class HeapStorage
         // Выравниваем по granule_size
         std::size_t aligned = ( ( initial_size + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size ) *
                               AddressTraitsT::granule_size;
-        _buffer = static_cast<std::uint8_t*>( std::malloc( aligned ) );
+        _buffer             = static_cast<std::uint8_t*>( std::malloc( aligned ) );
         if ( _buffer != nullptr )
         {
             _size        = aligned;

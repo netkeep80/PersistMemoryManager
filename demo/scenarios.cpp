@@ -143,7 +143,7 @@ class LinearFill final : public Scenario
     {
         coord.register_participant();
 
-        const auto interval = std::chrono::duration<double>( 1.0 / ( std::max )( p.alloc_freq, 1.0f ) );
+        const auto interval = std::chrono::duration<double>( 1.0 / (std::max)( p.alloc_freq, 1.0f ) );
         auto       next     = std::chrono::steady_clock::now();
 
         std::vector<DemoMgr::pptr<uint8_t>> live;
@@ -223,7 +223,7 @@ class RandomStress final : public Scenario
         std::uniform_int_distribution<std::size_t> size_dist( p.min_block_size, p.max_block_size );
         std::uniform_real_distribution<float>      choice( 0.0f, p.alloc_freq + p.dealloc_freq );
 
-        const auto alloc_interval = std::chrono::duration<double>( 1.0 / ( std::max )( p.alloc_freq, 1.0f ) );
+        const auto alloc_interval = std::chrono::duration<double>( 1.0 / (std::max)( p.alloc_freq, 1.0f ) );
         auto       next           = std::chrono::steady_clock::now();
 
         std::vector<DemoMgr::pptr<uint8_t>> live;
@@ -300,7 +300,7 @@ class FragmentationDemo final : public Scenario
 
         std::mt19937 rng( std::random_device{}() );
 
-        const auto interval = std::chrono::duration<double>( 1.0 / ( std::max )( p.alloc_freq, 1.0f ) );
+        const auto interval = std::chrono::duration<double>( 1.0 / (std::max)( p.alloc_freq, 1.0f ) );
         auto       next     = std::chrono::steady_clock::now();
 
         std::vector<DemoMgr::pptr<uint8_t>> small_live;
@@ -399,7 +399,7 @@ class LargeBlocks final : public Scenario
         std::mt19937                               rng( std::random_device{}() );
         std::uniform_int_distribution<std::size_t> size_dist( p.min_block_size, p.max_block_size );
 
-        const auto interval = std::chrono::duration<double>( 1.0 / ( std::max )( p.alloc_freq, 1.0f ) );
+        const auto interval = std::chrono::duration<double>( 1.0 / (std::max)( p.alloc_freq, 1.0f ) );
         auto       next     = std::chrono::steady_clock::now();
 
         std::deque<DemoMgr::pptr<uint8_t>> fifo;
@@ -468,11 +468,11 @@ class TinyBlocks final : public Scenario
 
         std::mt19937 rng( std::random_device{}() );
 
-        const std::size_t                          min_sz = ( std::max )( p.min_block_size, std::size_t( 8 ) );
-        const std::size_t                          max_sz = ( std::max )( p.max_block_size, min_sz );
+        const std::size_t                          min_sz = (std::max)( p.min_block_size, std::size_t( 8 ) );
+        const std::size_t                          max_sz = (std::max)( p.max_block_size, min_sz );
         std::uniform_int_distribution<std::size_t> size_dist( min_sz, max_sz );
 
-        const auto interval = std::chrono::duration<double>( 1.0 / ( std::max )( p.alloc_freq, 1.0f ) );
+        const auto interval = std::chrono::duration<double>( 1.0 / (std::max)( p.alloc_freq, 1.0f ) );
         auto       next     = std::chrono::steady_clock::now();
 
         std::deque<DemoMgr::pptr<uint8_t>> fifo;
@@ -544,7 +544,7 @@ class MixedSizes final : public Scenario
         std::mt19937                          rng( std::random_device{}() );
         std::uniform_real_distribution<float> chance( 0.0f, 1.0f );
 
-        const auto interval = std::chrono::duration<double>( 1.0 / ( std::max )( p.alloc_freq, 1.0f ) );
+        const auto interval = std::chrono::duration<double>( 1.0 / (std::max)( p.alloc_freq, 1.0f ) );
         auto       next     = std::chrono::steady_clock::now();
 
         std::vector<DemoMgr::pptr<uint8_t>> live;
@@ -759,7 +759,7 @@ class ReallocateTyped final : public Scenario
         std::mt19937                               rng( std::random_device{}() );
         std::uniform_int_distribution<std::size_t> size_dist( p.min_block_size, p.max_block_size );
 
-        const auto interval = std::chrono::duration<double>( 1.0 / ( std::max )( p.alloc_freq, 1.0f ) );
+        const auto interval = std::chrono::duration<double>( 1.0 / (std::max)( p.alloc_freq, 1.0f ) );
         auto       next     = std::chrono::steady_clock::now();
 
         // One live pptr that is repeatedly grown.

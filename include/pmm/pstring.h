@@ -84,9 +84,9 @@ template <typename ManagerT> struct pstring
     using manager_type = ManagerT;
     using index_type   = typename ManagerT::index_type;
 
-    std::uint32_t _length; ///< Длина строки (без нулевого терминатора)
+    std::uint32_t _length;   ///< Длина строки (без нулевого терминатора)
     std::uint32_t _capacity; ///< Ёмкость буфера данных (без нулевого терминатора)
-    index_type _data_idx;    ///< Гранульный индекс блока данных (0 = нет данных)
+    index_type    _data_idx; ///< Гранульный индекс блока данных (0 = нет данных)
 
     // ─── Конструктор / Деструктор ────────────────────────────────────────────
 

@@ -306,9 +306,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
             return false;
 
         // Ensure file is at least size_bytes
-        struct stat st
-        {
-        };
+        struct stat st{};
         if ( ::fstat( _fd, &st ) != 0 )
         {
             ::close( _fd );

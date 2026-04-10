@@ -87,10 +87,9 @@ TEST_CASE( "bootstrap invariants hold after save/load", "[issue241]" )
     REQUIRE( BootstrapPersist::validate_bootstrap_invariants() );
 
     // Remember pre-save state
-    auto free_root_before    = BootstrapPersist::get_domain_root_offset( pmm::detail::kSystemDomainFreeTree );
-    auto symbols_root_before = BootstrapPersist::pstringview::root_index();
-    auto registry_root_before =
-        BootstrapPersist::get_domain_root_offset( pmm::detail::kSystemDomainRegistry );
+    auto free_root_before     = BootstrapPersist::get_domain_root_offset( pmm::detail::kSystemDomainFreeTree );
+    auto symbols_root_before  = BootstrapPersist::pstringview::root_index();
+    auto registry_root_before = BootstrapPersist::get_domain_root_offset( pmm::detail::kSystemDomainRegistry );
     REQUIRE( free_root_before != 0 );
     REQUIRE( symbols_root_before != 0 );
     REQUIRE( registry_root_before != 0 );
@@ -122,8 +121,7 @@ TEST_CASE( "bootstrap invariants hold after save/load", "[issue241]" )
     REQUIRE( !reg_sym_after.is_null() );
 
     // Registry root offset is consistent after load
-    REQUIRE( BootstrapPersist::get_domain_root_offset( pmm::detail::kSystemDomainRegistry ) ==
-             registry_root_before );
+    REQUIRE( BootstrapPersist::get_domain_root_offset( pmm::detail::kSystemDomainRegistry ) == registry_root_before );
 
     BootstrapPersist::destroy();
     std::remove( filename );

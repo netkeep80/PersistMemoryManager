@@ -345,7 +345,7 @@ TEST_CASE( "    coalesce_with_next", "[test_block_state]" )
     coalescing->coalesce_with_next( buffer_next, buffer_nxt_nxt, 6 );
 
     // Проверяем результат
-    REQUIRE( coalescing->next_offset() == 20 ); // Текущий → следующий следующего
+    REQUIRE( coalescing->next_offset() == 20 );                    // Текущий → следующий следующего
     REQUIRE( BlockState::get_prev_offset( buffer_nxt_nxt ) == 6 ); // Следующий следующего ← текущий
 
     // Следующий блок должен быть обнулён
