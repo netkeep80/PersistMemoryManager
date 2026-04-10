@@ -581,8 +581,8 @@ Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("hello");
 ### Data fields
 
 ```cpp
-index_type    chars_idx;  // granule index of the char[] data in PAP; 0 = empty string
 std::uint32_t length;     // string length (without null terminator)
+char          str[1];     // embedded null-terminated chars (flexible-array pattern)
 ```
 
 ### Constructor (interning helper)
@@ -609,7 +609,7 @@ bool         empty() const noexcept;   // true if length == 0
 
 ```cpp
 bool operator==(const char* s)         const noexcept;
-bool operator==(const pstringview& o)  const noexcept;  // compares chars_idx (fast)
+bool operator==(const pstringview& o)  const noexcept;
 bool operator!=(const char* s)         const noexcept;
 bool operator!=(const pstringview& o)  const noexcept;
 bool operator<(const pstringview& o)   const noexcept;  // lexicographic; for use as pmap key
@@ -619,7 +619,7 @@ bool operator<(const pstringview& o)   const noexcept;  // lexicographic; for us
 
 ```cpp
 static psview_pptr intern(const char* s) noexcept;  // explicit interning
-static void        reset() noexcept;                // reset singleton for test isolation
+static void        reset() noexcept;                // clears system/symbols domain root (tests)
 ```
 
 ### Example

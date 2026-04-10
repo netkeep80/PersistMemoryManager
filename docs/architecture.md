@@ -275,15 +275,15 @@ as AVL tree links — no separate AVL node allocations. Blocks are permanently l
 `lock_block_permanent()`.
 
 ```
-static pstringview::_root_idx  (singleton per ManagerT specialization)
+forest domain: system/symbols (persistent root in registry)
 │
-├── [Block_A][pstringview: chars_idx=X, length=5]   "hello"
+├── [Block_A][pstringview: length=5, str="hello"]
 │     left_offset → Block_B
 │     right_offset → Block_C
 │
-├── [Block_B][pstringview: chars_idx=Y, length=3]   "abc"
+├── [Block_B][pstringview: length=3, str="abc"]
 │
-└── [Block_C][pstringview: chars_idx=Z, length=5]   "world"
+└── [Block_C][pstringview: length=5, str="world"]
 ```
 
 ### `pmap<_K, _V, ManagerT>`

@@ -289,17 +289,17 @@ TEST_CASE( "    AVL root tracked by persistent symbol domain", "[test_issue151_p
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    // Before any intern — root is null.
+    // After create() bootstrap, system dictionary root is already persistent and non-null.
+    REQUIRE( TestPsv::root_index() != static_cast<TestMgr::index_type>( 0 ) );
+
+    // After reset — root is null again.
+    TestPsv::reset();
     REQUIRE( TestPsv::root_index() == static_cast<TestMgr::index_type>( 0 ) );
 
     TestMgr::pstringview( "test_root" );
 
     // After intern — root is non-null.
     REQUIRE( TestPsv::root_index() != static_cast<TestMgr::index_type>( 0 ) );
-
-    // After reset — root is null again.
-    TestPsv::reset();
-    REQUIRE( TestPsv::root_index() == static_cast<TestMgr::index_type>( 0 ) );
 
     TestMgr::destroy();
     TestPsv::reset();

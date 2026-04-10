@@ -1367,6 +1367,12 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             existing->binding_kind = binding_kind;
             if ( binding_kind == detail::kForestBindingDirectRoot && initial_root != 0 )
                 existing->root_offset = initial_root;
+            if ( existing->symbol_offset == 0 )
+            {
+                pptr<pstringview> symbol = intern_symbol_unlocked( name );
+                if ( !symbol.is_null() )
+                    existing->symbol_offset = symbol.offset();
+            }
             return true;
         }
 
@@ -1381,7 +1387,100 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         rec.root_offset  = ( binding_kind == detail::kForestBindingDirectRoot ) ? initial_root : static_cast<index_type>( 0 );
         rec.binding_kind = binding_kind;
         rec.flags        = flags;
+        rec.symbol_offset = 0;
+
+        pptr<pstringview> symbol = intern_symbol_unlocked( name );
+        if ( !symbol.is_null() )
+            rec.symbol_offset = symbol.offset();
+
         reg->domains[reg->domain_count++] = rec;
+        return true;
+    }
+
+    static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
+    {
+        if ( s == nullptr )
+            s = "";
+
+        forest_domain* symbol_domain = symbol_domain_record_unlocked();
+        if ( symbol_domain == nullptr )
+            return pptr<pstringview>();
+
+        pptr<pstringview> found = detail::avl_find<pptr<pstringview>>(
+            symbol_domain->root_offset,
+            [&]( pptr<pstringview> cur ) -> int
+            {
+                pstringview* obj = resolve( cur );
+                return ( obj != nullptr ) ? std::strcmp( s, obj->c_str() ) : 0;
+            },
+            []( pptr<pstringview> p ) -> pstringview* { return resolve( p ); } );
+        if ( !found.is_null() )
+            return found;
+
+        std::uint32_t len        = static_cast<std::uint32_t>( std::strlen( s ) );
+        std::size_t   alloc_size = offsetof( pstringview, str ) + static_cast<std::size_t>( len ) + 1;
+        void*         raw        = allocate_unlocked( alloc_size );
+        if ( raw == nullptr )
+            return pptr<pstringview>();
+
+        std::uint8_t* base = _backend.base_ptr();
+        pptr<pstringview> new_node( detail::ptr_to_granule_idx<address_traits>( base, raw ) );
+        pstringview*      obj = static_cast<pstringview*>( raw );
+        obj->length           = len;
+        std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
+
+        detail::avl_init_node( new_node );
+        if ( !lock_block_permanent_unlocked( raw ) )
+            return pptr<pstringview>();
+
+        const char* new_str = obj->c_str();
+        detail::avl_insert(
+            new_node, symbol_domain->root_offset,
+            [&]( pptr<pstringview> cur ) -> bool
+            {
+                pstringview* cur_obj = resolve( cur );
+                return ( cur_obj != nullptr ) && ( std::strcmp( new_str, cur_obj->c_str() ) < 0 );
+            },
+            []( pptr<pstringview> p ) -> pstringview* { return resolve( p ); } );
+
+        return new_node;
+    }
+
+    static bool bootstrap_system_symbols_unlocked() noexcept
+    {
+        static constexpr const char* kBootstrapSymbols[] = {
+            detail::kSystemDomainFreeTree,
+            detail::kSystemDomainSymbols,
+            detail::kSystemDomainRegistry,
+            detail::kSystemTypeForestRegistry,
+            detail::kSystemTypeForestDomainRecord,
+            detail::kSystemTypePstringview,
+            detail::kServiceNameLegacyRoot,
+            detail::kServiceNameDomainRoot,
+            detail::kServiceNameDomainSymbol,
+        };
+
+        for ( const char* sym : kBootstrapSymbols )
+        {
+            if ( intern_symbol_unlocked( sym ).is_null() )
+                return false;
+        }
+
+        forest_registry* reg = forest_registry_root_unlocked();
+        if ( reg == nullptr )
+            return false;
+        for ( std::uint16_t i = 0; i < reg->domain_count; ++i )
+        {
+            if ( reg->domains[i].name[0] == '\0' )
+                continue;
+            if ( reg->domains[i].symbol_offset != 0 )
+                continue;
+            pptr<pstringview> symbol = intern_symbol_unlocked( reg->domains[i].name );
+            if ( symbol.is_null() )
+                return false;
+            reg->domains[i].symbol_offset = symbol.offset();
+        }
+
         return true;
     }
 
@@ -1442,6 +1541,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _last_error = PmmError::BackendError;
             return false;
         }
+        if ( !bootstrap_system_symbols_unlocked() )
+        {
+            _last_error = PmmError::BackendError;
+            return false;
+        }
         return true;
     }
 
@@ -1479,7 +1583,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
                 registry_rec->binding_kind = detail::kForestBindingDirectRoot;
                 registry_rec->root_offset  = hdr->root_offset;
             }
-            return true;
+            return bootstrap_system_symbols_unlocked();
         }
 
         index_type legacy_root = 0;
