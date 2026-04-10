@@ -31,7 +31,13 @@ var searchData=
   ['koffsetrightoffset_28',['kOffsetRightOffset',['../classpmm_1_1BlockStateBase.html#adc2e9f1fef6dabd8606f7fc0d9d35fd1',1,'pmm::BlockStateBase']]],
   ['koffsetrootoffset_29',['kOffsetRootOffset',['../classpmm_1_1BlockStateBase.html#ac34402bb25d700c343c1c38fa367f4a3',1,'pmm::BlockStateBase']]],
   ['koffsetweight_30',['kOffsetWeight',['../classpmm_1_1BlockStateBase.html#a62f751f73050ee88505271cb7fbe67aa',1,'pmm::BlockStateBase']]],
-  ['ksystemdomainfreetree_31',['kSystemDomainFreeTree',['../namespacepmm_1_1detail.html#a12b1b2872e33d1bb8f3d5af138027f69',1,'pmm::detail']]],
-  ['ksystemdomainregistry_32',['kSystemDomainRegistry',['../namespacepmm_1_1detail.html#ab25e9d52817c32ae29ff35cb068b804a',1,'pmm::detail']]],
-  ['ksystemdomainsymbols_33',['kSystemDomainSymbols',['../namespacepmm_1_1detail.html#a9162305079583624332980246ef18335',1,'pmm::detail']]]
+  ['kservicenamedomainroot_31',['kServiceNameDomainRoot',['../namespacepmm_1_1detail.html#a234d8ac4506c9861770ba849e8198e6d',1,'pmm::detail']]],
+  ['kservicenamedomainsymbol_32',['kServiceNameDomainSymbol',['../namespacepmm_1_1detail.html#ae4f7cfa7f72eae21ca878ca4b64e3990',1,'pmm::detail']]],
+  ['kservicenamelegacyroot_33',['kServiceNameLegacyRoot',['../namespacepmm_1_1detail.html#a53ab03d029d3bea5e2fb3762b2c58b3a',1,'pmm::detail']]],
+  ['ksystemdomainfreetree_34',['kSystemDomainFreeTree',['../namespacepmm_1_1detail.html#a12b1b2872e33d1bb8f3d5af138027f69',1,'pmm::detail']]],
+  ['ksystemdomainregistry_35',['kSystemDomainRegistry',['../namespacepmm_1_1detail.html#ab25e9d52817c32ae29ff35cb068b804a',1,'pmm::detail']]],
+  ['ksystemdomainsymbols_36',['kSystemDomainSymbols',['../namespacepmm_1_1detail.html#a9162305079583624332980246ef18335',1,'pmm::detail']]],
+  ['ksystemtypeforestdomainrecord_37',['kSystemTypeForestDomainRecord',['../namespacepmm_1_1detail.html#a279142b8048738b397e1172255698616',1,'pmm::detail']]],
+  ['ksystemtypeforestregistry_38',['kSystemTypeForestRegistry',['../namespacepmm_1_1detail.html#ad72386b4110b5fc666dab163f4c403f9',1,'pmm::detail']]],
+  ['ksystemtypepstringview_39',['kSystemTypePstringview',['../namespacepmm_1_1detail.html#a0d921ebd2a91a4de242ef5ae1b2fa497',1,'pmm::detail']]]
 ];
