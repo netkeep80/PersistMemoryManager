@@ -106,6 +106,7 @@ TEST_CASE( "I200-C  clear root", "[test_issue200_root_object]" )
 TEST_CASE( "I200-D  persistence save/load", "[test_issue200_root_object]" )
 {
     const char* filename = "test_root_persist.dat";
+    std::remove( filename );
     TestMgr2::destroy();
     REQUIRE( TestMgr2::create( 64 * 1024 ) );
 
@@ -324,6 +325,7 @@ TEST_CASE( "I200-L  header size check", "[test_issue200_root_object]" )
 TEST_CASE( "I200-M  persistence no root", "[test_issue200_root_object]" )
 {
     const char* filename = "test_root_no_persist.dat";
+    std::remove( filename );
     TestMgr2::destroy();
     REQUIRE( TestMgr2::create( 64 * 1024 ) );
 

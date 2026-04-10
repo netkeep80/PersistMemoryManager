@@ -1397,9 +1397,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             return false;
         }
 
-        std::uintptr_t raw_addr     = reinterpret_cast<std::uintptr_t>( raw );
-        std::uintptr_t aligned_addr = ( raw_addr + ( kGranSz - 1 ) ) & ~static_cast<std::uintptr_t>( kGranSz - 1 );
-        forest_registry* reg        = reinterpret_cast<forest_registry*>( aligned_addr );
+        std::uint8_t* base          = _backend.base_ptr();
+        std::size_t   raw_off       = static_cast<std::size_t>( static_cast<std::uint8_t*>( raw ) - base );
+        std::size_t   aligned_off   = ( raw_off + ( kGranSz - 1 ) ) & ~( kGranSz - 1 );
+        forest_registry* reg        = reinterpret_cast<forest_registry*>( base + aligned_off );
         if ( reg == nullptr )
         {
             _last_error = PmmError::InvalidPointer;
