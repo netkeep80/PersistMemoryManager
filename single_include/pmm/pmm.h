@@ -1609,6 +1609,193 @@ inline void verify_block_state( const void* raw_blk, typename AT::index_type own
  * @version 2.4
  */
 
+/**
+ * @file pmm/validation.h
+ * @brief Unified pointer and block validation layer for PersistMemoryManager.
+ *
+ * Centralizes all low-level validation checks that guard raw pointer → block
+ * transitions. Provides two levels:
+ *   - cheap (fast-path): O(1) checks for normal API operations
+ *   - full (verify-level): structural consistency checks for verify/repair
+ *
+ * All conversion paths (granule index → Block*, user pointer → Block*,
+ * pptr → T*, etc.) should route through these helpers.
+ *
+ * @see docs/validation_model.md — specification
+ * @see types.h — block_at, header_from_ptr_t (callers of validation)
+ * @version 1.0
+ */
+
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+
+namespace pmm
+{
+namespace detail
+{
+
+// ─── Cheap (fast-path) validation ────────────────────────────────────────────
+
+/**
+ * @brief Validate that a granule index refers to a location within the managed image
+ *        where a complete Block header fits.
+ *
+ * @tparam AT Address traits type.
+ * @param total_size Total size of the managed area in bytes.
+ * @param idx        Granule index to validate.
+ * @return true if idx is valid (not no_block, and block header fits within image).
+ */
+template <typename AT> inline bool validate_block_index( std::size_t total_size, typename AT::index_type idx ) noexcept
+{
+    if ( idx == AT::no_block )
+        return false;
+    std::size_t byte_off = static_cast<std::size_t>( idx ) * AT::granule_size;
+    // Overflow check: if idx * granule_size wrapped around, byte_off < idx for large idx.
+    if ( idx != 0 && byte_off / AT::granule_size != static_cast<std::size_t>( idx ) )
+        return false;
+    if ( byte_off + sizeof( pmm::Block<AT> ) > total_size )
+        return false;
+    return true;
+}
+
+/**
+ * @brief Validate that a user-data pointer is within the managed image,
+ *        granule-aligned, and past the minimum address for user data.
+ *
+ * Does NOT check whether the block is actually allocated (no weight check).
+ * Use header_from_ptr_t() for the full user-ptr → Block* path.
+ *
+ * @tparam AT Address traits type.
+ * @param base            Base pointer of the managed area.
+ * @param total_size      Total size of the managed area in bytes.
+ * @param ptr             User-data pointer to validate.
+ * @param min_user_offset Minimum byte offset from base for the first valid user-data address.
+ *                        Typically: sizeof(Block<AT>) + sizeof(ManagerHeader<AT>) + sizeof(Block<AT>).
+ * @return true if ptr passes all cheap checks.
+ */
+template <typename AT>
+inline bool validate_user_ptr( const std::uint8_t* base, std::size_t total_size, const void* ptr,
+                               std::size_t min_user_offset ) noexcept
+{
+    if ( ptr == nullptr || base == nullptr )
+        return false;
+    const auto* raw_ptr = static_cast<const std::uint8_t*>( ptr );
+    // Must be within managed area.
+    if ( raw_ptr < base || raw_ptr >= base + total_size )
+        return false;
+    // Must be past minimum user-data address.
+    if ( static_cast<std::size_t>( raw_ptr - base ) < min_user_offset )
+        return false;
+    // The block header candidate must be granule-aligned relative to base.
+    static constexpr std::size_t kBlockSize = sizeof( pmm::Block<AT> );
+    std::size_t                  cand_off   = static_cast<std::size_t>( raw_ptr - base ) - kBlockSize;
+    if ( cand_off % AT::granule_size != 0 )
+        return false;
+    return true;
+}
+
+/**
+ * @brief Validate a granule index used in linked-list or AVL-tree traversal.
+ *
+ * Checks the index is either no_block (valid sentinel) or a valid in-range index.
+ * Useful for validating next_offset, prev_offset, left_offset, right_offset, etc.
+ *
+ * @tparam AT Address traits type.
+ * @param total_size Total size of the managed area in bytes.
+ * @param idx        Granule index to validate (may be no_block).
+ * @return true if idx is no_block or a valid in-range index.
+ */
+template <typename AT> inline bool validate_link_index( std::size_t total_size, typename AT::index_type idx ) noexcept
+{
+    if ( idx == AT::no_block )
+        return true; // Sentinel is always valid.
+    return validate_block_index<AT>( total_size, idx );
+}
+
+// ─── Full (verify-level) validation ──────────────────────────────────────────
+
+/**
+ * @brief Full verify-level validation of a block header's structural integrity.
+ *
+ * Checks:
+ *   - weight/root_offset consistency (free vs allocated invariant)
+ *   - prev_offset and next_offset are valid link indices
+ *   - node_type is a known value (kNodeReadWrite or kNodeReadOnly)
+ *   - Block data range does not exceed image boundary
+ *
+ * Reports violations into the VerifyResult. Does not modify the image.
+ *
+ * @tparam AT Address traits type.
+ * @param base       Base pointer of the managed area.
+ * @param total_size Total size of the managed area in bytes.
+ * @param idx        Granule index of the block being validated.
+ * @param result     Diagnostic result to append violations to.
+ */
+template <typename AT>
+inline void validate_block_header_full( const std::uint8_t* base, std::size_t total_size, typename AT::index_type idx,
+                                        VerifyResult& result ) noexcept
+{
+    using BlockState = pmm::BlockStateBase<AT>;
+    using index_type = typename AT::index_type;
+
+    if ( !validate_block_index<AT>( total_size, idx ) )
+    {
+        result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                    static_cast<std::uint64_t>( idx ), 0, 0 );
+        return;
+    }
+
+    const void* blk_raw = base + static_cast<std::size_t>( idx ) * AT::granule_size;
+
+    // 1. Weight / root_offset consistency (delegates to BlockState::verify_state).
+    BlockState::verify_state( blk_raw, idx, result );
+
+    // 2. next_offset within bounds.
+    index_type next = BlockState::get_next_offset( blk_raw );
+    if ( next != AT::no_block && !validate_block_index<AT>( total_size, next ) )
+    {
+        result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                    static_cast<std::uint64_t>( idx ), static_cast<std::uint64_t>( AT::no_block ),
+                    static_cast<std::uint64_t>( next ) );
+    }
+
+    // 3. prev_offset within bounds.
+    index_type prev = BlockState::get_prev_offset( blk_raw );
+    if ( prev != AT::no_block && !validate_block_index<AT>( total_size, prev ) )
+    {
+        result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                    static_cast<std::uint64_t>( idx ), static_cast<std::uint64_t>( AT::no_block ),
+                    static_cast<std::uint64_t>( prev ) );
+    }
+
+    // 4. node_type is a known value.
+    std::uint16_t nt = BlockState::get_node_type( blk_raw );
+    if ( nt != pmm::kNodeReadWrite && nt != pmm::kNodeReadOnly )
+    {
+        result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                    static_cast<std::uint64_t>( idx ), 0, static_cast<std::uint64_t>( nt ) );
+    }
+
+    // 5. If allocated, verify block data range fits in image.
+    index_type w = BlockState::get_weight( blk_raw );
+    if ( w > 0 )
+    {
+        static constexpr std::size_t kBlkHdrBytes = sizeof( pmm::Block<AT> );
+        std::size_t                  blk_byte_off = static_cast<std::size_t>( idx ) * AT::granule_size;
+        std::size_t                  data_bytes   = static_cast<std::size_t>( w ) * AT::granule_size;
+        if ( blk_byte_off + kBlkHdrBytes + data_bytes > total_size )
+        {
+            result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( idx ), total_size,
+                        static_cast<std::uint64_t>( blk_byte_off + kBlkHdrBytes + data_bytes ) );
+        }
+    }
+}
+
+} // namespace detail
+} // namespace pmm
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -1926,6 +2113,29 @@ inline const pmm::Block<AddressTraitsT>* block_at( const std::uint8_t* base, typ
                                                                            AddressTraitsT::granule_size );
 }
 
+/// @brief Validated block_at: returns nullptr if idx is out of range.
+/// Use in verify/diagnostic paths where invalid indices must be handled gracefully.
+template <typename AddressTraitsT = pmm::DefaultAddressTraits>
+inline pmm::Block<AddressTraitsT>* block_at_checked( std::uint8_t* base, std::size_t total_size,
+                                                     typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( !validate_block_index<AddressTraitsT>( total_size, idx ) )
+        return nullptr;
+    return reinterpret_cast<pmm::Block<AddressTraitsT>*>( base + static_cast<std::size_t>( idx ) *
+                                                                     AddressTraitsT::granule_size );
+}
+
+/// @brief Validated block_at (const): returns nullptr if idx is out of range.
+template <typename AddressTraitsT = pmm::DefaultAddressTraits>
+inline const pmm::Block<AddressTraitsT>* block_at_checked( const std::uint8_t* base, std::size_t total_size,
+                                                           typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( !validate_block_index<AddressTraitsT>( total_size, idx ) )
+        return nullptr;
+    return reinterpret_cast<const pmm::Block<AddressTraitsT>*>( base + static_cast<std::size_t>( idx ) *
+                                                                           AddressTraitsT::granule_size );
+}
+
 /// @brief Get granule index of Block<AddressTraitsT>.
 template <typename AddressTraitsT>
 inline typename AddressTraitsT::index_type block_idx_t( const std::uint8_t*               base,
@@ -1987,6 +2197,20 @@ inline void* resolve_granule_ptr( std::uint8_t* base, typename AddressTraitsT::i
     return base + static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
 }
 
+/// @brief Validated resolve_granule_ptr: returns nullptr if idx is zero or out of bounds.
+/// Use in paths where external/untrusted indices must be validated before dereferencing.
+template <typename AddressTraitsT>
+inline void* resolve_granule_ptr_checked( std::uint8_t* base, std::size_t total_size,
+                                          typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( idx == static_cast<typename AddressTraitsT::index_type>( 0 ) )
+        return nullptr;
+    std::size_t byte_off = static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
+    if ( byte_off >= total_size )
+        return nullptr;
+    return base + byte_off;
+}
+
 /// @brief Convert a raw pointer to a granule index.
 /// Eliminates repeated `(ptr - base) / granule_size` patterns across parray, pstring, ppool, pstringview.
 template <typename AddressTraitsT>
@@ -1995,6 +2219,27 @@ inline typename AddressTraitsT::index_type ptr_to_granule_idx( const std::uint8_
     using IndexT         = typename AddressTraitsT::index_type;
     std::size_t byte_off = static_cast<const std::uint8_t*>( ptr ) - base;
     return static_cast<IndexT>( byte_off / AddressTraitsT::granule_size );
+}
+
+/// @brief Validated ptr_to_granule_idx: returns no_block on invalid input.
+/// Checks null, bounds, and granule alignment before converting.
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type ptr_to_granule_idx_checked( const std::uint8_t* base, std::size_t total_size,
+                                                                       const void* ptr ) noexcept
+{
+    using IndexT = typename AddressTraitsT::index_type;
+    if ( ptr == nullptr || base == nullptr )
+        return AddressTraitsT::no_block;
+    const auto* raw = static_cast<const std::uint8_t*>( ptr );
+    if ( raw < base || raw >= base + total_size )
+        return AddressTraitsT::no_block;
+    std::size_t byte_off = static_cast<std::size_t>( raw - base );
+    if ( byte_off % AddressTraitsT::granule_size != 0 )
+        return AddressTraitsT::no_block;
+    std::size_t idx = byte_off / AddressTraitsT::granule_size;
+    if ( idx > static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) )
+        return AddressTraitsT::no_block;
+    return static_cast<IndexT>( idx );
 }
 
 /// @brief Compute user data address for block (block + sizeof(Block<A>)).
@@ -7218,10 +7463,14 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return nullptr;
-        std::uint8_t* base = _backend.base_ptr();
-        // Bounds check — verify offset is within the managed region.
-        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
-        assert( byte_off + sizeof( T ) <= _backend.total_size() && "resolve(): pptr offset out of bounds" );
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        // Safety: reject out-of-bounds offsets instead of UB.
+        if ( byte_off + sizeof( T ) > _backend.total_size() )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return nullptr;
+        }
         return reinterpret_cast<T*>( base + byte_off );
     }
 
@@ -7419,7 +7668,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        index_type v = getter( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        index_type v = getter( blk );
         return ( v == address_traits::no_block ) ? static_cast<index_type>( 0 ) : v;
     }
     /// @brief Write an index_type AVL field into pptr's block (0 maps to no_block).
@@ -7428,7 +7683,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return;
-        setter( block_raw_mut_ptr_from_pptr( p ), ( val == 0 ) ? address_traits::no_block : val );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        setter( blk, ( val == 0 ) ? address_traits::no_block : val );
     }
 
   public:
@@ -7469,13 +7730,25 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        return BlockStateBase<address_traits>::get_weight( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        return BlockStateBase<address_traits>::get_weight( blk );
     }
     template <typename T> static void set_tree_weight( pptr<T> p, index_type w ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        BlockStateBase<address_traits>::set_weight_of( block_raw_mut_ptr_from_pptr( p ), w );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        BlockStateBase<address_traits>::set_weight_of( blk, w );
     }
     /// @}
 
@@ -7485,13 +7758,25 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        return BlockStateBase<address_traits>::get_avl_height( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        return BlockStateBase<address_traits>::get_avl_height( blk );
     }
     template <typename T> static void set_tree_height( pptr<T> p, std::int16_t h ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        BlockStateBase<address_traits>::set_avl_height_of( block_raw_mut_ptr_from_pptr( p ), h );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        BlockStateBase<address_traits>::set_avl_height_of( blk, h );
     }
     /// @}
 
@@ -7502,7 +7787,18 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         assert( !p.is_null() && "tree_node: pptr must not be null" );
         assert( _initialized && "tree_node: manager must be initialized before calling tree_node" );
-        return *reinterpret_cast<TreeNode<address_traits>*>( block_raw_mut_ptr_from_pptr( p ) );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            // Return a reference to a thread-local sentinel to avoid UB.
+            // Callers must check last_error() when operating on untrusted pptrs.
+            // Re-initialize each time so prior mutations don't leak across calls.
+            static thread_local TreeNode<address_traits> sentinel{};
+            sentinel = {};
+            return sentinel;
+        }
+        return *reinterpret_cast<TreeNode<address_traits>*>( blk );
     }
 
     // ─── Статистика ────────────────────────────────────────────────────────────
@@ -8341,19 +8637,33 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
         return; // Cannot proceed — block sizes are meaningless
     }
 
-    // 2. Block state consistency (transitional states)
+    // 2. Full block header validation (next/prev bounds, node_type, data range)
+    {
+        using BlockState = BlockStateBase<address_traits>;
+        index_type idx   = hdr->first_block_offset;
+        while ( idx != address_traits::no_block )
+        {
+            if ( !detail::validate_block_index<address_traits>( hdr->total_size, idx ) )
+                break;
+            detail::validate_block_header_full<address_traits>( base, hdr->total_size, idx, result );
+            const void* blk_ptr = base + static_cast<std::size_t>( idx ) * address_traits::granule_size;
+            idx                  = BlockState::get_next_offset( blk_ptr );
+        }
+    }
+
+    // 3. Block state consistency (transitional states)
     allocator::verify_block_states( base, hdr, result );
 
-    // 3. Linked list prev_offset
+    // 4. Linked list prev_offset
     allocator::verify_linked_list( base, hdr, result );
 
-    // 4. Counter consistency
+    // 5. Counter consistency
     allocator::verify_counters( base, hdr, result );
 
-    // 5. Free tree root consistency
+    // 6. Free tree root consistency
     allocator::verify_free_tree( base, hdr, result );
 
-    // 6. Forest registry validation
+    // 7. Forest registry validation
     verify_forest_registry_unlocked( result );
 }
 
@@ -8417,30 +8727,49 @@ static void verify_forest_registry_unlocked( VerifyResult& result ) noexcept
 
     /// @brief Convert a raw user-data pointer returned by allocate() into a pptr<T>.
     /// Caller must ensure raw != nullptr and _initialized before calling.
+    /// Returns null pptr if the pointer is not within the managed region.
     template <typename T> static pptr<T> make_pptr_from_raw( void* raw ) noexcept
     {
         std::uint8_t* base     = _backend.base_ptr();
-        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
+        auto*         raw_byte = static_cast<std::uint8_t*>( raw );
+        if ( raw_byte < base || raw_byte >= base + _backend.total_size() )
+            return pptr<T>();
+        std::size_t byte_off = static_cast<std::size_t>( raw_byte - base );
+        std::size_t idx      = byte_off / address_traits::granule_size;
+        if ( idx > static_cast<std::size_t>( std::numeric_limits<index_type>::max() ) )
+            return pptr<T>();
+        return pptr<T>( static_cast<index_type>( idx ) );
     }
 
     // ─── blk_raw helpers ──────────────────────────────────────────
     // base + offset * granule_size - sizeof(Block<AT>) → block header before user data.
 
     /// @brief Return a const pointer to the block header for the given pptr.
+    /// Returns nullptr if offset is invalid (would place block header before base).
     template <typename T> static const void* block_raw_ptr_from_pptr( pptr<T> p ) noexcept
     {
-        const std::uint8_t* base = _backend.base_ptr();
-        return base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-               sizeof( Block<address_traits> );
+        const std::uint8_t* base     = _backend.base_ptr();
+        std::size_t         byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        if ( byte_off < sizeof( Block<address_traits> ) )
+            return nullptr;
+        std::size_t blk_off = byte_off - sizeof( Block<address_traits> );
+        if ( blk_off + sizeof( Block<address_traits> ) > _backend.total_size() )
+            return nullptr;
+        return base + blk_off;
     }
 
     /// @brief Return a mutable pointer to the block header for the given pptr.
+    /// Returns nullptr if offset is invalid (would place block header before base).
     template <typename T> static void* block_raw_mut_ptr_from_pptr( pptr<T> p ) noexcept
     {
-        std::uint8_t* base = _backend.base_ptr();
-        return base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-               sizeof( Block<address_traits> );
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        if ( byte_off < sizeof( Block<address_traits> ) )
+            return nullptr;
+        std::size_t blk_off = byte_off - sizeof( Block<address_traits> );
+        if ( blk_off + sizeof( Block<address_traits> ) > _backend.total_size() )
+            return nullptr;
+        return base + blk_off;
     }
 
     // ─── Address-traits-specific layout constants ──────────────────

@@ -18,6 +18,7 @@
 #include "pmm/block.h"
 #include "pmm/block_state.h"
 #include "pmm/tree_node.h"
+#include "pmm/validation.h"
 
 #include <algorithm>
 #include <cassert>
@@ -336,6 +337,29 @@ inline const pmm::Block<AddressTraitsT>* block_at( const std::uint8_t* base, typ
                                                                            AddressTraitsT::granule_size );
 }
 
+/// @brief Validated block_at: returns nullptr if idx is out of range.
+/// Use in verify/diagnostic paths where invalid indices must be handled gracefully.
+template <typename AddressTraitsT = pmm::DefaultAddressTraits>
+inline pmm::Block<AddressTraitsT>* block_at_checked( std::uint8_t* base, std::size_t total_size,
+                                                     typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( !validate_block_index<AddressTraitsT>( total_size, idx ) )
+        return nullptr;
+    return reinterpret_cast<pmm::Block<AddressTraitsT>*>( base + static_cast<std::size_t>( idx ) *
+                                                                     AddressTraitsT::granule_size );
+}
+
+/// @brief Validated block_at (const): returns nullptr if idx is out of range.
+template <typename AddressTraitsT = pmm::DefaultAddressTraits>
+inline const pmm::Block<AddressTraitsT>* block_at_checked( const std::uint8_t* base, std::size_t total_size,
+                                                           typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( !validate_block_index<AddressTraitsT>( total_size, idx ) )
+        return nullptr;
+    return reinterpret_cast<const pmm::Block<AddressTraitsT>*>( base + static_cast<std::size_t>( idx ) *
+                                                                           AddressTraitsT::granule_size );
+}
+
 /// @brief Get granule index of Block<AddressTraitsT>.
 template <typename AddressTraitsT>
 inline typename AddressTraitsT::index_type block_idx_t( const std::uint8_t*               base,
@@ -397,6 +421,20 @@ inline void* resolve_granule_ptr( std::uint8_t* base, typename AddressTraitsT::i
     return base + static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
 }
 
+/// @brief Validated resolve_granule_ptr: returns nullptr if idx is zero or out of bounds.
+/// Use in paths where external/untrusted indices must be validated before dereferencing.
+template <typename AddressTraitsT>
+inline void* resolve_granule_ptr_checked( std::uint8_t* base, std::size_t total_size,
+                                          typename AddressTraitsT::index_type idx ) noexcept
+{
+    if ( idx == static_cast<typename AddressTraitsT::index_type>( 0 ) )
+        return nullptr;
+    std::size_t byte_off = static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size;
+    if ( byte_off >= total_size )
+        return nullptr;
+    return base + byte_off;
+}
+
 /// @brief Convert a raw pointer to a granule index.
 /// Eliminates repeated `(ptr - base) / granule_size` patterns across parray, pstring, ppool, pstringview.
 template <typename AddressTraitsT>
@@ -405,6 +443,27 @@ inline typename AddressTraitsT::index_type ptr_to_granule_idx( const std::uint8_
     using IndexT         = typename AddressTraitsT::index_type;
     std::size_t byte_off = static_cast<const std::uint8_t*>( ptr ) - base;
     return static_cast<IndexT>( byte_off / AddressTraitsT::granule_size );
+}
+
+/// @brief Validated ptr_to_granule_idx: returns no_block on invalid input.
+/// Checks null, bounds, and granule alignment before converting.
+template <typename AddressTraitsT>
+inline typename AddressTraitsT::index_type ptr_to_granule_idx_checked( const std::uint8_t* base, std::size_t total_size,
+                                                                       const void* ptr ) noexcept
+{
+    using IndexT = typename AddressTraitsT::index_type;
+    if ( ptr == nullptr || base == nullptr )
+        return AddressTraitsT::no_block;
+    const auto* raw = static_cast<const std::uint8_t*>( ptr );
+    if ( raw < base || raw >= base + total_size )
+        return AddressTraitsT::no_block;
+    std::size_t byte_off = static_cast<std::size_t>( raw - base );
+    if ( byte_off % AddressTraitsT::granule_size != 0 )
+        return AddressTraitsT::no_block;
+    std::size_t idx = byte_off / AddressTraitsT::granule_size;
+    if ( idx > static_cast<std::size_t>( std::numeric_limits<IndexT>::max() ) )
+        return AddressTraitsT::no_block;
+    return static_cast<IndexT>( idx );
 }
 
 /// @brief Compute user data address for block (block + sizeof(Block<A>)).

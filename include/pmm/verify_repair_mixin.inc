@@ -42,19 +42,33 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
         return; // Cannot proceed — block sizes are meaningless
     }
 
-    // 2. Block state consistency (transitional states)
+    // 2. Full block header validation (next/prev bounds, node_type, data range)
+    {
+        using BlockState = BlockStateBase<address_traits>;
+        index_type idx   = hdr->first_block_offset;
+        while ( idx != address_traits::no_block )
+        {
+            if ( !detail::validate_block_index<address_traits>( hdr->total_size, idx ) )
+                break;
+            detail::validate_block_header_full<address_traits>( base, hdr->total_size, idx, result );
+            const void* blk_ptr = base + static_cast<std::size_t>( idx ) * address_traits::granule_size;
+            idx                  = BlockState::get_next_offset( blk_ptr );
+        }
+    }
+
+    // 3. Block state consistency (transitional states)
     allocator::verify_block_states( base, hdr, result );
 
-    // 3. Linked list prev_offset
+    // 4. Linked list prev_offset
     allocator::verify_linked_list( base, hdr, result );
 
-    // 4. Counter consistency
+    // 5. Counter consistency
     allocator::verify_counters( base, hdr, result );
 
-    // 5. Free tree root consistency
+    // 6. Free tree root consistency
     allocator::verify_free_tree( base, hdr, result );
 
-    // 6. Forest registry validation
+    // 7. Forest registry validation
     verify_forest_registry_unlocked( result );
 }
 

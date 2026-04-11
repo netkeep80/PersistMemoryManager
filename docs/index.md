@@ -16,6 +16,7 @@ Single entry point for all PMM documentation. Each topic is covered by exactly o
 | [Recovery](recovery.md) | Fault recovery: 5-phase load sequence, block state machine, CRC32, atomic writes |
 | [Verify/Repair Contract](verify_repair_contract.md) | Operational boundary between verify, repair, and load — frozen contract for tasks 08–10 |
 | [Diagnostics Taxonomy](diagnostics_taxonomy.md) | Violation types, severity levels, repair policies, diagnostic entry format |
+| [Validation Model](validation_model.md) | Low-level pointer and block validation: cheap vs full modes, conversion paths, error categories |
 | [Atomic Writes](atomic_writes.md) | Write criticality analysis, block state transitions, interruption guarantees |
 | [Thread Safety](thread_safety.md) | Lock policies, operation contracts, resolve() fast path, concurrent patterns |
 

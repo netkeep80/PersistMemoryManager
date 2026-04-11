@@ -734,10 +734,14 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return nullptr;
-        std::uint8_t* base = _backend.base_ptr();
-        // Bounds check — verify offset is within the managed region.
-        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
-        assert( byte_off + sizeof( T ) <= _backend.total_size() && "resolve(): pptr offset out of bounds" );
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        // Safety: reject out-of-bounds offsets instead of UB.
+        if ( byte_off + sizeof( T ) > _backend.total_size() )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return nullptr;
+        }
         return reinterpret_cast<T*>( base + byte_off );
     }
 
@@ -935,7 +939,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        index_type v = getter( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        index_type v = getter( blk );
         return ( v == address_traits::no_block ) ? static_cast<index_type>( 0 ) : v;
     }
     /// @brief Write an index_type AVL field into pptr's block (0 maps to no_block).
@@ -944,7 +954,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return;
-        setter( block_raw_mut_ptr_from_pptr( p ), ( val == 0 ) ? address_traits::no_block : val );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        setter( blk, ( val == 0 ) ? address_traits::no_block : val );
     }
 
   public:
@@ -985,13 +1001,25 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        return BlockStateBase<address_traits>::get_weight( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        return BlockStateBase<address_traits>::get_weight( blk );
     }
     template <typename T> static void set_tree_weight( pptr<T> p, index_type w ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        BlockStateBase<address_traits>::set_weight_of( block_raw_mut_ptr_from_pptr( p ), w );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        BlockStateBase<address_traits>::set_weight_of( blk, w );
     }
     /// @}
 
@@ -1001,13 +1029,25 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        return BlockStateBase<address_traits>::get_avl_height( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        return BlockStateBase<address_traits>::get_avl_height( blk );
     }
     template <typename T> static void set_tree_height( pptr<T> p, std::int16_t h ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        BlockStateBase<address_traits>::set_avl_height_of( block_raw_mut_ptr_from_pptr( p ), h );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        BlockStateBase<address_traits>::set_avl_height_of( blk, h );
     }
     /// @}
 
@@ -1018,7 +1058,18 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         assert( !p.is_null() && "tree_node: pptr must not be null" );
         assert( _initialized && "tree_node: manager must be initialized before calling tree_node" );
-        return *reinterpret_cast<TreeNode<address_traits>*>( block_raw_mut_ptr_from_pptr( p ) );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            // Return a reference to a thread-local sentinel to avoid UB.
+            // Callers must check last_error() when operating on untrusted pptrs.
+            // Re-initialize each time so prior mutations don't leak across calls.
+            static thread_local TreeNode<address_traits> sentinel{};
+            sentinel = {};
+            return sentinel;
+        }
+        return *reinterpret_cast<TreeNode<address_traits>*>( blk );
     }
 
     // ─── Статистика ────────────────────────────────────────────────────────────
@@ -1339,30 +1390,49 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     /// @brief Convert a raw user-data pointer returned by allocate() into a pptr<T>.
     /// Caller must ensure raw != nullptr and _initialized before calling.
+    /// Returns null pptr if the pointer is not within the managed region.
     template <typename T> static pptr<T> make_pptr_from_raw( void* raw ) noexcept
     {
         std::uint8_t* base     = _backend.base_ptr();
-        std::size_t   byte_off = static_cast<std::uint8_t*>( raw ) - base;
-        return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
+        auto*         raw_byte = static_cast<std::uint8_t*>( raw );
+        if ( raw_byte < base || raw_byte >= base + _backend.total_size() )
+            return pptr<T>();
+        std::size_t byte_off = static_cast<std::size_t>( raw_byte - base );
+        std::size_t idx      = byte_off / address_traits::granule_size;
+        if ( idx > static_cast<std::size_t>( std::numeric_limits<index_type>::max() ) )
+            return pptr<T>();
+        return pptr<T>( static_cast<index_type>( idx ) );
     }
 
     // ─── blk_raw helpers ──────────────────────────────────────────
     // base + offset * granule_size - sizeof(Block<AT>) → block header before user data.
 
     /// @brief Return a const pointer to the block header for the given pptr.
+    /// Returns nullptr if offset is invalid (would place block header before base).
     template <typename T> static const void* block_raw_ptr_from_pptr( pptr<T> p ) noexcept
     {
-        const std::uint8_t* base = _backend.base_ptr();
-        return base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-               sizeof( Block<address_traits> );
+        const std::uint8_t* base     = _backend.base_ptr();
+        std::size_t         byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        if ( byte_off < sizeof( Block<address_traits> ) )
+            return nullptr;
+        std::size_t blk_off = byte_off - sizeof( Block<address_traits> );
+        if ( blk_off + sizeof( Block<address_traits> ) > _backend.total_size() )
+            return nullptr;
+        return base + blk_off;
     }
 
     /// @brief Return a mutable pointer to the block header for the given pptr.
+    /// Returns nullptr if offset is invalid (would place block header before base).
     template <typename T> static void* block_raw_mut_ptr_from_pptr( pptr<T> p ) noexcept
     {
-        std::uint8_t* base = _backend.base_ptr();
-        return base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size -
-               sizeof( Block<address_traits> );
+        std::uint8_t* base     = _backend.base_ptr();
+        std::size_t   byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        if ( byte_off < sizeof( Block<address_traits> ) )
+            return nullptr;
+        std::size_t blk_off = byte_off - sizeof( Block<address_traits> );
+        if ( blk_off + sizeof( Block<address_traits> ) > _backend.total_size() )
+            return nullptr;
+        return base + blk_off;
     }
 
     // ─── Address-traits-specific layout constants ──────────────────

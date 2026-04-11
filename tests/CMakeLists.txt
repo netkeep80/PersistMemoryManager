@@ -272,3 +272,6 @@ pmm_add_test(test_issue245_verify_repair test_issue245_verify_repair.cpp)
 
 # ─── Verify/repair/load operational contract tests ──────────────
 pmm_add_test(test_issue256_verify_repair_contract test_issue256_verify_repair_contract.cpp)
+
+# ─── Pointer and block validation layer tests ───────────────────
+pmm_add_test(test_issue257_validation test_issue257_validation.cpp)
