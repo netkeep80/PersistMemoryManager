@@ -13,6 +13,7 @@
 
 Связанные документы:
 
+- **frozen invariant set** (canonical): [core_invariants.md](core_invariants.md)
 - общая forest-модель PMM: [pmm_avl_forest.md](pmm_avl_forest.md)
 - free-tree forest-policy: [free_tree_forest_policy.md](free_tree_forest_policy.md)
 - низкоуровневый layout и алгоритмы: [architecture.md](architecture.md)

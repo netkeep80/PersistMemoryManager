@@ -1,5 +1,7 @@
 # Восстановление после сбоев — PersistMemoryManager
 
+> **Canonical invariant reference:** [core_invariants.md](core_invariants.md) §D2 (Load Recovery), §F (Verify/Repair Contract).
+
 Документация по сценариям сбоев, гарантиям целостности и ограничениям
 восстановления библиотеки PersistMemoryManager.
 

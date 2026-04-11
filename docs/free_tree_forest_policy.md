@@ -2,6 +2,8 @@
 
 ## Document status
 
+> **Canonical invariant reference:** [core_invariants.md](core_invariants.md) §E (Free-Tree Policy).
+
 This document defines the **canonical forest-policy for the free-tree domain** in `PersistMemoryManager`.
 
 It resolves the semantic gap between:

@@ -8,6 +8,7 @@ Single entry point for all PMM documentation. Each topic is covered by exactly o
 |----------|------|
 | [PMM AVL-Forest](pmm_avl_forest.md) | Canonical architectural model: AVL-forest as first-class abstraction, forest-domains, design constraints |
 | [Block and TreeNode Semantics](block_and_treenode_semantics.md) | Field-level specification of `Block` and `TreeNode` headers |
+| [Core Invariants](core_invariants.md) | Frozen invariant set after issues 01–07: model boundary, block semantics, forest, bootstrap, free-tree, verify/repair |
 | [Architecture](architecture.md) | Layer stack, memory layout, algorithms, storage backends, configuration |
 | [API Reference](api_reference.md) | Complete public API: lifecycle, allocation, containers, I/O, error codes |
 | [Bootstrap](bootstrap.md) | Deterministic 6-step initialization sequence for new PAP images |
@@ -34,8 +35,9 @@ They do not participate in the official reading path.
 For newcomers, the recommended path is:
 
 1. **[PMM AVL-Forest](pmm_avl_forest.md)** — understand the core model
-2. **[Block and TreeNode Semantics](block_and_treenode_semantics.md)** — understand the data structures
-3. **[Architecture](architecture.md)** — understand the implementation layers
-4. **[API Reference](api_reference.md)** — use the library
-5. **[Bootstrap](bootstrap.md)** / **[Recovery](recovery.md)** — understand lifecycle guarantees
-6. **[Thread Safety](thread_safety.md)** — for concurrent usage
+2. **[Core Invariants](core_invariants.md)** — frozen invariant set with traceability to code and tests
+3. **[Block and TreeNode Semantics](block_and_treenode_semantics.md)** — understand the data structures
+4. **[Architecture](architecture.md)** — understand the implementation layers
+5. **[API Reference](api_reference.md)** — use the library
+6. **[Bootstrap](bootstrap.md)** / **[Recovery](recovery.md)** — understand lifecycle guarantees
+7. **[Thread Safety](thread_safety.md)** — for concurrent usage

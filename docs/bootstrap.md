@@ -1,5 +1,7 @@
 # Bootstrap Sequence for PAP Image
 
+> **Canonical invariant reference:** [core_invariants.md](core_invariants.md) §D (Bootstrap Model).
+
 ## Overview
 
 When a new Persistent Address Space (PAS/PAP) image is created via `create()`,
