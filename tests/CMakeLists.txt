@@ -269,3 +269,6 @@ pmm_add_test(test_issue243_free_tree_policy test_issue243_free_tree_policy.cpp)
 
 # ─── Verify/repair mode separation tests ────────────────────────
 pmm_add_test(test_issue245_verify_repair test_issue245_verify_repair.cpp)
+
+# ─── Verify/repair/load operational contract tests ──────────────
+pmm_add_test(test_issue256_verify_repair_contract test_issue256_verify_repair_contract.cpp)

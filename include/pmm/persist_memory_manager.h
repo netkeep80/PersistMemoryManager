@@ -337,8 +337,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
                         static_cast<std::uint64_t>( hdr->granule_size ) );
             return false;
         }
-        // Verify before repair — detect violations in the raw image.
-        // Verify before repair — detect violations, then mark with repair actions.
+        // Detect violations in the raw image, then mark with repair actions.
         auto mark_entries = []( VerifyResult& r, std::size_t from, DiagnosticAction act )
         {
             for ( std::size_t i = from; i < r.entry_count; ++i )

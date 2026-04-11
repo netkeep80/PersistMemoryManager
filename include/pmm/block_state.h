@@ -25,8 +25,8 @@
  *
  *   - reset_avl_fields_of()     — сброс AVL-полей перед rebuild_free_tree
  *   - repair_prev_offset()      — восстановление prev_offset при repair_linked_list
- *   - get_next_offset()         — чтение next_offset в recovery-методах
- *   - get_weight()              — чтение weight в recovery-методах
+ *   - get_next_offset()         — чтение next_offset в repair-методах (load)
+ *   - get_weight()              — чтение weight в repair-методах (load)
  *
  *   repair_block_prev_offset(), read_block_next_offset(), read_block_weight()
  *   AllocatorPolicy вызывает BlockStateBase<AT>::* напрямую.
@@ -149,13 +149,14 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
      */
     bool is_permanently_locked() const noexcept { return node_type() == pmm::kNodeReadOnly; }
 
-    // ─── Статические утилиты для recovery-операций ──────────────────────────
+    // ─── Статические утилиты для repair-операций (вызываются из load()) ─────
 
     /**
-     * @brief Восстановить блок в корректное состояние (при load()).
+     * @brief Repair block state to a consistent value (called during load()).
      *
-     * Используется для восстановления после crash — приводит блок к корректному
-     * состоянию (FreeBlock или AllocatedBlock) в зависимости от weight и root_offset.
+     * Part of the repair phase in load(): fixes transitional (inconsistent)
+     * weight/root_offset states left by interrupted allocate/deallocate.
+     * Deterministic: weight alone determines the correct root_offset.
      *
      * @param raw_blk   Указатель на блок.
      * @param own_idx   Гранульный индекс данного блока.

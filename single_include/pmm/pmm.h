@@ -686,8 +686,8 @@ static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Block<Def
  *
  *   - reset_avl_fields_of()     — сброс AVL-полей перед rebuild_free_tree
  *   - repair_prev_offset()      — восстановление prev_offset при repair_linked_list
- *   - get_next_offset()         — чтение next_offset в recovery-методах
- *   - get_weight()              — чтение weight в recovery-методах
+ *   - get_next_offset()         — чтение next_offset в repair-методах (load)
+ *   - get_weight()              — чтение weight в repair-методах (load)
  *
  *   repair_block_prev_offset(), read_block_next_offset(), read_block_weight()
  *   AllocatorPolicy вызывает BlockStateBase<AT>::* напрямую.
@@ -721,7 +721,7 @@ static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Block<Def
 namespace pmm
 {
 
-/// @brief Mode for recovery operations: verify-only or repair.
+/// @brief Mode for diagnostic operations: verify-only (read) or repair (write, within load).
 enum class RecoveryMode : std::uint8_t
 {
     Verify = 0, ///< Read-only diagnostics; no modifications to the image.
@@ -748,7 +748,7 @@ enum class DiagnosticAction : std::uint8_t
     NoAction = 0, ///< No action (verify mode or no fix available).
     Repaired,     ///< Field was repaired to correct value.
     Rebuilt,      ///< Structure was rebuilt from scratch (AVL tree, counters).
-    Aborted,      ///< Recovery aborted — corruption too severe.
+    Aborted,      ///< Repair aborted — corruption too severe, load returns false.
 };
 
 /// @brief A single diagnostic entry describing one violation.
@@ -909,13 +909,14 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
      */
     bool is_permanently_locked() const noexcept { return node_type() == pmm::kNodeReadOnly; }
 
-    // ─── Статические утилиты для recovery-операций ──────────────────────────
+    // ─── Статические утилиты для repair-операций (вызываются из load()) ─────
 
     /**
-     * @brief Восстановить блок в корректное состояние (при load()).
+     * @brief Repair block state to a consistent value (called during load()).
      *
-     * Используется для восстановления после crash — приводит блок к корректному
-     * состоянию (FreeBlock или AllocatedBlock) в зависимости от weight и root_offset.
+     * Part of the repair phase in load(): fixes transitional (inconsistent)
+     * weight/root_offset states left by interrupted allocate/deallocate.
+     * Deterministic: weight alone determines the correct root_offset.
      *
      * @param raw_blk   Указатель на блок.
      * @param own_idx   Гранульный индекс данного блока.
@@ -3582,7 +3583,7 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
  * обращается напрямую к полям Block<A>. В split-пути allocate_from_block()
  * используются методы SplittingBlock (initialize_new_block, link_new_block,
  * finalize_split). В coalesce() соседние блоки проверяются через BlockStateBase.
- * В recovery-методах (rebuild_free_tree, repair_linked_list, recompute_counters)
+ * В repair-методах load() (rebuild_free_tree, repair_linked_list, recompute_counters)
  * напрямую используются статические методы BlockStateBase<AT>:
  *   - reset_avl_fields_of()  — вместо удалённой reset_block_avl_fields()
  *   - repair_prev_offset()   — вместо удалённой repair_block_prev_offset()
@@ -3841,7 +3842,7 @@ class AllocatorPolicy
         FreeBlockTreeT::insert( base, hdr, b_idx );
     }
 
-    // ─── Восстановление состояния (после load()) ───────────────────────────────
+    // ─── Repair phase of load() — structural reconstruction ────────────────────
 
     /**
      * @brief Перестроить дерево свободных блоков.
@@ -3862,7 +3863,7 @@ class AllocatorPolicy
         {
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
 
-            // Recover state — fix incorrect transitional states
+            // Repair: fix incorrect transitional states (weight/root_offset mismatch)
             BlockState::recover_state( blk_ptr, idx );
 
             if ( BlockState::get_weight( blk_ptr ) == 0 ) // free block
@@ -6820,8 +6821,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
                         static_cast<std::uint64_t>( hdr->granule_size ) );
             return false;
         }
-        // Verify before repair — detect violations in the raw image.
-        // Verify before repair — detect violations, then mark with repair actions.
+        // Detect violations in the raw image, then mark with repair actions.
         auto mark_entries = []( VerifyResult& r, std::size_t from, DiagnosticAction act )
         {
             for ( std::size_t i = from; i < r.entry_count; ++i )

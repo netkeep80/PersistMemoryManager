@@ -14,6 +14,8 @@ Single entry point for all PMM documentation. Each topic is covered by exactly o
 | [Bootstrap](bootstrap.md) | Deterministic 6-step initialization sequence for new PAP images |
 | [Free-Tree Forest Policy](free_tree_forest_policy.md) | Free-tree ordering, weight semantics, best-fit search |
 | [Recovery](recovery.md) | Fault recovery: 5-phase load sequence, block state machine, CRC32, atomic writes |
+| [Verify/Repair Contract](verify_repair_contract.md) | Operational boundary between verify, repair, and load — frozen contract for tasks 08–10 |
+| [Diagnostics Taxonomy](diagnostics_taxonomy.md) | Violation types, severity levels, repair policies, diagnostic entry format |
 | [Atomic Writes](atomic_writes.md) | Write criticality analysis, block state transitions, interruption guarantees |
 | [Thread Safety](thread_safety.md) | Lock policies, operation contracts, resolve() fast path, concurrent patterns |
 
@@ -40,4 +42,5 @@ For newcomers, the recommended path is:
 4. **[Architecture](architecture.md)** — understand the implementation layers
 5. **[API Reference](api_reference.md)** — use the library
 6. **[Bootstrap](bootstrap.md)** / **[Recovery](recovery.md)** — understand lifecycle guarantees
-7. **[Thread Safety](thread_safety.md)** — for concurrent usage
+7. **[Verify/Repair Contract](verify_repair_contract.md)** / **[Diagnostics Taxonomy](diagnostics_taxonomy.md)** — understand verify/repair boundary
+8. **[Thread Safety](thread_safety.md)** — for concurrent usage

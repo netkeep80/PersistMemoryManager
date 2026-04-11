@@ -25,7 +25,7 @@
 namespace pmm
 {
 
-/// @brief Mode for recovery operations: verify-only or repair.
+/// @brief Mode for diagnostic operations: verify-only (read) or repair (write, within load).
 enum class RecoveryMode : std::uint8_t
 {
     Verify = 0, ///< Read-only diagnostics; no modifications to the image.
@@ -52,7 +52,7 @@ enum class DiagnosticAction : std::uint8_t
     NoAction = 0, ///< No action (verify mode or no fix available).
     Repaired,     ///< Field was repaired to correct value.
     Rebuilt,      ///< Structure was rebuilt from scratch (AVL tree, counters).
-    Aborted,      ///< Recovery aborted — corruption too severe.
+    Aborted,      ///< Repair aborted — corruption too severe, load returns false.
 };
 
 /// @brief A single diagnostic entry describing one violation.

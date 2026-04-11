@@ -22,7 +22,7 @@
  * обращается напрямую к полям Block<A>. В split-пути allocate_from_block()
  * используются методы SplittingBlock (initialize_new_block, link_new_block,
  * finalize_split). В coalesce() соседние блоки проверяются через BlockStateBase.
- * В recovery-методах (rebuild_free_tree, repair_linked_list, recompute_counters)
+ * В repair-методах load() (rebuild_free_tree, repair_linked_list, recompute_counters)
  * напрямую используются статические методы BlockStateBase<AT>:
  *   - reset_avl_fields_of()  — вместо удалённой reset_block_avl_fields()
  *   - repair_prev_offset()   — вместо удалённой repair_block_prev_offset()
@@ -288,7 +288,7 @@ class AllocatorPolicy
         FreeBlockTreeT::insert( base, hdr, b_idx );
     }
 
-    // ─── Восстановление состояния (после load()) ───────────────────────────────
+    // ─── Repair phase of load() — structural reconstruction ────────────────────
 
     /**
      * @brief Перестроить дерево свободных блоков.
@@ -309,7 +309,7 @@ class AllocatorPolicy
         {
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
 
-            // Recover state — fix incorrect transitional states
+            // Repair: fix incorrect transitional states (weight/root_offset mismatch)
             BlockState::recover_state( blk_ptr, idx );
 
             if ( BlockState::get_weight( blk_ptr ) == 0 ) // free block
