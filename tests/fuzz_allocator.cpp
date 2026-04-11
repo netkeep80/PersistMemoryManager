@@ -1,6 +1,6 @@
 /**
  * @file fuzz_allocator.cpp
- * @brief libFuzzer harness for PersistMemoryManager allocator (Issue #213, Phase 5.2).
+ * @brief libFuzzer harness for PersistMemoryManager allocator.
  *
  * Coverage-guided fuzzing of allocate/deallocate/reallocate operations.
  *
@@ -17,7 +17,7 @@
  *   byte 1-2: size parameter (little-endian uint16_t)
  *
  * @see docs/phase5_testing.md §5.2
- * @version 0.1 (Issue #213 — Phase 5.2: Fuzz testing)
+ * @version 0.1
  */
 
 #include "pmm/pmm_presets.h"

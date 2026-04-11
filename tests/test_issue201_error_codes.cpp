@@ -1,8 +1,8 @@
 /**
  * @file test_issue201_error_codes.cpp
- * @brief Tests for PmmError error codes API (Issue #201, Phase 4.1).
+ * @brief Tests for PmmError error codes API.
  *
- * Verifies the key requirements from Issue #201 Phase 4.1:
+ * Verifies the key requirements from this feature:
  *  1. PmmError enum values exist and are distinct.
  *  2. last_error() returns Ok after successful create().
  *  3. last_error() returns InvalidSize when create() gets too small size.
@@ -21,7 +21,7 @@
  *
  * @see include/pmm/types.h — PmmError enum
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
- * @version 0.1 (Issue #201 — Phase 4.1: error codes)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

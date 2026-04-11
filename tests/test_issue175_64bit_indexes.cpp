@@ -1,9 +1,9 @@
 /**
  * @file test_issue175_64bit_indexes.cpp
- * @brief Tests for Issue #175: ManagerHeader<AT> template — all index fields use AT::index_type.
+ * @brief Tests: managerHeader<AT> template — all index fields use AT::index_type.
  *
  * Verifies:
- *   - ManagerHeader<AT> is a template parameterized on AddressTraitsT (Issue #175)
+ *   - ManagerHeader<AT> is a template parameterized on AddressTraitsT
  *   - All 7 ManagerHeader index/counter fields use AT::index_type (not hardcoded uint32_t)
  *   - ManagerHeader<DefaultAddressTraits> has index fields of type uint32_t (backward compat)
  *   - ManagerHeader<SmallAddressTraits>   has index fields of type uint16_t
@@ -18,7 +18,7 @@
  * @see include/pmm/types.h           — ManagerHeader<AT>, kManagerHeaderGranules_t<AT>
  * @see include/pmm/free_block_tree.h — AvlFreeTree<AT>, FreeBlockTreePolicyForTraitsConcept<P,AT>
  * @see include/pmm/allocator_policy.h — AllocatorPolicy<AT, ...>
- * @version 0.1 (Issue #175 — ManagerHeader<AT> template, all fields use index_type)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -63,7 +63,7 @@ TEST_CASE( "I175-A1: ManagerHeader<DefaultAddressTraits> has uint32_t fields", "
                    "ManagerHeader<DefaultAddressTraits>::used_size must be uint32_t" );
 }
 
-/// @brief ManagerHeader<SmallAddressTraits> has uint16_t index fields (Issue #175).
+/// @brief ManagerHeader<SmallAddressTraits> has uint16_t index fields.
 TEST_CASE( "I175-A2: ManagerHeader<SmallAddressTraits> has uint16_t fields", "[test_issue175_64bit_indexes]" )
 {
     using AT  = pmm::SmallAddressTraits;
@@ -88,7 +88,7 @@ TEST_CASE( "I175-A2: ManagerHeader<SmallAddressTraits> has uint16_t fields", "[t
                    "ManagerHeader<SmallAddressTraits>::used_size must be uint16_t" );
 }
 
-/// @brief ManagerHeader<LargeAddressTraits> has uint64_t index fields (Issue #175).
+/// @brief ManagerHeader<LargeAddressTraits> has uint64_t index fields.
 TEST_CASE( "I175-A3: ManagerHeader<LargeAddressTraits> has uint64_t fields", "[test_issue175_64bit_indexes]" )
 {
     using AT  = pmm::LargeAddressTraits;
@@ -130,7 +130,7 @@ TEST_CASE( "I175-B1: kManagerHeaderGranules_t<DefaultAddressTraits> is uint32_t 
                    "kManagerHeaderGranules_t<DefaultAddressTraits> must be 4 (64 bytes / 16 byte granule)" );
 }
 
-/// @brief kManagerHeaderGranules_t<SmallAddressTraits> returns uint16_t (Issue #175).
+/// @brief kManagerHeaderGranules_t<SmallAddressTraits> returns uint16_t.
 TEST_CASE( "I175-B2: kManagerHeaderGranules_t<SmallAddressTraits> is uint16_t", "[test_issue175_64bit_indexes]" )
 {
     using AT = pmm::SmallAddressTraits;
@@ -143,7 +143,7 @@ TEST_CASE( "I175-B2: kManagerHeaderGranules_t<SmallAddressTraits> is uint16_t", 
                    "kManagerHeaderGranules_t<SmallAddressTraits> must be >= 1" );
 }
 
-/// @brief kManagerHeaderGranules_t<LargeAddressTraits> returns uint64_t (Issue #175).
+/// @brief kManagerHeaderGranules_t<LargeAddressTraits> returns uint64_t.
 TEST_CASE( "I175-B3: kManagerHeaderGranules_t<LargeAddressTraits> is uint64_t", "[test_issue175_64bit_indexes]" )
 {
     using AT = pmm::LargeAddressTraits;
@@ -155,7 +155,7 @@ TEST_CASE( "I175-B3: kManagerHeaderGranules_t<LargeAddressTraits> is uint64_t", 
                    "kManagerHeaderGranules_t<LargeAddressTraits> must be >= 1" );
 }
 
-/// @brief kBlockHeaderGranules_t<AT> returns AT::index_type (Issue #175).
+/// @brief kBlockHeaderGranules_t<AT> returns AT::index_type.
 TEST_CASE( "I175-B4: kBlockHeaderGranules_t<AT> returns AT::index_type for all AT", "[test_issue175_64bit_indexes]" )
 {
     using DAT = pmm::DefaultAddressTraits;
@@ -174,7 +174,7 @@ TEST_CASE( "I175-B4: kBlockHeaderGranules_t<AT> returns AT::index_type for all A
 // Section C: FreeBlockTreePolicyForTraitsConcept<Policy, AT>
 // =============================================================================
 
-/// @brief AvlFreeTree<SmallAddressTraits> satisfies FreeBlockTreePolicyForTraitsConcept (Issue #175).
+/// @brief AvlFreeTree<SmallAddressTraits> satisfies FreeBlockTreePolicyForTraitsConcept.
 TEST_CASE( "I175-C1: AvlFreeTree<SmallAT> satisfies FreeBlockTreePolicyForTraitsConcept<P, SmallAT>",
            "[test_issue175_64bit_indexes]" )
 {
@@ -185,7 +185,7 @@ TEST_CASE( "I175-C1: AvlFreeTree<SmallAT> satisfies FreeBlockTreePolicyForTraits
                    "AvlFreeTree<SmallAddressTraits> must satisfy FreeBlockTreePolicyForTraitsConcept<P, SmallAT>" );
 }
 
-/// @brief AvlFreeTree<LargeAddressTraits> satisfies FreeBlockTreePolicyForTraitsConcept (Issue #175).
+/// @brief AvlFreeTree<LargeAddressTraits> satisfies FreeBlockTreePolicyForTraitsConcept.
 TEST_CASE( "I175-C2: AvlFreeTree<LargeAT> satisfies FreeBlockTreePolicyForTraitsConcept<P, LargeAT>",
            "[test_issue175_64bit_indexes]" )
 {

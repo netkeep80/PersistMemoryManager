@@ -1,8 +1,8 @@
 /**
  * @file test_issue211_byte_offset.cpp
- * @brief Tests for pptr ↔ byte offset conversion (Issue #211, Phase 4.4).
+ * @brief Tests for pptr ↔ byte offset conversion.
  *
- * Verifies the key requirements from Issue #211 Phase 4.4:
+ * Verifies the key requirements from this feature:
  *  1. pptr::byte_offset() returns offset() * granule_size.
  *  2. Null pptr::byte_offset() returns 0.
  *  3. pptr_from_byte_offset() creates correct pptr from byte offset.
@@ -18,7 +18,7 @@
  *
  * @see include/pmm/pptr.h — pptr::byte_offset()
  * @see include/pmm/persist_memory_manager.h — pptr_from_byte_offset<T>()
- * @version 0.1 (Issue #211 — Phase 4.4: pptr byte offset conversion)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

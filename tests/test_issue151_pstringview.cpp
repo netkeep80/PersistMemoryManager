@@ -1,8 +1,8 @@
 /**
  * @file test_issue151_pstringview.cpp
- * @brief Tests for pstringview — interned read-only persistent strings (Issue #151).
+ * @brief Tests for pstringview — interned read-only persistent strings.
  *
- * Verifies the key requirements from Issue #151:
+ * Verifies the key requirements from this feature:
  *  1. pstringview blocks lock the memory block in a read-only state when created.
  *  2. pstringview is not duplicated in PAP — intern() checks for existing strings
  *     with the same value and returns a pointer to the previously created pstringview.
@@ -22,8 +22,8 @@
  *
  * @see include/pmm/pstringview.h — pstringview
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
- * @see include/pmm/tree_node.h — TreeNode<AT> built-in AVL fields (Issue #87, #138)
- * @version 0.4 (Issue #151 — concise API via manager alias: Mgr::pstringview("hello"))
+ * @see include/pmm/tree_node.h — TreeNode<AT> built-in AVL fields
+ * @version 0.4
  */
 
 #include "pmm/persist_memory_manager.h"
@@ -157,7 +157,7 @@ TEST_CASE( "    different strings → different pptrs", "[test_issue151_pstringv
 }
 
 /// @brief pstringview equality uses interning guarantee (same block comparison).
-/// Issue #184: now compares by address since strings are stored in the same block.
+/// Now compares by address since strings are stored in the same block.
 TEST_CASE( "    equality via interning guarantee", "[test_issue151_pstringview]" )
 {
     TestMgr::destroy();
@@ -175,7 +175,7 @@ TEST_CASE( "    equality via interning guarantee", "[test_issue151_pstringview]"
     const TestPsv* c = pc.resolve();
     REQUIRE( ( a != nullptr && b != nullptr && c != nullptr ) );
 
-    // Interning: same string → same block → equal (Issue #184: address comparison)
+    // Interning: same string → same block → equal
     REQUIRE( *a == *b );
     REQUIRE( !( *a == *c ) );
     REQUIRE( *a != *c );
@@ -189,7 +189,7 @@ TEST_CASE( "    equality via interning guarantee", "[test_issue151_pstringview]"
 // =============================================================================
 
 /// @brief After intern(), the pstringview block (with embedded string) is permanently locked.
-/// Issue #184: Now string data is stored in the same block as pstringview, so only one block
+/// Now string data is stored in the same block as pstringview, so only one block
 /// needs to be checked. The c_str() method returns pointer to embedded string data.
 TEST_CASE( "    embedded string block permanently locked", "[test_issue151_pstringview]" )
 {
@@ -203,7 +203,7 @@ TEST_CASE( "    embedded string block permanently locked", "[test_issue151_pstri
     const TestPsv* psv = p.resolve();
     REQUIRE( psv != nullptr );
 
-    // Issue #184: Verify the string is embedded directly in the pstringview block
+    // Verify the string is embedded directly in the pstringview block
     const char* str = psv->c_str();
     REQUIRE( str != nullptr );
     REQUIRE( std::strcmp( str, "locked_test" ) == 0 );
@@ -451,7 +451,7 @@ TEST_CASE( "    reset() clears singleton for test isolation", "[test_issue151_ps
 // =============================================================================
 
 /// @brief pstringview<ManagerT> has expected field layout.
-/// Issue #184: pstringview now stores length + flexible array member str[1].
+/// Pstringview now stores length + flexible array member str[1].
 TEST_CASE( "    pstringview size check", "[test_issue151_pstringview]" )
 {
     // pstringview<ManagerT> has: length (uint32_t) and str[1] (flexible array member).

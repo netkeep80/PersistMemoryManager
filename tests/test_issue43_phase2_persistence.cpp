@@ -1,6 +1,6 @@
 /**
  * @file test_issue43_phase2_persistence.cpp
- * @brief Tests for Phase 2 persistence and reliability improvements (Issue #43).
+ * @brief Tests for Phase 2 persistence and reliability improvements.
  *
  * Verifies:
  *  - 2.1 CRC32 checksum for persisted images (save computes CRC, load verifies it)
@@ -8,7 +8,7 @@
  *  - 2.3 MMapStorage expand() support
  *
  * @see docs/phase2_persistence.md
- * @version 0.1 (Issue #43 — Phase 2: Persistence and reliability)
+ * @version 0.1
  */
 
 #include "pmm/pmm_presets.h"
@@ -135,7 +135,7 @@ TEST_CASE( "crc32_backward_compat", "[test_issue43_phase2_persistence]" )
     REQUIRE( pmm::save_manager<M1>( TEST_FILE ) );
     M1::destroy();
 
-    // Manually zero out the CRC32 field to simulate a pre-Phase 2.1 image
+    // Manually zero out the CRC32 field to simulate a pre- image
     {
         std::FILE* f = std::fopen( TEST_FILE, "r+b" );
         REQUIRE( f != nullptr );

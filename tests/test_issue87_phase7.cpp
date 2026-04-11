@@ -1,6 +1,6 @@
 /**
  * @file test_issue87_phase7.cpp
- * @brief Тесты Phase 7: PersistMemoryManager (Issue #87, migrated to static API, Issue #112).
+ * @brief Тесты Phase 7: PersistMemoryManager.
  *
  * Изначально тесты проверяли AbstractPersistMemoryManager<>, который был удалён
  * в рамках рефакторинга. Теперь аналогичные тесты написаны для
@@ -14,8 +14,7 @@
  *  - Статистика: total_size, used_size, free_size, block_count
  *
  * @see include/pmm/persist_memory_manager.h
- * @see plan_issue87.md §5 «Фаза 7: AbstractPersistMemoryManager»
- * @version 0.2 (Issue #112 — migrated from AbstractPersistMemoryManager to PersistMemoryManager)
+ * @version 0.2
  */
 
 #include "pmm_single_threaded_heap.h"

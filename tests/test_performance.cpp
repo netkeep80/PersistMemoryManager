@@ -1,8 +1,7 @@
 /**
  * @file test_performance.cpp
- * @brief Тесты производительности и корректности (Issue #102 — новый API)
+ * @brief Тесты производительности и корректности (: — новый API)
  *
- * Issue #102: использует AbstractPersistMemoryManager через pmm_presets.h.
  */
 
 #include "pmm_single_threaded_heap.h"

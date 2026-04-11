@@ -1,8 +1,7 @@
 /**
  * @file test_persistence.cpp
- * @brief Тесты персистентности (save_manager/load_manager_from_file) (Issue #102, #110 — статический API)
+ * @brief Тесты персистентности (save_manager/load_manager_from_file)
  *
- * Issue #110: использует PersistMemoryManager через pmm_presets.h.
  *   - save_manager<MgrT>() и load_manager_from_file<MgrT>() с PersistMemoryManager.
  *   - Все операции через статический интерфейс менеджера.
  *   - Разные InstanceId используются для разных «экземпляров» в рамках одного теста.
@@ -82,7 +81,7 @@ TEST_CASE( "persistence_user_data_preserved", "[test_persistence]" )
     REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
     REQUIRE( Mgr2::is_initialized() );
 
-    // Issue #75: 1 user block + system blocks
+    // 1 user block + system blocks
     REQUIRE( Mgr2::alloc_block_count() == baseline_alloc + 1 );
 
     // Recover pptr by saved offset
@@ -160,7 +159,7 @@ TEST_CASE( "persistence_allocate_after_load", "[test_persistence]" )
     Mgr2::pptr<std::uint8_t> p2 = Mgr2::allocate_typed<std::uint8_t>( 256 );
     REQUIRE( !p2.is_null() );
 
-    // Issue #75: 1 pre-load user + 1 new user + system blocks
+    // 1 pre-load user + 1 new user + system blocks
     REQUIRE( Mgr2::alloc_block_count() == baseline_alloc + 2 );
 
     Mgr2::deallocate_typed( p2 );
@@ -302,7 +301,7 @@ TEST_CASE( "persistence_empty_manager", "[test_persistence]" )
     REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
     REQUIRE( Mgr2::is_initialized() );
 
-    // Issue #75: only system blocks remain as allocated
+    // Only system blocks remain as allocated
     REQUIRE( Mgr2::alloc_block_count() == baseline_alloc );
     REQUIRE( Mgr2::free_block_count() == free_blocks1 );
 
@@ -344,7 +343,7 @@ TEST_CASE( "persistence_deallocate_after_load", "[test_persistence]" )
     Mgr2::deallocate_typed( q1 );
     Mgr2::deallocate_typed( q2 );
 
-    // Issue #75: only system blocks remain
+    // Only system blocks remain
     REQUIRE( Mgr2::alloc_block_count() == baseline_alloc );
 
     Mgr2::destroy();

@@ -1,6 +1,6 @@
 /**
  * @file test_issue243_free_tree_policy.cpp
- * @brief Regression tests for the free-tree forest-policy ordering contract (Issue #243).
+ * @brief Regression tests for the free-tree forest-policy ordering contract.
  *
  * Verifies the canonized free-tree policy:
  *   - Sort key: (block_size_in_granules, block_index) — strict total ordering.

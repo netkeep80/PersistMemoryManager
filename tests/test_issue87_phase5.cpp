@@ -1,6 +1,6 @@
 /**
  * @file test_issue87_phase5.cpp
- * @brief Тесты Phase 5: StorageBackend — концепт и реализации (Issue #87).
+ * @brief Тесты Phase 5: StorageBackend — концепт и реализации.
  *
  * Проверяет:
  *  - is_storage_backend_v<StaticStorage<4096>> == true
@@ -13,8 +13,7 @@
  * @see include/pmm/static_storage.h
  * @see include/pmm/heap_storage.h
  * @see include/pmm/mmap_storage.h
- * @see plan_issue87.md §5 «Фаза 5: StorageBackend — три бэкенда»
- * @version 0.1 (Issue #87 Phase 5)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"

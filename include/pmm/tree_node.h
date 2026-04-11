@@ -1,6 +1,6 @@
 /**
  * @file pmm/tree_node.h
- * @brief TreeNode<AddressTraits> — intrusive AVL-slot for the forest model (Issue #87, #138, #243).
+ * @brief TreeNode<AddressTraits> — intrusive AVL-slot for the forest model.
  *
  * Parametric AVL tree node where index field types are defined by
  * `AddressTraits::index_type`.
@@ -20,13 +20,10 @@
  *                       0         = node belongs to the free-tree domain;
  *                       own_index = node is allocated (self-owned).
  *
- * Issue #126: `weight` moved to first field for cache-efficient access.
- * Issue #138: Public accessors added for use via pptr::tree_node().
- * Issue #243: Comments aligned with the general forest model.
  *
  * @see docs/free_tree_forest_policy.md — free-tree ordering policy
  * @see docs/block_and_treenode_semantics.md — canonical field semantics
- * @version 0.5 (Issue #243 — align with forest model)
+ * @version 0.5
  */
 
 #pragma once
@@ -53,11 +50,11 @@ namespace pmm
  *               Free-tree domain: state discriminator (0 = free block);
  *               ordering is derived from linear PAP geometry, not this field.
  *               User domains: domain-specific sort key (e.g., string index, entity ID).
- *               First field for cache-efficient access (Issue #126).
+ *               First field for cache-efficient access.
  * `root_offset`— owner-domain marker: 0 = free-tree domain,
  *               own_idx = allocated block (self-owned tree).
  * `avl_height` — AVL subtree height (0 = slot not in any tree).
- * `node_type`  — coarse-grained block type (Issue #126):
+ * `node_type`  — coarse-grained block type:
  *               kNodeReadWrite (0) = read/write, kNodeReadOnly (1) = read-only.
  *
  * Layout `TreeNode<DefaultAddressTraits>` (uint32_t, 16-byte granule):
@@ -66,10 +63,10 @@ namespace pmm
  *   root_offset   (4) +
  *   avl_height    (2) + node_type    (2) = 24 bytes
  *
- * Public accessors (Issue #138): for use via pptr<T, ManagerT>::tree_node().
+ * Public accessors: for use via pptr<T, ManagerT>::tree_node().
  */
 
-/// @brief Тип узла (Issue #126): значения для поля `TreeNode::node_type`.
+/// @brief Тип узла: значения для поля `TreeNode::node_type`.
 ///
 /// kNodeReadWrite (0) — блок доступен на чтение и запись, может быть освобождён.
 /// kNodeReadOnly  (1) — блок заблокирован навечно: доступен только на чтение,
@@ -85,7 +82,7 @@ template <typename AddressTraitsT> struct TreeNode
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
 
-    // ─── Публичные методы доступа к полям узла дерева (Issue #138) ────────────
+    // ─── Публичные методы доступа к полям узла дерева ────────────
     // Используются через ссылку, полученную из pptr<T, ManagerT>::tree_node().
 
     /// @brief Получить гранульный индекс левого дочернего узла AVL-дерева.
@@ -145,7 +142,7 @@ template <typename AddressTraitsT> struct TreeNode
     void set_node_type( std::uint16_t v ) noexcept { node_type = v; }
 
   protected:
-    /// Universal granule-key / granule-scalar. First field for cache-efficient access (Issue #126).
+    /// Universal granule-key / granule-scalar. First field for cache-efficient access.
     /// Semantics determined by the owning forest domain:
     ///   - free-tree: state discriminator (0 = free); sort key derived from PAP geometry.
     ///   - user domains: domain-specific sort key (e.g., granule count, string index).
@@ -162,12 +159,12 @@ template <typename AddressTraitsT> struct TreeNode
     index_type root_offset;
     /// Высота AVL-поддерева (0 = узел не в дереве).
     std::int16_t avl_height;
-    /// Тип узла (Issue #126): kNodeReadWrite (0) = чтение/запись, kNodeReadOnly (1) = только чтение.
+    /// Тип узла: kNodeReadWrite (0) = чтение/запись, kNodeReadOnly (1) = только чтение.
     std::uint16_t node_type;
 };
 
 // Layout: TreeNode is a standard-layout struct.
 static_assert( std::is_standard_layout<pmm::TreeNode<pmm::DefaultAddressTraits>>::value,
-               "TreeNode must be standard-layout (Issue #87)" );
+               "TreeNode must be standard-layout " );
 
 } // namespace pmm

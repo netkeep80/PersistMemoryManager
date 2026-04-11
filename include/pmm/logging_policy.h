@@ -1,6 +1,6 @@
 /**
  * @file pmm/logging_policy.h
- * @brief Политики логирования для PersistMemoryManager (Issue #202, Phase 4.2).
+ * @brief Политики логирования для PersistMemoryManager.
  *
  * Содержит:
  *   - pmm::logging::NoLogging       — заглушка без логирования (по умолчанию, нулевые накладные расходы)
@@ -38,7 +38,7 @@
  *
  * @see config.h — политики блокировок (аналогичный паттерн)
  * @see persist_memory_manager.h — PersistMemoryManager (вызывает хуки)
- * @version 1.0 (Issue #202, Phase 4.2)
+ * @version 1.0
  */
 
 #pragma once

@@ -1,6 +1,6 @@
 /**
  * @file test_issue87_phase6.cpp
- * @brief Tests Phase 6: AllocatorPolicy (Issue #87, updated #102).
+ * @brief Tests Phase 6: AllocatorPolicy.
  *
  * Verifies:
  *  - AllocatorPolicy<AvlFreeTree<Default>, Default> compiles

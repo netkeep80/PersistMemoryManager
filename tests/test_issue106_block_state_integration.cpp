@@ -1,6 +1,6 @@
 /**
  * @file test_issue106_block_state_integration.cpp
- * @brief Integration tests for Issue #106: BlockState machine fully integrated into PMM.
+ * @brief Integration tests: blockState machine fully integrated into PMM.
  *
  * Verifies that:
  *   - I106-A: Block<A> binary layout is used throughout (weight vs legacy size field)
@@ -16,7 +16,7 @@
  * @see include/pmm/block_state.h
  * @see include/pmm/allocator_policy.h
  * @see include/pmm/abstract_pmm.h
- * @version 1.0 (Issue #106 — BlockState machine integration)
+ * @version 1.0
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -63,7 +63,7 @@ TEST_CASE( "    Allocated block uses weight > 0", "[test_issue106_block_state_in
     pmm::Block<A>* blk = block_of( pmm, raw );
     std::uint32_t  idx = blk_idx_of( pmm, blk );
 
-    // I106-A1: weight > 0 (allocated block) (via BlockStateBase API, Issue #120)
+    // I106-A1: weight > 0 (allocated block) (via BlockStateBase API)
     REQUIRE( BlockState::get_weight( blk ) > 0 );
 
     // I106-A2: root_offset == own_idx (AllocatedBlock invariant)
@@ -91,7 +91,7 @@ TEST_CASE( "    Freed block has weight == 0", "[test_issue106_block_state_integr
 
     pmm.deallocate( raw );
 
-    // I106-A4: weight == 0 (free block after deallocate) (via BlockStateBase API, Issue #120)
+    // I106-A4: weight == 0 (free block after deallocate) (via BlockStateBase API)
     REQUIRE( BlockState::get_weight( blk ) == 0 );
 
     // I106-A5: root_offset == 0 (free block invariant)
@@ -149,7 +149,7 @@ TEST_CASE( "    Block freed via mark_as_free()", "[test_issue106_block_state_int
 
     using BlockState = pmm::BlockStateBase<A>;
 
-    // Verify blk1 is allocated (via BlockStateBase API, Issue #120)
+    // Verify blk1 is allocated (via BlockStateBase API)
     REQUIRE( BlockState::get_weight( blk1 ) > 0 );
     REQUIRE( BlockState::get_root_offset( blk1 ) == idx1 );
 
@@ -235,7 +235,7 @@ TEST_CASE( "    recover_block_state repairs inconsistencies", "[test_issue106_bl
     std::memset( buffer, 0, sizeof( buffer ) );
 
     // Create block with inconsistent state: weight>0 but wrong root_offset
-    // (via BlockStateBase static API, Issue #120)
+    // (via BlockStateBase static API)
     BlockState::set_weight_of( buffer, 5u );
     BlockState::set_root_offset_of( buffer, 99u ); // Should be own_idx (e.g. 6), but corrupted
 
@@ -262,7 +262,7 @@ TEST_CASE( "    detect_block_state accuracy", "[test_issue106_block_state_integr
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    // FreeBlock: weight=0, root_offset=0 (via BlockStateBase API, Issue #120)
+    // FreeBlock: weight=0, root_offset=0 (via BlockStateBase API)
     BlockState::set_weight_of( buffer, 0u );
     BlockState::set_root_offset_of( buffer, 0u );
     REQUIRE( pmm::detect_block_state<A>( buffer, 6 ) == 0 );
@@ -343,7 +343,7 @@ TEST_CASE( "    Split creates valid FreeBlock remainder", "[test_issue106_block_
 
     using BlockState = pmm::BlockStateBase<A>;
 
-    // Allocated block is in AllocatedBlock state (via BlockStateBase API, Issue #120)
+    // Allocated block is in AllocatedBlock state (via BlockStateBase API)
     REQUIRE( pmm::detect_block_state<A>( blk, idx ) == 1 );
     REQUIRE( BlockState::get_weight( blk ) > 0 );
     REQUIRE( BlockState::get_root_offset( blk ) == idx );
@@ -393,7 +393,7 @@ TEST_CASE( "    Issue #106 acceptance criteria met", "[test_issue106_block_state
 
     pmm.deallocate( raw );
 
-    // After deallocate: weight==0, root_offset==0 (FreeBlock or merged) (via BlockStateBase API, Issue #120)
+    // After deallocate: weight==0, root_offset==0 (FreeBlock or merged) (via BlockStateBase API)
     REQUIRE( BlockState::get_weight( blk ) == 0 );
     REQUIRE( BlockState::get_root_offset( blk ) == 0 );
 
@@ -421,7 +421,7 @@ TEST_CASE( "    Various sizes maintain state machine invariants", "[test_issue10
         std::uint32_t  idx = blk_idx_of( pmm, blk );
 
         using BlockState = pmm::BlockStateBase<A>;
-        // All allocated blocks must satisfy AllocatedBlock invariants (via BlockStateBase API, Issue #120)
+        // All allocated blocks must satisfy AllocatedBlock invariants (via BlockStateBase API)
         REQUIRE( BlockState::get_weight( blk ) > 0 );
         REQUIRE( BlockState::get_root_offset( blk ) == idx );
         REQUIRE( pmm::detect_block_state<A>( blk, idx ) == 1 );

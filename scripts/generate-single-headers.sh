@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# generate-single-headers.sh - Generate single-header files for PMM (Issue #123, #146, #149, #170)
+# generate-single-headers.sh - Generate single-header files for PMM
 #
 # Usage: ./scripts/generate-single-headers.sh [--output-dir DIR] [--strip-comments]
 #

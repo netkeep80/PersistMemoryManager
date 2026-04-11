@@ -1,9 +1,9 @@
 /**
  * @file test_avl_tree_view.cpp
- * @brief Headless tests for AvlTreeView AVL free-block iteration (Issue #116, #118).
+ * @brief Headless tests for AvlTreeView AVL free-block iteration.
  *
  * AvlTreeView now uses DemoMgr::for_each_free_block() (in-order traversal) to
- * display all free blocks as a visual tree (Issue #118: tree rendering, not a
+ * display all free blocks as a visual tree (tree rendering, not a
  * flat table).
  *
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
@@ -179,7 +179,7 @@ TEST_CASE( "for_each_free_block_count", "[test_avl_tree_view]" )
 }
 
 /**
- * @brief Issue #118: AVL tree has exactly one root node (parent_offset == -1).
+ * @brief: aVL tree has exactly one root node (parent_offset == -1).
  *
  * Verifies that among all free blocks exactly one has no parent, which is
  * required for a valid AVL tree and for the tree-rendering code to work.
@@ -224,7 +224,7 @@ TEST_CASE( "avl_tree_has_one_root", "[test_avl_tree_view]" )
 }
 
 /**
- * @brief Issue #118: AVL child links are consistent with parent links.
+ * @brief: aVL child links are consistent with parent links.
  *
  * For each free block with a left or right child, the child's parent_offset
  * must equal the current node's offset.  This validates the data that the

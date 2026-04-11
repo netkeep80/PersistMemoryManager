@@ -1,6 +1,6 @@
 /**
  * @file pmm/static_storage.h
- * @brief StaticStorage — статический бэкенд хранилища ПАП (Issue #87 Phase 5).
+ * @brief StaticStorage — статический бэкенд хранилища ПАП (: phase 5).
  *
  * Хранит управляемую область в фиксированном буфере размером `Size` байт,
  * расположенном внутри объекта (подходит для глобальных объектов и стека).
@@ -16,9 +16,8 @@
  * @tparam Size           Размер буфера в байтах (compile-time константа).
  * @tparam AddressTraitsT Traits адресного пространства (из address_traits.h).
  *
- * @see plan_issue87.md §5 «Фаза 5: StorageBackend — StaticStorage»
  * @see storage_backend.h — концепт StorageBackend
- * @version 0.1 (Issue #87 Phase 5)
+ * @version 0.1
  */
 
 #pragma once

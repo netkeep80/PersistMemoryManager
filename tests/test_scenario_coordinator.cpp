@@ -1,6 +1,6 @@
 /**
  * @file test_scenario_coordinator.cpp
- * @brief Phase 10 unit tests for ScenarioCoordinator (migrated to static API, Issue #112).
+ * @brief Phase 10 unit tests for ScenarioCoordinator (migrated to static API).
  *
  * Verifies the pause/resume protocol that allows scenarios to safely
  * synchronise while other scenario threads are running.

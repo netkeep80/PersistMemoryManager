@@ -1,6 +1,6 @@
 /**
  * @file test_issue87_phase4.cpp
- * @brief Tests Phase 4: FreeBlockTree as template policy (Issue #87, updated #102).
+ * @brief Tests Phase 4: FreeBlockTree as template policy.
  *
  * Verifies:
  *  - is_free_block_tree_policy_v<AvlFreeTree<DefaultAddressTraits>> == true
@@ -48,7 +48,7 @@ TEST_CASE( "P4-A3: Partial policy (insert only) fails concept check", "[test_iss
 {
     struct PartialPolicy
     {
-        // Issue #175: ManagerHeader<AT> is now templated.
+        // ManagerHeader<AT> is now templated.
         static void insert( std::uint8_t*, pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*,
                             pmm::DefaultAddressTraits::index_type )
         {

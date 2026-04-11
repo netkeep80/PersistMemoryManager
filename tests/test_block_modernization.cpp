@@ -1,10 +1,9 @@
 /**
  * @file test_block_modernization.cpp
- * @brief Tests for block modernization (Issue #69, updated #102 — new API)
+ * @brief Tests for block modernization
  *
- * Issue #102: uses AbstractPersistMemoryManager via pmm_presets.h.
  * Tests block format correctness, save/load round-trips, and coalesce behavior.
- * Legacy: magic removed (Issue #69), block_data_size_bytes removed.
+ * Legacy: magic removed, block_data_size_bytes removed.
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -16,13 +15,13 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 
 // ─── Test 1: Block<A> structural sizes ────────────────────────────────────────
 
-/// Block<DefaultAddressTraits> must be 32 bytes = 2 granules (Issue #112).
+/// Block<DefaultAddressTraits> must be 32 bytes = 2 granules.
 TEST_CASE( "block_header_no_magic", "[test_block_modernization]" )
 {
     using Block = pmm::Block<pmm::DefaultAddressTraits>;
     static_assert( sizeof( Block ) == 32, "Block<DefaultAddressTraits> must be exactly 32 bytes" );
     static_assert( sizeof( Block ) % pmm::kGranuleSize == 0, "Block<DefaultAddressTraits> must be granule-aligned" );
-    // kBlockMagic is gone (Issue #69): compilation success means this test passes
+    // kBlockMagic is gone: compilation success means this test passes
 }
 
 // ─── Test 2: Basic alloc/dealloc with block count verification ────────────────
@@ -191,8 +190,8 @@ TEST_CASE( "stress_save_load", "[test_block_modernization]" )
 /// ManagerHeader must record the correct granule_size.
 TEST_CASE( "manager_header_granule_size", "[test_block_modernization]" )
 {
-    // Issue #175: ManagerHeader is now templated; DefaultAddressTraits variant must remain 64 bytes.
+    // ManagerHeader is now templated; DefaultAddressTraits variant must remain 64 bytes.
     static_assert( sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) == 64,
-                   "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #175)" );
+                   "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes " );
     // The ManagerHeader.granule_size field is validated on load — tested by save/load round-trip
 }

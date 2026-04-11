@@ -9,7 +9,6 @@
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance is held.
  * The global flag demo::g_pmm tracks whether the manager is currently active.
  *
- * Issue #65 addition: AvlTreeView and ManualAllocView panels.
  */
 
 #pragma once
@@ -54,8 +53,8 @@ class DemoApp
     std::unique_ptr<MetricsView>     metrics_view_;
     std::unique_ptr<StructTreeView>  struct_tree_view_;
     std::unique_ptr<ScenarioManager> scenario_manager_;
-    std::unique_ptr<AvlTreeView>     avl_tree_view_;     ///< Issue #65: AVL free-block tree
-    std::unique_ptr<ManualAllocView> manual_alloc_view_; ///< Issue #65: manual alloc/free
+    std::unique_ptr<AvlTreeView>     avl_tree_view_;     ///< AVL free-block tree
+    std::unique_ptr<ManualAllocView> manual_alloc_view_; ///< manual alloc/free
 
     // ── UI state ──────────────────────────────────────────────────────────────
     bool        show_help_         = false;

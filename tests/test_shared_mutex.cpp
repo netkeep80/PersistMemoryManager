@@ -2,7 +2,6 @@
  * @file test_shared_mutex.cpp
  * @brief Shared lock tests for PersistMemoryManager (Phase 10, updated #102).
  *
- * Issue #102: PersistMemoryManager<> (singleton) removed.
  * Uses MultiThreadedHeap preset (SharedMutexLock + HeapStorage).
  * reallocate_typed() and get_stats() removed from new API.
  * block_count/free_block_count/alloc_block_count used instead of get_stats().

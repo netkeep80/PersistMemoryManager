@@ -11,7 +11,7 @@
  * PersistenceCycle scenario uses coordinator.pause_others() / resume_others()
  * to ensure exclusive access during save/reload (fixes plan.md Risk #5).
  *
- * Migrated to PersistMemoryManager static API (Issue #112):
+ * Migrated to PersistMemoryManager static API:
  *   - DemoMgr is a fully static class — no instance pointer needed.
  *   - All PMM access via DemoMgr:: static methods directly.
  *   - g_pmm is now a boolean flag: true when the manager is active.

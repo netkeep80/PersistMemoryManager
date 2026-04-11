@@ -1,6 +1,6 @@
 /**
  * @file test_issue144_code_review.cpp
- * @brief Tests for code review improvements (Issue #144).
+ * @brief Tests for code review improvements.
  *
  * Verifies improvements based on code review by Qwen3.5-Plus:
  *  - Debug-mode validation in FreeBlock::cast_from_raw (weight==0, root_offset==0).
@@ -14,7 +14,7 @@
  * @see include/pmm/address_traits.h — bytes_to_granules overflow
  * @see include/pmm/persist_memory_manager.h — for_each_block
  * @see include/pmm/types.h — is_valid_block
- * @version 0.1 (Issue #144 — code review improvements)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -382,7 +382,7 @@ TEST_CASE( "    for_each_free_block", "[test_issue144_code_review]" )
 }
 
 // =============================================================================
-// I144-G: lock_block_permanent prevents deallocation (Issue #126)
+// I144-G: lock_block_permanent prevents deallocation
 // =============================================================================
 
 /// @brief lock_block_permanent makes block immune to deallocate.
@@ -413,7 +413,7 @@ TEST_CASE( "    permanently locked block", "[test_issue144_code_review]" )
 // =============================================================================
 
 /// @brief BlockStateBase::reset_avl_fields_of zeroes left/right/parent/height.
-/// Issue #168: reset_block_avl_fields() removed; use BlockStateBase<AT>::reset_avl_fields_of() directly.
+/// Reset_block_avl_fields() removed; use BlockStateBase<AT>::reset_avl_fields_of() directly.
 TEST_CASE( "    reset_avl_fields_of clears AVL fields", "[test_issue144_code_review]" )
 {
     using A          = pmm::DefaultAddressTraits;
@@ -428,7 +428,7 @@ TEST_CASE( "    reset_avl_fields_of clears AVL fields", "[test_issue144_code_rev
     BlockState::set_parent_offset_of( buffer, 30u );
     BlockState::set_avl_height_of( buffer, 5 );
 
-    // Reset via BlockStateBase directly (Issue #168: wrapper removed)
+    // Reset via BlockStateBase directly
     BlockState::reset_avl_fields_of( buffer );
 
     REQUIRE( BlockState::get_left_offset( buffer ) == A::no_block );

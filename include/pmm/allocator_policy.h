@@ -1,6 +1,6 @@
 /**
  * @file pmm/allocator_policy.h
- * @brief AllocatorPolicy — политика выделения/освобождения памяти (Issue #87 Phase 6).
+ * @brief AllocatorPolicy — политика выделения/освобождения памяти (: phase 6).
  *
  * Параметрически объединяет:
  *   - `FreeBlockTreeT` — политику дерева свободных блоков (insert/remove/find_best_fit)
@@ -13,24 +13,21 @@
  *   - `repair_linked_list()`  — восстановление двухсвязного списка (после load())
  *   - `recompute_counters()`  — пересчёт счётчиков (после load())
  *
- * Issue #97: Методы `allocate_from_block()` и `coalesce()` документированы
  * в терминах автомата состояний из `block_state.h`.
  *
- * Issue #106: Полная интеграция с BlockState machine — все изменения состояния
  * блоков выполняются через методы `block_state.h`, прямые присвоения к полям
  * `size` и `root_offset` заменены на типобезопасные переходы состояний.
  * Используется Block<A> layout вместо legacy BlockHeader layout.
  *
- * Issue #114: Устранение нарушений инкапсуляции — AllocatorPolicy больше не
  * обращается напрямую к полям Block<A>. В split-пути allocate_from_block()
  * используются методы SplittingBlock (initialize_new_block, link_new_block,
  * finalize_split). В coalesce() соседние блоки проверяются через BlockStateBase.
  * В recovery-методах (rebuild_free_tree, repair_linked_list, recompute_counters)
  * напрямую используются статические методы BlockStateBase<AT>:
- *   - reset_avl_fields_of()  — вместо удалённой reset_block_avl_fields() (Issue #168)
- *   - repair_prev_offset()   — вместо удалённой repair_block_prev_offset() (Issue #168)
- *   - get_next_offset()      — вместо удалённой read_block_next_offset() (Issue #168)
- *   - get_weight()           — вместо удалённой read_block_weight() (Issue #168)
+ *   - reset_avl_fields_of()  — вместо удалённой reset_block_avl_fields()
+ *   - repair_prev_offset()   — вместо удалённой repair_block_prev_offset()
+ *   - get_next_offset()      — вместо удалённой read_block_next_offset()
+ *   - get_weight()           — вместо удалённой read_block_weight()
  *
  * Граф состояний блока во время allocate_from_block():
  *   FreeBlock → remove_from_avl → FreeBlockRemovedAVL
@@ -43,10 +40,9 @@
  *     → [левый сосед свободен]  coalesce_with_prev → CoalescingBlock(prv)
  *     → finalize_coalesce → FreeBlock (вставка в AVL)
  *
- * @see plan_issue87.md §5 «Фаза 6: AllocatorPolicy»
- * @see block_state.h — автомат состояний блока (Issue #93, #106, #114, #168)
+ * @see block_state.h — автомат состояний блока
  * @see free_block_tree.h — концепт FreeBlockTree
- * @version 0.6 (Issue #175 — ManagerHeader<AddressTraitsT> templated; index_type for indices)
+ * @version 0.6
  */
 
 #pragma once
@@ -76,7 +72,7 @@ namespace pmm
 template <typename FreeBlockTreeT = AvlFreeTree<DefaultAddressTraits>, typename AddressTraitsT = DefaultAddressTraits>
 class AllocatorPolicy
 {
-    // Issue #175: check against the specific AddressTraitsT, not hardcoded DefaultAddressTraits.
+    // Check against the specific AddressTraitsT, not hardcoded DefaultAddressTraits.
     static_assert( FreeBlockTreePolicyForTraitsConcept<FreeBlockTreeT, AddressTraitsT>,
                    "AllocatorPolicy: FreeBlockTreeT must satisfy FreeBlockTreePolicy for AddressTraitsT" );
 
@@ -99,7 +95,7 @@ class AllocatorPolicy
      * Убирает блок из дерева свободных блоков, при необходимости разбивает его
      * на два: один — под запрошенные данные, второй — остаток (снова свободный).
      *
-     * Граф состояний (Issue #97/#106, см. block_state.h):
+     * Граф состояний:
      *   FreeBlock → FreeBlockRemovedAVL [remove_from_avl]
      *     → [split] SplittingBlock [begin_splitting]
      *               → initialize_new_block + link_new_block + AVL insert
@@ -121,7 +117,7 @@ class AllocatorPolicy
             FreeBlock<AddressTraitsT>::cast_from_raw( detail::block_at<AddressTraitsT>( base, blk_idx ) );
         FreeBlockRemovedAVL<AddressTraitsT>* removed = fb->remove_from_avl();
 
-        // Issue #146: use AddressTraitsT-specific granule computations.
+        // Use AddressTraitsT-specific granule computations.
         static constexpr index_type kBlkHdrGran =
             detail::kBlockHeaderGranules_t<AddressTraitsT>; ///< Block header granules for this AT.
 
@@ -129,14 +125,14 @@ class AllocatorPolicy
             detail::block_total_granules( base, hdr, detail::block_at<AddressTraitsT>( base, blk_idx ) );
         index_type data_gran = detail::bytes_to_granules_t<AddressTraitsT>( user_size );
 
-        // Issue #43 Phase 1.3: Overflow protection for needed_gran computation.
+        // Overflow protection for needed_gran computation.
         if ( data_gran > std::numeric_limits<index_type>::max() - kBlkHdrGran )
             return nullptr; // overflow: request too large
 
         index_type needed_gran  = kBlkHdrGran + data_gran;
         index_type min_rem_gran = kBlkHdrGran + 1;
 
-        // Issue #43 Phase 1.3: Overflow protection for split check (needed_gran + min_rem_gran).
+        // Overflow protection for split check (needed_gran + min_rem_gran).
         bool can_split = false;
         if ( needed_gran <= std::numeric_limits<index_type>::max() - min_rem_gran )
             can_split = ( blk_total_gran >= needed_gran + min_rem_gran );
@@ -150,7 +146,7 @@ class AllocatorPolicy
             void*      new_blk_ptr = detail::block_at<AddressTraitsT>( base, new_idx );
 
             // Capture old_next before initialize_new_block modifies splitting->next_offset()
-            // Issue #146: compare against AddressTraitsT::no_block (correct sentinel for index_type).
+            // Compare against AddressTraitsT::no_block (correct sentinel for index_type).
             index_type curr_next = splitting->next_offset();
             BlockT*    old_next  = ( curr_next != AddressTraitsT::no_block )
                                        ? detail::block_at<AddressTraitsT>( base, curr_next )
@@ -184,7 +180,7 @@ class AllocatorPolicy
         hdr->free_count--;
         hdr->used_size += data_gran;
 
-        // Return user data pointer (after block header) via canonical detail::user_ptr (Issue #141)
+        // Return user data pointer (after block header) via canonical detail::user_ptr
         return detail::user_ptr<AddressTraitsT>( detail::block_at<AddressTraitsT>( base, blk_idx ) );
     }
 
@@ -196,7 +192,7 @@ class AllocatorPolicy
      * Если следующий или предыдущий блок свободен, объединяет их.
      * Добавляет результирующий свободный блок в дерево.
      *
-     * Граф состояний (Issue #97/#106, см. block_state.h):
+     * Граф состояний:
      *   FreeBlockNotInAVL → CoalescingBlock [begin_coalescing]
      *     → [правый сосед free] coalesce_with_next
      *     → [левый сосед free]  coalesce_with_prev → CoalescingBlock(prv) → finalize_coalesce → FreeBlock
@@ -213,14 +209,14 @@ class AllocatorPolicy
             FreeBlockNotInAVL<AddressTraitsT>::cast_from_raw( detail::block_at<AddressTraitsT>( base, blk_idx ) );
         CoalescingBlock<AddressTraitsT>* coalescing = not_avl->begin_coalescing();
 
-        // Issue #146: use AddressTraitsT-specific block header granule count.
+        // Use AddressTraitsT-specific block header granule count.
         static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
 
         index_type b_idx = blk_idx;
 
         // Слияние с правым соседом
         // State: CoalescingBlock::coalesce_with_next
-        // Issue #146: compare against AddressTraitsT::no_block for correct sentinel check.
+        // Compare against AddressTraitsT::no_block for correct sentinel check.
         index_type curr_next = coalescing->next_offset();
         if ( curr_next != AddressTraitsT::no_block )
         {
@@ -299,7 +295,7 @@ class AllocatorPolicy
      *
      * Сбрасывает все AVL-ссылки в блоках и заново вставляет свободные блоки.
      * Вызывается при `load()` после восстановления менеджера из файла.
-     * Также вызывает BlockState::recover_state для каждого блока (Issue #106).
+     * Также вызывает BlockState::recover_state для каждого блока.
      *
      * @param base  Базовый указатель управляемой области.
      * @param hdr   Заголовок менеджера.
@@ -313,18 +309,18 @@ class AllocatorPolicy
         {
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
 
-            // Issue #106: recover state — fix incorrect transitional states
+            // Recover state — fix incorrect transitional states
             BlockState::recover_state( blk_ptr, idx );
 
             if ( BlockState::get_weight( blk_ptr ) == 0 ) // free block
             {
                 // Reset AVL fields only for free blocks — allocated blocks may use
                 // TreeNode AVL fields for user-level trees (symbol tree, pmap, etc.)
-                // so resetting them would corrupt those data structures (Issue #241).
+                // so resetting them would corrupt those data structures.
                 BlockState::reset_avl_fields_of( blk_ptr );
                 FreeBlockTreeT::insert( base, hdr, idx );
             }
-            // Issue #146: use AddressTraitsT::no_block for correct sentinel check.
+            // Use AddressTraitsT::no_block for correct sentinel check.
             index_type next_idx = BlockState::get_next_offset( blk_ptr );
             if ( next_idx == AddressTraitsT::no_block )
                 hdr->last_block_offset = idx;
@@ -347,11 +343,11 @@ class AllocatorPolicy
         index_type prev = AddressTraitsT::no_block;
         while ( idx != AddressTraitsT::no_block )
         {
-            // Issue #146: use AddressTraitsT::granule_size for correct size check.
+            // Use AddressTraitsT::granule_size for correct size check.
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
                 break;
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
-            BlockState::repair_prev_offset( blk_ptr, prev ); // Issue #114, #168
+            BlockState::repair_prev_offset( blk_ptr, prev );
             prev                   = idx;
             index_type next_offset = BlockState::get_next_offset( blk_ptr );
             idx                    = next_offset;
@@ -363,14 +359,14 @@ class AllocatorPolicy
      *
      * Проходит по всем блокам и обновляет `block_count`, `free_count`,
      * `alloc_count`, `used_size` в заголовке менеджера.
-     * Использует Block<A> layout: `weight` вместо `size` (Issue #106).
+     * Использует Block<A> layout: `weight` вместо `size`.
      *
      * @param base  Базовый указатель управляемой области.
      * @param hdr   Заголовок менеджера.
      */
     static void recompute_counters( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr )
     {
-        // Issue #146: use AddressTraitsT-specific block header granule count.
+        // Use AddressTraitsT-specific block header granule count.
         static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
 
         index_type block_count = 0, free_count = 0, alloc_count = 0;
@@ -378,14 +374,14 @@ class AllocatorPolicy
         index_type idx       = hdr->first_block_offset;
         while ( idx != AddressTraitsT::no_block )
         {
-            // Issue #146: use AddressTraitsT::granule_size for correct size check.
+            // Use AddressTraitsT::granule_size for correct size check.
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
                 break;
             const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             block_count++;
             used_gran += kBlkHdrGran;
-            index_type w = BlockState::get_weight( blk_ptr ); // Issue #114, #168
-            if ( w > 0 )                                      // allocated block
+            index_type w = BlockState::get_weight( blk_ptr );
+            if ( w > 0 ) // allocated block
             {
                 alloc_count++;
                 used_gran += w;
@@ -402,7 +398,7 @@ class AllocatorPolicy
         hdr->used_size   = used_gran;
     }
 
-    // ─── Verify-only diagnostics (Issue #245) ──────────────────────────────────
+    // ─── Verify-only diagnostics ──────────────────────────────────
 
     /**
      * @brief Verify linked list prev_offset consistency without modifying the image.
@@ -507,7 +503,7 @@ class AllocatorPolicy
     }
 
     /**
-     * @brief Verify free tree root consistency without modifying the image (Issue #245).
+     * @brief Verify free tree root consistency without modifying the image.
      *
      * Checks that the free_tree_root is consistent with the presence of free blocks.
      * After file round-trip, AVL fields are not persisted, so the free tree root
@@ -542,7 +538,7 @@ class AllocatorPolicy
         }
     }
 
-    // ─── Issue #210: reallocate_typed helpers ─────────────────────────────────
+    // ─── reallocate_typed helpers ─────────────────────────────────
 
     /// @brief In-place shrink: update weight, split remainder into free block + coalesce.
     static void realloc_shrink( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx,

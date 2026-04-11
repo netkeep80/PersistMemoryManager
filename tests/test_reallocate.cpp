@@ -1,8 +1,7 @@
 /**
  * @file test_reallocate.cpp
- * @brief Tests for manual reallocation pattern (Issue #67, updated #102 — new API)
+ * @brief Tests for manual reallocation pattern
  *
- * Issue #102: reallocate_typed() was removed from the new API.
  *   The new pattern is: allocate_new → copy_old_data → deallocate_old.
  *   These tests verify the correctness of the manual realloc pattern
  *   using AbstractPersistMemoryManager via pmm_presets.h.

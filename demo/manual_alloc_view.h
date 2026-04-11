@@ -2,7 +2,6 @@
  * @file manual_alloc_view.h
  * @brief ManualAllocView: interactive panel for step-by-step manual allocation testing.
  *
- * Issue #65: Add manual allocation and deallocation controls to the demo so that
  * the user can press "Alloc" and "Free" buttons to test the memory manager step by step.
  *
  * The panel keeps a list of live manually-allocated blocks and lets the user:
@@ -37,7 +36,6 @@ struct ManualBlock
 /**
  * @brief ImGui panel providing manual alloc/free controls for step-by-step PMM testing.
  *
- * Issue #65: allows the user to press "Alloc" and "Free" to exercise the memory manager
  * one operation at a time, watching the AVL tree and memory map update in real time.
  */
 class ManualAllocView

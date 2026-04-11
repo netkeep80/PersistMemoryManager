@@ -1,6 +1,6 @@
 /**
  * @file test_background_validator.cpp
- * @brief Phase 12 tests: background integrity validation (migrated to static API, Issue #112).
+ * @brief Phase 12 tests: background integrity validation (migrated to static API).
  *
  * These headless tests verify that:
  *  - ValidationResult is initialised to State::Unknown.

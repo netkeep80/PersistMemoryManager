@@ -1,6 +1,6 @@
 /**
  * @file pmm/block.h
- * @brief Block<AddressTraits> — блок памяти как составной тип (Issue #87 Phase 3, #138).
+ * @brief Block<AddressTraits> — блок памяти как составной тип (: phase 3, #138).
  *
  * Block<AddressTraits> является составным типом, объединяющим:
  *   - поля связного списка (prev_offset, next_offset) — хранятся прямо в Block
@@ -18,17 +18,14 @@
  *                         avl_height (2), node_type (2)
  *   [24..31] Block:       prev_offset (4), next_offset (4)
  *
- * Issue #126: поле weight перемещено в начало TreeNode для ускорения доступа.
  *             avl_height и node_type (бывший _pad) перемещены в конец TreeNode.
- * Issue #138: LinkedListNode удалена как отдельная сущность; поля prev_offset
  *             и next_offset перемещены прямо в Block.
  *
  * Размер и выравнивание:
  *   sizeof(Block<DefaultAddressTraits>) == 32 байта (2 гранулы по 16 байт).
- *   Подтверждено через static_assert в types.h. Issue #112: Block<A> — единственный тип блока.
+ *   Подтверждено через static_assert в types.h. Block<A> — единственный тип блока.
  *
- * @see plan_issue87.md §5 «Фаза 3: Block — блок как составной тип»
- * @version 0.5 (Issue #138 — LinkedListNode merged into Block)
+ * @version 0.5
  */
 
 #pragma once
@@ -50,7 +47,7 @@ namespace pmm
  *
  * Наследует TreeNode<AddressTraitsT>.
  * Поля связного списка (prev_offset, next_offset) хранятся прямо в Block
- * (Issue #138: LinkedListNode удалена как отдельная сущность).
+ *.
  *
  * Доступ к полям:
  *   - prev_offset, next_offset          — прямые поля Block<A>
@@ -74,11 +71,10 @@ template <typename AddressTraitsT> struct Block : TreeNode<AddressTraitsT>
     index_type next_offset;
 };
 
-// Issue #138: Block inherits TreeNode and adds prev_offset/next_offset as own members.
+// Block inherits TreeNode and adds prev_offset/next_offset as own members.
 // Note: Block is NOT standard-layout (both base and derived have data members), but
 // the memory layout is still predictable: TreeNode fields first, then Block own fields.
 // The layout is validated via kOffset* constants in BlockStateBase (block_state.h).
-static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes (Issue #87, #138)" );
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Block<DefaultAddressTraits> must be 32 bytes " );
 
 } // namespace pmm

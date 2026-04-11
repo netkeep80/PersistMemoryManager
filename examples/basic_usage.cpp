@@ -1,6 +1,6 @@
 /**
  * @file basic_usage.cpp
- * @brief Basic usage example for PersistMemoryManager (updated Issue #110)
+ * @brief Basic usage example for PersistMemoryManager
  *
  * Demonstrates:
  * 1. Creating a static manager with HeapStorage.
@@ -10,7 +10,6 @@
  * 5. Block statistics via new API.
  * 6. Save/load round-trip.
  *
- * Issue #110: uses new unified PersistMemoryManager<ConfigT, InstanceId> static API.
  * - All methods are static (Mgr::create(), Mgr::allocate(), etc.)
  * - p.resolve() — no argument needed (uses static manager resolve)
  * - pmm::save_manager<Mgr>(filename) — template-based save

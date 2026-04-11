@@ -2,7 +2,7 @@
  * @file struct_tree_view.cpp
  * @brief Implementation of StructTreeView: PMM block-layout inspector.
  *
- * Uses DemoMgr::for_each_block() (Issue #116) to iterate over all blocks.
+ * Uses DemoMgr::for_each_block() to iterate over all blocks.
  * Each block is shown as a tree node with offset, size, and state.
  * Clicking a block selects it for highlighting in the Memory Map.
  */

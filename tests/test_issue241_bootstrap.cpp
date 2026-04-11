@@ -9,7 +9,7 @@ using BootstrapMgr     = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2410
 using BootstrapPersist = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2411>;
 
 // ---------------------------------------------------------------------------
-// Issue #241: Bootstrap invariants hold immediately after create()
+// Bootstrap invariants hold immediately after create()
 // ---------------------------------------------------------------------------
 
 TEST_CASE( "bootstrap invariants hold after create(size)", "[issue241]" )
@@ -75,7 +75,7 @@ TEST_CASE( "bootstrap invariants hold after create(size)", "[issue241]" )
 }
 
 // ---------------------------------------------------------------------------
-// Issue #241: Bootstrap invariants hold after save/load cycle
+// Bootstrap invariants hold after save/load cycle
 // ---------------------------------------------------------------------------
 
 TEST_CASE( "bootstrap invariants hold after save/load", "[issue241]" )
@@ -128,7 +128,7 @@ TEST_CASE( "bootstrap invariants hold after save/load", "[issue241]" )
 }
 
 // ---------------------------------------------------------------------------
-// Issue #241: Deterministic bootstrap — two creates produce identical layout
+// Deterministic bootstrap — two creates produce identical layout
 // ---------------------------------------------------------------------------
 
 TEST_CASE( "bootstrap is deterministic", "[issue241]" )

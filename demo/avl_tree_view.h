@@ -2,10 +2,7 @@
  * @file avl_tree_view.h
  * @brief AvlTreeView: renders the PMM AVL free-block tree as an ImGui panel.
  *
- * Issue #65: Add AVL tree display to the visual demo.
- * Issue #116: Uses DemoMgr::for_each_free_block() to iterate over free blocks
  * in-order (by size) and display their offset, size, AVL height, and depth.
- * Issue #118: Renders the AVL tree as a visual tree (not a flat table).
  */
 
 #pragma once
@@ -28,7 +25,6 @@ namespace demo
  * from the root (the node with parent_offset == -1) and recursively rendering
  * left and right children.
  *
- * Issue #118: Visual tree rendering replaces the flat table view.
  */
 class AvlTreeView
 {

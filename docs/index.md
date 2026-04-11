@@ -22,6 +22,7 @@ Single entry point for all PMM documentation. Each topic is covered by exactly o
 |----------|------|
 | [Repository Shape](repository_shape.md) | Target directory structure and file placement rules |
 | [Deletion Policy](deletion_policy.md) | Rules for file lifecycle: keep, move, archive, delete |
+| [Comment Policy](comment_policy.md) | Allowed and prohibited comment types in code and docs |
 
 ## Archive
 

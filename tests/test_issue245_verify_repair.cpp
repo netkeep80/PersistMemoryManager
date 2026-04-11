@@ -1,6 +1,6 @@
 /**
  * @file test_issue245_verify_repair.cpp
- * @brief Tests for verify vs repair mode separation (Issue #245).
+ * @brief Tests for verify vs repair mode separation.
  *
  * Verifies:
  *   - verify() is read-only: detects violations without modifying the image.

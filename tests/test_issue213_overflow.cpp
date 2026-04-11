@@ -1,13 +1,13 @@
 /**
  * @file test_issue213_overflow.cpp
- * @brief Overflow tests for size calculations (Issue #213, Phase 5.2).
+ * @brief Overflow tests for size calculations.
  *
  * Verifies that PersistMemoryManager correctly handles arithmetic overflow
  * in granule computations, allocation size calculations, and edge cases
  * across all AddressTraits variants (16-bit, 32-bit, 64-bit indexes).
  *
  * @see docs/phase5_testing.md §5.2
- * @version 0.1 (Issue #213 — Phase 5.2: Extended test coverage)
+ * @version 0.1
  */
 
 #include "pmm/pmm_presets.h"

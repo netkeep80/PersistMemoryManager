@@ -1,8 +1,7 @@
 /**
  * @file test_issue97_presets.cpp
- * @brief Интеграционные тесты пресетов PersistMemoryManager (Issue #97, обновлено #110).
+ * @brief Интеграционные тесты пресетов PersistMemoryManager.
  *
- * Issue #110: переход с AbstractPersistMemoryManager на PersistMemoryManager (статическая модель).
  * Проверяет:
  *  - SingleThreadedHeap: базовые операции allocate/deallocate/persistence
  *  - MultiThreadedHeap: базовые операции с блокировками
@@ -12,7 +11,7 @@
  * @see include/pmm/pmm_presets.h
  * @see include/pmm/io.h
  * @see include/pmm/pptr.h
- * @version 0.3 (Issue #110 — статический API)
+ * @version 0.3
  */
 
 #include "pmm_single_threaded_heap.h"

@@ -1,6 +1,6 @@
 /**
  * @file pmm/free_block_tree.h
- * @brief AvlFreeTree — specialized forest-policy for the free-tree domain (Issue #87, #95, #129, #243).
+ * @brief AvlFreeTree — specialized forest-policy for the free-tree domain.
  *
  * Implements the free-tree as a specialized forest-policy within the AVL-forest model.
  * The free-tree is the primary system domain of the forest: it indexes free blocks
@@ -22,9 +22,9 @@
  * @see docs/free_tree_forest_policy.md — canonical free-tree forest-policy document
  * @see docs/pmm_avl_forest.md — general forest model
  * @see docs/block_and_treenode_semantics.md — field semantics
- * @see block_state.h — BlockState machine (Issue #93, #106)
- * @see avl_tree_mixin.h — shared AVL operations via BlockPPtr adapter (Issue #188)
- * @version 1.6 (Issue #243 — align with forest model, document forest-policy)
+ * @see block_state.h — BlockState machine
+ * @see avl_tree_mixin.h — shared AVL operations via BlockPPtr adapter
+ * @version 1.6
  */
 
 #pragma once
@@ -85,7 +85,7 @@ template <typename Policy> inline constexpr bool is_free_block_tree_policy_v = F
 /**
  * @brief Specialized forest-policy: AVL tree for the free-tree domain.
  *
- * All-static class implementing the free-tree forest-policy (Issue #73 FR-02, AR-03).
+ * All-static class implementing the free-tree forest-policy.
  * Does not depend on PersistMemoryManager singleton — takes base_ptr and header as context.
  *
  * Forest-policy details:
@@ -93,7 +93,7 @@ template <typename Policy> inline constexpr bool is_free_block_tree_policy_v = F
  *   - Block size is derived from linear PAP geometry (next_offset - block_index).
  *   - `weight` is NOT used as sort key (it is 0 for free blocks — state discriminator).
  *   - Best-fit search runs in O(log n).
- *   - Uses shared AVL substrate via BlockPPtr adapter (Issue #188).
+ *   - Uses shared AVL substrate via BlockPPtr adapter.
  *
  * @see docs/free_tree_forest_policy.md — canonical ordering policy documentation
  *
@@ -107,7 +107,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
     using BlockState     = BlockStateBase<AddressTraitsT>;
     using BPPtr          = detail::BlockPPtr<AddressTraitsT>;
 
-    /// Forest-policy tag: identifies this as the free-tree domain policy (Issue #243).
+    /// Forest-policy tag: identifies this as the free-tree domain policy.
     static constexpr const char* kForestDomainName = "system/free_tree";
 
     AvlFreeTree()                                = delete;
@@ -130,7 +130,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             return;
         }
         // Derive sort key from linear PAP geometry: block_size = next_offset - block_index.
-        // Issue #146: use AddressTraitsT::granule_size for correct byte→granule conversion.
+        // Use AddressTraitsT::granule_size for correct byte→granule conversion.
         index_type total_gran = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
         index_type blk_next   = BlockState::get_next_offset( blk );
         index_type blk_gran =
@@ -153,7 +153,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             BlockState::set_left_offset_of( detail::block_at<AddressTraitsT>( base, parent ), blk_idx );
         else
             BlockState::set_right_offset_of( detail::block_at<AddressTraitsT>( base, parent ), blk_idx );
-        // Issue #188: delegate rebalancing to shared AVL function via BlockPPtr adapter.
+        // Delegate rebalancing to shared AVL function via BlockPPtr adapter.
         detail::avl_rebalance_up( BPPtr( base, parent ), hdr->free_tree_root );
     }
 
@@ -180,7 +180,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
         }
         else
         {
-            // Issue #188: delegate min_node to shared AVL function via BlockPPtr.
+            // Delegate min_node to shared AVL function via BlockPPtr.
             BPPtr      succ        = detail::avl_min_node( BPPtr( base, right ) );
             index_type succ_idx    = succ.offset();
             void*      succ_raw    = detail::block_at<AddressTraitsT>( base, succ_idx );
@@ -205,14 +205,14 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
             BlockState::set_parent_offset_of( detail::block_at<AddressTraitsT>( base, left ), succ_idx );
             BlockState::set_parent_offset_of( succ_raw, parent );
             set_child( base, hdr, parent, blk_idx, succ_idx );
-            // Issue #188: delegate height update to shared AVL function via BlockPPtr.
+            // Delegate height update to shared AVL function via BlockPPtr.
             detail::avl_update_height( BPPtr( base, succ_idx ) );
         }
         BlockState::set_left_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_right_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_parent_offset_of( blk, AddressTraitsT::no_block );
         BlockState::set_avl_height_of( blk, 0 );
-        // Issue #188: delegate rebalancing to shared AVL function via BlockPPtr adapter.
+        // Delegate rebalancing to shared AVL function via BlockPPtr adapter.
         detail::avl_rebalance_up( BPPtr( base, rebal ), hdr->free_tree_root );
     }
 
@@ -222,15 +222,15 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct AvlFreeTree
     static index_type find_best_fit( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr,
                                      index_type needed_granules )
     {
-        // Issue #59: cache total_gran once to avoid repeated hdr->total_size reads in the hot path
-        // Issue #146: use AddressTraitsT::granule_size for correct byte→granule conversion.
+        // Cache total_gran once to avoid repeated hdr->total_size reads in the hot path
+        // Use AddressTraitsT::granule_size for correct byte→granule conversion.
         index_type total_gran = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
         index_type cur = hdr->free_tree_root, result = AddressTraitsT::no_block;
         while ( cur != AddressTraitsT::no_block )
         {
             const void* node      = detail::block_at<AddressTraitsT>( base, cur );
             index_type  node_next = BlockState::get_next_offset( node );
-            // Issue #146: compare against AddressTraitsT::no_block (not detail::kNoBlock)
+            // Compare against AddressTraitsT::no_block (not detail::kNoBlock)
             // to correctly handle SmallAddressTraits (uint16_t) sentinel 0xFFFF.
             index_type cur_gran =
                 ( node_next != AddressTraitsT::no_block ) ? ( node_next - cur ) : ( total_gran - cur );

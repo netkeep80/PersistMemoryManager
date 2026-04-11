@@ -1,8 +1,8 @@
 /**
  * @file test_issue210_reallocate_typed.cpp
- * @brief Tests for reallocate_typed<T>() (Issue #210, Phase 4.3).
+ * @brief Tests for reallocate_typed<T>().
  *
- * Verifies the key requirements from Issue #210 Phase 4.3:
+ * Verifies the key requirements from this feature:
  *  1. Basic reallocation (grow) preserves data.
  *  2. Basic reallocation (shrink) preserves data.
  *  3. In-place expansion when next block is free.
@@ -20,7 +20,7 @@
  * 15. Old block is NOT freed on failure.
  *
  * @see include/pmm/persist_memory_manager.h — reallocate_typed<T>()
- * @version 0.1 (Issue #210 — Phase 4.3: reallocate_typed)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

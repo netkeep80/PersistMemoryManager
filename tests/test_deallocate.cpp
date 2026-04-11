@@ -1,8 +1,7 @@
 /**
  * @file test_deallocate.cpp
- * @brief Тесты освобождения памяти (Issue #110 — новый API)
+ * @brief Тесты освобождения памяти (: — новый API)
  *
- * Issue #110: использует AbstractPersistMemoryManager через pmm_presets.h.
  *   - Все операции через экземпляр менеджера.
  *   - Выделение через allocate_typed<T>(), освобождение через deallocate_typed().
  */
@@ -196,7 +195,7 @@ TEST_CASE( "block_data_size_bytes", "[test_deallocate]" )
     Mgr::pptr<std::uint8_t> ptr = Mgr::allocate_typed<std::uint8_t>( 512 );
     REQUIRE( !ptr.is_null() );
 
-    // Issue #59, #83: only kGranuleSize (16-byte) alignment is guaranteed
+    // Only kGranuleSize (16-byte) alignment is guaranteed
     REQUIRE( reinterpret_cast<std::uintptr_t>( ptr.resolve() ) % pmm::kGranuleSize == 0 );
 
     Mgr::deallocate_typed( ptr );

@@ -1,6 +1,6 @@
 /**
  * @file bench_allocator.cpp
- * @brief Google Benchmark performance benchmarks for PersistMemoryManager (Issue #214, Phase 5.3)
+ * @brief Google Benchmark performance benchmarks for PersistMemoryManager
  *
  * Benchmarks:
  *   - Allocator: allocate, deallocate, reallocate_typed, mixed alloc/dealloc

@@ -1,6 +1,6 @@
 /**
  * @file test_demo_headless.cpp
- * @brief Phase 8 headless smoke test for PMM demo scenarios (migrated to static API, Issue #112).
+ * @brief Phase 8 headless smoke test for PMM demo scenarios (migrated to static API).
  *
  * Tests the core scenario logic without a graphical window:
  *  - Creates a DemoMgr static manager and a ScenarioManager.

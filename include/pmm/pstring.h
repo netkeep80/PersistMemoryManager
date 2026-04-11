@@ -1,6 +1,6 @@
 /**
  * @file pmm/pstring.h
- * @brief pstring<ManagerT> — мутабельная персистентная строка (Issue #45, Phase 3.1).
+ * @brief pstring<ManagerT> — мутабельная персистентная строка.
  *
  * Реализует мутабельную строку в персистентном адресном пространстве (ПАП).
  * В отличие от pstringview (read-only, interned), pstring поддерживает изменение
@@ -48,7 +48,7 @@
  * @see pstringview.h — pstringview<ManagerT> (read-only интернированная строка)
  * @see persist_memory_manager.h — PersistMemoryManager (статическая модель)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
- * @version 0.1 (Issue #45 — Phase 3.1: мутабельная персистентная строка)
+ * @version 0.1
  */
 
 #pragma once
@@ -64,7 +64,7 @@ namespace pmm
 {
 
 /**
- * @brief Мутабельная персистентная строка (Issue #45, Phase 3.1).
+ * @brief Мутабельная персистентная строка.
  *
  * Хранит заголовок (длину, ёмкость, индекс блока данных) в ПАП.
  * Строковые данные хранятся в отдельном блоке, выделенном через менеджер.
@@ -250,7 +250,7 @@ template <typename ManagerT> struct pstring
     // ─── Внутренние помощники ─────────────────────────────────────────────────
 
     /// @brief Разрешить гранульный индекс данных в сырой указатель.
-    /// Issue #188: delegates to shared resolve_granule_ptr.
+    /// Delegates to shared resolve_granule_ptr.
     char* resolve_data() const noexcept
     {
         return reinterpret_cast<char*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
@@ -286,7 +286,7 @@ template <typename ManagerT> struct pstring
         if ( new_raw == nullptr )
             return false;
 
-        // Создаём новый индекс (Issue #188: shared ptr_to_granule_idx).
+        // Создаём новый индекс.
         std::uint8_t* base        = ManagerT::backend().base_ptr();
         index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
@@ -303,7 +303,7 @@ template <typename ManagerT> struct pstring
             static_cast<char*>( new_raw )[0] = '\0';
         }
 
-        // Освобождаем старый блок (Issue #188: shared resolve_granule_ptr).
+        // Освобождаем старый блок.
         if ( _data_idx != static_cast<index_type>( 0 ) )
             ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 

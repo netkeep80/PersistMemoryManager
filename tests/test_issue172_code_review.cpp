@@ -1,17 +1,17 @@
 /**
  * @file test_issue172_code_review.cpp
- * @brief Tests for code review improvements (Issue #172).
+ * @brief Tests for code review improvements.
  *
  * Verifies fixes based on code review:
- *  - create_typed<T>(args...) calls T's constructor via placement new (Issue #172 #3).
- *  - destroy_typed<T>(p) calls T's destructor before freeing memory (Issue #172 #3).
- *  - tree_node(null_pptr) triggers assert in debug mode (Issue #172 #4).
- *  - tree_node(uninitialized manager) triggers assert in debug mode (Issue #172 #4).
+ *  - create_typed<T>(args...) calls T's constructor via placement new.
+ *  - destroy_typed<T>(p) calls T's destructor before freeing memory.
+ *  - tree_node(null_pptr) triggers assert in debug mode.
+ *  - tree_node(uninitialized manager) triggers assert in debug mode.
  *  - is_initialized() and statistics getters work correctly under multithreaded access.
- *  - create() with initial_size near SIZE_MAX returns false (overflow guard, Issue #172 #6).
+ *  - create() with initial_size near SIZE_MAX returns false (overflow guard).
  *
  * @see include/pmm/persist_memory_manager.h
- * @version 0.1 (Issue #172 — code review fixes)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -88,7 +88,7 @@ TEST_CASE( "I172-A2: allocate_typed is raw allocation (no constructor call)", "[
     REQUIRE( M::create( 64 * 1024 ) );
 
     // allocate_typed does NOT call the constructor — only raw memory allocation.
-    // Issue #172: this is documented behavior; create_typed should be used instead.
+    // This is documented behavior; create_typed should be used instead.
     auto p = M::allocate_typed<WithDefaultValue>();
     REQUIRE( !p.is_null() );
 

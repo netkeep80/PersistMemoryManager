@@ -1,6 +1,6 @@
 /**
  * @file pmm/manager_configs.h
- * @brief Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).
+ * @brief Готовые конфигурационные структуры для менеджеров ПАП.
  *
  * Предоставляет набор предопределённых конфигурационных структур для использования
  * с `PersistMemoryManager<ConfigT, InstanceId>`. Каждая конфигурация описывает
@@ -11,29 +11,29 @@
  *   - `storage_backend`  — бэкенд хранилища (HeapStorage, StaticStorage, MMapStorage)
  *   - `free_block_tree`  — политика дерева свободных блоков (AvlFreeTree)
  *   - `lock_policy`      — политика многопоточности (NoLock, SharedMutexLock)
- *   - `logging_policy`   — политика логирования (NoLogging, StderrLogging) (Issue #202, Phase 4.2)
+ *   - `logging_policy`   — политика логирования (NoLogging, StderrLogging)
  *   - `granule_size`     — размер гранулы в байтах
  *   - `max_memory_gb`    — максимальный объём памяти в ГБ
  *   - `grow_numerator` / `grow_denominator` — коэффициент роста хранилища
  *
- * Правила выбора конфигурации (Issue #146):
+ * Правила выбора конфигурации:
  *
- *   Поддерживаемые размеры индекса (Issue #146):
+ *   Поддерживаемые размеры индекса:
  *     - uint16_t (SmallAddressTraits,   16B гранула) — до ~1 МБ, малые embedded-системы.
  *     - uint32_t (DefaultAddressTraits, 16B гранула) — до 64 ГБ, основной вариант.
  *     - uint64_t (LargeAddressTraits,   64B гранула) — до петабайт, крупные БД.
  *
- *   Ключевые ограничения (проверяются через концепт ValidPmmAddressTraits, Issue #146, #155):
+ *   Ключевые ограничения (проверяются через концепт ValidPmmAddressTraits):
  *     1. granule_size >= kMinGranuleSize (4 байта — минимум размер слова архитектуры).
  *     2. granule_size — степень двойки.
  *
- *   Рекомендации по выбору гранулы (Issue #146):
+ *   Рекомендации по выбору гранулы:
  *     - Для минимального расхода памяти используйте конфигурации без потерь:
  *       DefaultAddressTraits (Block=32B / 16B гранула = 0 байт потерь на блок),
  *       LargeAddressTraits   (Block=64B / 64B гранула = 0 байт потерь на блок).
  *     - SmallAddressTraits допустима, но с потерями: Block<uint16_t>=18B,
  *       ceil(18/16)=2 гранулы выделяется под заголовок = 14 байт потерь/блок.
- *     - uint8_t-индекс не поддерживается (TinyAddressTraits удалена, Issue #146):
+ *     - uint8_t-индекс не поддерживается (TinyAddressTraits удалена):
  *       максимум 255 гранул — практически непригодно для реальных сценариев.
  *
  *   Архитектурные сценарии:
@@ -91,11 +91,11 @@
  *   void* p = BigDB::allocate(4096);
  * @endcode
  *
- * @see persist_memory_manager.h — PersistMemoryManager (Issue #110)
+ * @see persist_memory_manager.h — PersistMemoryManager
  * @see config.h — базовые политики блокировок (NoLock, SharedMutexLock)
  * @see address_traits.h — AddressTraits и стандартные алиасы (SmallAddressTraits, DefaultAddressTraits,
  * LargeAddressTraits)
- * @version 0.7 (Issue #146 — updated valid index sizes, granule rules, removed TinyAddressTraits references)
+ * @version 0.7
  */
 
 #pragma once
@@ -114,7 +114,7 @@
 namespace pmm
 {
 
-// ─── Правила для гранул (Issue #146) ─────────────────────────────────────────
+// ─── Правила для гранул ─────────────────────────────────────────
 
 /// @brief Минимальный допустимый размер гранулы (размер слова архитектуры = 4 байта).
 inline constexpr std::size_t kMinGranuleSize = 4;
@@ -122,14 +122,13 @@ inline constexpr std::size_t kMinGranuleSize = 4;
 /**
  * @brief C++20 концепт: проверяет, что AddressTraitsT имеет допустимые параметры гранулы.
  *
- * Заменяет повторяющиеся пары `static_assert` в каждой конфигурационной структуре (Issue #155).
- * Обновлён в Issue #146 для согласования с правилами выбора конфигурации.
+ * Заменяет повторяющиеся пары `static_assert` в каждой конфигурационной структуре.
  *
  * Требования:
  *   - `AT::granule_size >= kMinGranuleSize` (минимум 4 байта — размер машинного слова).
  *   - `AT::granule_size` — степень двойки.
  *
- * Допустимые стандартные алиасы (Issue #146):
+ * Допустимые стандартные алиасы:
  *   - SmallAddressTraits   (uint16_t, granule=16) — 16 >= 4, степень двойки ✓
  *   - DefaultAddressTraits (uint32_t, granule=16) — 16 >= 4, степень двойки ✓
  *   - LargeAddressTraits   (uint64_t, granule=64) — 64 >= 4, степень двойки ✓
@@ -145,7 +144,7 @@ static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits mu
 // ─── BasicConfig — базовый шаблон для heap-конфигураций ──────────────────────
 
 /**
- * @brief Базовый шаблон конфигурации менеджера с HeapStorage (Issue #160).
+ * @brief Базовый шаблон конфигурации менеджера с HeapStorage.
  *
  * Устраняет дублирование между CacheManagerConfig, PersistentDataConfig,
  * EmbeddedManagerConfig, IndustrialDBConfig и LargeDBConfig.
@@ -156,7 +155,7 @@ static_assert( ValidPmmAddressTraits<LargeAddressTraits>, "LargeAddressTraits mu
  * @tparam GrowNum         Числитель коэффициента роста хранилища (по умолчанию 5)
  * @tparam GrowDen         Знаменатель коэффициента роста хранилища (по умолчанию 4, т.е. рост 25%)
  * @tparam MaxMemoryGB     Максимальный объём памяти в ГБ (0 = без ограничения)
- * @tparam LoggingPolicyT  Политика логирования (logging::NoLogging по умолчанию) (Issue #202, Phase 4.2)
+ * @tparam LoggingPolicyT  Политика логирования (logging::NoLogging по умолчанию)
  *
  * Пример создания собственной конфигурации:
  * @code
@@ -197,10 +196,10 @@ struct BasicConfig
     static constexpr std::size_t grow_denominator = GrowDen;
 };
 
-// ─── StaticConfig — базовый шаблон для static-конфигураций (Issue #188) ───────
+// ─── StaticConfig — базовый шаблон для static-конфигураций ───────
 
 /**
- * @brief Базовый шаблон конфигурации менеджера со StaticStorage (Issue #188).
+ * @brief Базовый шаблон конфигурации менеджера со StaticStorage.
  *
  * Устраняет дублирование между SmallEmbeddedStaticConfig и EmbeddedStaticConfig.
  * Аналогичен BasicConfig, но использует StaticStorage вместо HeapStorage.
@@ -233,7 +232,7 @@ struct StaticConfig
  * @brief Конфигурация small-embedded-менеджера со статическим буфером и 16-bit индексом.
  *
  * Предназначена для малых систем без heap (микроконтроллеры, RTOS, bare-metal)
- * с ограничением памяти до ~1 МБ (Issue #146):
+ * с ограничением памяти до ~1 МБ:
  *   - uint16_t индекс (SmallAddressTraits), 16-байтная гранула
  *   - pptr<T> хранит 2-байтный индекс (вместо 4 байт у DefaultAddressTraits)
  *   - StaticStorage<BufferSize, SmallAddressTraits> — фиксированный буфер, нет malloc
@@ -241,7 +240,6 @@ struct StaticConfig
  *   - Нет блокировок (NoLock) — только однопоточный контекст
  *   - Не расширяется (StaticStorage::expand() всегда false)
  *
- * Issue #188: now an alias for StaticConfig<SmallAddressTraits, BufferSize>.
  *
  * @tparam BufferSize Размер статического буфера в байтах (кратно 16, максимум ~1 МБ).
  */
@@ -256,7 +254,6 @@ template <std::size_t BufferSize = 1024> using SmallEmbeddedStaticConfig = Stati
  *   - Нет блокировок (NoLock) — только однопоточный контекст
  *   - Не расширяется (StaticStorage::expand() всегда false)
  *
- * Issue #188: now an alias for StaticConfig<DefaultAddressTraits, BufferSize>.
  *
  * @tparam BufferSize Размер статического буфера в байтах (кратно 16).
  */
@@ -265,7 +262,7 @@ template <std::size_t BufferSize = 4096> using EmbeddedStaticConfig = StaticConf
 // ─── Desktop / динамические конфигурации ─────────────────────────────────────
 
 // ─── Desktop / динамические конфигурации ─────────────────────────────────────
-// All configs below are aliases of BasicConfig<> with specific parameters (Issue #160).
+// All configs below are aliases of BasicConfig<> with specific parameters.
 
 /**
  * @brief Конфигурация кеш-менеджера (однопоточный, heap, 16B гранула).
@@ -338,7 +335,7 @@ using IndustrialDBConfig = BasicConfig<DefaultAddressTraits, config::SharedMutex
  * Типичный сценарий: крупные базы данных, хранилища данных, облачные хранилища,
  * петабайтные time-series системы.
  *
- * @note Issue #172: Известное ограничение — внутренние поля ManagerHeader
+ * @note Известное ограничение — внутренние поля ManagerHeader
  *   (used_size, block_count, free_count, alloc_count, first_block_offset,
  *    last_block_offset, free_tree_root) хранятся как std::uint32_t, что
  *   ограничивает адресуемое пространство 2^32 гранулами × 64 байт = 256 GiB,

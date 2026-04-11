@@ -1,4 +1,4 @@
-// Issue #235: suppress deprecation warnings — this test deliberately exercises deprecated functions.
+// Suppress deprecation warnings — this test deliberately exercises deprecated functions.
 #if defined( __GNUC__ ) || defined( __clang__ )
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -9,20 +9,20 @@
 
 /**
  * @file test_issue166_deduplication.cpp
- * @brief Тесты дедупликации функциональности ПАП (Issue #166).
+ * @brief Тесты дедупликации функциональности ПАП.
  *
  * Проверяет:
- *   - detail::kNoBlock_v<AT> — новый шаблонный псевдоним для AT::no_block (Issue #166)
- *   - detail::required_block_granules_t<AT>() — шаблонная версия для любого AT (Issue #166)
+ *   - detail::kNoBlock_v<AT> — новый шаблонный псевдоним для AT::no_block
+ *   - detail::required_block_granules_t<AT>() — шаблонная версия для любого AT
  *   - Устранение дублирования: detail::granules_to_bytes() в persist_memory_manager.h
- *     заменён на address_traits::granules_to_bytes() (Issue #166)
- *   - Удаление избыточных static_assert в SmallEmbeddedStaticConfig и EmbeddedStaticConfig (Issue #166)
+ *     заменён на address_traits::granules_to_bytes()
+ *   - Удаление избыточных static_assert в SmallEmbeddedStaticConfig и EmbeddedStaticConfig
  *   - ValidPmmAddressTraits уже проверяется на уровне namespace — не нужны повторные assert в конфигах
  *
  * @see include/pmm/types.h — detail::kNoBlock_v<AT>, detail::required_block_granules_t<AT>
  * @see include/pmm/manager_configs.h — SmallEmbeddedStaticConfig, EmbeddedStaticConfig
  * @see include/pmm/persist_memory_manager.h — used_size(), free_size()
- * @version 0.1 (Issue #166 — дедупликация)
+ * @version 0.1
  */
 
 #include "pmm/manager_configs.h"
@@ -38,7 +38,7 @@
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
 
 // =============================================================================
-// Issue #166 Tests Section A: kNoBlock_v<AT> template alias
+// KNoBlock_v<AT> template alias
 // =============================================================================
 
 /// @brief kNoBlock_v<DefaultAddressTraits> == DefaultAddressTraits::no_block == kNoBlock.
@@ -90,7 +90,7 @@ TEST_CASE( "I166-A4: kNoBlock_v<AT> has correct index_type", "[test_issue166_ded
 }
 
 // =============================================================================
-// Issue #166 Tests Section B: required_block_granules_t<AT>
+// Required_block_granules_t<AT>
 // =============================================================================
 
 /// @brief required_block_granules_t<DefaultAddressTraits>() == required_block_granules() for DefaultAddressTraits.
@@ -150,7 +150,7 @@ TEST_CASE( "I166-B3: required_block_granules_t<LargeAddressTraits> uses 64-byte 
 }
 
 // =============================================================================
-// Issue #166 Tests Section C: address_traits::granules_to_bytes in persist_memory_manager.h
+// Address_traits::granules_to_bytes in persist_memory_manager.h
 // =============================================================================
 
 using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 166>;
@@ -220,7 +220,7 @@ TEST_CASE( "I166-C3: used_size() + free_size() consistent with total_size()", "[
 }
 
 // =============================================================================
-// Issue #166 Tests Section D: ValidPmmAddressTraits not duplicated in embedded configs
+// ValidPmmAddressTraits not duplicated in embedded configs
 // =============================================================================
 
 /// @brief SmallEmbeddedStaticConfig compiles without redundant static_assert — compile-time check.
@@ -271,7 +271,7 @@ TEST_CASE( "I166-D3: BasicConfig still validates ValidPmmAddressTraits for AT pa
 // main
 // =============================================================================
 
-// Issue #235: restore deprecation warnings
+// Restore deprecation warnings
 #if defined( __GNUC__ ) || defined( __clang__ )
 #pragma GCC diagnostic pop
 #elif defined( _MSC_VER )

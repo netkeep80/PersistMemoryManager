@@ -1,6 +1,6 @@
 /**
  * @file pmm/pallocator.h
- * @brief pallocator<T, ManagerT> — STL-compatible allocator for persistent address space (Issue #198, Phase 3.5).
+ * @brief pallocator<T, ManagerT> — STL-compatible allocator for persistent address space.
  *
  * Implements an allocator that satisfies std::allocator_traits requirements,
  * delegating allocation/deallocation to a PersistMemoryManager instance.
@@ -40,7 +40,7 @@
  * @see persist_memory_manager.h — PersistMemoryManager (static model)
  * @see pptr.h — pptr<T, ManagerT> (persistent pointer)
  * @see parray.h — parray<T, ManagerT> (persistent dynamic array with O(1) indexing)
- * @version 0.1 (Issue #198 — Phase 3.5: STL-compatible allocator)
+ * @version 0.1
  */
 
 #pragma once
@@ -53,7 +53,7 @@ namespace pmm
 {
 
 /**
- * @brief STL-compatible allocator backed by PersistMemoryManager (Issue #198, Phase 3.5).
+ * @brief STL-compatible allocator backed by PersistMemoryManager.
  *
  * pallocator<T, ManagerT> delegates memory allocation and deallocation to a
  * PersistMemoryManager, allowing STL containers to store their data in the

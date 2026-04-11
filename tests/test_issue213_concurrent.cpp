@@ -1,6 +1,6 @@
 /**
  * @file test_issue213_concurrent.cpp
- * @brief Concurrent allocation/deallocation tests (Issue #213, Phase 5.2).
+ * @brief Concurrent allocation/deallocation tests.
  *
  * Extends the thread safety tests with more stress scenarios:
  *  - Concurrent allocation with varying block sizes
@@ -10,7 +10,7 @@
  *  - Concurrent operations on typed containers (pstring, parray, pmap)
  *
  * @see docs/phase5_testing.md §5.2
- * @version 0.1 (Issue #213 — Phase 5.2: Extended test coverage)
+ * @version 0.1
  */
 
 #include "pmm_multi_threaded_heap.h"

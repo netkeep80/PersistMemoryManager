@@ -1,6 +1,6 @@
 /**
  * @file test_issue235_code_review.cpp
- * @brief Tests for Issue #235 code review improvements.
+ * @brief Tests: code review improvements.
  *
  * Covers:
  *   - typed_guard RAII scope-guard for pstring, parray, ppool
@@ -10,7 +10,7 @@
  * @see include/pmm/typed_guard.h
  * @see include/pmm/heap_storage.h
  * @see include/pmm/types.h
- * @version 0.1 (Issue #235)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

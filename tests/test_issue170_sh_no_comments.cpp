@@ -1,6 +1,6 @@
 /**
  * @file test_issue170_sh_no_comments.cpp
- * @brief Self-sufficiency test for pmm_no_comments.h (Issue #170).
+ * @brief Self-sufficiency test for pmm_no_comments.h.
  *
  * Verifies that the comment-stripped single-header file pmm_no_comments.h is
  * fully self-contained and functionally equivalent to the full pmm.h:

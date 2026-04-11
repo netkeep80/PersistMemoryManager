@@ -1,6 +1,6 @@
 /**
  * @file test_issue146_configs.cpp
- * @brief Тесты переосмысления конфигураций менеджеров ПАП (Issue #146).
+ * @brief Тесты переосмысления конфигураций менеджеров ПАП.
  *
  * Проверяет:
  *   - Корректность новых конфигураций из manager_configs.h:
@@ -13,7 +13,7 @@
  *
  * @see include/pmm/manager_configs.h
  * @see include/pmm/pmm_presets.h
- * @version 0.1 (Issue #146 — переосмысление конфигов)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -32,7 +32,7 @@
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
 
 // =============================================================================
-// Issue #146 Tests Section A: Static checks (compile-time validation)
+// Static checks (compile-time validation)
 // =============================================================================
 
 /// @brief kMinGranuleSize == 4 (размер слова архитектуры).
@@ -90,7 +90,7 @@ TEST_CASE( "I146-A5: EmbeddedStaticHeap pptr size == 4 bytes", "[test_issue146_c
 }
 
 // =============================================================================
-// Issue #146 Tests Section B: EmbeddedStaticHeap (StaticStorage, no heap)
+// EmbeddedStaticHeap (StaticStorage, no heap)
 // =============================================================================
 
 /// @brief EmbeddedStaticHeap<4096>: базовый жизненный цикл.
@@ -184,7 +184,7 @@ TEST_CASE( "I146-B4: EmbeddedStaticHeap<4096> multiple allocations", "[test_issu
 }
 
 // =============================================================================
-// Issue #146 Tests Section C: Verification of all preset lock policies
+// Verification of all preset lock policies
 // =============================================================================
 
 /// @brief Все пресеты имеют корректные политики блокировок.
@@ -227,7 +227,7 @@ TEST_CASE( "I146-C2: All presets use DefaultAddressTraits", "[test_issue146_conf
 }
 
 // =============================================================================
-// Issue #146 Tests Section D: Growth rate verification
+// Growth rate verification
 // =============================================================================
 
 /// @brief Конфигурации имеют корректные коэффициенты роста.
@@ -262,7 +262,7 @@ TEST_CASE( "I146-D1: All config grow ratios are correct", "[test_issue146_config
 }
 
 // =============================================================================
-// Issue #146 Tests Section E: EmbeddedStaticHeap preset via pmm_presets.h
+// EmbeddedStaticHeap preset via pmm_presets.h
 // =============================================================================
 
 /// @brief EmbeddedStaticHeap<8192> — использование пресета с нестандартным размером.

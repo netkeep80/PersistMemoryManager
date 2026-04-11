@@ -1,11 +1,11 @@
 /**
  * @file pmm/pmap.h
- * @brief pmap<_K,_V,ManagerT> — персистентный словарь на основе AVL-дерева (Issue #153, #196).
+ * @brief pmap<_K,_V,ManagerT> — персистентный словарь на основе AVL-дерева.
  *
  * Реализует шаблонный ассоциативный контейнер в персистентном адресном пространстве (ПАП).
  * Каждый узел словаря — это блок в ПАП, хранящий пару ключ-значение (_K, _V).
  * Узлы используют встроенные поля TreeNode (left_offset, right_offset, parent_offset,
- * avl_height) для организации AVL-дерева, как это делает pstringview (Issue #151).
+ * avl_height) для организации AVL-дерева, как это делает pstringview.
  *
  * Ключевые особенности:
  *   - Персистентный: гранульные индексы адресно-независимы при перезагрузке ПАП.
@@ -13,12 +13,12 @@
  *   - Встроенный AVL: узлы используют встроенные TreeNode-поля Block<AT> без
  *     дополнительных аллокаций структур дерева.
  *   - Не дублирует ключи: повторная вставка по существующему ключу обновляет значение.
- *   - Узлы НЕ блокируются навечно (в отличие от pstringview — Issue #155).
+ *   - Узлы НЕ блокируются навечно (в отличие от pstringview).
  *   - Тип ключа _K должен поддерживать operator< и operator==.
- *   - erase(key) — удаление узла по ключу с деаллокацией памяти (Issue #196).
- *   - size() — количество элементов за O(n) (Issue #196).
- *   - begin()/end() — итератор для обхода в порядке ключей (Issue #196).
- *   - clear() — удаление всех элементов с деаллокацией (Issue #196).
+ *   - erase(key) — удаление узла по ключу с деаллокацией памяти.
+ *   - size() — количество элементов за O(n).
+ *   - begin()/end() — итератор для обхода в порядке ключей.
+ *   - clear() — удаление всех элементов с деаллокацией.
  *
  * Пример использования:
  * @code
@@ -69,11 +69,11 @@
  *   Mgr::destroy();
  * @endcode
  *
- * @see pstringview.h — аналогичный тип с AVL-деревом (Issue #151)
- * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
+ * @see pstringview.h — аналогичный тип с AVL-деревом
+ * @see avl_tree_mixin.h — общие AVL-операции
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
  * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока)
- * @version 0.4 (Issue #196 — erase, size, iterator, clear)
+ * @version 0.4
  */
 
 #pragma once
@@ -93,7 +93,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap;
 // ─── pmap_node ────────────────────────────────────────────────────────────────
 
 /**
- * @brief Узел pmap — хранит пару ключ-значение в ПАП (Issue #153).
+ * @brief Узел pmap — хранит пару ключ-значение в ПАП.
  *
  * Каждый узел является отдельным блоком в ПАП. Встроенные поля TreeNode
  * (left_offset, right_offset, parent_offset, avl_height) используются для
@@ -111,7 +111,7 @@ template <typename _K, typename _V> struct pmap_node
 // ─── pmap ─────────────────────────────────────────────────────────────────────
 
 /**
- * @brief Персистентный ассоциативный контейнер (словарь) на основе AVL-дерева (Issue #153).
+ * @brief Персистентный ассоциативный контейнер (словарь) на основе AVL-дерева.
  *
  * Объект pmap сам по себе не хранится в ПАП — он является хелпером на стеке,
  * содержащим гранульный индекс корня AVL-дерева. Узлы словаря (pmap_node) хранятся
@@ -120,11 +120,11 @@ template <typename _K, typename _V> struct pmap_node
  * Особенности:
  *   - Вставка/поиск/удаление за O(log n).
  *   - Повторная вставка по существующему ключу обновляет значение.
- *   - erase(key) удаляет узел и освобождает память в ПАП (Issue #196).
- *   - size() возвращает количество элементов за O(n) (Issue #196).
- *   - begin()/end() — итератор для обхода в порядке ключей (Issue #196).
- *   - clear() — удаление всех элементов с деаллокацией (Issue #196).
- *   - Узлы НЕ блокируются навечно (Issue #155): в отличие от pstringview, узлы
+ *   - erase(key) удаляет узел и освобождает память в ПАП.
+ *   - size() возвращает количество элементов за O(n).
+ *   - begin()/end() — итератор для обхода в порядке ключей.
+ *   - clear() — удаление всех элементов с деаллокацией.
+ *   - Узлы НЕ блокируются навечно: в отличие от pstringview, узлы
  *     pmap могут быть освобождены после удаления из дерева.
  *
  * @tparam _K       Тип ключа. Должен поддерживать operator< и operator==.
@@ -200,7 +200,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         obj->key   = key;
         obj->value = val;
 
-        // Инициализируем AVL-поля нового узла (Issue #188: shared avl_init_node).
+        // Инициализируем AVL-поля нового узла.
         detail::avl_init_node( new_node );
 
         // Вставляем в AVL-дерево.
@@ -226,7 +226,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     bool contains( const _K& key ) const noexcept { return !_avl_find( key ).is_null(); }
 
     /**
-     * @brief Удалить узел по ключу (Issue #196).
+     * @brief Удалить узел по ключу.
      *
      * Находит узел с заданным ключом, удаляет его из AVL-дерева и
      * освобождает память блока в ПАП.
@@ -246,7 +246,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     }
 
     /**
-     * @brief Очистить словарь (удалить все элементы) (Issue #196).
+     * @brief Очистить словарь (удалить все элементы).
      *
      * Освобождает память всех узлов в ПАП.
      */
@@ -265,10 +265,10 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
      */
     void reset() noexcept { _root_idx = static_cast<index_type>( 0 ); }
 
-    // ─── Итератор (Issue #196) ───────────────────────────────────────────────
+    // ─── Итератор ───────────────────────────────────────────────
 
     /// @brief Итератор для обхода словаря в порядке ключей (in-order).
-    /// Issue #188: uses shared AvlInorderIterator template to eliminate duplication.
+    /// Uses shared AvlInorderIterator template to eliminate duplication.
     using iterator = detail::AvlInorderIterator<node_pptr>;
 
     /// @brief Начало итерации (самый левый узел = наименьший ключ).
@@ -317,7 +317,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
             []( node_pptr p ) -> node_type* { return ManagerT::template resolve<node_type>( p ); } );
     }
 
-    // Issue #188: _subtree_count and _clear_subtree replaced by shared
+    // _subtree_count and _clear_subtree replaced by shared
     // detail::avl_subtree_count and detail::avl_clear_subtree.
 };
 

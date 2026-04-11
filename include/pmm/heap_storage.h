@@ -1,6 +1,6 @@
 /**
  * @file pmm/heap_storage.h
- * @brief HeapStorage — динамический бэкенд хранилища ПАП (Issue #87 Phase 5).
+ * @brief HeapStorage — динамический бэкенд хранилища ПАП (: phase 5).
  *
  * Управляет динамически выделяемой областью памяти через `std::malloc` / `std::free`.
  * Поддерживает расширение (expand()) путём выделения нового буфера и копирования данных.
@@ -10,9 +10,8 @@
  *
  * @tparam AddressTraitsT Traits адресного пространства (из address_traits.h).
  *
- * @see plan_issue87.md §5 «Фаза 5: StorageBackend — HeapStorage»
  * @see storage_backend.h — концепт StorageBackend
- * @version 0.1 (Issue #87 Phase 5)
+ * @version 0.1
  */
 
 #pragma once
@@ -122,7 +121,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> class HeapStorage
         if ( additional_bytes == 0 )
             return _size > 0;
         // Grow by 25% or by additional_bytes, whichever is larger.
-        // Issue #235: for initial allocation from zero, use a minimum of 4096 bytes
+        // For initial allocation from zero, use a minimum of 4096 bytes
         // (or additional_bytes if larger) to avoid inefficient tiny allocations.
         static constexpr std::size_t kMinInitialSize = 4096;
         std::size_t                  growth =

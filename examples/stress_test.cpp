@@ -1,12 +1,11 @@
 /**
  * @file stress_test.cpp
- * @brief PersistMemoryManager stress test (updated #110)
+ * @brief PersistMemoryManager stress test
  *
  * Tests correctness and performance under:
  * - 100 000 sequential allocations
  * - 1 000 000 alternating allocate/deallocate operations
  *
- * Issue #110: uses new unified PersistMemoryManager<ConfigT, InstanceId> static API.
  * - All methods are static (Mgr::create(), Mgr::allocate(), etc.)
  * - p.resolve() — no argument needed (uses static manager resolve)
  */

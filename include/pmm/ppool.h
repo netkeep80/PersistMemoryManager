@@ -1,6 +1,6 @@
 /**
  * @file pmm/ppool.h
- * @brief ppool<T, ManagerT> — persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).
+ * @brief ppool<T, ManagerT> — persistent object pool with O(1) allocate/deallocate.
  *
  * Implements a pool of fixed-size objects in the persistent address space (PAP).
  * Objects are allocated from large chunks via a free-list, providing O(1)
@@ -47,7 +47,7 @@
  * @see pallocator.h — pallocator<T, ManagerT> (STL-compatible allocator)
  * @see persist_memory_manager.h — PersistMemoryManager (static model)
  * @see pptr.h — pptr<T, ManagerT> (persistent pointer)
- * @version 0.1 (Issue #199 — Phase 3.6: persistent object pool)
+ * @version 0.1
  */
 
 #pragma once
@@ -64,7 +64,7 @@ namespace pmm
 {
 
 /**
- * @brief Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).
+ * @brief Persistent object pool with O(1) allocate/deallocate.
  *
  * Allocates large chunks from the memory manager and subdivides them into
  * fixed-size, granule-aligned slots. Free slots are linked via an embedded
@@ -197,7 +197,7 @@ template <typename T, typename ManagerT> struct ppool
                 return nullptr;
         }
 
-        // Pop from free-list (Issue #188: shared resolve_granule_ptr).
+        // Pop from free-list.
         std::uint8_t* slot_raw =
             reinterpret_cast<std::uint8_t*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
                 ManagerT::backend().base_ptr(), _free_head_idx ) );
@@ -230,7 +230,7 @@ template <typename T, typename ManagerT> struct ppool
 
         std::uint8_t* slot_raw = reinterpret_cast<std::uint8_t*>( ptr );
 
-        // Compute the granule index of this slot (Issue #188: shared ptr_to_granule_idx).
+        // Compute the granule index of this slot.
         index_type slot_idx =
             detail::ptr_to_granule_idx<typename ManagerT::address_traits>( ManagerT::backend().base_ptr(), slot_raw );
 
@@ -249,7 +249,7 @@ template <typename T, typename ManagerT> struct ppool
      */
     void free_all() noexcept
     {
-        // Walk the chunk list and deallocate each chunk (Issue #188: shared resolve_granule_ptr).
+        // Walk the chunk list and deallocate each chunk.
         std::uint8_t* base      = ManagerT::backend().base_ptr();
         index_type    chunk_idx = _chunk_head_idx;
         while ( chunk_idx != static_cast<index_type>( 0 ) )
@@ -305,7 +305,7 @@ template <typename T, typename ManagerT> struct ppool
         std::uint8_t* chunk_raw = static_cast<std::uint8_t*>( raw );
         std::uint8_t* base      = ManagerT::backend().base_ptr();
 
-        // Compute chunk granule index (Issue #188: shared ptr_to_granule_idx).
+        // Compute chunk granule index.
         index_type chunk_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, chunk_raw );
 
         // Write chunk header: link to previous chunk head.

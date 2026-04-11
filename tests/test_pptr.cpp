@@ -1,13 +1,11 @@
 /**
  * @file test_pptr.cpp
- * @brief Тесты персистентного типизированного указателя pptr<T, ManagerT> (Issue #102 — новый API)
+ * @brief Тесты персистентного типизированного указателя pptr<T, ManagerT> (: — новый API)
  *
- * Issue #102: использует AbstractPersistMemoryManager через pmm_presets.h.
  *   - pptr<T, ManagerT> без ManagerT=void по умолчанию.
  *   - Разыменование через *p и p->field, не через p.resolve().
  *   - Нет operator*, operator->, get_at(), operator[].
  *   - Нет reallocate_typed() в новом API.
- * Issue #164: удалены избыточные методы pptr (get_tree_left и др.),
  *   используется tree_node() API для работы с узлами AVL-дерева.
  */
 
@@ -20,7 +18,7 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 
 TEST_CASE( "pptr_sizeof", "[test_pptr]" )
 {
-    // Issue #102: pptr<T, ManagerT> is 4 bytes (uint32_t granule index)
+    // Pptr<T, ManagerT> is 4 bytes (uint32_t granule index)
     REQUIRE( sizeof( Mgr::pptr<int> ) == 4 );
     REQUIRE( sizeof( Mgr::pptr<double> ) == 4 );
     REQUIRE( sizeof( Mgr::pptr<char> ) == 4 );
@@ -303,7 +301,7 @@ TEST_CASE( "pptr_deallocate_null", "[test_pptr]" )
 }
 
 /**
- * @brief Тест методов работы с узлом AVL-дерева через pptr::tree_node() (Issue #164).
+ * @brief Тест методов работы с узлом AVL-дерева через pptr::tree_node().
  *
  * Проверяет начальное состояние (нет связей), установку и чтение
  * левого/правого/родительского потомков дерева через tree_node() API.
@@ -358,7 +356,7 @@ TEST_CASE( "pptr_tree_node_links", "[test_pptr]" )
 }
 
 /**
- * @brief Тест высоты AVL-узла через pptr::tree_node() (Issue #164).
+ * @brief Тест высоты AVL-узла через pptr::tree_node().
  */
 TEST_CASE( "pptr_tree_node_height", "[test_pptr]" )
 {
@@ -390,7 +388,7 @@ TEST_CASE( "pptr_tree_node_height", "[test_pptr]" )
 }
 
 /**
- * @brief Тест методов дерева — получение веса блока (Issue #164).
+ * @brief Тест методов дерева — получение веса блока.
  */
 TEST_CASE( "pptr_tree_node_weight", "[test_pptr]" )
 {
@@ -410,7 +408,7 @@ TEST_CASE( "pptr_tree_node_weight", "[test_pptr]" )
 }
 
 /**
- * @brief Тест использования pptr для пользовательского AVL-дерева (Issue #164).
+ * @brief Тест использования pptr для пользовательского AVL-дерева.
  *
  * Строит простое бинарное дерево поиска из 5 узлов через tree_node() API,
  * проверяет корректность связей и высот.
@@ -508,7 +506,7 @@ TEST_CASE( "pptr_user_avl_tree", "[test_pptr]" )
 }
 
 /**
- * @brief Тест pptr::tree_node() — прямой доступ к TreeNode через ссылку (Issue #138, #164).
+ * @brief Тест pptr::tree_node() — прямой доступ к TreeNode через ссылку.
  *
  * Проверяет, что pptr::tree_node() возвращает ссылку на TreeNode в заголовке блока,
  * и что TreeNode-методы (get_left, set_left, get_right, set_right, get_parent,

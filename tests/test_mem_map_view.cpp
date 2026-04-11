@@ -1,12 +1,11 @@
 /**
  * @file test_mem_map_view.cpp
- * @brief Headless tests for MemMapView::update_snapshot() (Issue #116, #118).
+ * @brief Headless tests for MemMapView::update_snapshot().
  *
  * MemMapView now uses DemoMgr::for_each_block() to build a per-byte PixelKind
  * array for block-level pixel colouring. A logarithmic bytes-per-pixel slider
  * controls the zoom level.
  *
- * Issue #118: The pixel map is rendered as a 2D texture — pixels wrap into
  * multiple rows so that the map fills the available panel width automatically.
  *
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
@@ -181,7 +180,7 @@ TEST_CASE( "block_pixel_map_covers_total", "[test_mem_map_view]" )
 }
 
 /**
- * @brief Issue #118: 2D layout arithmetic is consistent.
+ * @brief: 2D layout arithmetic is consistent.
  *
  * Verifies that after update_snapshot() the total_bytes() value allows the
  * 2D pixel-map layout to produce more than one row when bytes_per_pixel == 1

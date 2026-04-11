@@ -1,8 +1,7 @@
 /**
  * @file test_stress_auto_grow.cpp
- * @brief Стресс-тест автоматического роста (Issue #30, обновлено #110 — статический API)
+ * @brief Стресс-тест автоматического роста
  *
- * Issue #110: использует PersistMemoryManager<ConfigT, InstanceId> через pmm_presets.h.
  * Каждый тест использует уникальный InstanceId для изоляции бэкенда.
  * Примечание: reallocate_typed() удалён из нового API.
  *   Тест 4 заменён на "large alloc triggers expand".

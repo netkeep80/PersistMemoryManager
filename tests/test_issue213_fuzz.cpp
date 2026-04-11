@@ -1,6 +1,6 @@
 /**
  * @file test_issue213_fuzz.cpp
- * @brief Fuzz-style testing of the allocator (Issue #213, Phase 5.2).
+ * @brief Fuzz-style testing of the allocator.
  *
  * Uses deterministic pseudo-random sequences to exercise the allocator
  * with diverse operation patterns. This approach catches bugs that
@@ -14,7 +14,7 @@
  *       in tests/fuzz_allocator.cpp (built separately with -fsanitize=fuzzer).
  *
  * @see docs/phase5_testing.md §5.2
- * @version 0.1 (Issue #213 — Phase 5.2: Extended test coverage)
+ * @version 0.1
  */
 
 #include "pmm/pmm_presets.h"

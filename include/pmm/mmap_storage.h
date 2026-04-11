@@ -1,6 +1,6 @@
 /**
  * @file pmm/mmap_storage.h
- * @brief MMapStorage — бэкенд хранилища через отображение файла (Issue #87 Phase 5).
+ * @brief MMapStorage — бэкенд хранилища через отображение файла (: phase 5).
  *
  * Отображает файл в память через `mmap` (POSIX) или `MapViewOfFile` (Windows).
  * Обеспечивает персистентность данных между запусками приложения.
@@ -12,9 +12,8 @@
  *
  * @tparam AddressTraitsT Traits адресного пространства (из address_traits.h).
  *
- * @see plan_issue87.md §5 «Фаза 5: StorageBackend — MMapStorage»
  * @see storage_backend.h — концепт StorageBackend
- * @version 0.1 (Issue #87 Phase 5)
+ * @version 0.1
  */
 
 #pragma once
@@ -127,7 +126,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
     std::size_t total_size() const noexcept { return _size; }
 
     /**
-     * @brief Расширить отображённый файл на additional_bytes (Issue #43 Phase 2.3).
+     * @brief Расширить отображённый файл на additional_bytes (: phase 2.3).
      *
      * Расширяет файл через ftruncate/SetEndOfFile, затем пересоздаёт отображение.
      * После expand() base_ptr() возвращает новый адрес — все ранее полученные
@@ -238,7 +237,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
         }
     }
 
-    /// Issue #43 Phase 2.3: expand the mapped file to new_size bytes.
+    /// Expand the mapped file to new_size bytes.
     bool expand_impl( std::size_t new_size ) noexcept
     {
         // Flush and unmap current view
@@ -351,7 +350,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
         }
     }
 
-    /// Issue #43 Phase 2.3: expand the mapped file to new_size bytes.
+    /// Expand the mapped file to new_size bytes.
     bool expand_impl( std::size_t new_size ) noexcept
     {
         // Unmap current mapping

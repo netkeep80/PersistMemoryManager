@@ -1,6 +1,6 @@
 /**
  * @file pmm/pptr.h
- * @brief pptr<T, ManagerT> — персистентный типизированный указатель (Issue #102, #129).
+ * @brief pptr<T, ManagerT> — персистентный типизированный указатель.
  *
  * pptr<T, ManagerT> хранит гранульный индекс вместо адреса,
  * что делает его адресно-независимым и пригодным для персистентных хранилищ:
@@ -9,10 +9,10 @@
  *   - Запрет адресной арифметики (pptr++ запрещён)
  *   - Index 0 означает null
  *
- * Поддерживаемые режимы разыменования (Issue #102, #108):
+ * Поддерживаемые режимы разыменования:
  *   - Статическая модель: `*p`, `p->field` — через статический метод менеджера
  *
- * Доступ к узлу AVL-дерева (Issue #138):
+ * Доступ к узлу AVL-дерева:
  *   - `p.tree_node()` — прямой доступ к TreeNode через ссылку
  *
  * Пример использования с PersistMemoryManager (статическая модель):
@@ -29,9 +29,9 @@
  *   MyMgr::destroy();
  * @endcode
  *
- * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
- * @see tree_node.h — TreeNode<A> с публичными методами (Issue #138)
- * @version 0.9 (Issue #211 — Phase 4.4: byte_offset() for pptr ↔ byte offset conversion)
+ * @see persist_memory_manager.h — PersistMemoryManager (статическая модель)
+ * @see tree_node.h — TreeNode<A> с публичными методами
+ * @version 0.9
  */
 
 #pragma once
@@ -73,7 +73,7 @@ struct manager_index_type<ManagerT>
  * Хранит гранульный индекс пользовательских данных, а не адрес.
  * Адресно-независим: корректно загружается из файла по другому базовому адресу.
  *
- * Тип индекса определяется через `ManagerT::address_traits::index_type` (Issue #110).
+ * Тип индекса определяется через `ManagerT::address_traits::index_type`.
  *
  * @tparam T Тип данных, на который указывает pptr.
  * @tparam ManagerT Тип менеджера (обязателен, void не допускается).
@@ -121,7 +121,7 @@ class pptr
     /// @brief Получить гранульный индекс (для сохранения/восстановления).
     constexpr index_type offset() const noexcept { return _idx; }
 
-    /// @brief Получить байтовое смещение из гранульного индекса (Issue #211, Phase 4.4).
+    /// @brief Получить байтовое смещение из гранульного индекса.
     ///
     /// Возвращает `offset() * granule_size`. Упрощает интеграцию с внешними системами,
     /// работающими с байтовыми адресами (например, BinDiffSynchronizer pam_adapter).
@@ -137,7 +137,7 @@ class pptr
     constexpr bool operator!=( const pptr& other ) const noexcept { return _idx != other._idx; }
 
     /**
-     * @brief Упорядочивание персистентных указателей для использования как ключ в pmap (Issue #184).
+     * @brief Упорядочивание персистентных указателей для использования как ключ в pmap.
      *
      * Сравнивает указываемые объекты через `*this < *other`, если оба указателя не null.
      * Null pptr считается меньше любого ненулевого указателя.
@@ -147,7 +147,7 @@ class pptr
      */
     bool operator<( const pptr& other ) const noexcept
     {
-        // Issue #235: compile-time check — T must support operator< for pptr ordering.
+        // Compile-time check — T must support operator< for pptr ordering.
         static_assert(
             requires( const T& a, const T& b ) {
                 { a < b } -> std::convertible_to<bool>;
@@ -200,10 +200,10 @@ class pptr
      */
     T* resolve() const noexcept { return ManagerT::template resolve<T>( *this ); }
 
-    // ─── Доступ к узлу AVL-дерева (Issue #138) ────────────────────────────────
+    // ─── Доступ к узлу AVL-дерева ────────────────────────────────
 
     /**
-     * @brief Получить ссылку на узел AVL-дерева в заголовке блока (Issue #138).
+     * @brief Получить ссылку на узел AVL-дерева в заголовке блока.
      *
      * Позволяет работать с узлом дерева напрямую через методы TreeNode:
      * get_left(), set_left(), get_right(), set_right(), get_parent(), set_parent(),
@@ -224,7 +224,7 @@ class pptr
 };
 
 // pptr<T, ManagerT> хранит только гранульный индекс — ManagerT не хранится.
-// Размер зависит от ManagerT::address_traits::index_type (Issue #110).
+// Размер зависит от ManagerT::address_traits::index_type.
 // Для DefaultAddressTraits (uint32_t) размер равен 4 байтам.
 
 } // namespace pmm

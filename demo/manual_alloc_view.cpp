@@ -2,7 +2,6 @@
  * @file manual_alloc_view.cpp
  * @brief Implementation of ManualAllocView: step-by-step manual alloc/free panel.
  *
- * Issue #65: provides "Alloc" and "Free" buttons so the user can manually test the
  * memory manager one operation at a time while watching the AVL tree and memory map.
  *
  * DemoMgr is a fully static class — all PMM calls use DemoMgr:: static methods.

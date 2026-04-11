@@ -1,9 +1,9 @@
 /**
  * @file test_issue162_deduplication.cpp
- * @brief Тесты дедупликации AVL-поиска в pstringview и pmap (Issue #162).
+ * @brief Тесты дедупликации AVL-поиска в pstringview и pmap.
  *
  * Проверяет:
- *   - detail::avl_find() — новая обобщённая функция поиска в AVL-дереве (Issue #162)
+ *   - detail::avl_find() — новая обобщённая функция поиска в AVL-дереве
  *   - pstringview::_avl_find() делегирует в detail::avl_find()
  *   - pmap::_avl_find() делегирует в detail::avl_find()
  *   - Корректность поиска в pstringview после рефакторинга
@@ -11,10 +11,10 @@
  *   - Поиск несуществующих ключей возвращает null pptr
  *   - Поиск в пустом дереве возвращает null pptr
  *
- * @see include/pmm/avl_tree_mixin.h — detail::avl_find() (Issue #162)
- * @see include/pmm/pstringview.h    — pstringview (Issue #151)
- * @see include/pmm/pmap.h           — pmap (Issue #153)
- * @version 0.1 (Issue #162 — дедупликация _avl_find)
+ * @see include/pmm/avl_tree_mixin.h — detail::avl_find()
+ * @see include/pmm/pstringview.h    — pstringview
+ * @see include/pmm/pmap.h           — pmap
+ * @version 0.1
  */
 
 #include "pmm/avl_tree_mixin.h"
@@ -38,7 +38,7 @@ using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 162>;
 using TestPsv = TestMgr::pstringview;
 
 // =============================================================================
-// Issue #162 Tests Section A: pstringview search correctness after refactoring
+// Pstringview search correctness after refactoring
 // =============================================================================
 
 /// @brief pstringview::intern() finds an existing string via detail::avl_find().
@@ -128,7 +128,7 @@ TEST_CASE( "I162-A4: pstringview: all inserted strings are findable", "[test_iss
 }
 
 // =============================================================================
-// Issue #162 Tests Section B: pmap search correctness after refactoring
+// Pmap search correctness after refactoring
 // =============================================================================
 
 /// @brief pmap: find() locates an inserted key.
@@ -240,7 +240,7 @@ TEST_CASE( "I162-B5: pmap::contains() consistent with find()", "[test_issue162_d
 }
 
 // =============================================================================
-// Issue #162 Tests Section C: avl_find() function template in avl_tree_mixin.h
+// Avl_find() function template in avl_tree_mixin.h
 // =============================================================================
 
 /// @brief detail::avl_find() is a template in avl_tree_mixin.h — compile-time check.

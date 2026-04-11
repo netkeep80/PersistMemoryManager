@@ -1,8 +1,8 @@
 /**
  * @file test_issue202_logging_hooks.cpp
- * @brief Tests for logging hooks API (Issue #202, Phase 4.2).
+ * @brief Tests for logging hooks API.
  *
- * Verifies the key requirements from Issue #202 Phase 4.2:
+ * Verifies the key requirements from this feature:
  *  1. NoLogging policy compiles and has zero overhead (default for all presets).
  *  2. StderrLogging policy compiles and produces output.
  *  3. Custom logging policy receives on_allocation_failure() on OOM.
@@ -21,7 +21,7 @@
  *
  * @see include/pmm/logging_policy.h — logging policies
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
- * @version 0.1 (Issue #202 — Phase 4.2: logging hooks)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

@@ -1,8 +1,8 @@
 /**
  * @file test_issue198_pallocator.cpp
- * @brief Tests for pallocator — STL-compatible allocator for persistent address space (Issue #198, Phase 3.5).
+ * @brief Tests for pallocator — STL-compatible allocator for persistent address space.
  *
- * Verifies the key requirements from Issue #198 Phase 3.5:
+ * Verifies the key requirements from this feature:
  *  1. pallocator satisfies std::allocator_traits requirements.
  *  2. allocate(n) returns a valid pointer to n elements in PAP.
  *  3. deallocate(p, n) frees the allocated memory.
@@ -20,7 +20,7 @@
  *
  * @see include/pmm/pallocator.h — pallocator
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
- * @version 0.1 (Issue #198 — Phase 3.5: STL-compatible allocator)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

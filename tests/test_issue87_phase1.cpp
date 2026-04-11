@@ -1,4 +1,4 @@
-// Issue #235: suppress deprecation warnings — this test deliberately exercises deprecated functions.
+// Suppress deprecation warnings — this test deliberately exercises deprecated functions.
 #if defined( __GNUC__ ) || defined( __clang__ )
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -9,7 +9,7 @@
 
 /**
  * @file test_issue87_phase1.cpp
- * @brief Тесты Phase 1: AddressTraits<IndexType, GranuleSize> (Issue #87).
+ * @brief Тесты Phase 1: AddressTraits<IndexType, GranuleSize>.
  *
  * Проверяет:
  *  - Корректность static-полей для 8/16/32/64-bit адресации.
@@ -19,8 +19,7 @@
  *  - Стандартные алиасы: SmallAddressTraits, LargeAddressTraits.
  *
  * @see include/pmm/address_traits.h
- * @see plan_issue87.md §5 «Фаза 1: AddressTraits»
- * @version 0.1 (Issue #87 Phase 1)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -220,10 +219,10 @@ TEST_CASE( "P1-E: DefaultAddressTraits matches current constants", "[test_issue8
 
 // ─── P1-F: Разнообразные размеры гранул ─────────────────────────────────────
 
-/// @brief Проверяем, что AddressTraits работает с разными степенями двойки (Issue #146: min 4 bytes).
+/// @brief Проверяем, что AddressTraits работает с разными степенями двойки.
 TEST_CASE( "P1-F: Various power-of-2 granule sizes (1, 4, 32, 512)", "[test_issue87_phase1]" )
 {
-    // 4-байтная гранула — минимальный допустимый размер (Issue #146: kMinGranuleSize = 4)
+    // 4-байтная гранула — минимальный допустимый размер (kMinGranuleSize = 4)
     using A4 = pmm::AddressTraits<std::uint32_t, 4>;
     static_assert( A4::granule_size == 4 );
     REQUIRE( A4::bytes_to_granules( 4 ) == 1 );
@@ -247,7 +246,7 @@ TEST_CASE( "P1-F: Various power-of-2 granule sizes (1, 4, 32, 512)", "[test_issu
 // main
 // =============================================================================
 
-// Issue #235: restore deprecation warnings
+// Restore deprecation warnings
 #if defined( __GNUC__ ) || defined( __clang__ )
 #pragma GCC diagnostic pop
 #elif defined( _MSC_VER )

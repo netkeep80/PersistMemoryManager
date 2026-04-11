@@ -337,9 +337,9 @@ static bool bootstrap_forest_registry_unlocked() noexcept
     return create_forest_registry_root_unlocked( 0 );
 }
 
-// ─── Bootstrap: invariant verification (Issue #241) ───────────────────────────
+// ─── Bootstrap: invariant verification ───────────────────────────
 
-/// @brief Verify that all bootstrap invariants hold (Issue #241).
+/// @brief Verify that all bootstrap invariants hold.
 static bool validate_bootstrap_invariants_unlocked() noexcept
 {
     if ( !_initialized )
@@ -458,7 +458,7 @@ static void for_each_free_block_inorder( const std::uint8_t* base, const detail:
                                          index_type node_idx, int depth, Callback&& callback ) noexcept
 {
     using BlockState = BlockStateBase<address_traits>;
-    // Issue #146: use address_traits::granule_size for correct byte offset computations.
+    // Use address_traits::granule_size for correct byte offset computations.
     static constexpr std::size_t kGranSz = address_traits::granule_size;
     if ( node_idx == address_traits::no_block )
         return;

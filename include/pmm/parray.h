@@ -1,6 +1,6 @@
 /**
  * @file pmm/parray.h
- * @brief parray<T, ManagerT> — persistent dynamic array with O(1) random access (Issue #195, Phase 3.2).
+ * @brief parray<T, ManagerT> — persistent dynamic array with O(1) random access.
  *
  * Implements a dynamic array in the persistent address space (PAP).
  * Provides O(1) indexed access via a contiguous data block, similar to std::vector.
@@ -51,7 +51,7 @@
  * @see pstring.h  — pstring<ManagerT> (mutable persistent string)
  * @see persist_memory_manager.h — PersistMemoryManager (static model)
  * @see pptr.h — pptr<T, ManagerT> (persistent pointer)
- * @version 0.1 (Issue #195 — Phase 3.2: persistent array with O(1) indexing)
+ * @version 0.1
  */
 
 #pragma once
@@ -68,7 +68,7 @@ namespace pmm
 {
 
 /**
- * @brief Persistent dynamic array with O(1) random access (Issue #195, Phase 3.2).
+ * @brief Persistent dynamic array with O(1) random access.
  *
  * Stores a header (size, capacity, data block index) in PAP.
  * Element data is stored in a separate contiguous block allocated via the manager.
@@ -386,7 +386,7 @@ template <typename T, typename ManagerT> struct parray
     // --- Internal helpers -------------------------------------------------------
 
     /// @brief Resolve the granule index to a raw pointer to the data block.
-    /// Issue #188: delegates to shared resolve_granule_ptr.
+    /// Delegates to shared resolve_granule_ptr.
     T* resolve_data() const noexcept
     {
         return reinterpret_cast<T*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
@@ -425,7 +425,7 @@ template <typename T, typename ManagerT> struct parray
         if ( new_raw == nullptr )
             return false;
 
-        // Compute new index (Issue #188: shared ptr_to_granule_idx).
+        // Compute new index.
         std::uint8_t* base        = ManagerT::backend().base_ptr();
         index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
@@ -437,7 +437,7 @@ template <typename T, typename ManagerT> struct parray
                 std::memcpy( new_raw, old_data, static_cast<std::size_t>( _size ) * sizeof( T ) );
         }
 
-        // Free old block (Issue #188: shared resolve_granule_ptr).
+        // Free old block.
         if ( _data_idx != static_cast<index_type>( 0 ) )
             ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 

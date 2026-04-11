@@ -1,6 +1,6 @@
 /**
  * @file test_issue179_deduplication.cpp
- * @brief Tests for code-deduplication refactoring in Issue #179.
+ * @brief Tests for code-deduplication refactoring.
  *
  * Verifies:
  *   - block_raw_ptr_from_pptr() and block_raw_mut_ptr_from_pptr() helpers work correctly.
@@ -11,12 +11,12 @@
  *   - tree_node() works correctly after refactoring.
  *   - Null pptr and uninitialized manager guard behavior is unchanged.
  *   - make_pptr_from_raw() helper: allocate_typed, allocate_typed(count), and
- *     create_typed return pptr<T> that resolves to the allocated data (Issue #179).
+ *     create_typed return pptr<T> that resolves to the allocated data.
  *   - find_block_from_user_ptr() helper: lock_block_permanent and is_permanently_locked
- *     work correctly via the new shared prologue helper (Issue #179).
+ *     work correctly via the new shared prologue helper.
  *
  * @see include/pmm/persist_memory_manager.h
- * @version 0.2 (Issue #179 -- make_pptr_from_raw and find_block_from_user_ptr helpers)
+ * @version 0.2
  */
 
 #include "pmm/manager_configs.h"
@@ -35,7 +35,7 @@
 using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 179>;
 
 // =============================================================================
-// Issue #179 Tests Section A: null/uninitialized guard behavior unchanged
+// Null/uninitialized guard behavior unchanged
 // =============================================================================
 
 /// @brief get_tree_X methods return 0 for null pptr (guard not changed by refactoring).
@@ -74,7 +74,7 @@ TEST_CASE( "I179-A2: set_tree_X are no-ops for null pptr", "[test_issue179_dedup
 }
 
 // =============================================================================
-// Issue #179 Tests Section B: get/set round-trip on a real allocated block
+// Get/set round-trip on a real allocated block
 // =============================================================================
 
 /// @brief get_tree_left_offset / set_tree_left_offset round-trip.
@@ -173,7 +173,7 @@ TEST_CASE( "I179-B5: height round-trip", "[test_issue179_deduplication]" )
 }
 
 // =============================================================================
-// Issue #179 Tests Section C: tree_node() still works after refactoring
+// Tree_node() still works after refactoring
 // =============================================================================
 
 /// @brief tree_node() correctly gives access to block AVL fields.
@@ -199,7 +199,7 @@ TEST_CASE( "I179-C1: tree_node() and get_tree_X agree after refactoring", "[test
 }
 
 // =============================================================================
-// Issue #179 Tests Section D: functional allocation / AVL tree still works
+// Functional allocation / AVL tree still works
 // =============================================================================
 
 /// @brief Full allocate/deallocate cycle works after refactoring.
@@ -226,7 +226,7 @@ TEST_CASE( "I179-D1: allocate/deallocate cycle works", "[test_issue179_deduplica
 }
 
 // =============================================================================
-// Issue #179 Tests Section E: make_pptr_from_raw helper (via typed allocation API)
+// Make_pptr_from_raw helper (via typed allocation API)
 // =============================================================================
 
 /// @brief allocate_typed<T>() pptr resolves to the same address as the raw allocation.
@@ -288,7 +288,7 @@ TEST_CASE( "I179-E3: create_typed<T>(args) resolves and constructs value", "[tes
 }
 
 // =============================================================================
-// Issue #179 Tests Section F: find_block_from_user_ptr helper (via lock API)
+// Find_block_from_user_ptr helper (via lock API)
 // =============================================================================
 
 /// @brief lock_block_permanent and is_permanently_locked work via find_block_from_user_ptr.

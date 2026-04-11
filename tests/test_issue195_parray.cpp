@@ -1,8 +1,8 @@
 /**
  * @file test_issue195_parray.cpp
- * @brief Tests for parray — persistent dynamic array with O(1) indexing (Issue #195, Phase 3.2).
+ * @brief Tests for parray — persistent dynamic array with O(1) indexing.
  *
- * Verifies the key requirements from Issue #195 Phase 3.2:
+ * Verifies the key requirements from this feature:
  *  1. parray can be created in persistent address space via create_typed<parray<T>>().
  *  2. push_back() adds elements, with reallocation when capacity is exceeded.
  *  3. at(i) returns a pointer to the i-th element with O(1) access.
@@ -21,7 +21,7 @@
  *
  * @see include/pmm/parray.h — parray
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
- * @version 0.1 (Issue #195 — Phase 3.2: persistent array with O(1) indexing)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

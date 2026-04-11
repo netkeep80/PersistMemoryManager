@@ -18,6 +18,6 @@ pmm_add_example(stress_test      stress_test.cpp)
 # ─── Примеры Фазы 6 ───────────────────────────────────────────────────────────
 pmm_add_example(pmm_example_benchmark benchmark.cpp)
 
-# ─── Пример нового API (Issue #97) ────────────────────────────────────────────
+# ─── Пример нового API ────────────────────────────────────────────
 add_executable(new_api_usage new_api_usage.cpp)
 target_link_libraries(new_api_usage PRIVATE pmm)

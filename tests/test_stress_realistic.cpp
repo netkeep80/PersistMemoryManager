@@ -1,8 +1,7 @@
 /**
  * @file test_stress_realistic.cpp
- * @brief Реалистичный стресс-тест PersistMemoryManager (Issue #20, обновлено #102)
+ * @brief Реалистичный стресс-тест PersistMemoryManager
  *
- * Issue #102: использует AbstractPersistMemoryManager через pmm_presets.h.
  */
 
 #include "pmm_single_threaded_heap.h"

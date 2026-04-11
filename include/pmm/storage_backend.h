@@ -1,6 +1,6 @@
 /**
  * @file pmm/storage_backend.h
- * @brief StorageBackend — концепт бэкенда хранилища ПАП (Issue #87 Phase 5, #129).
+ * @brief StorageBackend — концепт бэкенда хранилища ПАП (: phase 5, #129).
  *
  * Определяет C++20 концепт `StorageBackendConcept<Backend>`,
  * которому должны соответствовать все реализации бэкендов:
@@ -14,8 +14,7 @@
  *   - `bool     expand(size_t)`     — расширить область на указанное число байт
  *   - `bool     owns_memory() const`— true, если бэкенд владеет памятью и освободит её
  *
- * @see plan_issue87.md §5 «Фаза 5: StorageBackend — три бэкенда»
- * @version 0.2 (Issue #129 — переход на C++20 концепты)
+ * @version 0.2
  */
 
 #pragma once

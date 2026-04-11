@@ -2,12 +2,11 @@
  * @file mem_map_view.cpp
  * @brief Implementation of MemMapView: PMM block-level pixel-map widget.
  *
- * Uses DemoMgr::for_each_block() (Issue #116) to iterate over all blocks and
+ * Uses DemoMgr::for_each_block() to iterate over all blocks and
  * build a per-byte PixelKind array, then downsamples to pixels for display.
  *
  * A logarithmic (power-of-2) slider controls how many bytes each pixel covers.
  *
- * Issue #118: Pixel map rendered as a 2D texture — pixels wrap into multiple
  * rows so that the map fills the available panel width automatically.
  * The number of pixels per row equals floor(panel_width / pixel_size).
  * Row count = ceil(total_pixels / pixels_per_row).
@@ -130,7 +129,7 @@ void MemMapView::render_pixel_map( float map_width )
     if ( num_pixels == 0 )
         return;
 
-    // Issue #118: 2D texture layout.
+    // 2D texture layout.
     // Each pixel is a square of side px_size.  Pixels wrap into rows so the
     // map fills the available width.  The number of columns = floor(width / px_size).
     const float       px_size        = pixel_size_;
@@ -202,7 +201,7 @@ void MemMapView::render()
         ImGui::Text( "= %zu B", bytes_per_pixel_ );
     }
 
-    // ── Pixel size slider (Issue #118: 2D texture, square pixel side) ────────
+    // ── Pixel size slider ────────
     {
         ImGui::SetNextItemWidth( 200.0f );
         ImGui::SliderFloat( "Pixel size (px)", &pixel_size_, 1.0f, 16.0f, "%.0f" );
@@ -210,7 +209,7 @@ void MemMapView::render()
 
     ImGui::Spacing();
 
-    // ── Pixel map (Issue #118: 2D texture wrapping into rows) ─────────────────
+    // ── Pixel map ─────────────────
     float map_width = ImGui::GetContentRegionAvail().x;
     render_pixel_map( map_width );
 

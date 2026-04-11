@@ -1,6 +1,6 @@
 /**
  * @file pmm/pstringview.h
- * @brief pstringview<ManagerT> — персистентная строка только для чтения с интернированием (Issue #151, #184).
+ * @brief pstringview<ManagerT> — персистентная строка только для чтения с интернированием.
  *
  * Реализует хранение строк в персистентном адресном пространстве (ПАП) с гарантией
  * уникальности: одна и та же строка хранится в ПАП ровно один раз.
@@ -9,10 +9,10 @@
  *   - Read-only: символьные данные никогда не изменяются после создания.
  *   - Интернирование: одинаковые строки используют одно и то же хранилище.
  *     Два pstringview с одинаковым содержимым указывают на один и тот же блок.
- *   - Оптимизированное хранение (Issue #184): длина и строковые данные хранятся
+ *   - Оптимизированное хранение: длина и строковые данные хранятся
  *     в одном блоке ПАП вместо двух. Это существенно экономит память и ускоряет
  *     работу pmap<pptr<pstringview>, _Tvalue>.
- *   - Блокировка блоков: блоки pstringview блокируются через lock_block_permanent() —
+ *   - Блокировка блоков: блоки pstringview блокируются через lock_block_permanent()
  *     они не могут быть освобождены через deallocate().
  *   - Словарь: AVL-дерево pstringview-узлов растёт в течение жизни менеджера,
  *     экономя память за счёт дедупликации строковых констант.
@@ -41,11 +41,11 @@
  *   Mgr::destroy();
  * @endcode
  *
- * @see persist_memory_manager.h — PersistMemoryManager (статическая модель, Issue #110)
+ * @see persist_memory_manager.h — PersistMemoryManager (статическая модель)
  * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
- * @see avl_tree_mixin.h — общие AVL-операции (Issue #155)
- * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока, Issue #87, #138)
- * @version 0.7 (Issue #184 — оптимизация: строка хранится в одном блоке вместо двух)
+ * @see avl_tree_mixin.h — общие AVL-операции
+ * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока)
+ * @version 0.7
  */
 
 #pragma once
@@ -67,9 +67,9 @@ template <typename ManagerT> struct pstringview;
 // ─── pstringview ─────────────────────────────────────────────────────────────
 
 /**
- * @brief Персистентная интернированная read-only строка (Issue #151, #184).
+ * @brief Персистентная интернированная read-only строка.
  *
- * Хранит длину и строковые данные непосредственно в блоке (Issue #184).
+ * Хранит длину и строковые данные непосредственно в блоке.
  * Оптимизация: вместо двух блоков (pstringview + char[]) используется один блок,
  * содержащий длину и строку. Это существенно экономит память и ускоряет
  * работу pmap<pptr<pstringview>, _Tvalue>.
@@ -129,7 +129,7 @@ template <typename ManagerT> struct pstringview
     // ─── Методы доступа ──────────────────────────────────────────────────────
 
     /// @brief Получить raw C-строку. Действителен, пока менеджер инициализирован.
-    /// Issue #184: строка хранится непосредственно в блоке после поля length.
+    /// Строка хранится непосредственно в блоке после поля length.
     const char* c_str() const noexcept { return str; }
 
     /// @brief Длина строки (без нулевого терминатора).
@@ -175,7 +175,7 @@ template <typename ManagerT> struct pstringview
     /**
      * @brief Интернировать строку s: найти существующий pstringview или создать новый.
      *
-     * Выполняет поиск в AVL-дереве по лексикографическому ключу. Если строка найдена —
+     * Выполняет поиск в AVL-дереве по лексикографическому ключу. Если строка найдена
      * возвращает существующий pptr. Если нет — создаёт новый pstringview-блок, блокирует
      * его навечно и вставляет в AVL-дерево.
      *
@@ -229,7 +229,7 @@ template <typename ManagerT> struct pstringview
         // Не найдено — создаём новый объект pstringview.
         auto len = static_cast<std::uint32_t>( std::strlen( s ) );
 
-        // Issue #184: выделяем один блок для pstringview + строковых данных.
+        // Выделяем один блок для pstringview + строковых данных.
         // Размер = offsetof(pstringview, str) + len + 1 (null-terminator).
         // Используем offsetof для корректного вычисления без учёта str[1].
         std::size_t alloc_size = offsetof( pstringview, str ) + static_cast<std::size_t>( len ) + 1;
@@ -239,7 +239,7 @@ template <typename ManagerT> struct pstringview
         if ( raw == nullptr )
             return psview_pptr();
 
-        // Создаём pptr вручную из raw указателя (Issue #188: shared ptr_to_granule_idx).
+        // Создаём pptr вручную из raw указателя.
         std::uint8_t* base = ManagerT::backend().base_ptr();
         psview_pptr   new_node( detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, raw ) );
 
@@ -248,10 +248,10 @@ template <typename ManagerT> struct pstringview
         // Копируем строку включая null-terminator.
         std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
 
-        // Инициализируем AVL-поля нового узла (Issue #188: shared avl_init_node).
+        // Инициализируем AVL-поля нового узла.
         detail::avl_init_node( new_node );
 
-        // Блокируем блок pstringview навечно (Issue #151, Issue #126).
+        // Блокируем блок pstringview навечно.
         ManagerT::lock_block_permanent( obj );
 
         // Вставляем в AVL-дерево.

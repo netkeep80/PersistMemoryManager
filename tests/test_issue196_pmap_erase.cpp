@@ -1,8 +1,8 @@
 /**
  * @file test_issue196_pmap_erase.cpp
- * @brief Tests for pmap erase(), size(), iterator, clear() (Issue #196, Phase 3.3).
+ * @brief Tests for pmap erase(), size(), iterator, clear().
  *
- * Verifies the key requirements from Issue #196 / Phase 3.3:
+ * Verifies the key requirements from this feature:
  *  1. pmap::erase(key) removes a node by key and deallocates its memory.
  *  2. pmap::size() returns the number of elements.
  *  3. pmap::begin()/end() iterates in key order (in-order traversal).
@@ -12,7 +12,7 @@
  *
  * @see include/pmm/pmap.h — pmap<_K,_V,ManagerT>
  * @see include/pmm/avl_tree_mixin.h — avl_remove()
- * @version 0.1 (Issue #196 — erase, size, iterator, clear)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

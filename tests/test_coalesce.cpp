@@ -1,8 +1,7 @@
 /**
  * @file test_coalesce.cpp
- * @brief Тесты слияния соседних свободных блоков (Issue #110 — новый API)
+ * @brief Тесты слияния соседних свободных блоков (: — новый API)
  *
- * Issue #110: использует AbstractPersistMemoryManager через pmm_presets.h.
  *   - Все операции через экземпляр менеджера.
  *   - Статистика через block_count(), free_block_count(), alloc_block_count().
  */

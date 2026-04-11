@@ -2,10 +2,7 @@
  * @file avl_tree_view.cpp
  * @brief Implementation of AvlTreeView: AVL free-block tree panel.
  *
- * Issue #65: Renders free-block information from the PMM manager.
- * Issue #116: Uses DemoMgr::for_each_free_block() to iterate over all free
  * blocks in-order (ascending size) and build an offset-to-index map.
- * Issue #118: Renders the free-block AVL tree as a visual tree using ImGui
  * TreeNode/TreePop, starting from the root node (parent_offset == -1) and
  * recursively descending to left and right children.
  */
@@ -119,7 +116,7 @@ void AvlTreeView::render()
         return;
     }
 
-    // ── Visual tree (Issue #118) ───────────────────────────────────────────────
+    // ── Visual tree ───────────────────────────────────────────────
     // Find the root: the node with parent_offset == -1.
     // (There should be exactly one root in a valid AVL tree.)
     ImGui::TextUnformatted( "AVL free-block tree:" );

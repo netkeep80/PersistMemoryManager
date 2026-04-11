@@ -1,9 +1,9 @@
-// ─── Verify / Repair mixin (Issue #245) ──────────────────────────────────────
+// ─── Verify / Repair mixin ──────────────────────────────────────
 // Included inside PersistMemoryManager<ConfigT, InstanceId> private section.
 // Provides verify_image_unlocked() — read-only structural diagnostics.
 
 /**
- * @brief Verify structural integrity of the loaded image without modifications (Issue #245).
+ * @brief Verify structural integrity of the loaded image without modifications.
  *
  * Performs read-only checks on:
  *   1. Block state consistency (weight/root_offset mismatches)
@@ -57,7 +57,7 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
 }
 
 /**
- * @brief Verify forest registry and system domain integrity (Issue #245).
+ * @brief Verify forest registry and system domain integrity.
  *
  * @param result  VerifyResult to populate with diagnostic entries.
  */

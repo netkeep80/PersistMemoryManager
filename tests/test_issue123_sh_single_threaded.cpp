@@ -1,6 +1,6 @@
 /**
  * @file test_issue123_sh_single_threaded.cpp
- * @brief Тест самодостаточности pmm_single_threaded_heap.h (Issue #123).
+ * @brief Тест самодостаточности pmm_single_threaded_heap.h.
  *
  * Проверяет, что single-header файл pmm_single_threaded_heap.h является
  * полностью автономным: пользователь может скопировать один файл в свой
@@ -9,7 +9,7 @@
  * Этот файл намеренно не использует никаких других include из include/pmm/.
  *
  * @see include/pmm_single_threaded_heap.h
- * @version 0.1 (Issue #123 — single-header preset generation)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"

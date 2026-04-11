@@ -1,8 +1,8 @@
 /**
  * @file test_issue153_pmap.cpp
- * @brief Tests for pmap<_K,_V> — persistent AVL tree dictionary (Issue #153).
+ * @brief Tests for pmap<_K,_V> — persistent AVL tree dictionary.
  *
- * Verifies the key requirements from Issue #153:
+ * Verifies the key requirements from this feature:
  *  1. pmap<_K,_V> implements a persistent AVL tree dictionary in PAP.
  *  2. Nodes are stored in PAP and permanently locked (cannot be freed via deallocate).
  *  3. The dictionary uses built-in TreeNode AVL fields — no separate PAP structures.
@@ -28,10 +28,10 @@
  *  @endcode
  *
  * @see include/pmm/pmap.h — pmap<_K,_V,ManagerT>
- * @see include/pmm/pstringview.h — pstringview (analogous AVL-tree type, Issue #151)
+ * @see include/pmm/pstringview.h — pstringview (analogous AVL-tree type)
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
- * @see include/pmm/tree_node.h — TreeNode<AT> built-in AVL fields (Issue #87, #138)
- * @version 0.1 (Issue #153 — pmap<_K,_V>)
+ * @see include/pmm/tree_node.h — TreeNode<AT> built-in AVL fields
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"
@@ -169,14 +169,14 @@ TEST_CASE( "    insert with existing key updates value", "[test_issue153_pmap]" 
 }
 
 // =============================================================================
-// I153-D: Block locking (Issue #155)
+// I153-D: Block locking
 // =============================================================================
 
-/// @brief After insert(), pmap node blocks are NOT permanently locked (Issue #155).
+/// @brief After insert(), pmap node blocks are NOT permanently locked.
 ///
 /// Unlike pstringview (where interning semantics require permanent lock), pmap
 /// nodes are regular allocations that can be freed when removed from the tree.
-TEST_CASE( "    pmap node block NOT permanently locked (Issue #155)", "[test_issue153_pmap]" )
+TEST_CASE( "    pmap node block NOT permanently locked ", "[test_issue153_pmap]" )
 {
     TestMgr::destroy();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
@@ -188,7 +188,7 @@ TEST_CASE( "    pmap node block NOT permanently locked (Issue #155)", "[test_iss
     auto* node = p.resolve();
     REQUIRE( node != nullptr );
 
-    // pmap node blocks are NOT permanently locked (Issue #155)
+    // pmap node blocks are NOT permanently locked
     REQUIRE( TestMgr::is_permanently_locked( node ) == false );
 
     TestMgr::destroy();
@@ -328,7 +328,7 @@ TEST_CASE( "    reset() clears root for test isolation", "[test_issue153_pmap]" 
 // =============================================================================
 
 /// @brief pmap<pptr<pstringview>, int> works as a named persistent object dictionary.
-/// Issue #184: Uses pptr<pstringview> as key (instead of copying pstringview by value)
+/// Uses pptr<pstringview> as key (instead of copying pstringview by value)
 /// because pstringview now has embedded string data that cannot be safely copied.
 TEST_CASE( "    pmap<pptr<pstringview>, int> for named persistent objects", "[test_issue153_pmap]" )
 {
@@ -343,7 +343,7 @@ TEST_CASE( "    pmap<pptr<pstringview>, int> for named persistent objects", "[te
 
     REQUIRE( ( !pk1.is_null() && !pk2.is_null() && !pk3.is_null() ) );
 
-    // Use pptr<pstringview> as key type (Issue #184)
+    // Use pptr<pstringview> as key type
     TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> map;
     map.insert( pk1, 1 );
     map.insert( pk2, 2 );

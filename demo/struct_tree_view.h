@@ -2,7 +2,7 @@
  * @file struct_tree_view.h
  * @brief StructTreeView: renders the PMM block layout as an ImGui tree.
  *
- * Uses DemoMgr::for_each_block() (Issue #116) to iterate over all blocks and
+ * Uses DemoMgr::for_each_block() to iterate over all blocks and
  * show their offset, size, and type (used/free) in an expandable tree view.
  * Clicking on a block highlights it in the Memory Map.
  */

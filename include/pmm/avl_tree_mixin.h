@@ -1,6 +1,6 @@
 /**
  * @file pmm/avl_tree_mixin.h
- * @brief Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162, #188).
+ * @brief Shared AVL tree helper functions for pmap and pstringview.
  *
  * Provides a set of free static template functions implementing the core AVL
  * tree operations (height, balance factor, rotations, rebalancing, insert, find,
@@ -20,15 +20,15 @@
  * Also provides BlockPPtr<AddressTraitsT> — a lightweight adapter that wraps
  * raw (base_ptr, index) pairs and delegates to BlockStateBase<AT> static methods,
  * enabling AvlFreeTree to reuse the shared AVL operations instead of maintaining
- * its own duplicate rotation/rebalancing code (Issue #188).
+ * its own duplicate rotation/rebalancing code.
  *
  * Additionally provides AvlInorderIterator<NodePPtr> — a shared in-order
- * iterator template used by pmap (Issue #188).
+ * iterator template used by pmap.
  *
- * @see pmap.h — pmap<_K,_V,ManagerT> (Issue #153)
- * @see pstringview.h — pstringview<ManagerT> (Issue #151)
- * @see free_block_tree.h — AvlFreeTree<AT> uses BlockPPtr adapter (Issue #188)
- * @version 0.5 (Issue #188 — BlockPPtr adapter for free_block_tree, AvlInorderIterator)
+ * @see pmap.h — pmap<_K,_V,ManagerT>
+ * @see pstringview.h — pstringview<ManagerT>
+ * @see free_block_tree.h — AvlFreeTree<AT> uses BlockPPtr adapter
+ * @version 0.5
  */
 
 #pragma once
@@ -252,7 +252,7 @@ static void avl_rebalance_up( PPtr p, IndexType& root_idx, NodeUpdateFn update_n
     }
 }
 
-/// @brief Find the minimum (leftmost) node in the subtree rooted at p (Issue #188).
+/// @brief Find the minimum (leftmost) node in the subtree rooted at p.
 template <typename PPtr> static PPtr avl_min_node( PPtr p ) noexcept
 {
     while ( !p.is_null() )
@@ -265,7 +265,7 @@ template <typename PPtr> static PPtr avl_min_node( PPtr p ) noexcept
     return p;
 }
 
-/// @brief Find the maximum (rightmost) node in the subtree rooted at p (Issue #188).
+/// @brief Find the maximum (rightmost) node in the subtree rooted at p.
 template <typename PPtr> static PPtr avl_max_node( PPtr p ) noexcept
 {
     while ( !p.is_null() )
@@ -278,7 +278,7 @@ template <typename PPtr> static PPtr avl_max_node( PPtr p ) noexcept
     return p;
 }
 
-/// @brief Remove target node from AVL tree and rebalance (Issue #188).
+/// @brief Remove target node from AVL tree and rebalance.
 ///
 /// Standard BST removal with in-order successor replacement, followed by
 /// AVL rebalancing from the lowest affected node upward.
@@ -398,7 +398,7 @@ static PPtr avl_find( IndexType root_idx, CompareThreeWayFn&& compare_three_way,
     return PPtr(); // not found
 }
 
-/// @brief In-order successor: next node in sorted order (Issue #188 deduplication).
+/// @brief In-order successor: next node in sorted order.
 /// Shared between pmap::iterator and other AVL-based containers.
 template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
 {
@@ -423,7 +423,7 @@ template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
     }
 }
 
-/// @brief Initialize AVL tree node fields to empty state (Issue #188 deduplication).
+/// @brief Initialize AVL tree node fields to empty state.
 /// Sets left, right, parent to sentinel and height to 1.
 /// Shared between pmap::insert, pstringview::_intern.
 template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
@@ -435,7 +435,7 @@ template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
     tn.set_height( static_cast<std::int16_t>( 1 ) );
 }
 
-/// @brief Count nodes in subtree rooted at p (Issue #188 deduplication).
+/// @brief Count nodes in subtree rooted at p.
 /// Shared between pmap::size() and any other container that needs subtree counting.
 template <typename PPtr> static std::size_t avl_subtree_count( PPtr p ) noexcept
 {
@@ -444,7 +444,7 @@ template <typename PPtr> static std::size_t avl_subtree_count( PPtr p ) noexcept
     return 1 + avl_subtree_count( pptr_get_left( p ) ) + avl_subtree_count( pptr_get_right( p ) );
 }
 
-/// @brief Recursively deallocate all nodes in subtree (Issue #188 deduplication).
+/// @brief Recursively deallocate all nodes in subtree.
 /// @tparam PPtr   Persistent pointer type.
 /// @tparam DeallocFn  Callable(PPtr) that deallocates a single node.
 template <typename PPtr, typename DeallocFn> static void avl_clear_subtree( PPtr p, DeallocFn&& dealloc ) noexcept
@@ -464,7 +464,7 @@ template <typename PPtr, typename DeallocFn> static void avl_clear_subtree( PPtr
 /// @param root_idx    Reference to the tree root index.
 /// @param go_left     Callable(cur_node_ptr) -> bool: returns true if new_node < cur.
 /// @param resolve     Callable(pptr) -> NodeObjPtr: resolves pptr to raw object pointer.
-/// @param update_node Callable(PPtr) for node attribute update after rotations (Issue #188).
+/// @param update_node Callable(PPtr) for node attribute update after rotations.
 ///                    Default: AvlUpdateHeightOnly (height only).
 template <typename PPtr, typename IndexType, typename GoLeftFn, typename ResolveFn,
           typename NodeUpdateFn = AvlUpdateHeightOnly>
@@ -514,7 +514,7 @@ static void avl_insert( PPtr new_node, IndexType& root_idx, GoLeftFn&& go_left, 
 // ─── BlockPPtr: adapter for free_block_tree to reuse shared AVL operations ───
 
 /**
- * @brief Fake "manager type" that provides address_traits for BlockPPtr (Issue #188).
+ * @brief Fake "manager type" that provides address_traits for BlockPPtr.
  *
  * BlockPPtr needs PPtr::manager_type::address_traits::no_block for the sentinel.
  * This minimal struct provides exactly that, without coupling to a real manager.
@@ -525,7 +525,7 @@ template <typename AddressTraitsT> struct BlockPPtrManagerTag
 };
 
 /**
- * @brief Proxy object returned by BlockPPtr::tree_node() (Issue #188).
+ * @brief Proxy object returned by BlockPPtr::tree_node().
  *
  * Wraps a raw void* block pointer and delegates get/set calls to
  * BlockStateBase<AT> static methods, matching the TreeNode interface
@@ -550,7 +550,7 @@ template <typename AddressTraitsT> struct BlockTreeNodeProxy
 };
 
 /**
- * @brief Lightweight adapter making (base_ptr, block_index) behave like PPtr (Issue #188).
+ * @brief Lightweight adapter making (base_ptr, block_index) behave like PPtr.
  *
  * Enables AvlFreeTree to delegate rotation, rebalancing, and min_node operations
  * to the shared AVL functions in avl_tree_mixin.h, eliminating ~120 lines of
@@ -601,7 +601,7 @@ static BlockPPtr<AddressTraitsT> pptr_make( BlockPPtr<AddressTraitsT>           
 // ─── AvlInorderIterator: shared in-order iterator for pmap ───────────────────
 
 /**
- * @brief Shared in-order AVL tree iterator template (Issue #188).
+ * @brief Shared in-order AVL tree iterator template.
  *
  * Eliminates identical iterator structs in AVL-based containers.
  * Both containers can use this template directly or as a base.

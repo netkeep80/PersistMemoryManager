@@ -1,6 +1,6 @@
 /**
  * @file test_issue233_parray_insert_erase.cpp
- * @brief Tests for parray::insert(index, value) and parray::erase(index) (Issue #233).
+ * @brief Tests for parray::insert(index, value) and parray::erase(index).
  *
  * Verifies the new parray methods:
  *  1. insert(index, value) inserts at the given position, shifting elements right.

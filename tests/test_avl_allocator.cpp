@@ -1,8 +1,7 @@
 /**
  * @file test_avl_allocator.cpp
- * @brief Тесты AVL-дерева свободных блоков (Issue #55, обновлено #102 — новый API)
+ * @brief Тесты AVL-дерева свободных блоков
  *
- * Issue #102: использует AbstractPersistMemoryManager через pmm_presets.h.
  * Проверяет корректность best-fit выбора и слияния через публичный API.
  */
 

@@ -1,6 +1,6 @@
 /**
  * @file pmm/persist_memory_manager.h
- * @brief PersistMemoryManager — unified static persistent memory manager (Issue #110).
+ * @brief PersistMemoryManager — unified static persistent memory manager.
  *
  * All-static class with multiton support via InstanceId. Configuration via ConfigT:
  * address_traits, storage_backend, free_block_tree, lock_policy.
@@ -10,7 +10,7 @@
 
 #pragma once
 
-// Issue #172: require C++20 — this library uses concepts, std::atomic, and other C++20 features.
+// Require C++20 — this library uses concepts, std::atomic, and other C++20 features.
 // Note: On MSVC, __cplusplus is always 199711L unless /Zc:__cplusplus is set; use _MSVC_LANG instead.
 #if defined( _MSVC_LANG )
 #if _MSVC_LANG < 202002L
@@ -50,7 +50,7 @@ namespace pmm
 {
 
 /**
- * @brief Унифицированный статический менеджер персистентной памяти (Issue #110).
+ * @brief Унифицированный статический менеджер персистентной памяти.
  *
  * Все состояние и методы статические — нет необходимости создавать экземпляры.
  * Параметр `InstanceId` обеспечивает уникальность типа для каждого логического
@@ -71,7 +71,7 @@ namespace pmm
  *
  * @note Используйте `destroy()` перед повторной инициализацией и между тестами.
  */
-// ─── Issue #202, Phase 4.2: detect logging_policy in config ──────────────────
+// ─── detect logging_policy in config ──────────────────
 namespace detail
 {
 template <typename C, typename = void> struct config_logging_policy
@@ -93,7 +93,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     using storage_backend = typename ConfigT::storage_backend;
     using free_block_tree = typename ConfigT::free_block_tree;
     using thread_policy   = typename ConfigT::lock_policy;
-    using logging_policy  = typename detail::config_logging_policy<ConfigT>::type; ///< Issue #202, Phase 4.2
+    using logging_policy  = typename detail::config_logging_policy<ConfigT>::type;
     using allocator       = AllocatorPolicy<free_block_tree, address_traits>;
     using index_type      = typename address_traits::index_type;
     using forest_registry = detail::ForestDomainRegistry<address_traits>;
@@ -154,7 +154,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     template <typename _K, typename _V> using pmap = pmm::pmap<_K, _V, manager_type>;
 
     /**
-     * @brief Алиас для персистентного массива с O(1) индексацией (Issue #195, Phase 3.2).
+     * @brief Алиас для персистентного массива с O(1) индексацией.
      *
      * Позволяет писать:
      * @code
@@ -169,7 +169,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     template <typename T> using parray = pmm::parray<T, manager_type>;
 
     /**
-     * @brief Алиас для STL-совместимого аллокатора (Issue #198, Phase 3.5).
+     * @brief Алиас для STL-совместимого аллокатора.
      *
      * Позволяет писать:
      * @code
@@ -183,7 +183,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     template <typename T> using pallocator = pmm::pallocator<T, manager_type>;
 
     /**
-     * @brief Алиас для персистентного пула объектов (Issue #199, Phase 3.6).
+     * @brief Алиас для персистентного пула объектов.
      *
      * Позволяет писать:
      * @code
@@ -196,7 +196,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      */
     template <typename T> using ppool = pmm::ppool<T, manager_type>;
 
-    // ─── Error code API (Issue #201, Phase 4.1) ───────────────────────────────
+    // ─── Error code API ───────────────────────────────
 
     /// @brief Return the error code from the last operation (thread-local per manager specialization).
     static PmmError last_error() noexcept { return _last_error; }
@@ -226,8 +226,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _last_error = PmmError::InvalidSize;
             return false;
         }
-        // Issue #146: use address_traits::granule_size instead of hardcoded kGranuleSize.
-        // Issue #172: guard against overflow when initial_size is close to size_t max.
+        // Use address_traits::granule_size instead of hardcoded kGranuleSize.
+        // Guard against overflow when initial_size is close to size_t max.
         static constexpr std::size_t kGranSzCreate = address_traits::granule_size;
         if ( initial_size > std::numeric_limits<std::size_t>::max() - ( kGranSzCreate - 1 ) )
         {
@@ -255,7 +255,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( ok )
             ok = bootstrap_forest_registry_unlocked();
         if ( ok )
-            ok = validate_bootstrap_invariants_unlocked(); // Issue #241
+            ok = validate_bootstrap_invariants_unlocked();
         if ( ok )
         {
             _last_error = PmmError::Ok;
@@ -281,7 +281,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( ok )
             ok = bootstrap_forest_registry_unlocked();
         if ( ok )
-            ok = validate_bootstrap_invariants_unlocked(); // Issue #241
+            ok = validate_bootstrap_invariants_unlocked();
         if ( ok )
         {
             _last_error = PmmError::Ok;
@@ -294,7 +294,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * @brief Load existing state from backend (compatibility path — no diagnostics report).
      *
      * @deprecated Prefer load(VerifyResult&) to get structured diagnostics on any repairs performed.
-     *             This overload is kept for backward compatibility only (Issue #245).
+     *             This overload is kept for backward compatibility only.
      */
     static bool load() noexcept
     {
@@ -303,7 +303,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /**
-     * @brief Load existing state from backend with structured diagnostics (Issue #245).
+     * @brief Load existing state from backend with structured diagnostics.
      *
      * Performs verify-then-repair: first detects all violations, then applies
      * documented fixes. The VerifyResult records every repair action taken.
@@ -349,8 +349,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
                         static_cast<std::uint64_t>( hdr->granule_size ) );
             return false;
         }
-        // Issue #245: verify before repair — detect violations in the raw image.
-        // Issue #245: verify before repair — detect violations, then mark with repair actions.
+        // Verify before repair — detect violations in the raw image.
+        // Verify before repair — detect violations, then mark with repair actions.
         auto mark_entries = []( VerifyResult& r, std::size_t from, DiagnosticAction act )
         {
             for ( std::size_t i = from; i < r.entry_count; ++i )
@@ -426,7 +426,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /// @brief Проверить, инициализирован ли менеджер.
-    /// Issue #172: _initialized is std::atomic<bool> — lock-free fast path.
+    /// _initialized is std::atomic<bool> — lock-free fast path.
     static bool is_initialized() noexcept { return _initialized.load( std::memory_order_acquire ); }
 
     // ─── Статические методы выделения и освобождения ─────────────────────────
@@ -454,7 +454,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /**
-     * @brief Заблокировать блок навечно — сделать его невозможным для освобождения (Issue #126).
+     * @brief Заблокировать блок навечно — сделать его невозможным для освобождения.
      *
      * После вызова этого метода блок не может быть освобождён через deallocate().
      * Предназначено для блоков, содержащих постоянные данные (например, словарь stringview).
@@ -469,7 +469,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /**
-     * @brief Проверить, заблокирован ли блок навечно (Issue #126).
+     * @brief Проверить, заблокирован ли блок навечно.
      *
      * @param ptr Указатель на пользовательские данные.
      * @return true если блок заблокирован навечно (node_type == kNodeReadOnly).
@@ -539,7 +539,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         deallocate( raw );
     }
 
-    // ─── Нативное перераспределение (Issue #210, Phase 4.3) ────────────────────
+    // ─── Нативное перераспределение ────────────────────
 
     /// @brief Перераспределить массив из old_count объектов T до new_count.
     /// T должен быть trivially copyable. При неудаче старый блок сохраняется.
@@ -667,7 +667,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return new_p;
     }
 
-    // ─── Типизированный API с вызовом конструктора/деструктора (Issue #172) ───
+    // ─── Типизированный API с вызовом конструктора/деструктора ───
 
     /**
      * @brief Выделить память и создать объект типа T с помощью placement new.
@@ -687,7 +687,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      */
     template <typename T, typename... Args> static pptr<T> create_typed( Args&&... args ) noexcept
     {
-        // Issue #43 Phase 1.1: Enforce noexcept constructibility at compile time.
+        // Enforce noexcept constructibility at compile time.
         // create_typed is noexcept, so the constructor must not throw — otherwise
         // an exception would leak the allocated memory block.
         static_assert( std::is_nothrow_constructible_v<T, Args...>,
@@ -715,7 +715,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      */
     template <typename T> static void destroy_typed( pptr<T> p ) noexcept
     {
-        // Issue #43 Phase 1.1: Enforce noexcept destructibility at compile time.
+        // Enforce noexcept destructibility at compile time.
         static_assert( std::is_nothrow_destructible_v<T>, "destroy_typed<T>: T must be nothrow-destructible." );
 
         if ( p.is_null() || !_initialized )
@@ -726,7 +726,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         deallocate( raw );
     }
 
-    /// @brief Create a typed object and wrap it in a RAII scope-guard (Issue #235).
+    /// @brief Create a typed object and wrap it in a RAII scope-guard.
     /// The guard calls free_data()/free_all() + destroy_typed() on scope exit.
     /// @see typed_guard
     template <typename T, typename... Args> static typed_guard<T, PersistMemoryManager> make_guard( Args&&... args )
@@ -748,7 +748,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( p.is_null() || !_initialized )
             return nullptr;
         std::uint8_t* base = _backend.base_ptr();
-        // Issue #43 Phase 1.2: Bounds check — verify offset is within the managed region.
+        // Bounds check — verify offset is within the managed region.
         std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
         assert( byte_off + sizeof( T ) <= _backend.total_size() && "resolve(): pptr offset out of bounds" );
         return reinterpret_cast<T*>( base + byte_off );
@@ -768,7 +768,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
     }
 
-    /// @brief Создать pptr<T> из байтового смещения (Issue #211, Phase 4.4).
+    /// @brief Создать pptr<T> из байтового смещения.
     /// Обратная операция к pptr::byte_offset(). Смещение должно быть кратно granule_size.
     /// @tparam T Тип данных.  @param byte_off Байтовое смещение.
     /// @return pptr<T> или пустой pptr при ошибке (InvalidPointer / Overflow).
@@ -791,7 +791,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /**
-     * @brief Проверить, что pptr указывает на валидную область внутри кучи (Issue #43 Phase 1.2).
+     * @brief Проверить, что pptr указывает на валидную область внутри кучи (: phase 1.2).
      *
      * Выполняет runtime-проверку: смещение не выходит за границы управляемой области
      * и достаточно места для sizeof(T). Не проверяет, что блок действительно выделен.
@@ -808,9 +808,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return byte_off + sizeof( T ) <= _backend.total_size();
     }
 
-    // ─── Root object API (Issue #200, Phase 3.7) ──────────────────────────────
+    // ─── Root object API ──────────────────────────────
 
-    /// @brief Установить корневой объект в ManagerHeader (Issue #200, Phase 3.7).
+    /// @brief Установить корневой объект в ManagerHeader.
     /// @tparam T Тип объекта.  @param p Персистентный указатель; пустой pptr сбрасывает корень.
     template <typename T> static void set_root( pptr<T> p ) noexcept
     {
@@ -857,7 +857,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static bool has_domain( const char* name ) noexcept { return find_domain_by_name( name ) != 0; }
 
-    /// @brief Verify that all bootstrap invariants hold (Issue #241).
+    /// @brief Verify that all bootstrap invariants hold.
     /// Returns true iff the image is a valid, self-described persistent environment.
     static bool validate_bootstrap_invariants() noexcept
     {
@@ -938,9 +938,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return true;
     }
 
-    // ─── Методы доступа к полям AVL-узла блока (Issue #125, #235) ──────────
+    // ─── Методы доступа к полям AVL-узла блока ──────────
     // Safe-wrappers over BlockStateBase get_*/set_* with manager-level guards.
-    // Issue #235: condensed Doxygen to reduce file size (was near 1500-line CI limit).
+    // Condensed Doxygen to reduce file size (was near 1500-line CI limit).
 
     /// @brief Get left/right/parent AVL offset for pptr's block (0 if null/no_block).
     /// @{
@@ -1036,7 +1036,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     // ─── Статистика ────────────────────────────────────────────────────────────
-    // Issue #172: all read-only methods take shared_lock to prevent data races in
+    // All read-only methods take shared_lock to prevent data races in
     // multi-threaded configurations (e.g. SharedMutexLock). _initialized is
     // std::atomic<bool> — we do a fast load first to avoid contention when not initialized.
 
@@ -1056,7 +1056,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized.load( std::memory_order_relaxed ) )
             return 0;
         const detail::ManagerHeader<address_traits>* hdr = get_header_c( _backend.base_ptr() );
-        // Issue #166: use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
+        // Use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
         return address_traits::granules_to_bytes( hdr->used_size );
     }
 
@@ -1068,7 +1068,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( !_initialized.load( std::memory_order_relaxed ) )
             return 0;
         const detail::ManagerHeader<address_traits>* hdr = get_header_c( _backend.base_ptr() );
-        // Issue #166: use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
+        // Use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
         std::size_t used = address_traits::granules_to_bytes( hdr->used_size );
         return ( hdr->total_size > used ) ? ( hdr->total_size - used ) : 0;
     }
@@ -1103,7 +1103,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
                    : 0;
     }
 
-    // ─── Verify / Repair (Issue #245) ───────────────────────────────────────────
+    // ─── Verify / Repair ───────────────────────────────────────────
 
     /// @brief Read-only structural diagnostics. Returns violations without modifying image.
     /// @return VerifyResult with ok=true if no violations, false otherwise.
@@ -1144,7 +1144,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         using BlockState                                 = BlockStateBase<address_traits>;
         const detail::ManagerHeader<address_traits>* hdr = get_header_c( base );
         index_type                                   idx = hdr->first_block_offset;
-        // Issue #146: use address_traits::granule_size for correct byte offset computations.
+        // Use address_traits::granule_size for correct byte offset computations.
         static constexpr std::size_t kGranSz = address_traits::granule_size;
         while ( idx != address_traits::no_block )
         {
@@ -1207,20 +1207,20 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static inline storage_backend _backend{};
 
     /// @brief Флаг инициализации.
-    /// Issue #172: std::atomic<bool> allows lock-free is_initialized() fast path
+    /// Std::atomic<bool> allows lock-free is_initialized() fast path
     /// while remaining safe when racing against destroy()/load()/create().
     static inline std::atomic<bool> _initialized{ false };
 
     /// @brief Мьютекс для потокобезопасности.
     static inline typename thread_policy::mutex_type _mutex{};
 
-    /// @brief Last error code (Issue #201, Phase 4.1).
-    /// Issue #235: thread_local to prevent data races in multi-threaded configurations.
+    /// @brief Last error code.
+    /// Thread_local to prevent data races in multi-threaded configurations.
     static inline thread_local PmmError _last_error{ PmmError::Ok };
 
     // ─── Вспомогательные методы ────────────────────────────────────────────────
 
-    // ─── Issue #179: find_block helpers ───────────────────────────────────────
+    // ─── find_block helpers ───────────────────────────────────────
 
     static bool is_valid_user_offset_unlocked( index_type off, std::size_t size_bytes ) noexcept
     {
@@ -1341,7 +1341,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     // Forest/domain registry private methods — extracted to forest_domain_mixin.inc
     // to keep this file under the 1500-line CI limit.
 #include "pmm/forest_domain_mixin.inc"
-    // Verify/repair methods — extracted to verify_repair_mixin.inc (Issue #245).
+    // Verify/repair methods — extracted to verify_repair_mixin.inc.
 #include "pmm/verify_repair_mixin.inc"
 
     /// @brief Find the mutable block header for a user-data pointer (or nullptr).
@@ -1362,7 +1362,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             static_cast<std::size_t>( get_header_c( base )->total_size ) );
     }
 
-    // ─── Issue #179: raw ↔ pptr helpers ───────────────────────────────────────
+    // ─── raw ↔ pptr helpers ───────────────────────────────────────
 
     /// @brief Convert a raw user-data pointer returned by allocate() into a pptr<T>.
     /// Caller must ensure raw != nullptr and _initialized before calling.
@@ -1373,7 +1373,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return pptr<T>( static_cast<index_type>( byte_off / address_traits::granule_size ) );
     }
 
-    // ─── Issue #179: blk_raw helpers ──────────────────────────────────────────
+    // ─── blk_raw helpers ──────────────────────────────────────────
     // base + offset * granule_size - sizeof(Block<AT>) → block header before user data.
 
     /// @brief Return a const pointer to the block header for the given pptr.
@@ -1392,7 +1392,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
                sizeof( Block<address_traits> );
     }
 
-    // ─── Address-traits-specific layout constants (Issue #146) ──────────────────
+    // ─── Address-traits-specific layout constants ──────────────────
     // These compute the correct granule indices based on the actual address_traits
     // granule size, rather than using the hardcoded DefaultAddressTraits constants.
 
@@ -1406,7 +1406,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     static constexpr index_type kBlockHdrGranules =
         static_cast<index_type>( kBlockHdrByteSize / address_traits::granule_size );
 
-    /// @brief Number of granules occupied by ManagerHeader<address_traits> (Issue #175).
+    /// @brief Number of granules occupied by ManagerHeader<address_traits>.
     /// Uses ceiling division: ceil(sizeof(ManagerHeader<address_traits>) / granule_size).
     static constexpr index_type kMgrHdrGranules = detail::kManagerHeaderGranules_t<address_traits>;
 
@@ -1415,7 +1415,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static detail::ManagerHeader<address_traits>* get_header( std::uint8_t* base ) noexcept
     {
-        // Place ManagerHeader at a granule-aligned offset after Block_0 (Issue #146).
+        // Place ManagerHeader at a granule-aligned offset after Block_0.
         return reinterpret_cast<detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
     }
 
@@ -1424,7 +1424,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return reinterpret_cast<const detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
     }
 
-    // Layout init / expand helpers — extracted to layout_mixin.inc (Issue #245 line-limit compliance).
+    // Layout init / expand helpers — extracted to layout_mixin.inc.
 #include "pmm/layout_mixin.inc"
 };
 

@@ -1,6 +1,6 @@
 /**
  * @file test_issue176_manager_header.cpp
- * @brief Tests for Issue #176: removal of obsolete ManagerHeader fields.
+ * @brief Tests: removal of obsolete ManagerHeader fields.
  *
  * Verifies:
  *  - #176-R1: prev_owns_memory and prev_base_ptr are no longer members of ManagerHeader.
@@ -9,7 +9,7 @@
  *  - #176-R4: load() correctly resets runtime-only fields (owns_memory, prev_total_size).
  *
  * @see include/pmm/types.h
- * @version 0.1 (Issue #176 — remove prev_owns_memory and prev_base_ptr)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -73,8 +73,8 @@ static_assert( has_pad<pmm::detail::ManagerHeader<>>::value, "#176-R3: _pad fiel
 static_assert( has_root_offset<pmm::detail::ManagerHeader<>>::value,
                "#200: root_offset field must be present in ManagerHeader (replaced _reserved)" );
 
-// Issue #43 Phase 2.1: 4 bytes of _reserved were repurposed for crc32 field.
-// Issue #200: remaining 4 bytes of _reserved repurposed for root_offset (index_type).
+// 4 bytes of _reserved were repurposed for crc32 field.
+// Remaining 4 bytes of _reserved repurposed for root_offset (index_type).
 // crc32 is 4 bytes, root_offset is 4 bytes (for DefaultAddressTraits) — total 8 bytes preserved.
 static_assert( sizeof( pmm::detail::ManagerHeader<>::root_offset ) == 4,
                "#200: root_offset is 4 bytes for DefaultAddressTraits" );

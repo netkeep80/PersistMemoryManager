@@ -1,8 +1,8 @@
 /**
  * @file test_issue199_ppool.cpp
- * @brief Tests for ppool — persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).
+ * @brief Tests for ppool — persistent object pool with O(1) allocate/deallocate.
  *
- * Verifies the key requirements from Issue #199 Phase 3.6:
+ * Verifies the key requirements from this feature:
  *  1. ppool allocates objects from the pool in O(1).
  *  2. ppool deallocates objects back to the pool in O(1).
  *  3. Deallocated slots are reused by subsequent allocations.
@@ -20,7 +20,7 @@
  *
  * @see include/pmm/ppool.h — ppool
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
- * @version 0.1 (Issue #199 — Phase 3.6: persistent object pool)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

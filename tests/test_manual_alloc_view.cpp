@@ -1,6 +1,6 @@
 /**
  * @file test_manual_alloc_view.cpp
- * @brief Headless tests for ManualAllocView (migrated to static API, Issue #112).
+ * @brief Headless tests for ManualAllocView (migrated to static API).
  *
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
  * g_pmm is a boolean flag: true when the manager is active.

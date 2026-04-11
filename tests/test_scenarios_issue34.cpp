@@ -1,15 +1,14 @@
 /**
  * @file test_scenarios_issue34.cpp
- * @brief Stress and load tests for PersistMemoryManager (Issue #34, updated #102)
+ * @brief Stress and load tests for PersistMemoryManager
  *
- * Issue #102: uses AbstractPersistMemoryManager via pmm_presets.h.
  *   - pmm::PersistMemoryManager<> (singleton) removed
  *   - pmm::get_stats() removed; use pmm.block_count(), pmm.free_block_count(), etc.
  *   - pmm::save()/load_from_file() removed; use pmm::save_manager()/load_manager_from_file()
  *   - pptr<Node> now needs explicit manager type: Mgr::pptr<Node>
  *   - p.get() replaced with p.resolve(mgr)
  *
- * Implements three scenarios from Issue #34:
+ * Implements three scenarios from this feature:
  *   Scenario 1: "Shredder" — intensive fragmentation and coalesce.
  *   Scenario 2: "Persistent Cycle" — save/load integrity with pptr.
  *   Scenario 5: "Marathon" — long-term stability.

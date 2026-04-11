@@ -1,13 +1,13 @@
 /**
  * @file pmm/manager_concept.h
- * @brief PersistMemoryManagerConcept — концепция для проверки типов менеджеров ПАП (Issue #100, #110, #129).
+ * @brief PersistMemoryManagerConcept — концепция для проверки типов менеджеров ПАП.
  *
  * Определяет C++20 концепт `PersistMemoryManagerConcept<T>` и вспомогательный тип-трейт
  * `is_persist_memory_manager<T>`, позволяющие проверить во время компиляции, является ли
  * тип корректным менеджером персистентной памяти (удовлетворяет ли статическому
  * интерфейсу PersistMemoryManager).
  *
- * Требования к типу менеджера (Issue #110 — статический интерфейс):
+ * Требования к типу менеджера:
  *   - `manager_type` — typedef на собственный тип (self-type)
  *   - `address_traits` — тип адресных traits
  *   - `storage_backend` — тип бэкенда хранилища
@@ -31,9 +31,9 @@
  *   }
  * @endcode
  *
- * @see persist_memory_manager.h — PersistMemoryManager (Issue #110)
+ * @see persist_memory_manager.h — PersistMemoryManager
  * @see pptr.h — pptr<T, ManagerT>
- * @version 0.3 (Issue #129 — переход на C++20 концепты)
+ * @version 0.3
  */
 
 #pragma once
@@ -48,7 +48,7 @@ namespace pmm
 /**
  * @brief C++20 концепт: проверяет, является ли T корректным менеджером персистентной памяти.
  *
- * Тип считается менеджером ПАП, если он предоставляет (Issue #110 — статический интерфейс):
+ * Тип считается менеджером ПАП, если он предоставляет:
  *   - typedef `manager_type`
  *   - typedef `address_traits`
  *   - typedef `storage_backend`

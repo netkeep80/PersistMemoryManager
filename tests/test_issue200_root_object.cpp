@@ -1,8 +1,8 @@
 /**
  * @file test_issue200_root_object.cpp
- * @brief Tests for root object API in ManagerHeader (Issue #200, Phase 3.7).
+ * @brief Tests for root object API in ManagerHeader.
  *
- * Verifies the key requirements from Issue #200 Phase 3.7:
+ * Verifies the key requirements from this feature:
  *  1. get_root<T>() returns null pptr when no root is set.
  *  2. set_root<T>(p) stores the root and get_root<T>() retrieves it.
  *  3. set_root<T>(null pptr) clears the root.
@@ -16,7 +16,7 @@
  *
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
  * @see include/pmm/types.h — ManagerHeader
- * @version 0.1 (Issue #200 — Phase 3.7: root object in ManagerHeader)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

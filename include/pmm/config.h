@@ -1,6 +1,6 @@
 /**
  * @file pmm_config.h
- * @brief Политики блокировок для AbstractPersistMemoryManager (Issue #102)
+ * @brief Политики блокировок для AbstractPersistMemoryManager
  *
  * Содержит:
  *   - pmm::config::SharedMutexLock  — политика с std::shared_mutex (многопоточная)
@@ -19,7 +19,7 @@
  * @endcode
  *
  * @see pmm_presets.h — готовые конфигурации менеджеров
- * @version 2.0 (Issue #102 — PMMConfig/DefaultConfig removed, lock policies kept)
+ * @version 2.0
  */
 
 #pragma once
@@ -64,10 +64,10 @@ struct NoLock
     };
 };
 
-/// @brief Issue #83: Default grow ratio numerator (heap grows by 5/4 = 25%).
+/// @brief Default grow ratio numerator (heap grows by 5/4 = 25%).
 inline constexpr std::size_t kDefaultGrowNumerator = 5;
 
-/// @brief Issue #83: Default grow ratio denominator (heap grows by 5/4 = 25%).
+/// @brief Default grow ratio denominator (heap grows by 5/4 = 25%).
 inline constexpr std::size_t kDefaultGrowDenominator = 4;
 
 } // namespace config

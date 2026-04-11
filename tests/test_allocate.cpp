@@ -1,8 +1,7 @@
 /**
  * @file test_allocate.cpp
- * @brief Тесты выделения памяти (Issue #102, #110 — статический API)
+ * @brief Тесты выделения памяти
  *
- * Issue #110: использует PersistMemoryManager через pmm_presets.h.
  *   - pmm::presets::SingleThreadedHeap — однопоточный менеджер на базе HeapStorage.
  *   - Все операции через статический интерфейс менеджера.
  *   - Выделение через allocate_typed<T>(), освобождение через deallocate_typed().
@@ -158,7 +157,7 @@ TEST_CASE( "allocate_metrics", "[test_allocate]" )
 
 /**
  * @brief Fragmented free blocks must be reused before the tail expansion space
- *        (Issue #53 fix verification).
+ *.
  *
  * Uses unique InstanceId (502) to start with a fresh 8K backend.
  *

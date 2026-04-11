@@ -1,6 +1,6 @@
 /**
  * @file test_issue146_index_sizes.cpp
- * @brief Тесты поддержки 16-bit и 64-bit индексов в менеджерах ПАП (Issue #146).
+ * @brief Тесты поддержки 16-bit и 64-bit индексов в менеджерах ПАП.
  *
  * Проверяет новые конфигурации и пресеты с нестандартными размерами индекса:
  *   - SmallEmbeddedStaticConfig<N> — 16-bit индекс (SmallAddressTraits), StaticStorage
@@ -10,7 +10,7 @@
  *
  * @see include/pmm/manager_configs.h
  * @see include/pmm/pmm_presets.h
- * @version 0.1 (Issue #146 — поддержка 16-bit и 64-bit индексов)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"

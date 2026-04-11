@@ -59,6 +59,26 @@ Key style rules:
 - 120-character line limit
 - Left pointer alignment (`int* p`, not `int *p`)
 
+## Comment Policy
+
+Comments must serve one of four purposes:
+
+| Type                     | Purpose                                           |
+|--------------------------|---------------------------------------------------|
+| **Invariant**            | States what must always be true                   |
+| **Persistence contract** | States what must survive reload / relocation      |
+| **Safety note**          | Warns about UB, corruption, or non-obvious risk   |
+| **Design note**          | Short explanation of a non-obvious decision       |
+
+**Prohibited patterns** — do not add:
+- Issue references (`Issue #N`, `TODO for issue #N`, `implemented in #N`)
+- Refactoring history (`was previously ...`, `moved from ...`)
+- Temporal promises (`temporarily left`, `remove later`)
+- Narrative without invariant (multi-line retelling of code)
+
+History belongs in Git, issues, and pull requests — not in source files.
+See [`docs/comment_policy.md`](docs/comment_policy.md) for the full policy.
+
 ## File Size Limits
 
 Each source file must not exceed **1500 lines**. This constraint:

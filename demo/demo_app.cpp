@@ -8,7 +8,6 @@
  *
  * run_validate() uses DemoMgr::is_initialized() to check the manager state.
  *
- * Issue #65: AvlTreeView (AVL free-block tree visualisation) and ManualAllocView
  * (interactive step-by-step alloc/free) panels added.
  */
 
@@ -111,8 +110,8 @@ void DemoApp::render()
     struct_tree_view_->render( highlighted_block_ );
     metrics_view_->render();
     scenario_manager_->render();
-    avl_tree_view_->render();     // Issue #65: AVL free-block tree
-    manual_alloc_view_->render(); // Issue #65: manual alloc/free
+    avl_tree_view_->render();
+    manual_alloc_view_->render();
 
     // ── Phase 12: handle "Validate now" button press ──────────────────────────
     if ( metrics_view_->validate_requested() && active )

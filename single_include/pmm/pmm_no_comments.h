@@ -170,7 +170,7 @@ template <typename AddressTraitsT> struct TreeNode
 };
 
 static_assert( std::is_standard_layout<pmm::TreeNode<pmm::DefaultAddressTraits>>::value,
-               "TreeNode must be standard-layout (Issue #87)" );
+               "TreeNode must be standard-layout " );
 
 } 
 
@@ -193,7 +193,7 @@ template <typename AddressTraitsT> struct Block : TreeNode<AddressTraitsT>
 };
 
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes (Issue #87, #138)" );
+               "Block<DefaultAddressTraits> must be 32 bytes " );
 
 } 
 
@@ -507,9 +507,9 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
 };
 
 static_assert( sizeof( BlockStateBase<DefaultAddressTraits> ) == sizeof( Block<DefaultAddressTraits> ),
-               "BlockStateBase<A> must have same size as Block<A> (Issue #93)" );
+               "BlockStateBase<A> must have same size as Block<A> " );
 static_assert( sizeof( BlockStateBase<DefaultAddressTraits> ) == 32,
-               "BlockStateBase<DefaultAddressTraits> must be 32 bytes (Issue #93)" );
+               "BlockStateBase<DefaultAddressTraits> must be 32 bytes " );
 
 template <typename AddressTraitsT> class FreeBlock : public BlockStateBase<AddressTraitsT>
 {
@@ -788,9 +788,9 @@ enum class PmmError : std::uint8_t
 };
 
 inline constexpr std::size_t kGranuleSize = 16;
-static_assert( ( kGranuleSize & ( kGranuleSize - 1 ) ) == 0, "kGranuleSize must be a power of 2 (Issue #83)" );
+static_assert( ( kGranuleSize & ( kGranuleSize - 1 ) ) == 0, "kGranuleSize must be a power of 2 " );
 static_assert( kGranuleSize == pmm::DefaultAddressTraits::granule_size,
-               "kGranuleSize must match DefaultAddressTraits::granule_size (Issue #87)" );
+               "kGranuleSize must match DefaultAddressTraits::granule_size " );
 
 inline constexpr std::uint64_t kMagic =
     0x504D4D5F56303938ULL; 
@@ -861,20 +861,20 @@ inline std::uint32_t compute_crc32( const std::uint8_t* data, std::size_t length
 }
 
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes (Issue #87, #112)" );
+               "Block<DefaultAddressTraits> must be 32 bytes " );
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) % kGranuleSize == 0,
-               "Block<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
+               "Block<DefaultAddressTraits> must be granule-aligned " );
 
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) ==
                    sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) + 2 * sizeof( std::uint32_t ),
-               "Block<DefaultAddressTraits> must have TreeNode + 2 index_type list fields (Issue #87, #138)" );
+               "Block<DefaultAddressTraits> must have TreeNode + 2 index_type list fields " );
 
 static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 5 * sizeof( std::uint32_t ) + 4,
-               "TreeNode<DefaultAddressTraits> must be 24 bytes (Issue #87, #126)" );
+               "TreeNode<DefaultAddressTraits> must be 24 bytes " );
 
 inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; 
 static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block,
-               "kNoBlock must match DefaultAddressTraits::no_block (Issue #87)" );
+               "kNoBlock must match DefaultAddressTraits::no_block " );
 
 template <typename AddressTraitsT>
 inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
@@ -901,9 +901,9 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
 };
 
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
-               "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #59, #73 FR-03, #175)" );
+               "ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes " );
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) % kGranuleSize == 0,
-               "ManagerHeader<DefaultAddressTraits> must be granule-aligned (Issue #59, #73 FR-03)" );
+               "ManagerHeader<DefaultAddressTraits> must be granule-aligned " );
 
 template <typename AddressTraitsT>
 inline std::uint32_t compute_image_crc32( const std::uint8_t* data, std::size_t length ) noexcept
@@ -2356,7 +2356,7 @@ class AllocatorPolicy
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
                 break;
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
-            BlockState::repair_prev_offset( blk_ptr, prev ); 
+            BlockState::repair_prev_offset( blk_ptr, prev );
             prev                   = idx;
             index_type next_offset = BlockState::get_next_offset( blk_ptr );
             idx                    = next_offset;
@@ -2379,7 +2379,7 @@ class AllocatorPolicy
             const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             block_count++;
             used_gran += kBlkHdrGran;
-            index_type w = BlockState::get_weight( blk_ptr ); 
+            index_type w = BlockState::get_weight( blk_ptr );
             if ( w > 0 )                                      
             {
                 alloc_count++;
@@ -3790,7 +3790,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     using storage_backend = typename ConfigT::storage_backend;
     using free_block_tree = typename ConfigT::free_block_tree;
     using thread_policy   = typename ConfigT::lock_policy;
-    using logging_policy  = typename detail::config_logging_policy<ConfigT>::type; 
+    using logging_policy  = typename detail::config_logging_policy<ConfigT>::type;
     using allocator       = AllocatorPolicy<free_block_tree, address_traits>;
     using index_type      = typename address_traits::index_type;
     using forest_registry = detail::ForestDomainRegistry<address_traits>;
@@ -3856,7 +3856,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( ok )
             ok = bootstrap_forest_registry_unlocked();
         if ( ok )
-            ok = validate_bootstrap_invariants_unlocked(); 
+            ok = validate_bootstrap_invariants_unlocked();
         if ( ok )
         {
             _last_error = PmmError::Ok;
@@ -3877,7 +3877,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( ok )
             ok = bootstrap_forest_registry_unlocked();
         if ( ok )
-            ok = validate_bootstrap_invariants_unlocked(); 
+            ok = validate_bootstrap_invariants_unlocked();
         if ( ok )
         {
             _last_error = PmmError::Ok;

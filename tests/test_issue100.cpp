@@ -1,8 +1,7 @@
 /**
  * @file test_issue100.cpp
- * @brief Tests for Issue #100: Infrastructure Preparation (updated for Issue #110).
+ * @brief Tests: infrastructure Preparation.
  *
- * Issue #110: Replaced AbstractPersistMemoryManager and StaticPersistMemoryManager
  * with the unified PersistMemoryManager<ConfigT, InstanceId> (fully static model).
  *
  * Tests:
@@ -36,7 +35,7 @@
  * @see include/pmm/persist_memory_manager.h
  * @see include/pmm/manager_concept.h
  * @see include/pmm/manager_configs.h
- * @version 0.3 (Issue #110 — unified static API)
+ * @version 0.3
  */
 
 #include "pmm_single_threaded_heap.h"

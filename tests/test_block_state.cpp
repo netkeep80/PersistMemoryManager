@@ -1,6 +1,6 @@
 /**
  * @file test_block_state.cpp
- * @brief Тесты Phase 9: BlockState machine для атомарных операций (Issue #93).
+ * @brief Тесты Phase 9: BlockState machine для атомарных операций.
  *
  * Проверяет:
  *  - Бинарная совместимость BlockStateBase с Block<A>.
@@ -11,7 +11,7 @@
  *
  * @see include/pmm/block_state.h
  * @see docs/atomic_writes.md «Граф состояний блока»
- * @version 0.2 (Issue #93 — based on Block<A>)
+ * @version 0.2
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -26,7 +26,7 @@
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
 
 // =============================================================================
-// Phase 9 tests: BlockState machine (Issue #93)
+// Phase 9 tests: BlockState machine
 // =============================================================================
 
 // ─── P9-A: Бинарная совместимость BlockStateBase ──────────────────────────────
@@ -62,7 +62,7 @@ TEST_CASE( "    Accessors", "[test_block_state]" )
     using A          = pmm::DefaultAddressTraits;
     using BlockState = pmm::BlockStateBase<A>;
 
-    // Создаём блок через BlockStateBase::init_fields + static setters (Issue #120)
+    // Создаём блок через BlockStateBase::init_fields + static setters
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
@@ -92,7 +92,7 @@ TEST_CASE( "    is_free / is_allocated", "[test_block_state]" )
     REQUIRE( state->is_allocated( 0 ) == false );
     REQUIRE( state->is_allocated( 6 ) == false );
 
-    // Занятый блок: weight>0, root_offset=idx (via static setters, Issue #120)
+    // Занятый блок: weight>0, root_offset=idx (via static setters)
     BlockState::set_weight_of( buffer, 5u );
     BlockState::set_root_offset_of( buffer, 6u ); // idx=6
     REQUIRE( state->is_free() == false );
@@ -115,7 +115,7 @@ TEST_CASE( "FreeBlock cast_from_raw and verify_invariants", "[test_block_state]"
     REQUIRE( fb != nullptr );
     REQUIRE( fb->verify_invariants() == true );
 
-    // Портим инварианты (via static setter, Issue #120)
+    // Портим инварианты (via static setter)
     BlockState::set_weight_of( buffer, 5u ); // Не 0
     REQUIRE( fb->verify_invariants() == false );
 }
@@ -202,11 +202,11 @@ TEST_CASE( "    Full splitting flow", "[test_block_state]" )
     alignas( 16 ) std::uint8_t buffer_new[32];
     alignas( 16 ) std::uint8_t buffer_old_next[32];
 
-    // Инициализация текущего блока (via BlockStateBase static API, Issue #120)
+    // Инициализация текущего блока (via BlockStateBase static API)
     std::memset( buffer_curr, 0, sizeof( buffer_curr ) );
     BlockState::set_next_offset_of( buffer_curr, 100u ); // Указывает на старый следующий
 
-    // Инициализация старого следующего блока (via BlockStateBase static API, Issue #120)
+    // Инициализация старого следующего блока (via BlockStateBase static API)
     std::memset( buffer_old_next, 0, sizeof( buffer_old_next ) );
     BlockState::set_prev_offset_of( buffer_old_next, 6u ); // Указывает на текущий (idx=6)
 
@@ -247,7 +247,7 @@ TEST_CASE( "AllocatedBlock cast_from_raw and verify_invariants", "[test_block_st
     alignas( 16 ) std::uint8_t buffer[64]; // 32 header + 32 data
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    // Initialize via BlockStateBase static API (Issue #120)
+    // Initialize via BlockStateBase static API
     BlockState::set_weight_of( buffer, 2u );      // 2 гранулы данных
     BlockState::set_root_offset_of( buffer, 0u ); // idx=0
 
@@ -270,7 +270,7 @@ TEST_CASE( "    mark_as_free", "[test_block_state]" )
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    // Создаём занятый блок (via BlockStateBase static API, Issue #120)
+    // Создаём занятый блок (via BlockStateBase static API)
     BlockState::set_weight_of( buffer, 5u );
     BlockState::set_root_offset_of( buffer, 6u );
 
@@ -327,7 +327,7 @@ TEST_CASE( "    coalesce_with_next", "[test_block_state]" )
     alignas( 16 ) std::uint8_t buffer_next[32];
     alignas( 16 ) std::uint8_t buffer_nxt_nxt[32];
 
-    // Инициализация текущего блока (via BlockStateBase static API, Issue #120)
+    // Инициализация текущего блока (via BlockStateBase static API)
     std::memset( buffer_curr, 0, sizeof( buffer_curr ) );
     BlockState::set_next_offset_of( buffer_curr, 10u ); // → следующий
 
@@ -366,7 +366,7 @@ TEST_CASE( "    coalesce_with_prev", "[test_block_state]" )
     alignas( 16 ) std::uint8_t buffer_curr[32];
     alignas( 16 ) std::uint8_t buffer_next[32];
 
-    // Инициализация предыдущего блока (via BlockStateBase static API, Issue #120)
+    // Инициализация предыдущего блока (via BlockStateBase static API)
     std::memset( buffer_prev, 0, sizeof( buffer_prev ) );
     BlockState::set_next_offset_of( buffer_prev, 10u ); // → текущий
 
@@ -425,7 +425,7 @@ TEST_CASE( "    detect_block_state", "[test_block_state]" )
     std::memset( buffer, 0, sizeof( buffer ) );
     REQUIRE( pmm::detect_block_state<A>( buffer, 6 ) == 0 ); // FreeBlock
 
-    // Занятый блок (idx=6) (via BlockStateBase static API, Issue #120)
+    // Занятый блок (idx=6) (via BlockStateBase static API)
     BlockState::set_weight_of( buffer, 5u );
     BlockState::set_root_offset_of( buffer, 6u );
     REQUIRE( pmm::detect_block_state<A>( buffer, 6 ) == 1 );  // AllocatedBlock
@@ -445,7 +445,7 @@ TEST_CASE( "    recover_block_state", "[test_block_state]" )
 
     alignas( 16 ) std::uint8_t buffer[32];
 
-    // Случай 1: weight>0, но root_offset неверен (via BlockStateBase static API, Issue #120)
+    // Случай 1: weight>0, но root_offset неверен (via BlockStateBase static API)
     std::memset( buffer, 0, sizeof( buffer ) );
     BlockState::set_weight_of( buffer, 5u );
     BlockState::set_root_offset_of( buffer, 10u ); // Должен быть 6
@@ -503,7 +503,7 @@ TEST_CASE( "    Deallocate flow (no coalesce)", "[test_block_state]" )
     alignas( 16 ) std::uint8_t buffer[32];
     std::memset( buffer, 0, sizeof( buffer ) );
 
-    // 1. Создаём занятый блок (via BlockStateBase static API, Issue #120)
+    // 1. Создаём занятый блок (via BlockStateBase static API)
     BlockState::set_weight_of( buffer, 5u );
     BlockState::set_root_offset_of( buffer, 6u );
 

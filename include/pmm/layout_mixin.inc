@@ -1,4 +1,4 @@
-// ─── Layout init / expand mixin (Issue #245 line-limit compliance) ────────────
+// ─── Layout init / expand mixin ────────────
 // Included inside PersistMemoryManager<ConfigT, InstanceId> private section.
 // Provides init_layout() and do_expand() — internal backend layout helpers.
 
@@ -33,7 +33,7 @@ static bool init_layout( std::uint8_t* base, std::size_t size ) noexcept
     hdr->last_block_offset  = address_traits::no_block;
     hdr->free_tree_root     = address_traits::no_block;
     hdr->granule_size       = static_cast<std::uint16_t>( kGranSz );
-    hdr->root_offset        = address_traits::no_block; // Issue #200: no root object by default
+    hdr->root_offset        = address_traits::no_block; // No root object by default
 
     // Инициализация первого свободного блока через state machine утилиты
     void* blk = base + static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz;
@@ -65,7 +65,7 @@ static bool do_expand( std::size_t user_size ) noexcept
     detail::ManagerHeader<address_traits>* hdr      = get_header( base );
     std::size_t                            old_size = hdr->total_size;
 
-    // Issue #146: use AddressTraitsT-specific granule size for all computations.
+    // Use AddressTraitsT-specific granule size for all computations.
     static constexpr std::size_t kGranSz       = address_traits::granule_size;
     index_type                   data_gran_need = detail::bytes_to_granules_t<address_traits>( user_size );
     if ( data_gran_need == 0 )
@@ -88,7 +88,7 @@ static bool do_expand( std::size_t user_size ) noexcept
     logging_policy::on_expand( old_size, new_size );
     hdr = get_header( new_base );
 
-    // Issue #146: compute extra_idx using address_traits::granule_size.
+    // Compute extra_idx using address_traits::granule_size.
     index_type  extra_idx  = detail::byte_off_to_idx_t<address_traits>( old_size );
     std::size_t extra_size = new_size - old_size;
 
@@ -107,7 +107,7 @@ static bool do_expand( std::size_t user_size ) noexcept
     }
     else
     {
-        // Issue #146: minimum extra size check uses address_traits granule size.
+        // Minimum extra size check uses address_traits granule size.
         if ( extra_size < sizeof( Block<address_traits> ) + kGranSz )
             return false;
         void* nb_blk = new_base + static_cast<std::size_t>( extra_idx ) * kGranSz;

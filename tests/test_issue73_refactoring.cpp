@@ -1,11 +1,10 @@
 /**
  * @file test_issue73_refactoring.cpp
- * @brief Tests for architectural refactoring Issue #73 (updated #110, #112 — static API).
+ * @brief Tests for architectural refactoring: (updated #110, #112 — static API).
  *
- * Issue #110: PersistMemoryManager<ConfigT, InstanceId> is a unified fully static
  * manager. Tests verify:
  * - FR-03: Block<DefaultAddressTraits> (32 bytes) and ManagerHeader (64 bytes) sizes unchanged
- *   (Issue #112: BlockHeader struct removed — Block<A> is the sole block type)
+ *   (BlockHeader struct removed — Block<A> is the sole block type)
  * - FR-02/AR-03: PersistentAvlTree is a standalone class
  * - FR-04/AR-01: Public API works through static PersistMemoryManager presets
  * - AR-02: No virtual functions — all polymorphism is static
@@ -24,13 +23,13 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 
 // ─── FR-03: Binary-compatibility static_assert checks ────────────────────────
 
-// Issue #112: BlockHeader struct removed; Block<DefaultAddressTraits> is the sole block type.
+// BlockHeader struct removed; Block<DefaultAddressTraits> is the sole block type.
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "FR-03: Block<DefaultAddressTraits> must be exactly 32 bytes (Issue #112)" );
-// Issue #175: ManagerHeader<AT> is now templated; DefaultAddressTraits variant remains 64 bytes.
+               "FR-03: Block<DefaultAddressTraits> must be exactly 32 bytes " );
+// ManagerHeader<AT> is now templated; DefaultAddressTraits variant remains 64 bytes.
 static_assert( sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) == 64,
-               "FR-03: ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes (Issue #175)" );
-static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr<T> must be exactly 4 bytes (Issue #59)" );
+               "FR-03: ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes " );
+static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr<T> must be exactly 4 bytes " );
 
 // ─── FR-02/AR-03: PersistentAvlTree is a standalone class ────────────────────
 
@@ -119,11 +118,11 @@ TEST_CASE( "AR-04: file_separation", "[test_issue73_refactoring]" )
 {
     // Types from persist_memory_types.h
     static_assert( pmm::kGranuleSize == 16, "Types header must provide kGranuleSize" );
-    // Issue #112: BlockHeader removed; Block<DefaultAddressTraits> is the sole block type.
-    static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Types header: Block<A> (Issue #112)" );
-    // Issue #175: ManagerHeader<AT> is now templated.
+    // BlockHeader removed; Block<DefaultAddressTraits> is the sole block type.
+    static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Types header: Block<A> " );
+    // ManagerHeader<AT> is now templated.
     static_assert( sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) == 64,
-                   "Types header: ManagerHeader<DefaultAddressTraits> (Issue #175)" );
+                   "Types header: ManagerHeader<DefaultAddressTraits> " );
 
     // Config from pmm_config.h
     static_assert( pmm::config::kDefaultGrowNumerator == 5, "Config header: grow_numerator" );

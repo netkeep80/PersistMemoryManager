@@ -1,14 +1,12 @@
 /**
  * @file test_issue87_phase8.cpp
- * @brief Тесты Phase 8: pmm_presets.h — готовые инстанции (Issue #87, обновлено #110).
+ * @brief Тесты Phase 8: pmm_presets.h — готовые инстанции.
  *
- * Issue #110: pmm_presets.h обновлён для использования PersistMemoryManager.
  * Только два пресета: SingleThreadedHeap и MultiThreadedHeap.
  * Все методы статические.
  *
  * @see include/pmm/pmm_presets.h
- * @see plan_issue87.md §5 «Фаза 8: pmm_presets.h»
- * @version 0.2 (Issue #110 — обновлено для статического API)
+ * @version 0.2
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -24,7 +22,7 @@
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
 
 // =============================================================================
-// Phase 8 tests: pmm_presets.h (updated for Issue #110)
+// Phase 8 tests: pmm_presets.h
 // =============================================================================
 
 // ─── P8-A: Компиляция предустановок ──────────────────────────────────────────

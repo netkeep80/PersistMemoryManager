@@ -1,20 +1,20 @@
 /**
  * @file test_issue168_deduplication.cpp
- * @brief Тесты дедупликации функциональности ПАП (Issue #168).
+ * @brief Тесты дедупликации функциональности ПАП.
  *
  * Проверяет:
- *   - Удаление четырёх избыточных функций-обёрток из block_state.h (Issue #168):
+ *   - Удаление четырёх избыточных функций-обёрток из block_state.h:
  *       reset_block_avl_fields(), repair_block_prev_offset(),
  *       read_block_next_offset(), read_block_weight()
- *   - AllocatorPolicy использует BlockStateBase<AT>::* напрямую (Issue #168)
- *   - detail::kBlockHeaderGranules_t<AT> корректно вычисляет размер заголовка блока (Issue #168)
+ *   - AllocatorPolicy использует BlockStateBase<AT>::* напрямую
+ *   - detail::kBlockHeaderGranules_t<AT> корректно вычисляет размер заголовка блока
  *   - Функциональность recovery-методов (rebuild_free_tree, repair_linked_list,
  *     recompute_counters) не изменилась после рефакторинга
  *
- * @see include/pmm/block_state.h    — BlockStateBase<AT>::* методы (Issue #168)
- * @see include/pmm/allocator_policy.h — AllocatorPolicy (Issue #168)
- * @see include/pmm/types.h          — detail::kBlockHeaderGranules_t<AT> (Issue #168)
- * @version 0.1 (Issue #168 — дедупликация функций-обёрток)
+ * @see include/pmm/block_state.h    — BlockStateBase<AT>::* методы
+ * @see include/pmm/allocator_policy.h — AllocatorPolicy
+ * @see include/pmm/types.h          — detail::kBlockHeaderGranules_t<AT>
+ * @version 0.1
  */
 
 #include "pmm/allocator_policy.h"
@@ -32,7 +32,7 @@
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
 
 // =============================================================================
-// Issue #168 Tests Section A: kBlockHeaderGranules_t<AT> correctness
+// KBlockHeaderGranules_t<AT> correctness
 // =============================================================================
 
 /// @brief kBlockHeaderGranules_t<DefaultAddressTraits> is correct (2 granules = 32 bytes / 16 bytes).
@@ -41,7 +41,7 @@ TEST_CASE( "I168-A1: kBlockHeaderGranules_t<DefaultAddressTraits> == 2", "[test_
     using AT = pmm::DefaultAddressTraits;
 
     static_assert( pmm::detail::kBlockHeaderGranules_t<AT> == 2,
-                   "kBlockHeaderGranules_t<DefaultAddressTraits> must be 2 (32 bytes / 16 bytes, Issue #168)" );
+                   "kBlockHeaderGranules_t<DefaultAddressTraits> must be 2 (32 bytes / 16 bytes)" );
 }
 
 /// @brief kBlockHeaderGranules_t<SmallAddressTraits> is correct (ceiling division).
@@ -53,7 +53,7 @@ TEST_CASE( "I168-A2: kBlockHeaderGranules_t<SmallAddressTraits> is correct", "[t
     // TreeNode<Small>: 5*uint16_t + 4 bytes = 14 bytes; Block<Small> = 14 + 4 = 18 bytes
     // ceil(18/16) = 2
     static_assert( pmm::detail::kBlockHeaderGranules_t<AT> == 2,
-                   "kBlockHeaderGranules_t<SmallAddressTraits> must be 2 (Issue #168)" );
+                   "kBlockHeaderGranules_t<SmallAddressTraits> must be 2 " );
 }
 
 /// @brief kBlockHeaderGranules_t<LargeAddressTraits> is correct.
@@ -66,11 +66,11 @@ TEST_CASE( "I168-A3: kBlockHeaderGranules_t<LargeAddressTraits> is >= 1", "[test
     // Actually Block<Large> = sizeof(TreeNode<Large>) + 2*sizeof(uint64_t)
     // ceil(sizeof(Block<Large>) / 64) — at least 1
     static_assert( pmm::detail::kBlockHeaderGranules_t<AT> >= 1,
-                   "kBlockHeaderGranules_t<LargeAddressTraits> must be >= 1 (Issue #168)" );
+                   "kBlockHeaderGranules_t<LargeAddressTraits> must be >= 1 " );
 }
 
 // =============================================================================
-// Issue #168 Tests Section B: BlockStateBase<AT> methods used directly (no wrapper overhead)
+// BlockStateBase<AT> methods used directly (no wrapper overhead)
 // =============================================================================
 
 /// @brief BlockStateBase<AT>::reset_avl_fields_of() correctly resets AVL fields.
@@ -89,7 +89,7 @@ TEST_CASE( "I168-B1: BlockStateBase::reset_avl_fields_of() directly", "[test_iss
     BlockState::set_parent_offset_of( blk, static_cast<A::index_type>( 5 ) );
     BlockState::set_avl_height_of( blk, static_cast<std::int16_t>( 3 ) );
 
-    // Call reset_avl_fields_of directly (as AllocatorPolicy now does after Issue #168)
+    // Call reset_avl_fields_of directly (as AllocatorPolicy now does)
     BlockState::reset_avl_fields_of( blk );
 
     REQUIRE( BlockState::get_left_offset( blk ) == A::no_block );
@@ -107,7 +107,7 @@ TEST_CASE( "I168-B2: BlockStateBase::repair_prev_offset() directly", "[test_issu
     alignas( 16 ) std::uint8_t buffer[32] = {};
     auto*                      blk        = reinterpret_cast<pmm::Block<A>*>( buffer );
 
-    // repair_prev_offset sets prev_offset (as AllocatorPolicy now does after Issue #168)
+    // repair_prev_offset sets prev_offset (as AllocatorPolicy now does)
     BlockState::repair_prev_offset( blk, static_cast<A::index_type>( 7 ) );
     REQUIRE( BlockState::get_prev_offset( blk ) == static_cast<A::index_type>( 7 ) );
 
@@ -132,7 +132,7 @@ TEST_CASE( "I168-B3: BlockStateBase::get_next_offset() directly", "[test_issue16
                              /*weight*/ 0,
                              /*root_offset*/ 0 );
 
-    // get_next_offset is now called directly in AllocatorPolicy (Issue #168)
+    // get_next_offset is now called directly in AllocatorPolicy
     REQUIRE( BlockState::get_next_offset( blk ) == static_cast<A::index_type>( 42 ) );
 
     BlockState::set_next_offset_of( blk, A::no_block );
@@ -156,7 +156,7 @@ TEST_CASE( "I168-B4: BlockStateBase::get_weight() directly", "[test_issue168_ded
 }
 
 // =============================================================================
-// Issue #168 Tests Section C: AllocatorPolicy recovery methods work correctly after refactoring
+// AllocatorPolicy recovery methods work correctly after refactoring
 // =============================================================================
 
 using TestMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 168>;
@@ -243,7 +243,7 @@ TEST_CASE( "I168-C3: recompute_counters() works after wrapper removal", "[test_i
 }
 
 // =============================================================================
-// Issue #168 Tests Section D: Non-default AddressTraits use correct BlockStateBase
+// Non-default AddressTraits use correct BlockStateBase
 // =============================================================================
 
 /// @brief BlockStateBase<SmallAddressTraits>::reset_avl_fields_of() uses correct no_block value.
@@ -291,7 +291,7 @@ TEST_CASE( "I168-D2: BlockStateBase<SmallAddressTraits>::get_weight/next_offset 
                              /*weight*/ static_cast<A::index_type>( 3 ),
                              /*root_offset*/ static_cast<A::index_type>( 10 ) );
 
-    // get_weight and get_next_offset are now called directly in AllocatorPolicy (Issue #168)
+    // get_weight and get_next_offset are now called directly in AllocatorPolicy
     REQUIRE( BlockState::get_weight( blk ) == static_cast<A::index_type>( 3 ) );
     REQUIRE( BlockState::get_next_offset( blk ) == static_cast<A::index_type>( 99 ) );
 }

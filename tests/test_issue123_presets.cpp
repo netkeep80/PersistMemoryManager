@@ -1,6 +1,6 @@
 /**
  * @file test_issue123_presets.cpp
- * @brief Тесты расширения pmm_presets.h: EmbeddedHeap и IndustrialDBHeap (Issue #123).
+ * @brief Тесты расширения pmm_presets.h: EmbeddedHeap и IndustrialDBHeap.
  *
  * Проверяет два новых пресета, добавленных для генерации single-header файлов:
  *   - `EmbeddedHeap`      — NoLock + HeapStorage, коэффициент роста 50%
@@ -8,7 +8,7 @@
  *
  * @see include/pmm/pmm_presets.h
  * @see include/pmm/manager_configs.h
- * @version 0.1 (Issue #123 — single-header preset generation)
+ * @version 0.1
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -26,7 +26,7 @@
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
 
 // =============================================================================
-// Issue #123 tests: new presets in pmm_presets.h
+// New presets in pmm_presets.h
 // =============================================================================
 
 // ─── I123-A: Компиляция всех четырёх пресетов ────────────────────────────────

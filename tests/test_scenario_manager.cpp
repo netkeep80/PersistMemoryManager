@@ -1,6 +1,6 @@
 /**
  * @file test_scenario_manager.cpp
- * @brief Phase 8 unit tests for ScenarioManager lifecycle (migrated to static API, Issue #112).
+ * @brief Phase 8 unit tests for ScenarioManager lifecycle (migrated to static API).
  *
  * DemoMgr (MultiThreadedHeap) is a fully static class — no instance pointer needed.
  * g_pmm is a boolean flag: true when the manager is active.

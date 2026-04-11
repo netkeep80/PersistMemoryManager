@@ -1,6 +1,6 @@
 /**
  * @file pmm/block_state.h
- * @brief BlockState machine — автомат состояний блока для атомарных операций (Issue #93).
+ * @brief BlockState machine — автомат состояний блока для атомарных операций.
  *
  * Реализует state machine через наследование состояний, где каждое состояние — это
  * наследник Block<A> с доступными методами работы. Каждый метод
@@ -23,19 +23,16 @@
  *   3. Атомарность: каждый метод выполняет один атомарный шаг
  *   4. Завершаемость: цепочка вызовов приводит к корректному состоянию
  *
- * Issue #114: Добавлены статические методы в BlockStateBase для recovery-операций:
  *   - reset_avl_fields_of()     — сброс AVL-полей перед rebuild_free_tree
  *   - repair_prev_offset()      — восстановление prev_offset при repair_linked_list
  *   - get_next_offset()         — чтение next_offset в recovery-методах
  *   - get_weight()              — чтение weight в recovery-методах
  *
- * Issue #168: Удалены избыточные функции-обёртки reset_block_avl_fields(),
- *   repair_block_prev_offset(), read_block_next_offset(), read_block_weight() —
+ *   repair_block_prev_offset(), read_block_next_offset(), read_block_weight()
  *   AllocatorPolicy вызывает BlockStateBase<AT>::* напрямую.
  *
  * @see docs/atomic_writes.md «Граф состояний блока»
- * @see plan_issue87.md §5 «Фаза 9: BlockState machine»
- * @version 0.4 (Issue #168 — удалены дублирующие функции-обёртки)
+ * @version 0.4
  */
 
 #pragma once
@@ -84,7 +81,7 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     using index_type     = typename AddressTraitsT::index_type;
     using BaseBlock      = Block<AddressTraitsT>;
 
-    // ─── Compile-time layout offsets (Issue #120: derived from sizes + struct layout) ──
+    // ─── Compile-time layout offsets (derived from sizes + struct layout) ──
     // Note: offsetof cannot be used on protected members from outside the class body.
     // These offsets are derived from sizeof base types and the assumption of standard layout.
     // The struct layout is verified by static_assert in block.h and tree_node.h.
@@ -93,7 +90,7 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     static constexpr std::size_t kOffsetPrevOffset = sizeof( TNode );
     /// Byte offset of next_offset within Block<A> layout (second direct field of Block, after prev_offset).
     static constexpr std::size_t kOffsetNextOffset = sizeof( TNode ) + sizeof( index_type );
-    /// Byte offset of weight within Block<A> layout (first field of TreeNode, Issue #126, #138).
+    /// Byte offset of weight within Block<A> layout (first field of TreeNode).
     static constexpr std::size_t kOffsetWeight = 0;
     /// Byte offset of left_offset within Block<A> layout (second field of TreeNode, follows weight).
     static constexpr std::size_t kOffsetLeftOffset = sizeof( index_type );
@@ -105,7 +102,7 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     static constexpr std::size_t kOffsetRootOffset = 4 * sizeof( index_type );
     /// Byte offset of avl_height within Block<A> layout (after weight+left+right+parent+root = 5 index_type fields).
     static constexpr std::size_t kOffsetAvlHeight = 5 * sizeof( index_type );
-    /// Byte offset of node_type within Block<A> layout (after avl_height(2) = 2 bytes, Issue #126, #138).
+    /// Byte offset of node_type within Block<A> layout (after avl_height(2) = 2 bytes).
     static constexpr std::size_t kOffsetNodeType = 5 * sizeof( index_type ) + 2;
 
     // Прямое создание запрещено — используйте cast_from_raw()
@@ -127,7 +124,7 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     // Read-only доступ к root_offset (определяет состояние)
     index_type root_offset() const noexcept { return TNode::root_offset; }
 
-    // Read-only доступ к node_type (Issue #126: тип узла)
+    // Read-only доступ к node_type
     std::uint16_t node_type() const noexcept { return TNode::node_type; }
 
     /**
@@ -144,7 +141,7 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     bool is_allocated( index_type own_idx ) const noexcept { return weight() > 0 && root_offset() == own_idx; }
 
     /**
-     * @brief Определить, заблокирован ли блок навечно (Issue #126).
+     * @brief Определить, заблокирован ли блок навечно.
      * @return true если node_type == kNodeReadOnly.
      */
     bool is_permanently_locked() const noexcept { return node_type() == pmm::kNodeReadOnly; }
@@ -172,7 +169,7 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     }
 
     /**
-     * @brief Verify block state consistency without modifying the image (Issue #245).
+     * @brief Verify block state consistency without modifying the image.
      *
      * Read-only counterpart of recover_state(). Checks that weight and root_offset
      * are in a consistent (non-transitional) state. Reports violations into result.
@@ -384,14 +381,14 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
         reinterpret_cast<BlockStateBase*>( raw_blk )->set_root_offset( v );
     }
     /**
-     * @brief Прочитать node_type блока (Issue #126).
+     * @brief Прочитать node_type блока.
      */
     static std::uint16_t get_node_type( const void* raw_blk ) noexcept
     {
         return reinterpret_cast<const BlockStateBase*>( raw_blk )->node_type();
     }
     /**
-     * @brief Установить node_type блока (Issue #126).
+     * @brief Установить node_type блока.
      */
     static void set_node_type_of( void* raw_blk, std::uint16_t v ) noexcept
     {
@@ -422,9 +419,9 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
 
 // Проверка бинарной совместимости с Block<A>
 static_assert( sizeof( BlockStateBase<DefaultAddressTraits> ) == sizeof( Block<DefaultAddressTraits> ),
-               "BlockStateBase<A> must have same size as Block<A> (Issue #93)" );
+               "BlockStateBase<A> must have same size as Block<A> " );
 static_assert( sizeof( BlockStateBase<DefaultAddressTraits> ) == 32,
-               "BlockStateBase<DefaultAddressTraits> must be 32 bytes (Issue #93)" );
+               "BlockStateBase<DefaultAddressTraits> must be 32 bytes " );
 
 /**
  * @brief FreeBlock — свободный блок в корректном состоянии.
@@ -449,7 +446,6 @@ template <typename AddressTraitsT> class FreeBlock : public BlockStateBase<Addre
      * @param raw Указатель на Block<A>.
      * @return Указатель на FreeBlock, или nullptr если raw==nullptr или блок не свободен.
      *
-     * Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds
      * if block is not in FreeBlock state, instead of relying on assert only.
      * В debug-режиме дополнительно срабатывает assert для диагностики.
      */
@@ -657,7 +653,6 @@ template <typename AddressTraitsT> class AllocatedBlock : public BlockStateBase<
      *
      * @return Указатель на AllocatedBlock, или nullptr если raw==nullptr или weight==0.
      *
-     * Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds
      * if block is not allocated, instead of relying on assert only.
      * В debug-режиме дополнительно срабатывает assert для диагностики.
      * Полная проверка (root_offset == own_idx) доступна через verify_invariants(own_idx).
@@ -893,7 +888,7 @@ void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own
 }
 
 /**
- * @brief Verify block state consistency without modification (Issue #245).
+ * @brief Verify block state consistency without modification.
  *
  * Read-only counterpart of recover_block_state(). Reports violations into result.
  *

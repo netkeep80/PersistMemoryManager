@@ -1,6 +1,6 @@
 /**
  * @file test_issue43_phase1_safety.cpp
- * @brief Tests for Phase 1 safety improvements (Issue #43).
+ * @brief Tests for Phase 1 safety improvements.
  *
  * Verifies:
  *  - 1.1 static_assert for noexcept constructibility in create_typed / destroy_typed
@@ -9,7 +9,7 @@
  *  - 1.4 Runtime checks in cast_from_raw (FreeBlock, AllocatedBlock)
  *
  * @see docs/phase1_safety.md
- * @version 0.1 (Issue #43 — Phase 1: Safety and robustness)
+ * @version 0.1
  */
 
 #include "pmm/pmm_presets.h"

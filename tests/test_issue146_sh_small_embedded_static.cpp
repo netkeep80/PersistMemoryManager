@@ -1,6 +1,6 @@
 /**
  * @file test_issue146_sh_small_embedded_static.cpp
- * @brief Тест самодостаточности pmm_small_embedded_static_heap.h (Issue #146).
+ * @brief Тест самодостаточности pmm_small_embedded_static_heap.h.
  *
  * Проверяет, что single-header файл pmm_small_embedded_static_heap.h является
  * полностью автономным: пользователь может скопировать один файл в свой
@@ -9,7 +9,7 @@
  * Этот файл намеренно не использует никаких других include из include/pmm/.
  *
  * @see single_include/pmm/pmm_small_embedded_static_heap.h
- * @version 0.1 (Issue #146 — поддержка 16-bit индекса: SmallEmbeddedStaticHeap)
+ * @version 0.1
  */
 
 #include "pmm_small_embedded_static_heap.h"

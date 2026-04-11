@@ -1,6 +1,6 @@
 /**
  * @file pmm/typed_guard.h
- * @brief RAII scope-guard for persistent containers (Issue #235).
+ * @brief RAII scope-guard for persistent containers.
  *
  * Provides typed_guard<T, ManagerT> — an RAII wrapper that automatically calls
  * the container's cleanup method (free_data() or free_all()) and then
@@ -24,7 +24,7 @@
  * @endcode
  *
  * @see pstring.h, parray.h, ppool.h — containers requiring explicit cleanup
- * @version 0.1 (Issue #235 — RAII scope-guard)
+ * @version 0.1
  */
 
 #pragma once
@@ -35,7 +35,7 @@
 namespace pmm
 {
 
-// ─── Concepts for cleanup method detection (Issue #235) ──────────────────────
+// ─── Concepts for cleanup method detection ──────────────────────
 
 /// @brief Detects types with a free_data() method (pstring, parray).
 template <typename T>

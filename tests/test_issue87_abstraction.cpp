@@ -1,17 +1,15 @@
 /**
  * @file test_issue87_abstraction.cpp
- * @brief Tests for Issue #87 abstraction (updated #102 — new API).
+ * @brief Tests: abstraction (updated #102 — new API).
  *
- * Issue #102: PersistMemoryManager<> (singleton) removed.
  *   - PART A tests updated to use AbstractPersistMemoryManager.
  *   - Phase 1/2/3 beacons still test the new type infrastructure.
  *   - PART C integration tests use the new instance-based API.
  *
- * @see plan_issue87.md — full refactoring plan
- * @version 0.2 (Issue #102)
+ * @version 0.2
  */
 
-// Issue #235: suppress deprecation warnings — this test deliberately exercises deprecated functions.
+// Suppress deprecation warnings — this test deliberately exercises deprecated functions.
 #if defined( __GNUC__ ) || defined( __clang__ )
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -50,13 +48,13 @@ TEST_CASE( "A2: kNoBlock is max uint32", "[test_issue87_abstraction]" )
     REQUIRE( pmm::detail::kNoBlock == ( std::numeric_limits<std::uint32_t>::max )() );
 }
 
-// ─── A2: Block<DefaultAddressTraits> layout (Issue #112) ─────────────────────
-// Note: Block fields are protected (Issue #120). Layout verified via BlockStateBase offsets.
+// ─── A2: Block<DefaultAddressTraits> layout ─────────────────────
+// Note: Block fields are protected. Layout verified via BlockStateBase offsets.
 
-TEST_CASE( "A3: Block<A> combines list+tree (Issue #112)", "[test_issue87_abstraction]" )
+TEST_CASE( "A3: Block<A> combines list+tree ", "[test_issue87_abstraction]" )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
-    // Issue #138: TreeNode fields come FIRST (TreeNode is base class), prev/next come AFTER
+    // TreeNode fields come FIRST (TreeNode is base class), prev/next come AFTER
     // New layout: [0..23] TreeNode fields, [24..31] prev_offset, next_offset
     static_assert( BlockState::kOffsetWeight == 0 );
     static_assert( BlockState::kOffsetLeftOffset == 4 );
@@ -65,16 +63,16 @@ TEST_CASE( "A3: Block<A> combines list+tree (Issue #112)", "[test_issue87_abstra
     static_assert( BlockState::kOffsetRootOffset == 16 );
     static_assert( BlockState::kOffsetAvlHeight == 20 );
     static_assert( BlockState::kOffsetNodeType == 22 );
-    // Issue #138: prev/next come after TreeNode (sizeof(TreeNode<Default>) = 24)
+    // Prev/next come after TreeNode (sizeof(TreeNode<Default>) = 24)
     static_assert( BlockState::kOffsetPrevOffset == 24 );
     static_assert( BlockState::kOffsetNextOffset == 28 );
     static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32 );
 }
 
-TEST_CASE( "A4: Block<A> uses uint32 indices (Issue #112)", "[test_issue87_abstraction]" )
+TEST_CASE( "A4: Block<A> uses uint32 indices ", "[test_issue87_abstraction]" )
 {
     using BlockState = pmm::BlockStateBase<pmm::DefaultAddressTraits>;
-    // Fields are protected (Issue #120); verify index_type via BlockStateBase::index_type
+    // Fields are protected; verify index_type via BlockStateBase::index_type
     static_assert( std::is_same<BlockState::index_type, std::uint32_t>::value );
 }
 
@@ -174,16 +172,16 @@ TEST_CASE( "B1: AddressTraits<> — 8/16/32-bit", "[test_issue87_abstraction]" )
     static_assert( std::is_same<pmm::DefaultAddressTraits, A32>::value );
 }
 
-// [Phase 2] TreeNode + Block prev/next fields (Issue #138: LinkedListNode merged into Block)
-// Note: Fields are protected (Issue #120). Type verified via BlockStateBase::index_type.
+// [Phase 2] TreeNode + Block prev/next fields
+// Note: Fields are protected. Type verified via BlockStateBase::index_type.
 
-TEST_CASE( "B2: TreeNode<A> + Block prev/next fields (Issue #138)", "[test_issue87_abstraction]" )
+TEST_CASE( "B2: TreeNode<A> + Block prev/next fields ", "[test_issue87_abstraction]" )
 {
     using A = pmm::DefaultAddressTraits;
 
-    // Fields are protected (Issue #120): verify type via Block::index_type alias (Issue #138)
+    // Fields are protected: verify type via Block::index_type alias
     static_assert( std::is_same<pmm::Block<A>::index_type, typename A::index_type>::value,
-                   "Block::index_type must match A::index_type (Issue #138)" );
+                   "Block::index_type must match A::index_type " );
     static_assert( std::is_same<pmm::TreeNode<A>::index_type, typename A::index_type>::value,
                    "TreeNode::index_type must match A::index_type" );
 
@@ -193,22 +191,22 @@ TEST_CASE( "B2: TreeNode<A> + Block prev/next fields (Issue #138)", "[test_issue
 
     using A8 = pmm::AddressTraits<std::uint8_t, 8>;
     static_assert( std::is_same<pmm::Block<A8>::index_type, std::uint8_t>::value,
-                   "Block<AddressTraits<uint8_t, 8>>::index_type must be uint8_t (Issue #138)" );
+                   "Block<AddressTraits<uint8_t, 8>>::index_type must be uint8_t " );
     static_assert( std::is_same<pmm::TreeNode<A8>::index_type, std::uint8_t>::value,
                    "TreeNode<AddressTraits<uint8_t, 8>>::index_type must be uint8_t" );
 }
 
 // [Phase 3] Block
 
-TEST_CASE( "B3: Block<A> inherits TreeNode + has prev/next fields (Issue #138)", "[test_issue87_abstraction]" )
+TEST_CASE( "B3: Block<A> inherits TreeNode + has prev/next fields ", "[test_issue87_abstraction]" )
 {
     using A = pmm::DefaultAddressTraits;
 
     static_assert( sizeof( pmm::Block<A> ) == 32 );
-    // Issue #138: Block no longer inherits LinkedListNode — prev/next are direct Block fields
+    // Block no longer inherits LinkedListNode — prev/next are direct Block fields
     static_assert( std::is_base_of<pmm::TreeNode<A>, pmm::Block<A>>::value );
     // Verify total size is still 32 bytes: TreeNode(24) + prev(4) + next(4)
-    static_assert( sizeof( pmm::Block<A> ) == 32, "Block must still be 32 bytes (Issue #138)" );
+    static_assert( sizeof( pmm::Block<A> ) == 32, "Block must still be 32 bytes " );
 }
 
 // =============================================================================
@@ -307,7 +305,7 @@ TEST_CASE( "C4: AVL tree invariants under fragmentation", "[test_issue87_abstrac
 // main
 // =============================================================================
 
-// Issue #235: restore deprecation warnings
+// Restore deprecation warnings
 #if defined( __GNUC__ ) || defined( __clang__ )
 #pragma GCC diagnostic pop
 #elif defined( _MSC_VER )

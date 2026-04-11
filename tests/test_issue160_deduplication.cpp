@@ -1,4 +1,4 @@
-// Issue #235: suppress deprecation warnings — this test deliberately exercises deprecated functions.
+// Suppress deprecation warnings — this test deliberately exercises deprecated functions.
 #if defined( __GNUC__ ) || defined( __clang__ )
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -9,21 +9,21 @@
 
 /**
  * @file test_issue160_deduplication.cpp
- * @brief Тесты дедупликации функциональности ПАП (Issue #160).
+ * @brief Тесты дедупликации функциональности ПАП.
  *
  * Проверяет:
- *   - BasicConfig<> — базовый шаблон конфигурации для heap-менеджеров (Issue #160)
+ *   - BasicConfig<> — базовый шаблон конфигурации для heap-менеджеров
  *   - Совместимость псевдонимов конфигурации с оригинальными именами
  *   - Корректность рефакторинга функций конвертации байты↔гранулы:
  *       - detail::bytes_to_granules() делегирует в bytes_to_granules_t<DefaultAddressTraits>()
  *       - detail::granules_to_bytes() делегирует в DefaultAddressTraits::granules_to_bytes()
  *       - detail::idx_to_byte_off() делегирует в DefaultAddressTraits::idx_to_byte_off()
  *       - detail::byte_off_to_idx() делегирует в byte_off_to_idx_t<DefaultAddressTraits>()
- *   - Унификация block_total_granules: единственная шаблонная реализация (Issue #160)
+ *   - Унификация block_total_granules: единственная шаблонная реализация
  *
  * @see include/pmm/manager_configs.h
  * @see include/pmm/types.h
- * @version 0.1 (Issue #160 — дедупликация)
+ * @version 0.1
  */
 
 #include "pmm/manager_configs.h"
@@ -38,7 +38,7 @@
 // ─── Макросы тестирования ─────────────────────────────────────────────────────
 
 // =============================================================================
-// Issue #160 Tests Section A: BasicConfig<> template
+// BasicConfig<> template
 // =============================================================================
 
 /// @brief BasicConfig создаёт конфигурацию с правильными типами по умолчанию.
@@ -77,7 +77,7 @@ TEST_CASE( "I160-A2: BasicConfig<LargeAddressTraits,...> has correct types", "[t
 }
 
 // =============================================================================
-// Issue #160 Tests Section B: Config aliases == BasicConfig specializations
+// Config aliases == BasicConfig specializations
 // =============================================================================
 
 /// @brief CacheManagerConfig — псевдоним BasicConfig<DefaultAddressTraits, NoLock, 5, 4, 64>.
@@ -123,7 +123,7 @@ TEST_CASE( "I160-B5: LargeDBConfig is BasicConfig alias", "[test_issue160_dedupl
 }
 
 // =============================================================================
-// Issue #160 Tests Section C: Byte/granule conversion deduplication
+// Byte/granule conversion deduplication
 // =============================================================================
 
 /// @brief detail::bytes_to_granules() == bytes_to_granules_t<DefaultAddressTraits>().
@@ -191,7 +191,7 @@ TEST_CASE( "I160-C5: Conversion roundtrip idx->bytes->idx", "[test_issue160_dedu
 }
 
 // =============================================================================
-// Issue #160 Tests Section D: block_total_granules single templated implementation
+// Block_total_granules single templated implementation
 // =============================================================================
 
 /// @brief block_total_granules шаблон работает с DefaultAddressTraits.
@@ -204,24 +204,24 @@ TEST_CASE( "I160-D1: block_total_granules<AT> compiles for multiple traits", "[t
     using AT2 = pmm::SmallAddressTraits;
 
     // Verify function template specializations are reachable (compile-time check).
-    // Issue #175: return type is now AT::index_type and ManagerHeader is templated on AT.
+    // Return type is now AT::index_type and ManagerHeader is templated on AT.
     static_assert(
         std::is_same<decltype( &pmm::detail::block_total_granules<AT1> ),
                      typename AT1::index_type ( * )( const std::uint8_t*, const pmm::detail::ManagerHeader<AT1>*,
                                                      const pmm::Block<AT1>* )>::value,
-        "block_total_granules<DefaultAddressTraits> must have correct signature (Issue #175)" );
+        "block_total_granules<DefaultAddressTraits> must have correct signature " );
     static_assert(
         std::is_same<decltype( &pmm::detail::block_total_granules<AT2> ),
                      typename AT2::index_type ( * )( const std::uint8_t*, const pmm::detail::ManagerHeader<AT2>*,
                                                      const pmm::Block<AT2>* )>::value,
-        "block_total_granules<SmallAddressTraits> must have correct signature (Issue #175)" );
+        "block_total_granules<SmallAddressTraits> must have correct signature " );
 }
 
 // =============================================================================
 // main
 // =============================================================================
 
-// Issue #235: restore deprecation warnings
+// Restore deprecation warnings
 #if defined( __GNUC__ ) || defined( __clang__ )
 #pragma GCC diagnostic pop
 #elif defined( _MSC_VER )

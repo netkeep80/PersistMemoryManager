@@ -1,6 +1,6 @@
 /**
  * @file pmm/diagnostics.h
- * @brief Structured diagnostics for verify and repair modes (Issue #245).
+ * @brief Structured diagnostics for verify and repair modes.
  *
  * Provides:
  *   - `RecoveryMode`     — enum to select verify-only vs. repair behaviour
@@ -14,7 +14,7 @@
  * @see block_state.h  — block-level verify_state / recover_state
  * @see allocator_policy.h — verify_linked_list, verify_counters, verify_free_tree_candidates
  * @see persist_memory_manager.h — PersistMemoryManager::verify, load
- * @version 1.0 (Issue #245)
+ * @version 1.0
  */
 
 #pragma once

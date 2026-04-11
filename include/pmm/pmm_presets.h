@@ -1,6 +1,6 @@
 /**
  * @file pmm/pmm_presets.h
- * @brief pmm_presets — готовые инстанции PersistMemoryManager (Issue #87 Phase 8, #110, #123, #146).
+ * @brief pmm_presets — готовые инстанции PersistMemoryManager (: phase 8, #110, #123, #146).
  *
  * Предоставляет набор готовых псевдонимов для наиболее распространённых
  * конфигураций менеджера персистентной памяти:
@@ -20,11 +20,11 @@
  *   --- Large DB (крупные базы данных, 64-bit) ---
  *   - `LargeDBHeap`             — 64-bit/64B, SharedMutexLock, HeapStorage, рост 100%
  *
- * Использует унифицированный `PersistMemoryManager<ConfigT, InstanceId>` (Issue #110).
+ * Использует унифицированный `PersistMemoryManager<ConfigT, InstanceId>`.
  *
- * @see persist_memory_manager.h — PersistMemoryManager (Issue #110)
+ * @see persist_memory_manager.h — PersistMemoryManager
  * @see manager_configs.h — готовые конфигурации менеджеров
- * @version 0.5 (Issue #146 — добавлена поддержка 16-bit и 64-bit индексов)
+ * @version 0.5
  */
 
 #pragma once

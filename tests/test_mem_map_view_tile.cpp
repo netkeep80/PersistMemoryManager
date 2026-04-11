@@ -1,6 +1,6 @@
 /**
  * @file test_mem_map_view_tile.cpp
- * @brief Headless tests for MemMapView block-level pixel map (Issue #116).
+ * @brief Headless tests for MemMapView block-level pixel map.
  *
  * MemMapView now uses DemoMgr::for_each_block() to build a per-byte PixelKind
  * array for block-level pixel colouring. These tests verify snapshot

@@ -1,8 +1,8 @@
 /**
  * @file test_issue45_pstring.cpp
- * @brief Tests for pstring — mutable persistent string (Issue #45, Phase 3.1).
+ * @brief Tests for pstring — mutable persistent string.
  *
- * Verifies the key requirements from Issue #45 Phase 3.1:
+ * Verifies the key requirements from this feature:
  *  1. pstring can be created in persistent address space via create_typed<pstring>().
  *  2. assign() sets string content, with reallocation when needed.
  *  3. c_str() returns null-terminated string data.
@@ -16,7 +16,7 @@
  *
  * @see include/pmm/pstring.h — pstring
  * @see include/pmm/persist_memory_manager.h — PersistMemoryManager
- * @version 0.1 (Issue #45 — Phase 3.1: mutable persistent string)
+ * @version 0.1
  */
 
 #include "pmm/persist_memory_manager.h"

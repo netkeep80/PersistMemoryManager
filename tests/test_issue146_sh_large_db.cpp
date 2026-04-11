@@ -1,6 +1,6 @@
 /**
  * @file test_issue146_sh_large_db.cpp
- * @brief Тест самодостаточности pmm_large_db_heap.h (Issue #146).
+ * @brief Тест самодостаточности pmm_large_db_heap.h.
  *
  * Проверяет, что single-header файл pmm_large_db_heap.h является
  * полностью автономным: пользователь может скопировать один файл в свой
@@ -9,7 +9,7 @@
  * Этот файл намеренно не использует никаких других include из include/pmm/.
  *
  * @see single_include/pmm/pmm_large_db_heap.h
- * @version 0.1 (Issue #146 — поддержка 64-bit индекса: LargeDBHeap)
+ * @version 0.1
  */
 
 #include "pmm_large_db_heap.h"

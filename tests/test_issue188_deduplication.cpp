@@ -1,6 +1,6 @@
 /**
  * @file test_issue188_deduplication.cpp
- * @brief Tests for code-deduplication refactoring in Issue #188.
+ * @brief Tests for code-deduplication refactoring.
  *
  * Verifies:
  *   - avl_tree_mixin.h NodeUpdateFn hook works correctly.
@@ -9,8 +9,8 @@
  *   - pmap and pstringview continue to work correctly (no regression from
  *     adding NodeUpdateFn default parameter to avl_insert/avl_rebalance_up).
  *
- * @see include/pmm/avl_tree_mixin.h — shared AVL operations (Issue #188)
- * @version 0.2 (Issue #224 — removed pvector tests after pvector removal)
+ * @see include/pmm/avl_tree_mixin.h — shared AVL operations
+ * @version 0.2
  */
 
 #include "pmm/manager_configs.h"

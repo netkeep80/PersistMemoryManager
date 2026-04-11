@@ -1,10 +1,9 @@
 /**
  * @file new_api_usage.cpp
- * @brief Example of unified PersistMemoryManager<ConfigT, InstanceId> API (Issue #110)
+ * @brief Example of unified PersistMemoryManager<ConfigT, InstanceId> API
  *
- * Demonstrates the unified static API introduced in Issue #110.
+ * Demonstrates the unified static API introduced.
  *
- * Issue #110: single PersistMemoryManager<ConfigT, InstanceId> replaces
  * both AbstractPersistMemoryManager (object model) and StaticMemoryManager.
  *
  * Key API:
@@ -186,7 +185,7 @@ static void demo_persistence()
 
 int main()
 {
-    std::cout << "PersistMemoryManager — unified static API (Issue #110)\n\n";
+    std::cout << "PersistMemoryManager — unified static API \n\n";
     std::cout << "Architecture: PersistMemoryManager<ConfigT, InstanceId>\n";
     std::cout << "  - All methods static: Mgr::create(), Mgr::allocate_typed(), etc.\n";
     std::cout << "  - p.resolve() — no argument (uses static manager resolve)\n";
