@@ -47,5 +47,6 @@ var searchData=
   ['pstringview_2eh_44',['pstringview.h',['../pstringview_8h.html',1,'']]],
   ['psview_5fpptr_45',['psview_pptr',['../structpmm_1_1pstringview.html#a9c83b90b16bea5f9a82f99e00eeb2fe1',1,'pmm::pstringview']]],
   ['ptr_5fto_5fgranule_5fidx_46',['ptr_to_granule_idx',['../namespacepmm_1_1detail.html#ac65ecfdbb045384640d1ad7f0397b65e',1,'pmm::detail']]],
-  ['push_5fback_47',['push_back',['../structpmm_1_1parray.html#a0a9d362642dab06eca74ddad8827b47a',1,'pmm::parray']]]
+  ['ptr_5fto_5fgranule_5fidx_5fchecked_47',['ptr_to_granule_idx_checked',['../namespacepmm_1_1detail.html#a30af002d5f27c0f2efe23a7f1acd09ee',1,'pmm::detail']]],
+  ['push_5fback_48',['push_back',['../structpmm_1_1parray.html#a0a9d362642dab06eca74ddad8827b47a',1,'pmm::parray']]]
 ];

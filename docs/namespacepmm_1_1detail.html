@@ -149,6 +149,14 @@ Functions</h2></td></tr>
 <tr class="memitem:a46729258a064b3516e05e6bb3f2910ac"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; AddressTraitsT &gt; *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a46729258a064b3516e05e6bb3f2910ac">block_at</a> (const std::uint8_t *base, typename AddressTraitsT::index_type idx)</td></tr>
 <tr class="memdesc:a46729258a064b3516e05e6bb3f2910ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get const pointer to Block&lt;AddressTraitsT&gt; by granule index (read-only). Idx parameter is now index_type (was uint32_t) for 64-bit support.  <br /></td></tr>
 <tr class="separator:a46729258a064b3516e05e6bb3f2910ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86bbefb99ce9a0a132be2cd127740620" id="r_a86bbefb99ce9a0a132be2cd127740620"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = pmm::DefaultAddressTraits&gt; </td></tr>
+<tr class="memitem:a86bbefb99ce9a0a132be2cd127740620"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a86bbefb99ce9a0a132be2cd127740620">block_at_checked</a> (std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, std::size_t total_size, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">idx</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="memdesc:a86bbefb99ce9a0a132be2cd127740620"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validated block_at: returns nullptr if idx is out of range. Use in verify/diagnostic paths where invalid indices must be handled gracefully.  <br /></td></tr>
+<tr class="separator:a86bbefb99ce9a0a132be2cd127740620"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24ce991797383d623b7812493178db1c" id="r_a24ce991797383d623b7812493178db1c"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = pmm::DefaultAddressTraits&gt; </td></tr>
+<tr class="memitem:a24ce991797383d623b7812493178db1c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a24ce991797383d623b7812493178db1c">block_at_checked</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, std::size_t total_size, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">idx</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="memdesc:a24ce991797383d623b7812493178db1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validated block_at (const): returns nullptr if idx is out of range.  <br /></td></tr>
+<tr class="separator:a24ce991797383d623b7812493178db1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ab2e8c1c2a4a3e7242540fb67859112" id="r_a6ab2e8c1c2a4a3e7242540fb67859112"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </td></tr>
 <tr class="memitem:a6ab2e8c1c2a4a3e7242540fb67859112"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a6ab2e8c1c2a4a3e7242540fb67859112">block_idx_t</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">block</a>)</td></tr>
 <tr class="memdesc:a6ab2e8c1c2a4a3e7242540fb67859112"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get granule index of Block&lt;AddressTraitsT&gt;.  <br /></td></tr>
@@ -161,10 +169,18 @@ Functions</h2></td></tr>
 <tr class="memitem:a984db683f87cbe575f609afb0fe41a58"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a984db683f87cbe575f609afb0fe41a58">resolve_granule_ptr</a> (std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">idx</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
 <tr class="memdesc:a984db683f87cbe575f609afb0fe41a58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a granule index to a raw pointer. Eliminates repeated <code>base + idx * granule_size</code> patterns across parray, pstring, ppool, pstringview.  <br /></td></tr>
 <tr class="separator:a984db683f87cbe575f609afb0fe41a58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7c6cde6dc4a04af525d48619ec12721" id="r_aa7c6cde6dc4a04af525d48619ec12721"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:aa7c6cde6dc4a04af525d48619ec12721"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#aa7c6cde6dc4a04af525d48619ec12721">resolve_granule_ptr_checked</a> (std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, std::size_t total_size, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">idx</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="memdesc:aa7c6cde6dc4a04af525d48619ec12721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validated resolve_granule_ptr: returns nullptr if idx is zero or out of bounds. Use in paths where external/untrusted indices must be validated before dereferencing.  <br /></td></tr>
+<tr class="separator:aa7c6cde6dc4a04af525d48619ec12721"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac65ecfdbb045384640d1ad7f0397b65e" id="r_ac65ecfdbb045384640d1ad7f0397b65e"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </td></tr>
 <tr class="memitem:ac65ecfdbb045384640d1ad7f0397b65e"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ac65ecfdbb045384640d1ad7f0397b65e">ptr_to_granule_idx</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">ptr</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
 <tr class="memdesc:ac65ecfdbb045384640d1ad7f0397b65e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a raw pointer to a granule index. Eliminates repeated <code>(ptr - base) / granule_size</code> patterns across parray, pstring, ppool, pstringview.  <br /></td></tr>
 <tr class="separator:ac65ecfdbb045384640d1ad7f0397b65e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30af002d5f27c0f2efe23a7f1acd09ee" id="r_a30af002d5f27c0f2efe23a7f1acd09ee"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:a30af002d5f27c0f2efe23a7f1acd09ee"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a30af002d5f27c0f2efe23a7f1acd09ee">ptr_to_granule_idx_checked</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, std::size_t total_size, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">ptr</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="memdesc:a30af002d5f27c0f2efe23a7f1acd09ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validated ptr_to_granule_idx: returns no_block on invalid input. Checks null, bounds, and granule alignment before converting.  <br /></td></tr>
+<tr class="separator:a30af002d5f27c0f2efe23a7f1acd09ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5bf2915d9e0505bc7c75450028865b0" id="r_ab5bf2915d9e0505bc7c75450028865b0"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = pmm::DefaultAddressTraits&gt; </td></tr>
 <tr class="memitem:ab5bf2915d9e0505bc7c75450028865b0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ab5bf2915d9e0505bc7c75450028865b0">user_ptr</a> (<a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">block</a>)</td></tr>
 <tr class="memdesc:ab5bf2915d9e0505bc7c75450028865b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute user data address for block (block + sizeof(Block&lt;A&gt;)). Single canonical implementation — use this instead of duplicating the cast in each call site.  <br /></td></tr>
@@ -177,6 +193,22 @@ Functions</h2></td></tr>
 <tr class="memitem:aaa1cc91dd46ee4f2058806edd8007c29"><td class="memTemplItemLeft" align="right" valign="top">AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#aaa1cc91dd46ee4f2058806edd8007c29">required_block_granules_t</a> (std::size_t <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">user_bytes</a>)</td></tr>
 <tr class="memdesc:aaa1cc91dd46ee4f2058806edd8007c29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Required block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t&lt;AT&gt; for correct per-AT computation.  <br /></td></tr>
 <tr class="separator:aaa1cc91dd46ee4f2058806edd8007c29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bbe192e3314c3852f7f98a7ed06fb9c" id="r_a8bbe192e3314c3852f7f98a7ed06fb9c"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AT</a> &gt; </td></tr>
+<tr class="memitem:a8bbe192e3314c3852f7f98a7ed06fb9c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a8bbe192e3314c3852f7f98a7ed06fb9c">validate_block_index</a> (std::size_t total_size, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AT::index_type <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">idx</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="memdesc:a8bbe192e3314c3852f7f98a7ed06fb9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate that a granule index refers to a location within the managed image where a complete <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header fits.  <br /></td></tr>
+<tr class="separator:a8bbe192e3314c3852f7f98a7ed06fb9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b28381cf15d4f7f53b4913eccff6524" id="r_a4b28381cf15d4f7f53b4913eccff6524"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AT</a> &gt; </td></tr>
+<tr class="memitem:a4b28381cf15d4f7f53b4913eccff6524"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a4b28381cf15d4f7f53b4913eccff6524">validate_user_ptr</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, std::size_t total_size, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">ptr</a>, std::size_t <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">min_user_offset</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="memdesc:a4b28381cf15d4f7f53b4913eccff6524"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate that a user-data pointer is within the managed image, granule-aligned, and past the minimum address for user data.  <br /></td></tr>
+<tr class="separator:a4b28381cf15d4f7f53b4913eccff6524"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24cad2f2d20b40301b67065927226a52" id="r_a24cad2f2d20b40301b67065927226a52"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AT</a> &gt; </td></tr>
+<tr class="memitem:a24cad2f2d20b40301b67065927226a52"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a24cad2f2d20b40301b67065927226a52">validate_link_index</a> (std::size_t total_size, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AT::index_type <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">idx</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="memdesc:a24cad2f2d20b40301b67065927226a52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate a granule index used in linked-list or AVL-tree traversal.  <br /></td></tr>
+<tr class="separator:a24cad2f2d20b40301b67065927226a52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85ef61c212d44d52230cf64c74997274" id="r_a85ef61c212d44d52230cf64c74997274"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AT</a> &gt; </td></tr>
+<tr class="memitem:a85ef61c212d44d52230cf64c74997274"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a85ef61c212d44d52230cf64c74997274">validate_block_header_full</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">base</a>, std::size_t total_size, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AT::index_type <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">idx</a>, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">result</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
+<tr class="memdesc:a85ef61c212d44d52230cf64c74997274"><td class="mdescLeft">&#160;</td><td class="mdescRight">Full verify-level validation of a block header's structural integrity.  <br /></td></tr>
+<tr class="separator:a85ef61c212d44d52230cf64c74997274"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -340,7 +372,7 @@ template&lt;typename AddressTraitsT  = pmm::DefaultAddressTraits&gt; </div>
 
 <p>Get const pointer to Block&lt;AddressTraitsT&gt; by granule index (read-only). Idx parameter is now index_type (was uint32_t) for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00332">332</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00333">333</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -382,7 +414,103 @@ template&lt;typename AddressTraitsT  = pmm::DefaultAddressTraits&gt; </div>
 
 <p>Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-file <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">blk_at()</a> helpers in <a class="el" href="allocator__policy_8h.html" title="AllocatorPolicy — политика выделения/освобождения памяти.">allocator_policy.h</a> and <a class="el" href="free__block__tree_8h.html" title="AvlFreeTree — specialized forest-policy for the free-tree domain.">free_block_tree.h</a>. Uses AddressTraitsT::granule_size for byte-offset computation. Idx parameter is now index_type (was uint32_t) for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00322">322</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00323">323</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a24ce991797383d623b7812493178db1c" name="a24ce991797383d623b7812493178db1c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24ce991797383d623b7812493178db1c">&#9670;&#160;</a></span>block_at_checked() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = pmm::DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; * pmm::detail::block_at_checked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validated block_at (const): returns nullptr if idx is out of range. </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00354">354</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a86bbefb99ce9a0a132be2cd127740620" name="a86bbefb99ce9a0a132be2cd127740620"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86bbefb99ce9a0a132be2cd127740620">&#9670;&#160;</a></span>block_at_checked() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a>  = pmm::DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpmm_1_1Block.html">pmm::Block</a>&lt; <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; * pmm::detail::block_at_checked </td>
+          <td>(</td>
+          <td class="paramtype">std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validated block_at: returns nullptr if idx is out of range. Use in verify/diagnostic paths where invalid indices must be handled gracefully. </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00343">343</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -424,7 +552,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Get granule index of Block&lt;AddressTraitsT&gt;. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00341">341</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00365">365</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -472,7 +600,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Compute total granules of block for AddressTraitsT (<a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout). Total_size is no longer stored — computed via next_offset. Single templated implementation; non-templated overload delegates here. <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header parameterized on AddressTraitsT. All _offset and counter fields use index_type,...">ManagerHeader</a> parameter is now ManagerHeader&lt;AddressTraitsT&gt;*. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00371">371</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00395">395</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -504,7 +632,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Get granule index from byte offset using AddressTraitsT::granule_size. Return type changed from uint32_t to index_type for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00302">302</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00303">303</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -536,7 +664,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Convert bytes to granules (ceiling) using AddressTraitsT::granule_size. Returns AddressTraitsT::index_type. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00266">266</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00267">267</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -568,7 +696,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Convert bytes to index_type granules (ceiling) using AddressTraitsT::granule_size. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00279">279</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00280">280</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -608,7 +736,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Compute CRC32 over a byte range. Uses the standard Ethernet/zlib polynomial (0xEDB88320, reflected). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00140">140</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00141">141</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -664,7 +792,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>CRC32 checksum. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00225">225</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00226">226</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -704,7 +832,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>CRC32 single byte accumulation. Extracts the inner loop from compute_crc32 and compute_image_crc32. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00130">130</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00131">131</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -860,7 +988,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>O(1) get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - sizeof(Block&lt;AddressTraitsT&gt;)). Block&lt;AddressTraitsT&gt; is the sole block type. Unified templated helper replaces the former DefaultAddressTraits-specific overload. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00422">422</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00481">481</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -892,7 +1020,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Get byte offset from granule index using AddressTraitsT::granule_size. Parameter changed from uint32_t to index_type for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00295">295</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00296">296</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -922,7 +1050,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Returns true only for kGranuleSize (16-byte) alignment. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00311">311</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00312">312</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -964,7 +1092,55 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Convert a raw pointer to a granule index. Eliminates repeated <code>(ptr - base) / granule_size</code> patterns across parray, pstring, ppool, pstringview. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00403">403</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00441">441</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a30af002d5f27c0f2efe23a7f1acd09ee" name="a30af002d5f27c0f2efe23a7f1acd09ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30af002d5f27c0f2efe23a7f1acd09ee">&#9670;&#160;</a></span>ptr_to_granule_idx_checked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">AddressTraitsT::index_type pmm::detail::ptr_to_granule_idx_checked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *&#160;</td>
+          <td class="paramname"><em>ptr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validated ptr_to_granule_idx: returns no_block on invalid input. Checks null, bounds, and granule alignment before converting. </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00451">451</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -996,7 +1172,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Required block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t&lt;AT&gt; for correct per-AT computation. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00453">453</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00512">512</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1039,7 +1215,55 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Resolve a granule index to a raw pointer. Eliminates repeated <code>base + idx * granule_size</code> patterns across parray, pstring, ppool, pstringview. </p>
 <dl class="section return"><dt>Returns</dt><dd>nullptr if idx is zero (null sentinel). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00393">393</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00417">417</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="aa7c6cde6dc4a04af525d48619ec12721" name="aa7c6cde6dc4a04af525d48619ec12721"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7c6cde6dc4a04af525d48619ec12721">&#9670;&#160;</a></span>resolve_granule_ptr_checked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> * pmm::detail::resolve_granule_ptr_checked </td>
+          <td>(</td>
+          <td class="paramtype">std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validated resolve_granule_ptr: returns nullptr if idx is zero or out of bounds. Use in paths where external/untrusted indices must be validated before dereferencing. </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00427">427</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1071,7 +1295,267 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Compute user data address for block (block + sizeof(Block&lt;A&gt;)). Single canonical implementation — use this instead of duplicating the cast in each call site. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00413">413</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00472">472</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a85ef61c212d44d52230cf64c74997274" name="a85ef61c212d44d52230cf64c74997274"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85ef61c212d44d52230cf64c74997274">&#9670;&#160;</a></span>validate_block_header_full()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> pmm::detail::validate_block_header_full </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AT::index_type&#160;</td>
+          <td class="paramname"><em>idx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Full verify-level validation of a block header's structural integrity. </p>
+<p>Checks:</p><ul>
+<li>weight/root_offset consistency (free vs allocated invariant)</li>
+<li>prev_offset and next_offset are valid link indices</li>
+<li>node_type is a known value (kNodeReadWrite or kNodeReadOnly)</li>
+<li><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> data range does not exceed image boundary</li>
+</ul>
+<p>Reports violations into the <a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a>. Does not modify the image.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">AT</td><td>Address traits type. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">base</td><td>Base pointer of the managed area. </td></tr>
+    <tr><td class="paramname">total_size</td><td>Total size of the managed area in bytes. </td></tr>
+    <tr><td class="paramname">idx</td><td>Granule index of the block being validated. </td></tr>
+    <tr><td class="paramname">result</td><td>Diagnostic result to append violations to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="validation_8h_source.html#l00133">133</a> of file <a class="el" href="validation_8h_source.html">validation.h</a>.</p>
+
+</div>
+</div>
+<a id="a8bbe192e3314c3852f7f98a7ed06fb9c" name="a8bbe192e3314c3852f7f98a7ed06fb9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bbe192e3314c3852f7f98a7ed06fb9c">&#9670;&#160;</a></span>validate_block_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a> pmm::detail::validate_block_index </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AT::index_type&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate that a granule index refers to a location within the managed image where a complete <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header fits. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">AT</td><td>Address traits type. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">total_size</td><td>Total size of the managed area in bytes. </td></tr>
+    <tr><td class="paramname">idx</td><td>Granule index to validate. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if idx is valid (not no_block, and block header fits within image). </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="validation_8h_source.html#l00046">46</a> of file <a class="el" href="validation_8h_source.html">validation.h</a>.</p>
+
+</div>
+</div>
+<a id="a24cad2f2d20b40301b67065927226a52" name="a24cad2f2d20b40301b67065927226a52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24cad2f2d20b40301b67065927226a52">&#9670;&#160;</a></span>validate_link_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a> pmm::detail::validate_link_index </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AT::index_type&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate a granule index used in linked-list or AVL-tree traversal. </p>
+<p>Checks the index is either no_block (valid sentinel) or a valid in-range index. Useful for validating next_offset, prev_offset, left_offset, right_offset, etc.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">AT</td><td>Address traits type. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">total_size</td><td>Total size of the managed area in bytes. </td></tr>
+    <tr><td class="paramname">idx</td><td>Granule index to validate (may be no_block). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if idx is no_block or a valid in-range index. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="validation_8h_source.html#l00106">106</a> of file <a class="el" href="validation_8h_source.html">validation.h</a>.</p>
+
+</div>
+</div>
+<a id="a4b28381cf15d4f7f53b4913eccff6524" name="a4b28381cf15d4f7f53b4913eccff6524"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b28381cf15d4f7f53b4913eccff6524">&#9670;&#160;</a></span>validate_user_ptr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a> pmm::detail::validate_user_ptr </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">void</a> *&#160;</td>
+          <td class="paramname"><em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>min_user_offset</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate that a user-data pointer is within the managed image, granule-aligned, and past the minimum address for user data. </p>
+<p>Does NOT check whether the block is actually allocated (no weight check). Use <a class="el" href="namespacepmm_1_1detail.html#aa9255931c6039b9ba052cfe0a8317d23" title="O(1) get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - sizeof(Block&lt;AddressTraitsT&gt;))....">header_from_ptr_t()</a> for the full user-ptr → Block* path.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">AT</td><td>Address traits type. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">base</td><td>Base pointer of the managed area. </td></tr>
+    <tr><td class="paramname">total_size</td><td>Total size of the managed area in bytes. </td></tr>
+    <tr><td class="paramname">ptr</td><td>User-data pointer to validate. </td></tr>
+    <tr><td class="paramname">min_user_offset</td><td>Minimum byte offset from base for the first valid user-data address. Typically: sizeof(Block&lt;AT&gt;) + sizeof(ManagerHeader&lt;AT&gt;) + sizeof(Block&lt;AT&gt;). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if ptr passes all cheap checks. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="validation_8h_source.html#l00075">75</a> of file <a class="el" href="validation_8h_source.html">validation.h</a>.</p>
 
 </div>
 </div>
@@ -1104,7 +1588,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><!-- fragment -->
 <p><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header size in granules for AddressTraitsT. Computes ceil(sizeof(Block&lt;AT&gt;) / AT::granule_size). For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00353">353</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00377">377</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1274,7 +1758,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Number of granules in ManagerHeader&lt;DefaultAddressTraits&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00248">248</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00249">249</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1305,7 +1789,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><!-- fragment -->
 <p>Manager header size in granules for AddressTraitsT. Uses ceiling division: ceil(sizeof(ManagerHeader&lt;AT&gt;) / AT::granule_size). For DefaultAddressTraits (16B granule): 64/16 = 4. For LargeAddressTraits (64B granule): ceil(96/64) = 2. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00362">362</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00386">386</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1355,7 +1839,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Minimum block size = <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header + 1 data granule (uses <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00251">251</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00252">252</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1384,7 +1868,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><!-- fragment -->
 <p>Minimum memory size = Block_0 + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header parameterized on AddressTraitsT. All _offset and counter fields use index_type,...">ManagerHeader</a> + Block_1 + kMinBlockSize. Uses DefaultAddressTraits for the non-templated constant. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00255">255</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00256">256</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1411,7 +1895,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Matches <a class="el" href="structpmm_1_1AddressTraits.html#ac764db8a902ce9bb0ee3e06b0f422dfc" title="Sentinel «нет блока» — максимальное значение index_type.">DefaultAddressTraits::no_block</a>. </p>
 <p>Sentinel: no block (granule index) </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00168">168</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00169">169</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1439,7 +1923,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Template alias for AddressTraitsT::no_block sentinel. Use this instead of <a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e" title="Matches DefaultAddressTraits::no_block.">detail::kNoBlock</a> in generic (templated) code that works with any AT. For DefaultAddressTraits, kNoBlock_v&lt;DefaultAddressTraits&gt; == kNoBlock == 0xFFFFFFFFU. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00175">175</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00176">176</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1467,7 +1951,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Null granule index sentinel: index_type(0) means "no data" in persistent containers. Use this instead of <code>static_cast&lt;index_type&gt;(0)</code> in parray, pstring, ppool, pmap. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00180">180</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00181">181</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
