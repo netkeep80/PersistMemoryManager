@@ -338,11 +338,21 @@ guaranteed by the bootstrap sequence (Block_0 is the first block).
 ### M5c. `magic`
 
 Written once during `init_layout()` (`layout_mixin.inc:30`). Zeroed on
-`destroy()` (`layout_mixin.inc:410`).
+`destroy()` (`persist_memory_manager.h:410`).
 
-**Ordering rule:** `magic` must be the last field written during
-bootstrap (signals that the header is complete) and the first field
-zeroed during destroy (signals that the image is invalidated).
+`magic` is an **identity / format check**, not a bootstrap-completion
+marker. In the current implementation `init_layout()` writes `magic`
+**first** (immediately after `memset`-zeroing the header), followed by
+`total_size`, `first_block_offset`, and the remaining header fields.
+A crash after the `magic` write but before the rest of `init_layout()`
+or the full bootstrap sequence completes would leave an image that
+passes the magic check yet is only partially initialized.
+
+**Current ordering rule:** `magic` is the first header field written
+during `init_layout()` and the first field zeroed during `destroy()`.
+On `load()`, `magic` is checked in Phase 1 to reject images that were
+never initialized or that have already been destroyed — it does **not**
+guarantee that bootstrap ran to completion.
 
 ### M5d. `total_size` and `granule_size`
 
@@ -463,5 +473,5 @@ Phase 7: validate_bootstrap_invariants_unlocked()
 | **O5** | `recompute_counters()` before `rebuild_free_tree()` | Free-tree rebuild depends on correct block states |
 | **O6** | `rebuild_free_tree()` before forest registry bootstrap | Bootstrap allocates blocks via the free-tree |
 | **O7** | Trust anchors must be written before dependent data | `first_block_offset` before blocks; `total_size` before expansion |
-| **O8** | `magic` is the last bootstrap write and first destroy write | Signals image validity boundary |
+| **O8** | `magic` is the first header write during `init_layout()` and first zeroed on `destroy()` | Identity / format check — does not signal bootstrap completion |
 | **O9** | Atomic rename is the last step in `save_manager()` | File integrity — old file is never partially overwritten |
