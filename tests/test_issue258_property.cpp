@@ -197,7 +197,7 @@ TEST_CASE( "property: random corruption injection detected by verify", "[issue25
         std::size_t usr_off = static_cast<std::size_t>( ptrs[idx].offset() ) * AT::granule_size;
         void*       blk_raw = base + usr_off - sizeof( pmm::Block<AT> );
 
-        auto orig = pmm::BlockStateBase<AT>::get_root_offset( blk_raw );
+        auto                                          orig = pmm::BlockStateBase<AT>::get_root_offset( blk_raw );
         std::uniform_int_distribution<AT::index_type> val_dist( 1, 1000 );
         pmm::BlockStateBase<AT>::set_root_offset_of( blk_raw, orig + val_dist( rng ) );
         saved.push_back( { blk_raw, orig } );
@@ -295,7 +295,7 @@ TEST_CASE( "property: mixed alloc/dealloc and pstringview ops", "[issue258][prop
         else
         {
             // Intern a string
-            std::string                            s   = "prop_test_" + std::to_string( round );
+            std::string                 s   = "prop_test_" + std::to_string( round );
             Mgr::pptr<Mgr::pstringview> psv = Mgr::pstringview( s.c_str() );
             // pstringview may fail if OOM, that's OK
             (void)psv;
@@ -328,8 +328,7 @@ TEST_CASE( "property: multiple reload cycles with operations between", "[issue25
         for ( int i = 0; i < 5; ++i )
         {
             std::uniform_int_distribution<int> sz_dist( 16, 128 );
-            auto                               p = MgrC::allocate_typed<std::uint8_t>(
-                static_cast<std::size_t>( sz_dist( rng ) ) );
+            auto p = MgrC::allocate_typed<std::uint8_t>( static_cast<std::size_t>( sz_dist( rng ) ) );
             // Ignore OOM
         }
 

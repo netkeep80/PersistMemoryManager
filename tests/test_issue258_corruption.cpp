@@ -349,8 +349,7 @@ TEST_CASE( "corruption: block state corruption repaired by load", "[issue258][co
     std::uint8_t* base    = MgrA::backend().base_ptr();
     std::size_t   usr_off = static_cast<std::size_t>( p.offset() ) * AT::granule_size;
     void*         blk_raw = base + usr_off - sizeof( pmm::Block<AT> );
-    auto          blk_idx = static_cast<AT::index_type>(
-        p.offset() - sizeof( pmm::Block<AT> ) / AT::granule_size );
+    auto          blk_idx = static_cast<AT::index_type>( p.offset() - sizeof( pmm::Block<AT> ) / AT::granule_size );
     pmm::BlockStateBase<AT>::set_root_offset_of( blk_raw, blk_idx + 500 );
 
     REQUIRE( pmm::save_manager<MgrA>( kFile ) );

@@ -62,7 +62,7 @@ TEST_CASE( "reload: different base address via different InstanceId", "[issue258
     REQUIRE( Mgr2::validate_bootstrap_invariants() );
 
     typename Mgr2::template pptr<std::uint64_t> p2( saved_offset );
-    std::uint64_t* data2 = Mgr2::template resolve<std::uint64_t>( p2 );
+    std::uint64_t*                              data2 = Mgr2::template resolve<std::uint64_t>( p2 );
     REQUIRE( data2 != nullptr );
     for ( int i = 0; i < 8; ++i )
     {
@@ -103,7 +103,7 @@ static void test_preset_roundtrip( const char* filename, std::size_t arena )
     REQUIRE( MgrLoad::block_count() == saved_blocks );
 
     typename MgrLoad::template pptr<std::uint32_t> p2( saved_offset );
-    std::uint32_t* loaded = MgrLoad::template resolve<std::uint32_t>( p2 );
+    std::uint32_t*                                 loaded = MgrLoad::template resolve<std::uint32_t>( p2 );
     REQUIRE( loaded != nullptr );
     for ( int i = 0; i < 4; ++i )
     {
