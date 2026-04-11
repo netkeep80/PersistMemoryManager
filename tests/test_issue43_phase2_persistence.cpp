@@ -122,8 +122,8 @@ TEST_CASE( "crc32_detects_corruption", "[test_issue43_phase2_persistence]" )
     cleanup_file();
 }
 
-/// @brief Backward compatibility: image with crc32==0 (pre-Phase 2) should still load.
-TEST_CASE( "crc32_backward_compat", "[test_issue43_phase2_persistence]" )
+/// @brief Image with crc32==0 (zeroed field) must be rejected — CRC32 is mandatory.
+TEST_CASE( "crc32_zero_rejected", "[test_issue43_phase2_persistence]" )
 {
     using M1 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2120>;
     using M2 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2121>;
@@ -135,7 +135,7 @@ TEST_CASE( "crc32_backward_compat", "[test_issue43_phase2_persistence]" )
     REQUIRE( pmm::save_manager<M1>( TEST_FILE ) );
     M1::destroy();
 
-    // Manually zero out the CRC32 field to simulate a pre- image
+    // Manually zero out the CRC32 field to simulate a pre-CRC32 image
     {
         std::FILE* f = std::fopen( TEST_FILE, "r+b" );
         REQUIRE( f != nullptr );
@@ -148,10 +148,9 @@ TEST_CASE( "crc32_backward_compat", "[test_issue43_phase2_persistence]" )
         std::fclose( f );
     }
 
-    // Load should succeed (crc32==0 accepted for backward compatibility)
+    // Load must fail — CRC32 is mandatory, zeroed crc32 no longer accepted.
     REQUIRE( M2::create( size ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) ); }
-    REQUIRE( M2::is_initialized() );
+    { pmm::VerifyResult vr_; REQUIRE( !pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) ); }
 
     M2::destroy();
     cleanup_file();

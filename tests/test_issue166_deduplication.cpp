@@ -102,7 +102,7 @@ TEST_CASE( "I166-B1: required_block_granules_t<DefaultAddressTraits> matches non
     for ( std::size_t bytes : { 0ul, 1ul, 16ul, 17ul, 32ul, 64ul, 128ul, 256ul } )
     {
         std::uint32_t from_t   = pmm::detail::required_block_granules_t<AT>( bytes );
-        std::uint32_t from_old = pmm::detail::required_block_granules( bytes );
+        std::uint32_t from_old = pmm::detail::required_block_granules_t<pmm::DefaultAddressTraits>( bytes );
         REQUIRE( from_t == from_old );
     }
 }

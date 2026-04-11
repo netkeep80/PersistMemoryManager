@@ -37,9 +37,9 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 TEST_CASE( "A1: granule_size constant", "[test_issue87_abstraction]" )
 {
     static_assert( pmm::kGranuleSize == 16, "kGranuleSize must be 16" );
-    REQUIRE( pmm::detail::bytes_to_granules( 16 ) == 1 );
-    REQUIRE( pmm::detail::bytes_to_granules( 17 ) == 2 );
-    REQUIRE( pmm::detail::granules_to_bytes( 1 ) == 16 );
+    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 16 ) == 1 );
+    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 17 ) == 2 );
+    REQUIRE( pmm::DefaultAddressTraits::granules_to_bytes( 1 ) == 16 );
 }
 
 TEST_CASE( "A2: kNoBlock is max uint32", "[test_issue87_abstraction]" )

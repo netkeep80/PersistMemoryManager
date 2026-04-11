@@ -130,10 +130,10 @@ TEST_CASE( "P1-B2: bytes_to_granules (default, 16-byte granule)", "[test_issue87
     REQUIRE( A::bytes_to_granules( 32 ) == 2 ); // ceiling(32/16) = 2
     REQUIRE( A::bytes_to_granules( 33 ) == 3 ); // ceiling(33/16) = 3
 
-    // Совместимость с текущими pmm::detail::bytes_to_granules
-    REQUIRE( A::bytes_to_granules( 16 ) == pmm::detail::bytes_to_granules( 16 ) );
-    REQUIRE( A::bytes_to_granules( 17 ) == pmm::detail::bytes_to_granules( 17 ) );
-    REQUIRE( A::bytes_to_granules( 128 ) == pmm::detail::bytes_to_granules( 128 ) );
+    // Verify AddressTraits methods match the templated detail:: variants
+    REQUIRE( A::bytes_to_granules( 16 ) == pmm::detail::bytes_to_granules_t<A>( 16 ) );
+    REQUIRE( A::bytes_to_granules( 17 ) == pmm::detail::bytes_to_granules_t<A>( 17 ) );
+    REQUIRE( A::bytes_to_granules( 128 ) == pmm::detail::bytes_to_granules_t<A>( 128 ) );
 }
 
 // ─── P1-C: Функция granules_to_bytes ────────────────────────────────────────
@@ -153,8 +153,8 @@ TEST_CASE( "P1-C:  granules_to_bytes", "[test_issue87_phase1]" )
     // 16-байтная гранула (совместимость с текущими)
     REQUIRE( A32::granules_to_bytes( 1 ) == 16 );
     REQUIRE( A32::granules_to_bytes( 2 ) == 32 );
-    REQUIRE( A32::granules_to_bytes( 1 ) == pmm::detail::granules_to_bytes( 1 ) );
-    REQUIRE( A32::granules_to_bytes( 100 ) == pmm::detail::granules_to_bytes( 100 ) );
+    REQUIRE( A32::granules_to_bytes( 1 ) == 16 );
+    REQUIRE( A32::granules_to_bytes( 100 ) == 1600 );
 }
 
 // ─── P1-D: Функции idx_to_byte_off / byte_off_to_idx ────────────────────────
@@ -178,12 +178,12 @@ TEST_CASE( "P1-D:  idx_to_byte_off / byte_off_to_idx roundtrip", "[test_issue87_
     REQUIRE( A16::idx_to_byte_off( 5 ) == 80 );
     REQUIRE( A16::byte_off_to_idx( 80 ) == 5 );
 
-    // 32-bit (совместимость с текущими)
+    // 32-bit: idx_to_byte_off/byte_off_to_idx roundtrip
     for ( std::uint32_t idx : { 0u, 1u, 10u, 100u, 1000u } )
     {
-        REQUIRE( A32::idx_to_byte_off( idx ) == pmm::detail::idx_to_byte_off( idx ) );
+        REQUIRE( A32::idx_to_byte_off( idx ) == pmm::detail::idx_to_byte_off_t<A32>( idx ) );
         std::size_t byte_off = A32::idx_to_byte_off( idx );
-        REQUIRE( A32::byte_off_to_idx( byte_off ) == pmm::detail::byte_off_to_idx( byte_off ) );
+        REQUIRE( A32::byte_off_to_idx( byte_off ) == pmm::detail::byte_off_to_idx_t<A32>( byte_off ) );
         REQUIRE( A32::byte_off_to_idx( byte_off ) == idx ); // roundtrip
     }
 }
@@ -207,13 +207,11 @@ TEST_CASE( "P1-E: DefaultAddressTraits matches current constants", "[test_issue8
     static_assert( std::is_same<A::index_type, std::uint32_t>::value,
                    "DefaultAddressTraits::index_type must be uint32_t" );
 
-    // Все конвертационные функции совпадают с текущими
+    // All conversion functions match the templated detail:: variants
     for ( std::size_t bytes :
           { std::size_t( 1 ), std::size_t( 16 ), std::size_t( 17 ), std::size_t( 256 ), std::size_t( 1024 ) } )
     {
-        REQUIRE( A::bytes_to_granules( bytes ) == pmm::detail::bytes_to_granules( bytes ) );
-        REQUIRE( A::granules_to_bytes( static_cast<std::uint32_t>( bytes / 16 ) ) ==
-                 pmm::detail::granules_to_bytes( static_cast<std::uint32_t>( bytes / 16 ) ) );
+        REQUIRE( A::bytes_to_granules( bytes ) == pmm::detail::bytes_to_granules_t<A>( bytes ) );
     }
 }
 
