@@ -170,8 +170,8 @@ TEST_CASE( "contract: repair scope is bounded — no user data modified", "[test
     // Write known pattern into user data.
     auto p = MgrC::allocate_typed<std::uint64_t>( 8 );
     REQUIRE( !p.is_null() );
-    auto p_offset = p.offset(); // save raw offset for use with MgrD
-    std::uint64_t* data = MgrC::template resolve<std::uint64_t>( p );
+    auto           p_offset = p.offset(); // save raw offset for use with MgrD
+    std::uint64_t* data     = MgrC::template resolve<std::uint64_t>( p );
     REQUIRE( data != nullptr );
     for ( int i = 0; i < 8; ++i )
         data[i] = static_cast<std::uint64_t>( 0xCAFEBABE00000000ULL | i );
@@ -186,7 +186,7 @@ TEST_CASE( "contract: repair scope is bounded — no user data modified", "[test
 
     // User data must survive repair unchanged.
     typename MgrD::template pptr<std::uint64_t> pd( p_offset );
-    std::uint64_t* loaded_data = MgrD::template resolve<std::uint64_t>( pd );
+    std::uint64_t*                              loaded_data = MgrD::template resolve<std::uint64_t>( pd );
     REQUIRE( loaded_data != nullptr );
     for ( int i = 0; i < 8; ++i )
     {
@@ -343,8 +343,8 @@ TEST_CASE( "contract: clean round-trip produces no violations", "[test_issue256]
     using MgrH = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2567>;
     using MgrI = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2568>;
 
-    static const char* kFile  = "test_issue256_clean_rt.dat";
-    const std::size_t  arena  = 64 * 1024;
+    static const char* kFile = "test_issue256_clean_rt.dat";
+    const std::size_t  arena = 64 * 1024;
 
     REQUIRE( MgrH::create( arena ) );
     auto p1 = MgrH::allocate_typed<std::uint64_t>( 10 );
