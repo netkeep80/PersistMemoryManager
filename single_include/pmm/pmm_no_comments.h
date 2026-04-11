@@ -5037,13 +5037,13 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
     {
         result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, _backend.total_size(),
                     static_cast<std::uint64_t>( hdr->total_size ) );
-        return;
+        return; 
     }
     if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
     {
         result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, address_traits::granule_size,
                     static_cast<std::uint64_t>( hdr->granule_size ) );
-        return;
+        return; 
     }
 
     allocator::verify_block_states( base, hdr, result );
