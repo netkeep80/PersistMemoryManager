@@ -4530,6 +4530,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _last_error = PmmError::InvalidPointer;
             
             static thread_local TreeNode<address_traits> sentinel{};
+            sentinel = {};
             return sentinel;
         }
         return *reinterpret_cast<TreeNode<address_traits>*>( blk );

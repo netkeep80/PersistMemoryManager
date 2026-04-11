@@ -651,6 +651,35 @@ TEST_CASE( "validation: tree_node returns sentinel and sets InvalidPointer for O
     Mgr::destroy();
 }
 
+TEST_CASE( "validation: tree_node sentinel is stateless across invalid calls", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    Mgr::pptr<int> bad1( 0xFFFF );
+    Mgr::pptr<int> bad2( 0xFFFE );
+
+    // First bad call — get a mutable reference to the sentinel.
+    Mgr::clear_error();
+    auto& tn1 = Mgr::tree_node( bad1 );
+    REQUIRE( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    // Mutate the sentinel through the returned reference.
+    tn1.set_weight( 42 );
+    tn1.set_height( 7 );
+    tn1.set_left( 99 );
+
+    // Second bad call — sentinel must be clean again, not carry prior mutations.
+    Mgr::clear_error();
+    auto& tn2 = Mgr::tree_node( bad2 );
+    REQUIRE( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    CHECK( tn2.get_weight() == 0 );
+    CHECK( tn2.get_height() == 0 );
+    CHECK( tn2.get_left() == 0 );
+
+    Mgr::destroy();
+}
+
 TEST_CASE( "validation: valid pptr still works correctly through wrapper APIs", "[test_issue257]" )
 {
     setup_clean_image();

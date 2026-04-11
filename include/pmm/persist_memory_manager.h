@@ -1064,7 +1064,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _last_error = PmmError::InvalidPointer;
             // Return a reference to a thread-local sentinel to avoid UB.
             // Callers must check last_error() when operating on untrusted pptrs.
+            // Re-initialize each time so prior mutations don't leak across calls.
             static thread_local TreeNode<address_traits> sentinel{};
+            sentinel = {};
             return sentinel;
         }
         return *reinterpret_cast<TreeNode<address_traits>*>( blk );
