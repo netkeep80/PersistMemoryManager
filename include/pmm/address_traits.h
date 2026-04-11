@@ -1,6 +1,6 @@
 /**
  * @file pmm/address_traits.h
- * @brief AddressTraits — адресное пространство ПАП (: phase 1, #146).
+ * @brief AddressTraits — адресное пространство ПАП.
  *
  * Параметризует три взаимосвязанные характеристики адресного пространства:
  *   - `index_type`   — тип гранульного индекса (uint16_t / uint32_t / uint64_t)

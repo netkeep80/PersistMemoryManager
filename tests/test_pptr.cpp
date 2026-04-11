@@ -1,6 +1,6 @@
 /**
  * @file test_pptr.cpp
- * @brief Тесты персистентного типизированного указателя pptr<T, ManagerT> (: — новый API)
+ * @brief Тесты персистентного типизированного указателя pptr<T, ManagerT>
  *
  *   - pptr<T, ManagerT> без ManagerT=void по умолчанию.
  *   - Разыменование через *p и p->field, не через p.resolve().

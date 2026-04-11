@@ -1,6 +1,6 @@
 /**
  * @file pmm/pmm_presets.h
- * @brief pmm_presets — готовые инстанции PersistMemoryManager (: phase 8, #110, #123, #146).
+ * @brief pmm_presets — готовые инстанции PersistMemoryManager.
  *
  * Предоставляет набор готовых псевдонимов для наиболее распространённых
  * конфигураций менеджера персистентной памяти:

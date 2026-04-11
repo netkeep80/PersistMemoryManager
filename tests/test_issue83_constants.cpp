@@ -1,6 +1,6 @@
 /**
  * @file test_issue83_constants.cpp
- * @brief Tests: constant optimisation (updated #102 — new API).
+ * @brief Tests: constant optimisation.
  *
  * from config.h directly.
  *

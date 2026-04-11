@@ -1,6 +1,6 @@
 /**
  * @file pmm/storage_backend.h
- * @brief StorageBackend — концепт бэкенда хранилища ПАП (: phase 5, #129).
+ * @brief StorageBackend — концепт бэкенда хранилища ПАП.
  *
  * Определяет C++20 концепт `StorageBackendConcept<Backend>`,
  * которому должны соответствовать все реализации бэкендов:

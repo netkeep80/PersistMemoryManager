@@ -1,6 +1,6 @@
 /**
  * @file pmm/mmap_storage.h
- * @brief MMapStorage — бэкенд хранилища через отображение файла (: phase 5).
+ * @brief MMapStorage — бэкенд хранилища через отображение файла.
  *
  * Отображает файл в память через `mmap` (POSIX) или `MapViewOfFile` (Windows).
  * Обеспечивает персистентность данных между запусками приложения.
@@ -126,7 +126,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
     std::size_t total_size() const noexcept { return _size; }
 
     /**
-     * @brief Расширить отображённый файл на additional_bytes (: phase 2.3).
+     * @brief Расширить отображённый файл на additional_bytes.
      *
      * Расширяет файл через ftruncate/SetEndOfFile, затем пересоздаёт отображение.
      * После expand() base_ptr() возвращает новый адрес — все ранее полученные

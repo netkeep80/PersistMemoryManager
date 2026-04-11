@@ -180,7 +180,7 @@ TEST_CASE( "block_pixel_map_covers_total", "[test_mem_map_view]" )
 }
 
 /**
- * @brief: 2D layout arithmetic is consistent.
+ * @brief 2D layout arithmetic is consistent.
  *
  * Verifies that after update_snapshot() the total_bytes() value allows the
  * 2D pixel-map layout to produce more than one row when bytes_per_pixel == 1

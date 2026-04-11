@@ -1,6 +1,6 @@
 /**
  * @file test_issue73_refactoring.cpp
- * @brief Tests for architectural refactoring: (updated #110, #112 — static API).
+ * @brief Tests for architectural refactoring.
  *
  * manager. Tests verify:
  * - FR-03: Block<DefaultAddressTraits> (32 bytes) and ManagerHeader (64 bytes) sizes unchanged

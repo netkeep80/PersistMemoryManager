@@ -224,7 +224,7 @@ static bool test_1m_alternating()
 
 int main()
 {
-    std::cout << "=== PersistMemoryManager — Stress Test (updated #110) ===\n";
+    std::cout << "=== PersistMemoryManager — Stress Test ===\n";
 
     bool all_passed = true;
 

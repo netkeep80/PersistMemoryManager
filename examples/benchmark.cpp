@@ -201,7 +201,7 @@ static bool bench_manual_realloc()
 
 int main()
 {
-    std::cout << "=== PersistMemoryManager — Benchmark (updated #110) ===\n";
+    std::cout << "=== PersistMemoryManager — Benchmark ===\n";
     std::cout << "Targets: allocate/deallocate 100K blocks ≤ 100 ms\n\n";
 
     bool all_passed = true;

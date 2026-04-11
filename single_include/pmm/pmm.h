@@ -140,7 +140,7 @@
 
 /**
  * @file pmm/address_traits.h
- * @brief AddressTraits — адресное пространство ПАП (: phase 1, #146).
+ * @brief AddressTraits — адресное пространство ПАП.
  *
  * Параметризует три взаимосвязанные характеристики адресного пространства:
  *   - `index_type`   — тип гранульного индекса (uint16_t / uint32_t / uint64_t)
@@ -418,7 +418,7 @@ inline constexpr std::size_t kDefaultGrowDenominator = 4;
 
 /**
  * @file pmm/block.h
- * @brief Block<AddressTraits> — блок памяти как составной тип (: phase 3, #138).
+ * @brief Block<AddressTraits> — блок памяти как составной тип.
  *
  * Block<AddressTraits> является составным типом, объединяющим:
  *   - поля связного списка (prev_offset, next_offset) — хранятся прямо в Block
@@ -3091,7 +3091,7 @@ using PersistentAvlTree = AvlFreeTree<DefaultAddressTraits>;
 
 /**
  * @file pmm/heap_storage.h
- * @brief HeapStorage — динамический бэкенд хранилища ПАП (: phase 5).
+ * @brief HeapStorage — динамический бэкенд хранилища ПАП.
  *
  * Управляет динамически выделяемой областью памяти через `std::malloc` / `std::free`.
  * Поддерживает расширение (expand()) путём выделения нового буфера и копирования данных.
@@ -3107,7 +3107,7 @@ using PersistentAvlTree = AvlFreeTree<DefaultAddressTraits>;
 
 /**
  * @file pmm/storage_backend.h
- * @brief StorageBackend — концепт бэкенда хранилища ПАП (: phase 5, #129).
+ * @brief StorageBackend — концепт бэкенда хранилища ПАП.
  *
  * Определяет C++20 концепт `StorageBackendConcept<Backend>`,
  * которому должны соответствовать все реализации бэкендов:
@@ -3429,7 +3429,7 @@ struct StderrLogging
 
 /**
  * @file pmm/static_storage.h
- * @brief StaticStorage — статический бэкенд хранилища ПАП (: phase 5).
+ * @brief StaticStorage — статический бэкенд хранилища ПАП.
  *
  * Хранит управляемую область в фиксированном буфере размером `Size` байт,
  * расположенном внутри объекта (подходит для глобальных объектов и стека).
@@ -3767,7 +3767,7 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
 
 /**
  * @file pmm/allocator_policy.h
- * @brief AllocatorPolicy — политика выделения/освобождения памяти (: phase 6).
+ * @brief AllocatorPolicy — политика выделения/освобождения памяти.
  *
  * Параметрически объединяет:
  *   - `FreeBlockTreeT` — политику дерева свободных блоков (insert/remove/find_best_fit)
@@ -7475,7 +7475,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /**
-     * @brief Проверить, что pptr указывает на валидную область внутри кучи (: phase 1.2).
+     * @brief Проверить, что pptr указывает на валидную область внутри кучи.
      *
      * Выполняет runtime-проверку: смещение не выходит за границы управляемой области
      * и достаточно места для sizeof(T). Не проверяет, что блок действительно выделен.
@@ -8859,8 +8859,10 @@ static bool do_expand( std::size_t user_size ) noexcept
  * ввод/вывод не является основной функциональностью менеджера памяти,
  * но необходим для тестов и примеров использования персистентности.
  *
+ * CRC32 checksum — save_manager computes and stores CRC32
  * in the ManagerHeader.crc32 field; load_manager_from_file verifies it.
  *
+ * Atomic save — save_manager writes to a temporary file
  * (filename + ".tmp") and atomically renames it to the target on success.
  *
  * Использование:
@@ -8922,10 +8924,12 @@ inline bool atomic_rename( const char* tmp_path, const char* final_path ) noexce
 } // namespace detail
 
 /**
- * @brief Сохранить образ PersistMemoryManager в файл (: — статический интерфейс).
+ * @brief Сохранить образ PersistMemoryManager в файл.
  *
+ * Computes CRC32 of the entire managed region (treating
  * the crc32 field as zero) and stores it in ManagerHeader.crc32 before writing.
  *
+ * Uses atomic write-then-rename — writes to "filename.tmp",
  * then renames to "filename" on success. If the process crashes during fwrite,
  * the original file remains intact.
  *
@@ -8947,14 +8951,14 @@ template <typename MgrT> inline bool save_manager( const char* filename )
     if ( data == nullptr || total == 0 )
         return false;
 
-    //: Compute and store CRC32 in the manager header.
+    // Compute and store CRC32 in the manager header.
     // The header is located after Block_0 (sizeof(Block<AT>) bytes from base).
     constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
     auto*                 hdr        = reinterpret_cast<detail::ManagerHeader<address_traits>*>( data + kHdrOffset );
     hdr->crc32                       = 0; // zero the field before computing CRC
     hdr->crc32                       = detail::compute_image_crc32<address_traits>( data, total );
 
-    //: Atomic save — write to temp file, then rename.
+    // Atomic save — write to temp file, then rename.
     std::string tmp_path = std::string( filename ) + ".tmp";
 
     std::FILE* f = std::fopen( tmp_path.c_str(), "wb" );
@@ -9046,7 +9050,7 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
     if ( read_bytes != file_size )
         return false;
 
-    //: Verify CRC32 before calling load().
+    // Verify CRC32 before calling load().
     constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
     if ( file_size >= kHdrOffset + sizeof( detail::ManagerHeader<address_traits> ) )
     {
@@ -9060,14 +9064,14 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
             return false;
         }
         // Note: stored_crc==0 is accepted for backward compatibility with images
-        // saved before (which had _reserved[8] zeroed).
+        // saved before CRC32 support was added (which had _reserved[8] zeroed).
     }
 
     return MgrT::load( result );
 }
 
 /**
- * @brief Загрузить образ менеджера из файла в PersistMemoryManager (: — статический интерфейс).
+ * @brief Загрузить образ менеджера из файла в PersistMemoryManager.
  *
  * Обёртка для обратной совместимости. Предпочтительно использовать перегрузку
  * с VerifyResult для получения полной диагностики восстановления.
@@ -9088,7 +9092,7 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
 
 /**
  * @file pmm/mmap_storage.h
- * @brief MMapStorage — бэкенд хранилища через отображение файла (: phase 5).
+ * @brief MMapStorage — бэкенд хранилища через отображение файла.
  *
  * Отображает файл в память через `mmap` (POSIX) или `MapViewOfFile` (Windows).
  * Обеспечивает персистентность данных между запусками приложения.
@@ -9209,7 +9213,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> class MMapStorage
     std::size_t total_size() const noexcept { return _size; }
 
     /**
-     * @brief Расширить отображённый файл на additional_bytes (: phase 2.3).
+     * @brief Расширить отображённый файл на additional_bytes.
      *
      * Расширяет файл через ftruncate/SetEndOfFile, затем пересоздаёт отображение.
      * После expand() base_ptr() возвращает новый адрес — все ранее полученные

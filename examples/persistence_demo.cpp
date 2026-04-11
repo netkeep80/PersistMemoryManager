@@ -32,7 +32,7 @@ static const char* IMAGE_FILE = "heap_image.dat";
 
 int main()
 {
-    std::cout << "=== PersistMemoryManager — Persistence Demo (updated #110) ===\n\n";
+    std::cout << "=== PersistMemoryManager — Persistence Demo ===\n\n";
 
     // ─── Phase A: Create and populate ────────────────────────────────────────
 

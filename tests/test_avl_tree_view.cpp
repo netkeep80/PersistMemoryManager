@@ -179,7 +179,7 @@ TEST_CASE( "for_each_free_block_count", "[test_avl_tree_view]" )
 }
 
 /**
- * @brief: aVL tree has exactly one root node (parent_offset == -1).
+ * @brief AVL tree has exactly one root node (parent_offset == -1).
  *
  * Verifies that among all free blocks exactly one has no parent, which is
  * required for a valid AVL tree and for the tree-rendering code to work.
@@ -224,7 +224,7 @@ TEST_CASE( "avl_tree_has_one_root", "[test_avl_tree_view]" )
 }
 
 /**
- * @brief: aVL child links are consistent with parent links.
+ * @brief AVL child links are consistent with parent links.
  *
  * For each free block with a left or right child, the child's parent_offset
  * must equal the current node's offset.  This validates the data that the

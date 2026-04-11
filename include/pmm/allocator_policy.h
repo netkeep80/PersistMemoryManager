@@ -1,6 +1,6 @@
 /**
  * @file pmm/allocator_policy.h
- * @brief AllocatorPolicy — политика выделения/освобождения памяти (: phase 6).
+ * @brief AllocatorPolicy — политика выделения/освобождения памяти.
  *
  * Параметрически объединяет:
  *   - `FreeBlockTreeT` — политику дерева свободных блоков (insert/remove/find_best_fit)

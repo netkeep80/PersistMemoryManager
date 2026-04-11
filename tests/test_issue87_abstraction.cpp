@@ -1,6 +1,6 @@
 /**
  * @file test_issue87_abstraction.cpp
- * @brief Tests: abstraction (updated #102 — new API).
+ * @brief Tests: abstraction.
  *
  *   - PART A tests updated to use AbstractPersistMemoryManager.
  *   - Phase 1/2/3 beacons still test the new type infrastructure.

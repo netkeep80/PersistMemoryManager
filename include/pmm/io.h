@@ -7,8 +7,10 @@
  * ввод/вывод не является основной функциональностью менеджера памяти,
  * но необходим для тестов и примеров использования персистентности.
  *
+ * CRC32 checksum — save_manager computes and stores CRC32
  * in the ManagerHeader.crc32 field; load_manager_from_file verifies it.
  *
+ * Atomic save — save_manager writes to a temporary file
  * (filename + ".tmp") and atomically renames it to the target on success.
  *
  * Использование:
@@ -75,10 +77,12 @@ inline bool atomic_rename( const char* tmp_path, const char* final_path ) noexce
 } // namespace detail
 
 /**
- * @brief Сохранить образ PersistMemoryManager в файл (: — статический интерфейс).
+ * @brief Сохранить образ PersistMemoryManager в файл.
  *
+ * Computes CRC32 of the entire managed region (treating
  * the crc32 field as zero) and stores it in ManagerHeader.crc32 before writing.
  *
+ * Uses atomic write-then-rename — writes to "filename.tmp",
  * then renames to "filename" on success. If the process crashes during fwrite,
  * the original file remains intact.
  *
@@ -100,14 +104,14 @@ template <typename MgrT> inline bool save_manager( const char* filename )
     if ( data == nullptr || total == 0 )
         return false;
 
-    //: Compute and store CRC32 in the manager header.
+    // Compute and store CRC32 in the manager header.
     // The header is located after Block_0 (sizeof(Block<AT>) bytes from base).
     constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
     auto*                 hdr        = reinterpret_cast<detail::ManagerHeader<address_traits>*>( data + kHdrOffset );
     hdr->crc32                       = 0; // zero the field before computing CRC
     hdr->crc32                       = detail::compute_image_crc32<address_traits>( data, total );
 
-    //: Atomic save — write to temp file, then rename.
+    // Atomic save — write to temp file, then rename.
     std::string tmp_path = std::string( filename ) + ".tmp";
 
     std::FILE* f = std::fopen( tmp_path.c_str(), "wb" );
@@ -199,7 +203,7 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
     if ( read_bytes != file_size )
         return false;
 
-    //: Verify CRC32 before calling load().
+    // Verify CRC32 before calling load().
     constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
     if ( file_size >= kHdrOffset + sizeof( detail::ManagerHeader<address_traits> ) )
     {
@@ -213,14 +217,14 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
             return false;
         }
         // Note: stored_crc==0 is accepted for backward compatibility with images
-        // saved before (which had _reserved[8] zeroed).
+        // saved before CRC32 support was added (which had _reserved[8] zeroed).
     }
 
     return MgrT::load( result );
 }
 
 /**
- * @brief Загрузить образ менеджера из файла в PersistMemoryManager (: — статический интерфейс).
+ * @brief Загрузить образ менеджера из файла в PersistMemoryManager.
  *
  * Обёртка для обратной совместимости. Предпочтительно использовать перегрузку
  * с VerifyResult для получения полной диагностики восстановления.

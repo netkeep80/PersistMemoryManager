@@ -1,6 +1,6 @@
 /**
  * @file pmm/block.h
- * @brief Block<AddressTraits> — блок памяти как составной тип (: phase 3, #138).
+ * @brief Block<AddressTraits> — блок памяти как составной тип.
  *
  * Block<AddressTraits> является составным типом, объединяющим:
  *   - поля связного списка (prev_offset, next_offset) — хранятся прямо в Block
