@@ -324,14 +324,16 @@ TEST_CASE( "validation: block data exceeding image bounds detected", "[test_issu
 TEST_CASE( "validation: validate_user_ptr rejects null", "[test_issue257]" )
 {
     std::uint8_t dummy[256] = {};
-    std::size_t  min_offset = sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
+    std::size_t  min_offset =
+        sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
     REQUIRE_FALSE( pmm::detail::validate_user_ptr<AT>( dummy, 256, nullptr, min_offset ) );
 }
 
 TEST_CASE( "validation: validate_user_ptr rejects pointer before min address", "[test_issue257]" )
 {
     std::uint8_t dummy[256] = {};
-    std::size_t  min_offset = sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
+    std::size_t  min_offset =
+        sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
     // Pointer to start of buffer (before min address).
     REQUIRE_FALSE( pmm::detail::validate_user_ptr<AT>( dummy, 256, dummy + 16, min_offset ) );
 }
@@ -339,7 +341,8 @@ TEST_CASE( "validation: validate_user_ptr rejects pointer before min address", "
 TEST_CASE( "validation: validate_user_ptr rejects misaligned pointer", "[test_issue257]" )
 {
     std::uint8_t dummy[256] = {};
-    std::size_t  min_offset = sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
+    std::size_t  min_offset =
+        sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
     // Pointer at min_offset + 1 (misaligned: block header would be at odd offset).
     REQUIRE_FALSE( pmm::detail::validate_user_ptr<AT>( dummy, 256, dummy + min_offset + 1, min_offset ) );
 }
@@ -347,7 +350,8 @@ TEST_CASE( "validation: validate_user_ptr rejects misaligned pointer", "[test_is
 TEST_CASE( "validation: validate_user_ptr accepts valid pointer", "[test_issue257]" )
 {
     std::uint8_t dummy[256] = {};
-    std::size_t  min_offset = sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
+    std::size_t  min_offset =
+        sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
     // Valid pointer: at min_offset, and (min_offset - sizeof(Block<AT>)) % granule_size == 0.
     // min_offset = 32 + 64 + 32 = 128. Block header candidate = 128 - 32 = 96. 96 % 16 == 0. Valid.
     REQUIRE( pmm::detail::validate_user_ptr<AT>( dummy, 256, dummy + min_offset, min_offset ) );
@@ -397,7 +401,7 @@ TEST_CASE( "validation: resolve_granule_ptr_checked returns nullptr for out-of-b
 TEST_CASE( "validation: resolve_granule_ptr_checked returns valid ptr for in-range idx", "[test_issue257]" )
 {
     std::uint8_t dummy[256] = {};
-    void*        result = pmm::detail::resolve_granule_ptr_checked<AT>( dummy, 256, 3 );
+    void*        result     = pmm::detail::resolve_granule_ptr_checked<AT>( dummy, 256, 3 );
     REQUIRE( result == dummy + 48 );
 }
 
@@ -412,7 +416,10 @@ TEST_CASE( "validation: ptr_to_granule_idx_checked returns no_block for null", "
 TEST_CASE( "validation: ptr_to_granule_idx_checked returns no_block for out-of-bounds", "[test_issue257]" )
 {
     std::uint8_t dummy[256] = {};
-    REQUIRE( pmm::detail::ptr_to_granule_idx_checked<AT>( dummy, 256, dummy + 300 ) == AT::no_block );
+    // Use a pointer that is clearly past the end of the managed area but avoids
+    // computing dummy+300 which is UB (out of bounds for uint8_t[256]).
+    const void* oob_ptr = reinterpret_cast<const void*>( reinterpret_cast<std::uintptr_t>( dummy ) + 300 );
+    REQUIRE( pmm::detail::ptr_to_granule_idx_checked<AT>( dummy, 256, oob_ptr ) == AT::no_block );
 }
 
 TEST_CASE( "validation: ptr_to_granule_idx_checked returns no_block for misaligned", "[test_issue257]" )
@@ -439,8 +446,8 @@ TEST_CASE( "validation: validate_block_header_full on clean image reports no iss
     REQUIRE( !p.is_null() );
 
     // Get the block index.
-    std::size_t              usr_off = static_cast<std::size_t>( p.offset() ) * AT::granule_size;
-    typename AT::index_type  blk_idx =
+    std::size_t             usr_off = static_cast<std::size_t>( p.offset() ) * AT::granule_size;
+    typename AT::index_type blk_idx =
         static_cast<typename AT::index_type>( ( usr_off - sizeof( pmm::Block<AT> ) ) / AT::granule_size );
 
     pmm::VerifyResult result;
@@ -466,7 +473,7 @@ using MgrLoad = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2571>;
 
 TEST_CASE( "validation: load repairs inconsistent block state", "[test_issue257]" )
 {
-    static constexpr const char* kFile = "/tmp/test_issue257_repair.pmm";
+    static constexpr const char* kFile = "test_issue257_repair.pmm";
 
     MgrSave::destroy();
     REQUIRE( MgrSave::create( 64 * 1024 ) );

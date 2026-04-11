@@ -1646,8 +1646,7 @@ namespace detail
  * @param idx        Granule index to validate.
  * @return true if idx is valid (not no_block, and block header fits within image).
  */
-template <typename AT>
-inline bool validate_block_index( std::size_t total_size, typename AT::index_type idx ) noexcept
+template <typename AT> inline bool validate_block_index( std::size_t total_size, typename AT::index_type idx ) noexcept
 {
     if ( idx == AT::no_block )
         return false;
@@ -1690,7 +1689,7 @@ inline bool validate_user_ptr( const std::uint8_t* base, std::size_t total_size,
         return false;
     // The block header candidate must be granule-aligned relative to base.
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<AT> );
-    std::size_t cand_off = static_cast<std::size_t>( raw_ptr - base ) - kBlockSize;
+    std::size_t                  cand_off   = static_cast<std::size_t>( raw_ptr - base ) - kBlockSize;
     if ( cand_off % AT::granule_size != 0 )
         return false;
     return true;
@@ -1707,8 +1706,7 @@ inline bool validate_user_ptr( const std::uint8_t* base, std::size_t total_size,
  * @param idx        Granule index to validate (may be no_block).
  * @return true if idx is no_block or a valid in-range index.
  */
-template <typename AT>
-inline bool validate_link_index( std::size_t total_size, typename AT::index_type idx ) noexcept
+template <typename AT> inline bool validate_link_index( std::size_t total_size, typename AT::index_type idx ) noexcept
 {
     if ( idx == AT::no_block )
         return true; // Sentinel is always valid.
@@ -1735,8 +1733,8 @@ inline bool validate_link_index( std::size_t total_size, typename AT::index_type
  * @param result     Diagnostic result to append violations to.
  */
 template <typename AT>
-inline void validate_block_header_full( const std::uint8_t* base, std::size_t total_size,
-                                        typename AT::index_type idx, VerifyResult& result ) noexcept
+inline void validate_block_header_full( const std::uint8_t* base, std::size_t total_size, typename AT::index_type idx,
+                                        VerifyResult& result ) noexcept
 {
     using BlockState = pmm::BlockStateBase<AT>;
     using index_type = typename AT::index_type;
@@ -1784,8 +1782,8 @@ inline void validate_block_header_full( const std::uint8_t* base, std::size_t to
     if ( w > 0 )
     {
         static constexpr std::size_t kBlkHdrBytes = sizeof( pmm::Block<AT> );
-        std::size_t blk_byte_off = static_cast<std::size_t>( idx ) * AT::granule_size;
-        std::size_t data_bytes   = static_cast<std::size_t>( w ) * AT::granule_size;
+        std::size_t                  blk_byte_off = static_cast<std::size_t>( idx ) * AT::granule_size;
+        std::size_t                  data_bytes   = static_cast<std::size_t>( w ) * AT::granule_size;
         if ( blk_byte_off + kBlkHdrBytes + data_bytes > total_size )
         {
             result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
