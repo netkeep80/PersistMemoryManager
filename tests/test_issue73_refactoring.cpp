@@ -129,7 +129,8 @@ TEST_CASE( "AR-04: file_separation", "[test_issue73_refactoring]" )
     static_assert( pmm::config::kDefaultGrowDenominator == 4, "Config header: grow_denominator" );
 
     // AvlFreeTree<DefaultAddressTraits> from persist_avl_tree.h — just check it's a class
-    static_assert( std::is_class<pmm::AvlFreeTree<pmm::DefaultAddressTraits>>::value, "persist_avl_tree.h: AvlFreeTree<DefaultAddressTraits>" );
+    static_assert( std::is_class<pmm::AvlFreeTree<pmm::DefaultAddressTraits>>::value,
+                   "persist_avl_tree.h: AvlFreeTree<DefaultAddressTraits>" );
 
     // AddressTraits
     static_assert( std::is_class<pmm::DefaultAddressTraits>::value, "address_traits.h: DefaultAddressTraits" );

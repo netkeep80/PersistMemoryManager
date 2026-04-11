@@ -132,12 +132,18 @@ TEST_CASE( "I160-C1: detail::bytes_to_granules() delegates to _t", "[test_issue1
     using AT = pmm::DefaultAddressTraits;
 
     // Non-templated must produce same results as _t version for DefaultAddressTraits
-    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 0 ) == pmm::detail::bytes_to_granules_t<AT>( 0 ) );
-    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 1 ) == pmm::detail::bytes_to_granules_t<AT>( 1 ) );
-    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 16 ) == pmm::detail::bytes_to_granules_t<AT>( 16 ) );
-    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 17 ) == pmm::detail::bytes_to_granules_t<AT>( 17 ) );
-    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 128 ) == pmm::detail::bytes_to_granules_t<AT>( 128 ) );
-    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 1000 ) == pmm::detail::bytes_to_granules_t<AT>( 1000 ) );
+    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 0 ) ==
+             pmm::detail::bytes_to_granules_t<AT>( 0 ) );
+    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 1 ) ==
+             pmm::detail::bytes_to_granules_t<AT>( 1 ) );
+    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 16 ) ==
+             pmm::detail::bytes_to_granules_t<AT>( 16 ) );
+    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 17 ) ==
+             pmm::detail::bytes_to_granules_t<AT>( 17 ) );
+    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 128 ) ==
+             pmm::detail::bytes_to_granules_t<AT>( 128 ) );
+    REQUIRE( pmm::detail::bytes_to_granules_t<pmm::DefaultAddressTraits>( 1000 ) ==
+             pmm::detail::bytes_to_granules_t<AT>( 1000 ) );
 }
 
 /// @brief detail::granules_to_bytes() == DefaultAddressTraits::granules_to_bytes().
@@ -171,7 +177,8 @@ TEST_CASE( "I160-C4: detail::byte_off_to_idx() delegates to _t", "[test_issue160
     for ( std::uint32_t idx : { 0u, 1u, 10u, 100u, 1000u } )
     {
         std::size_t byte_off = AT::idx_to_byte_off( idx );
-        REQUIRE( pmm::detail::byte_off_to_idx_t<pmm::DefaultAddressTraits>( byte_off ) == pmm::detail::byte_off_to_idx_t<AT>( byte_off ) );
+        REQUIRE( pmm::detail::byte_off_to_idx_t<pmm::DefaultAddressTraits>( byte_off ) ==
+                 pmm::detail::byte_off_to_idx_t<AT>( byte_off ) );
     }
 }
 

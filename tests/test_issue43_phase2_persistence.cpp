@@ -79,7 +79,10 @@ TEST_CASE( "crc32_save_load_roundtrip", "[test_issue43_phase2_persistence]" )
 
     // Load into a new manager instance
     REQUIRE( M2::create( size ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) );
+    }
     REQUIRE( M2::is_initialized() );
 
     M2::destroy();
@@ -116,7 +119,10 @@ TEST_CASE( "crc32_detects_corruption", "[test_issue43_phase2_persistence]" )
 
     // Load should fail due to CRC mismatch
     REQUIRE( M2::create( size ) );
-    { pmm::VerifyResult vr_; REQUIRE( !pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( !pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) );
+    }
 
     M2::destroy();
     cleanup_file();
@@ -150,7 +156,10 @@ TEST_CASE( "crc32_zero_rejected", "[test_issue43_phase2_persistence]" )
 
     // Load must fail — CRC32 is mandatory, zeroed crc32 no longer accepted.
     REQUIRE( M2::create( size ) );
-    { pmm::VerifyResult vr_; REQUIRE( !pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( !pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) );
+    }
 
     M2::destroy();
     cleanup_file();
@@ -207,7 +216,10 @@ TEST_CASE( "atomic_save_replaces_previous", "[test_issue43_phase2_persistence]" 
 
     // Load and verify the second save (not the first)
     REQUIRE( M2::create( size ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE, vr_ ) );
+    }
     REQUIRE( M2::alloc_block_count() == alloc2 );
 
     M2::destroy();

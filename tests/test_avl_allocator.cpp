@@ -198,7 +198,10 @@ TEST_CASE( "avl_survives_save_load", "[test_avl_allocator]" )
 
     Mgr pmm2;
     REQUIRE( pmm2.create( size ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) );
+    }
     REQUIRE( pmm2.is_initialized() );
 
     REQUIRE( pmm2.block_count() == blocks_before );

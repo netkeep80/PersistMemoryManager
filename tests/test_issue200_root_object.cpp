@@ -121,7 +121,10 @@ TEST_CASE( "I200-D  persistence save/load", "[test_issue200_root_object]" )
 
     // Reload
     REQUIRE( TestMgr2::create( 64 * 1024 ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<TestMgr2>( filename, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<TestMgr2>( filename, vr_ ) );
+    }
 
     auto root = TestMgr2::get_root<int>();
     REQUIRE( !root.is_null() );
@@ -334,7 +337,10 @@ TEST_CASE( "I200-M  persistence no root", "[test_issue200_root_object]" )
     TestMgr2::destroy();
 
     REQUIRE( TestMgr2::create( 64 * 1024 ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<TestMgr2>( filename, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<TestMgr2>( filename, vr_ ) );
+    }
 
     // Root should still be null
     REQUIRE( TestMgr2::get_root<int>().is_null() );

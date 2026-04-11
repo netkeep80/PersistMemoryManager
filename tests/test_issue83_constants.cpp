@@ -106,7 +106,10 @@ TEST_CASE( "#83-R4: load preserves correct granule_size", "[test_issue83_constan
 
     Mgr pmm2;
     REQUIRE( pmm2.create( 64 * 1024 ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) );
+    }
     REQUIRE( pmm2.is_initialized() );
     pmm2.destroy();
 

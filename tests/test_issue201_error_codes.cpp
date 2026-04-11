@@ -150,7 +150,7 @@ TEST_CASE( "load_invalid_magic", "[test_issue201_error_codes]" )
     hdr->magic = 0xDEADBEEF;
     MgrLoad::clear_error();
     pmm::VerifyResult result;
-    bool ok = MgrLoad::load( result );
+    bool              ok = MgrLoad::load( result );
     REQUIRE( !ok );
     REQUIRE( MgrLoad::last_error() == pmm::PmmError::InvalidMagic );
 }
@@ -169,7 +169,7 @@ TEST_CASE( "load_size_mismatch", "[test_issue201_error_codes]" )
     hdr->total_size = 12345; // wrong — doesn't match backend
     MgrSz::clear_error();
     pmm::VerifyResult result;
-    bool ok = MgrSz::load( result );
+    bool              ok = MgrSz::load( result );
     REQUIRE( !ok );
     REQUIRE( MgrSz::last_error() == pmm::PmmError::SizeMismatch );
 }
@@ -189,7 +189,7 @@ TEST_CASE( "load_granule_mismatch", "[test_issue201_error_codes]" )
     hdr->granule_size = 99;              // wrong
     MgrGr::clear_error();
     pmm::VerifyResult result;
-    bool ok = MgrGr::load( result );
+    bool              ok = MgrGr::load( result );
     REQUIRE( !ok );
     REQUIRE( MgrGr::last_error() == pmm::PmmError::GranuleMismatch );
 }
@@ -240,7 +240,7 @@ TEST_CASE( "crc_mismatch", "[test_issue201_error_codes]" )
     MgrCrc::create( 64 * 1024 );
     MgrCrc::clear_error();
     pmm::VerifyResult vr_;
-    bool loaded = pmm::load_manager_from_file<MgrCrc>( filename, vr_ );
+    bool              loaded = pmm::load_manager_from_file<MgrCrc>( filename, vr_ );
     REQUIRE( !loaded );
     REQUIRE( MgrCrc::last_error() == pmm::PmmError::CrcMismatch );
 

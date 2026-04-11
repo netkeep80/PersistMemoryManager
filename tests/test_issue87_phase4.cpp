@@ -40,8 +40,10 @@ TEST_CASE( "P4-A2: Non-policy type fails concept check", "[test_issue87_phase4]"
     {
         int x;
     };
-    static_assert( !pmm::FreeBlockTreePolicyForTraitsConcept<NotAPolicy, pmm::DefaultAddressTraits>, "NotAPolicy must not satisfy FreeBlockTreePolicy" );
-    static_assert( !pmm::FreeBlockTreePolicyForTraitsConcept<int, pmm::DefaultAddressTraits>, "int must not satisfy FreeBlockTreePolicy" );
+    static_assert( !pmm::FreeBlockTreePolicyForTraitsConcept<NotAPolicy, pmm::DefaultAddressTraits>,
+                   "NotAPolicy must not satisfy FreeBlockTreePolicy" );
+    static_assert( !pmm::FreeBlockTreePolicyForTraitsConcept<int, pmm::DefaultAddressTraits>,
+                   "int must not satisfy FreeBlockTreePolicy" );
 }
 
 TEST_CASE( "P4-A3: Partial policy (insert only) fails concept check", "[test_issue87_phase4]" )

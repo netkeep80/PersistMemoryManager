@@ -250,7 +250,7 @@ TEST_CASE( "on_corruption (bad magic)", "[test_issue202_logging_hooks]" )
 
     TestHookCounters::reset();
     pmm::VerifyResult vr;
-    bool ok = Mgr::load( vr );
+    bool              ok = Mgr::load( vr );
     REQUIRE( !ok );
     REQUIRE( TestHookCounters::corruption_count == 1 );
     REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::InvalidMagic );
@@ -285,7 +285,7 @@ TEST_CASE( "on_corruption (size mismatch)", "[test_issue202_logging_hooks]" )
 
     TestHookCounters::reset();
     pmm::VerifyResult vr;
-    bool ok = Mgr::load( vr );
+    bool              ok = Mgr::load( vr );
     REQUIRE( !ok );
     REQUIRE( TestHookCounters::corruption_count == 1 );
     REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::SizeMismatch );
@@ -320,7 +320,7 @@ TEST_CASE( "on_corruption (granule mismatch)", "[test_issue202_logging_hooks]" )
 
     TestHookCounters::reset();
     pmm::VerifyResult vr;
-    bool ok = Mgr::load( vr );
+    bool              ok = Mgr::load( vr );
     REQUIRE( !ok );
     REQUIRE( TestHookCounters::corruption_count == 1 );
     REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::GranuleMismatch );
@@ -342,7 +342,7 @@ TEST_CASE( "on_load hook", "[test_issue202_logging_hooks]" )
     MgrSave::create( 4096 );
     TestHookCounters::reset();
     pmm::VerifyResult vr_;
-    bool ok = pmm::load_manager_from_file<MgrSave>( "test_issue202_load.dat", vr_ );
+    bool              ok = pmm::load_manager_from_file<MgrSave>( "test_issue202_load.dat", vr_ );
     REQUIRE( ok );
     REQUIRE( TestHookCounters::load_count == 1 );
 
@@ -371,7 +371,7 @@ TEST_CASE( "on_corruption (CRC mismatch)", "[test_issue202_logging_hooks]" )
     MgrLogCrc::create( 4096 );
     TestHookCounters::reset();
     pmm::VerifyResult vr_;
-    bool ok = pmm::load_manager_from_file<MgrLogCrc>( "test_issue202_crc.dat", vr_ );
+    bool              ok = pmm::load_manager_from_file<MgrLogCrc>( "test_issue202_crc.dat", vr_ );
     REQUIRE( !ok );
     REQUIRE( TestHookCounters::corruption_count == 1 );
     REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::CrcMismatch );

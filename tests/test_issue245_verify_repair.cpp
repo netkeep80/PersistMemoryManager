@@ -564,7 +564,10 @@ TEST_CASE( "verify_repair: Repaired vs Rebuilt distinction in load repair result
     Mgr7::destroy();
 
     REQUIRE( Mgr8::create( 64 * 1024 ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<Mgr8>( kFile, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<Mgr8>( kFile, vr_ ) );
+    }
 
     // After load, verify that the image is clean (repairs applied).
     pmm::VerifyResult post = Mgr8::verify();

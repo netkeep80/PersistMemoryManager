@@ -249,7 +249,10 @@ TEST_CASE( "C2: persistence save/load", "[test_issue87_abstraction]" )
 
     Mgr pmm2;
     REQUIRE( pmm2.create( 64 * 1024 ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) );
+    }
     REQUIRE( pmm2.is_initialized() );
 
     Mgr::pptr<std::uint64_t> p2( saved_offset );

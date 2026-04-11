@@ -90,7 +90,10 @@ TEST_CASE( "P6-B2: repair_linked_list() (via save/load)", "[test_issue87_phase6]
 
     Mgr pmm2;
     REQUIRE( pmm2.create( 8192 ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) );
+    }
     REQUIRE( pmm2.is_initialized() );
     REQUIRE( pmm2.alloc_block_count() == alloc_before );
 
@@ -115,7 +118,10 @@ TEST_CASE( "P6-B3: rebuild_free_tree() (via save/load)", "[test_issue87_phase6]"
 
     Mgr pmm2;
     REQUIRE( pmm2.create( 8192 ) );
-    { pmm::VerifyResult vr_; REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) ); }
+    {
+        pmm::VerifyResult vr_;
+        REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, vr_ ) );
+    }
     REQUIRE( pmm2.is_initialized() );
 
     // Should be able to allocate after loading (requires valid free tree)
