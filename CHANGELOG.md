@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.48.0] - 2026-04-11
+
+### Added
+- `validate_bootstrap_invariants()` public method to verify that a PAP image
+  is a valid, self-described persistent environment (Issue #241)
+- Bootstrap invariant checks integrated into `create()` and `load()` paths
+- Comprehensive test suite (`test_issue241_bootstrap`) verifying invariants
+  after create, after save/load, and determinism of the bootstrap sequence
+- Documentation of the canonical bootstrap sequence (`docs/bootstrap.md`)
+
+
 ## [0.47.0] - 2026-03-22
 
 ### Removed
