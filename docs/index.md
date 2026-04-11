@@ -17,6 +17,8 @@ Single entry point for all PMM documentation. Each topic is covered by exactly o
 | [Verify/Repair Contract](verify_repair_contract.md) | Operational boundary between verify, repair, and load — frozen contract for tasks 08–10 |
 | [Diagnostics Taxonomy](diagnostics_taxonomy.md) | Violation types, severity levels, repair policies, diagnostic entry format |
 | [Validation Model](validation_model.md) | Low-level pointer and block validation: cheap vs full modes, conversion paths, error categories |
+| [Storage Seams](storage_seams.md) | Extension points for encryption, compression, journaling; operating modes; separation from upper layers |
+| [Mutation Ordering](mutation_ordering.md) | Write ordering rules for all critical mutations; crash-consistency analysis; trust anchors vs. derived data |
 | [Atomic Writes](atomic_writes.md) | Write criticality analysis, block state transitions, interruption guarantees |
 | [Thread Safety](thread_safety.md) | Lock policies, operation contracts, resolve() fast path, concurrent patterns |
 
@@ -44,4 +46,5 @@ For newcomers, the recommended path is:
 5. **[API Reference](api_reference.md)** — use the library
 6. **[Bootstrap](bootstrap.md)** / **[Recovery](recovery.md)** — understand lifecycle guarantees
 7. **[Verify/Repair Contract](verify_repair_contract.md)** / **[Diagnostics Taxonomy](diagnostics_taxonomy.md)** — understand verify/repair boundary
-8. **[Thread Safety](thread_safety.md)** — for concurrent usage
+8. **[Storage Seams](storage_seams.md)** / **[Mutation Ordering](mutation_ordering.md)** — understand extension points and crash consistency
+9. **[Thread Safety](thread_safety.md)** — for concurrent usage
