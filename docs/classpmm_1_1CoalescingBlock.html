@@ -161,7 +161,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a2880e0d4551d92b0dd161e46fc801730"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_static_methods_classpmm_1_1BlockStateBase"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_classpmm_1_1BlockStateBase')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></td></tr>
 <tr class="memitem:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_ab390678b3d4d95498d71d0a966b9deeb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb">recover_state</a> (void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx) noexcept</td></tr>
-<tr class="memdesc:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
+<tr class="memdesc:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Repair block state to a consistent value (called during load()).  <br /></td></tr>
 <tr class="separator:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a28f4483be1d779ef6531574f0f6daa55"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a28f4483be1d779ef6531574f0f6daa55">verify_state</a> (const void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
 <tr class="memdesc:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modifying the image.  <br /></td></tr>
@@ -283,7 +283,7 @@ class pmm::CoalescingBlock&lt; AddressTraitsT &gt;</div><p><a class="el" href="c
 <li><a class="el" href="classpmm_1_1CoalescingBlock.html#a7ecb2802a98a4dea9891432fe92ec109" title="Завершить операцию coalesce и добавить блок в AVL-дерево.">finalize_coalesce()</a> — завершить слияние и добавить в AVL </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00724">724</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00725">725</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ad8294653d10e09a9209f0a94df20b757" name="ad8294653d10e09a9209f0a94df20b757"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad8294653d10e09a9209f0a94df20b757">&#9670;&#160;</a></span>Base</h2>
@@ -299,7 +299,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00727">727</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00728">728</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -317,7 +317,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00728">728</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00729">729</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -350,7 +350,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Интерпретировать сырые байты как <a class="el" href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями.">CoalescingBlock</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00733">733</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00734">734</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -407,7 +407,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>AVL-удаление соседа выполняется вызывающим кодом отдельно. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00744">744</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00745">745</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -465,7 +465,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <dl class="section note"><dt>Note</dt><dd>AVL-удаление соседа выполняется вызывающим кодом отдельно. </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на результирующий блок (prev_blk) в состоянии <a class="el" href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями.">CoalescingBlock</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00770">770</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00771">771</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -498,7 +498,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <dl class="section note"><dt>Note</dt><dd>AVL-операция выполняется вызывающим кодом отдельно. </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на блок в состоянии <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00794">794</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00795">795</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

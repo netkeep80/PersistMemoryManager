@@ -629,7 +629,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 </div><div class="memdoc">
 
 <p>Перестроить дерево свободных блоков. </p>
-<p>Сбрасывает все AVL-ссылки в блоках и заново вставляет свободные блоки. Вызывается при <code>load()</code> после восстановления менеджера из файла. Также вызывает <a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb" title="Восстановить блок в корректное состояние (при load()).">BlockState::recover_state</a> для каждого блока.</p>
+<p>Сбрасывает все AVL-ссылки в блоках и заново вставляет свободные блоки. Вызывается при <code>load()</code> после восстановления менеджера из файла. Также вызывает <a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb" title="Repair block state to a consistent value (called during load()).">BlockState::recover_state</a> для каждого блока.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">base</td><td>Базовый указатель управляемой области. </td></tr>

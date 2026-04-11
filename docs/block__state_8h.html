@@ -131,7 +131,7 @@ Functions</h2></td></tr>
 <tr class="separator:a0b6c0f639691913c3e5d08e8961efa6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae516301039413daf2eeb4857655bde54" id="r_ae516301039413daf2eeb4857655bde54"><td class="memTemplParams" colspan="2">template&lt;typename AT &gt; </td></tr>
 <tr class="memitem:ae516301039413daf2eeb4857655bde54"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ae516301039413daf2eeb4857655bde54">pmm::recover_block_state</a> (void *raw_blk, typename AT::index_type own_idx) noexcept</td></tr>
-<tr class="memdesc:ae516301039413daf2eeb4857655bde54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for <a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb" title="Восстановить блок в корректное состояние (при load()).">BlockStateBase&lt;AT&gt;::recover_state()</a>.  <br /></td></tr>
+<tr class="memdesc:ae516301039413daf2eeb4857655bde54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for <a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb" title="Repair block state to a consistent value (called during load()).">BlockStateBase&lt;AT&gt;::recover_state()</a>.  <br /></td></tr>
 <tr class="separator:ae516301039413daf2eeb4857655bde54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae3cf9cad8a70ea570e860e4ac016d878" id="r_ae3cf9cad8a70ea570e860e4ac016d878"><td class="memTemplParams" colspan="2">template&lt;typename AT &gt; </td></tr>
 <tr class="memitem:ae3cf9cad8a70ea570e860e4ac016d878"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ae3cf9cad8a70ea570e860e4ac016d878">pmm::verify_block_state</a> (const void *raw_blk, typename AT::index_type own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
@@ -160,8 +160,8 @@ Functions</h2></td></tr>
 <ul>
 <li>reset_avl_fields_of() — сброс AVL-полей перед rebuild_free_tree</li>
 <li>repair_prev_offset() — восстановление prev_offset при repair_linked_list</li>
-<li>get_next_offset() — чтение next_offset в recovery-методах</li>
-<li>get_weight() — чтение weight в recovery-методах</li>
+<li>get_next_offset() — чтение next_offset в repair-методах (load)</li>
+<li>get_weight() — чтение weight в repair-методах (load)</li>
 </ul>
 <p>repair_block_prev_offset(), read_block_next_offset(), read_block_weight() AllocatorPolicy вызывает BlockStateBase&lt;AT&gt;::* напрямую.</p>
 <dl class="section see"><dt>See also</dt><dd>docs/atomic_writes.md «Граф состояний блока» </dd></dl>

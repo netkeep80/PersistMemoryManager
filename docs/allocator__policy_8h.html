@@ -128,7 +128,7 @@ Typedefs</h2></td></tr>
 </ul>
 <p>в терминах автомата состояний из <code><a class="el" href="block__state_8h.html" title="BlockState machine — автомат состояний блока для атомарных операций.">block_state.h</a></code>.</p>
 <p>блоков выполняются через методы <code><a class="el" href="block__state_8h.html" title="BlockState machine — автомат состояний блока для атомарных операций.">block_state.h</a></code>, прямые присвоения к полям <code>size</code> и <code>root_offset</code> заменены на типобезопасные переходы состояний. Используется Block layout вместо legacy BlockHeader layout.</p>
-<p>обращается напрямую к полям Block. В split-пути allocate_from_block() используются методы SplittingBlock (initialize_new_block, link_new_block, finalize_split). В coalesce() соседние блоки проверяются через BlockStateBase. В recovery-методах (rebuild_free_tree, repair_linked_list, recompute_counters) напрямую используются статические методы BlockStateBase&lt;AT&gt;:</p><ul>
+<p>обращается напрямую к полям Block. В split-пути allocate_from_block() используются методы SplittingBlock (initialize_new_block, link_new_block, finalize_split). В coalesce() соседние блоки проверяются через BlockStateBase. В repair-методах load() (rebuild_free_tree, repair_linked_list, recompute_counters) напрямую используются статические методы BlockStateBase&lt;AT&gt;:</p><ul>
 <li>reset_avl_fields_of() — вместо удалённой reset_block_avl_fields()</li>
 <li>repair_prev_offset() — вместо удалённой repair_block_prev_offset()</li>
 <li>get_next_offset() — вместо удалённой read_block_next_offset()</li>
