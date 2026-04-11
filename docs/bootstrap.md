@@ -1,4 +1,4 @@
-# Bootstrap Sequence for PAP Image (Issue #241)
+# Bootstrap Sequence for PAP Image
 
 ## Overview
 

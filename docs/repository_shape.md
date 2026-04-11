@@ -168,9 +168,7 @@
 
 ### docs/ internal inventory
 
-Детальная реорганизация `docs/` выполняется в задаче 02. Здесь фиксируются текущие статусы:
-
-#### Canonical (keep)
+#### Canonical
 
 - `architecture.md` — архитектура и инварианты
 - `api_reference.md` — справочник API
@@ -182,10 +180,17 @@
 - `thread_safety.md` — потокобезопасность
 - `atomic_writes.md` — атомарная запись
 
-#### Archive (перенести в `docs/archive/` в задаче 02)
+#### Supporting
+
+- `repository_shape.md` — целевая структура репозитория
+- `deletion_policy.md` — правила удаления и архивации
+- `index.md` — единая точка входа в документацию
+
+#### Archive (`docs/archive/`)
 
 - `PMM_AVL_Forest_Concept.md` — пересекается с `pmm_avl_forest.md`
 - `avl_forest_analysis_ru.md` — исторический анализ
+- `demo.md` — ТЗ на визуальное демо
 - `phase1_safety.md` — фазовый документ
 - `phase2_persistence.md` — фазовый документ
 - `phase3_types.md` — фазовый документ

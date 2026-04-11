@@ -33,10 +33,10 @@ Bytes 32–35: first_block_offset — first block (granule index)
 Bytes 36–39: last_block_offset  — last block (granule index)
 Bytes 40–43: free_tree_root  — AVL free block tree root (granule index)
 Bytes 44:    owns_memory     — runtime-only (not persistent)
-Bytes 45:    _pad            — reserved (Issue #176: was prev_owns_memory)
+Bytes 45:    _pad            — reserved
 Bytes 46–47: granule_size    — granule size at creation time; validated on load()
 Bytes 48–55: prev_total_size — runtime-only (not persistent)
-Bytes 56–63: _reserved[8]   — reserved (Issue #176: was prev_base_ptr)
+Bytes 56–63: _reserved[8]   — reserved
 ```
 
 The `granule_size` field is checked on `load()`: if it does not match the compile-time

@@ -206,7 +206,7 @@
 
 Именно поэтому `weight` нельзя документировать только как “allocator size field”.
 
-#### Free-tree domain: `weight` as state discriminator (Issue #243)
+#### Free-tree domain: `weight` as state discriminator
 
 In the free-tree domain, `weight` serves a specific role:
 
