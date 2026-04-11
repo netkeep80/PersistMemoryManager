@@ -219,6 +219,10 @@ Variables</h2></td></tr>
 <tr class="memitem:ac8238d730b912b3d2ea95864aa3fa3de"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#ac8238d730b912b3d2ea95864aa3fa3de">kNoBlock_v</a> = AddressTraitsT::no_block</td></tr>
 <tr class="memdesc:ac8238d730b912b3d2ea95864aa3fa3de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Template alias for AddressTraitsT::no_block sentinel. Use this instead of <a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e" title="Matches DefaultAddressTraits::no_block.">detail::kNoBlock</a> in generic (templated) code that works with any AT. For DefaultAddressTraits, kNoBlock_v&lt;DefaultAddressTraits&gt; == kNoBlock == 0xFFFFFFFFU.  <br /></td></tr>
 <tr class="separator:ac8238d730b912b3d2ea95864aa3fa3de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0360688481a1b1fab83965ffc6613dba" id="r_a0360688481a1b1fab83965ffc6613dba"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </td></tr>
+<tr class="memitem:a0360688481a1b1fab83965ffc6613dba"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> AddressTraitsT::index_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a0360688481a1b1fab83965ffc6613dba">kNullIdx_v</a> = <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">static_cast</a>&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type&gt;( 0 )</td></tr>
+<tr class="memdesc:a0360688481a1b1fab83965ffc6613dba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Null granule index sentinel: index_type(0) means "no data" in persistent containers. Use this instead of <code>static_cast&lt;index_type&gt;(0)</code> in parray, pstring, ppool, pmap.  <br /></td></tr>
+<tr class="separator:a0360688481a1b1fab83965ffc6613dba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adda9afd5ae768545d32151ed800eb699" id="r_adda9afd5ae768545d32151ed800eb699"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> std::uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#adda9afd5ae768545d32151ed800eb699">kManagerHeaderGranules</a> = <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">sizeof</a>( <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">ManagerHeader</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt; ) / <a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac">kGranuleSize</a></td></tr>
 <tr class="memdesc:adda9afd5ae768545d32151ed800eb699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of granules in ManagerHeader&lt;DefaultAddressTraits&gt;  <br /></td></tr>
 <tr class="separator:adda9afd5ae768545d32151ed800eb699"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -336,7 +340,7 @@ template&lt;typename AddressTraitsT  = pmm::DefaultAddressTraits&gt; </div>
 
 <p>Get const pointer to Block&lt;AddressTraitsT&gt; by granule index (read-only). Idx parameter is now index_type (was uint32_t) for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00327">327</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00332">332</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -378,7 +382,7 @@ template&lt;typename AddressTraitsT  = pmm::DefaultAddressTraits&gt; </div>
 
 <p>Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-file <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">blk_at()</a> helpers in <a class="el" href="allocator__policy_8h.html" title="AllocatorPolicy — политика выделения/освобождения памяти.">allocator_policy.h</a> and <a class="el" href="free__block__tree_8h.html" title="AvlFreeTree — specialized forest-policy for the free-tree domain.">free_block_tree.h</a>. Uses AddressTraitsT::granule_size for byte-offset computation. Idx parameter is now index_type (was uint32_t) for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00317">317</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00322">322</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -420,7 +424,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Get granule index of Block&lt;AddressTraitsT&gt;. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00336">336</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00341">341</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -468,7 +472,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Compute total granules of block for AddressTraitsT (<a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout). Total_size is no longer stored — computed via next_offset. Single templated implementation; non-templated overload delegates here. <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header parameterized on AddressTraitsT. All _offset and counter fields use index_type,...">ManagerHeader</a> parameter is now ManagerHeader&lt;AddressTraitsT&gt;*. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00366">366</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00371">371</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -500,7 +504,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Get granule index from byte offset using AddressTraitsT::granule_size. Return type changed from uint32_t to index_type for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00297">297</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00302">302</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -532,7 +536,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Convert bytes to granules (ceiling) using AddressTraitsT::granule_size. Returns AddressTraitsT::index_type. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00261">261</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00266">266</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -564,7 +568,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Convert bytes to index_type granules (ceiling) using AddressTraitsT::granule_size. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00274">274</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00279">279</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -660,7 +664,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>CRC32 checksum. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00220">220</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00225">225</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -856,7 +860,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>O(1) get Block&lt;AddressTraitsT&gt; from user_ptr (ptr - sizeof(Block&lt;AddressTraitsT&gt;)). Block&lt;AddressTraitsT&gt; is the sole block type. Unified templated helper replaces the former DefaultAddressTraits-specific overload. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00417">417</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00422">422</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -888,7 +892,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Get byte offset from granule index using AddressTraitsT::granule_size. Parameter changed from uint32_t to index_type for 64-bit support. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00290">290</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00295">295</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -918,7 +922,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Returns true only for kGranuleSize (16-byte) alignment. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00306">306</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00311">311</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -960,7 +964,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Convert a raw pointer to a granule index. Eliminates repeated <code>(ptr - base) / granule_size</code> patterns across parray, pstring, ppool, pstringview. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00398">398</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00403">403</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -992,7 +996,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Required block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Minimum block granules for user_bytes = header_granules + max(1, ceil(user_bytes / granule_size)). Uses AddressTraitsT::granule_size and kBlockHeaderGranules_t&lt;AT&gt; for correct per-AT computation. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00448">448</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00453">453</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1035,7 +1039,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Resolve a granule index to a raw pointer. Eliminates repeated <code>base + idx * granule_size</code> patterns across parray, pstring, ppool, pstringview. </p>
 <dl class="section return"><dt>Returns</dt><dd>nullptr if idx is zero (null sentinel). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00388">388</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00393">393</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1067,7 +1071,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Compute user data address for block (block + sizeof(Block&lt;A&gt;)). Single canonical implementation — use this instead of duplicating the cast in each call site. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00408">408</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00413">413</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1100,7 +1104,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><!-- fragment -->
 <p><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header size in granules for AddressTraitsT. Computes ceil(sizeof(Block&lt;AT&gt;) / AT::granule_size). For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00348">348</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00353">353</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1270,7 +1274,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Number of granules in ManagerHeader&lt;DefaultAddressTraits&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00243">243</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00248">248</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1301,7 +1305,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><!-- fragment -->
 <p>Manager header size in granules for AddressTraitsT. Uses ceiling division: ceil(sizeof(ManagerHeader&lt;AT&gt;) / AT::granule_size). For DefaultAddressTraits (16B granule): 64/16 = 4. For LargeAddressTraits (64B granule): ceil(96/64) = 2. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00357">357</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00362">362</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1351,7 +1355,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 
 <p>Minimum block size = <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header + 1 data granule (uses <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00246">246</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00251">251</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1380,7 +1384,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><!-- fragment -->
 <p>Minimum memory size = Block_0 + <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html" title="Manager header parameterized on AddressTraitsT. All _offset and counter fields use index_type,...">ManagerHeader</a> + Block_1 + kMinBlockSize. Uses DefaultAddressTraits for the non-templated constant. </p>
 
-<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00250">250</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00255">255</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>
@@ -1436,6 +1440,34 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 <p>Template alias for AddressTraitsT::no_block sentinel. Use this instead of <a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e" title="Matches DefaultAddressTraits::no_block.">detail::kNoBlock</a> in generic (templated) code that works with any AT. For DefaultAddressTraits, kNoBlock_v&lt;DefaultAddressTraits&gt; == kNoBlock == 0xFFFFFFFFU. </p>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00175">175</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a0360688481a1b1fab83965ffc6613dba" name="a0360688481a1b1fab83965ffc6613dba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0360688481a1b1fab83965ffc6613dba">&#9670;&#160;</a></span>kNullIdx_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">AddressTraitsT</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">constexpr</a> AddressTraitsT::index_type pmm::detail::kNullIdx_v = <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">static_cast</a>&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">typename</a> AddressTraitsT::index_type&gt;( 0 )</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Null granule index sentinel: index_type(0) means "no data" in persistent containers. Use this instead of <code>static_cast&lt;index_type&gt;(0)</code> in parray, pstring, ppool, pmap. </p>
+
+<p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00180">180</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
 </div>
 </div>

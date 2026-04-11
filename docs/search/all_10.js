@@ -6,7 +6,7 @@ var searchData=
   ['rebuild_5ffree_5ftree_3',['rebuild_free_tree',['../classpmm_1_1AllocatorPolicy.html#a054381b6e644f3532058528cecc836d8',1,'pmm::AllocatorPolicy']]],
   ['rebuilt_4',['Rebuilt',['../namespacepmm.html#ad59b75cdb8053e3545268672eaadea72ae930ab3bcf3c21299aa68d51621b1215',1,'pmm']]],
   ['recompute_5fcounters_5',['recompute_counters',['../classpmm_1_1AllocatorPolicy.html#afc8820ac39ec71c2c101fad4d2bdd857',1,'pmm::AllocatorPolicy']]],
-  ['recover_5fblock_5fstate_6',['recover_block_state',['../namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3',1,'pmm']]],
+  ['recover_5fblock_5fstate_6',['recover_block_state',['../namespacepmm.html#ae516301039413daf2eeb4857655bde54',1,'pmm']]],
   ['recover_5fstate_7',['recover_state',['../classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb',1,'pmm::BlockStateBase']]],
   ['recoverymode_8',['RecoveryMode',['../namespacepmm.html#a83a2faa503d613b891003574c09e73f9',1,'pmm']]],
   ['register_5fdomain_9',['register_domain',['../classpmm_1_1PersistMemoryManager.html#a2a640008da18990a73e9daaddcc66697',1,'pmm::PersistMemoryManager']]],

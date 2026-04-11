@@ -261,6 +261,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a67e96b1bbc9085c8ec5888bfff85bc55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a> reference for direct AVL manipulation via pptr.  <br /></td></tr>
 <tr class="separator:a67e96b1bbc9085c8ec5888bfff85bc55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e16ecba710f1c6e42b0b32331573fe0" id="r_a1e16ecba710f1c6e42b0b32331573fe0"><td class="memItemLeft" align="right" valign="top">static std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a1e16ecba710f1c6e42b0b32331573fe0">total_size</a> () noexcept</td></tr>
+<tr class="memdesc:a1e16ecba710f1c6e42b0b32331573fe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the backend's total managed memory size. Special-cased to read from _backend (authoritative source of truth for physical size) rather than the header, so callers always see the real backend size even if the header is stale or corrupted.  <br /></td></tr>
 <tr class="separator:a1e16ecba710f1c6e42b0b32331573fe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab84f55bad9ba4f24570e958cc2f9112" id="r_aab84f55bad9ba4f24570e958cc2f9112"><td class="memItemLeft" align="right" valign="top">static std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#aab84f55bad9ba4f24570e958cc2f9112">used_size</a> () noexcept</td></tr>
 <tr class="separator:aab84f55bad9ba4f24570e958cc2f9112"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -298,16 +299,16 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a28ea290cf49e819b2fdf67eddb8f3099"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a28ea290cf49e819b2fdf67eddb8f3099">get_tree_parent_offset</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p) noexcept</td></tr>
 <tr class="separator:a28ea290cf49e819b2fdf67eddb8f3099"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader"></div></td></tr>
-<tr class="memitem:a21550826014a6329c06986327ea33d73" id="r_a21550826014a6329c06986327ea33d73"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a21550826014a6329c06986327ea33d73"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a21550826014a6329c06986327ea33d73">set_tree_left_offset</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a> left) noexcept</td></tr>
-<tr class="memdesc:a21550826014a6329c06986327ea33d73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set left/right/parent AVL offset for pptr's block (0 maps to no_block).  <br /></td></tr>
-<tr class="separator:a21550826014a6329c06986327ea33d73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9abca9612d6a6c0ef65797ba5ca8c773" id="r_a9abca9612d6a6c0ef65797ba5ca8c773"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a9abca9612d6a6c0ef65797ba5ca8c773"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a9abca9612d6a6c0ef65797ba5ca8c773">set_tree_right_offset</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a> right) noexcept</td></tr>
-<tr class="separator:a9abca9612d6a6c0ef65797ba5ca8c773"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b73474588d3b4f091e418b2c1e12185" id="r_a5b73474588d3b4f091e418b2c1e12185"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a5b73474588d3b4f091e418b2c1e12185"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a5b73474588d3b4f091e418b2c1e12185">set_tree_parent_offset</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a> parent) noexcept</td></tr>
-<tr class="separator:a5b73474588d3b4f091e418b2c1e12185"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01c14f9ba44ae8dbbfdb2c6a93f59d3f" id="r_a01c14f9ba44ae8dbbfdb2c6a93f59d3f"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a01c14f9ba44ae8dbbfdb2c6a93f59d3f"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a01c14f9ba44ae8dbbfdb2c6a93f59d3f">set_tree_left_offset</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a> v) noexcept</td></tr>
+<tr class="memdesc:a01c14f9ba44ae8dbbfdb2c6a93f59d3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set left/right/parent AVL offset for pptr's block (0 maps to no_block).  <br /></td></tr>
+<tr class="separator:a01c14f9ba44ae8dbbfdb2c6a93f59d3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5763096bb03b565c7aed312525589b0" id="r_ab5763096bb03b565c7aed312525589b0"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ab5763096bb03b565c7aed312525589b0"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#ab5763096bb03b565c7aed312525589b0">set_tree_right_offset</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a> v) noexcept</td></tr>
+<tr class="separator:ab5763096bb03b565c7aed312525589b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73aedbc02475fcb5e0e3ae95c1ebb534" id="r_a73aedbc02475fcb5e0e3ae95c1ebb534"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a73aedbc02475fcb5e0e3ae95c1ebb534"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a73aedbc02475fcb5e0e3ae95c1ebb534">set_tree_parent_offset</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a> v) noexcept</td></tr>
+<tr class="separator:a73aedbc02475fcb5e0e3ae95c1ebb534"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader"></div></td></tr>
 <tr class="memitem:add3d616d951a0dae10d32651c76d4af5" id="r_add3d616d951a0dae10d32651c76d4af5"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:add3d616d951a0dae10d32651c76d4af5"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#add3d616d951a0dae10d32651c76d4af5">get_tree_weight</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p) noexcept</td></tr>
@@ -745,7 +746,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01084">1084</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01075">1075</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -896,7 +897,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 
 <p>Доступ к статическому бэкенду (для продвинутых сценариев). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01189">1189</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01175">1175</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -925,7 +926,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01064">1064</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01067">1067</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1348,7 +1349,7 @@ template&lt;typename Callback &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>false если менеджер не инициализирован, true иначе.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Метод выполняется под блокировкой — не вызывайте allocate/deallocate из callback во избежание дедлока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01126">1126</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01112">1112</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1397,7 +1398,7 @@ template&lt;typename Callback &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>false если менеджер не инициализирован, true иначе.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Метод выполняется под блокировкой — не вызывайте allocate/deallocate из callback во избежание дедлока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01177">1177</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01163">1163</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1426,7 +1427,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01074">1074</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01071">1071</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1455,7 +1456,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01051">1051</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01058">1058</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1715,7 +1716,7 @@ template&lt;typename T &gt; </div>
 
 <p>Get/set AVL subtree height of pptr's block (0 = not in tree). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01002">1002</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01001">1001</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1749,7 +1750,7 @@ template&lt;typename T &gt; </div>
 
 <p>Get left/right/parent AVL offset for pptr's block (0 if null/no_block). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00935">935</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00954">954</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1781,7 +1782,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00949">949</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00962">962</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1813,7 +1814,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00942">942</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00958">958</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -1848,7 +1849,7 @@ template&lt;typename T &gt; </div>
 <p>Get/set weight (data granule count) of pptr's block. </p>
 <dl class="section warning"><dt>Warning</dt><dd>set_tree_weight: use only for permanently locked blocks. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00986">986</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00985">985</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -2568,12 +2569,12 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01008">1008</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01007">1007</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
-<a id="a21550826014a6329c06986327ea33d73" name="a21550826014a6329c06986327ea33d73"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a21550826014a6329c06986327ea33d73">&#9670;&#160;</a></span>set_tree_left_offset()</h2>
+<a id="a01c14f9ba44ae8dbbfdb2c6a93f59d3f" name="a01c14f9ba44ae8dbbfdb2c6a93f59d3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01c14f9ba44ae8dbbfdb2c6a93f59d3f">&#9670;&#160;</a></span>set_tree_left_offset()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2595,7 +2596,7 @@ template&lt;typename T &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a>&#160;</td>
-          <td class="paramname"><em>left</em>&#160;</td>
+          <td class="paramname"><em>v</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2612,12 +2613,12 @@ template&lt;typename T &gt; </div>
 
 <p>Set left/right/parent AVL offset for pptr's block (0 maps to no_block). </p>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00960">960</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00969">969</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
-<a id="a5b73474588d3b4f091e418b2c1e12185" name="a5b73474588d3b4f091e418b2c1e12185"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5b73474588d3b4f091e418b2c1e12185">&#9670;&#160;</a></span>set_tree_parent_offset()</h2>
+<a id="a73aedbc02475fcb5e0e3ae95c1ebb534" name="a73aedbc02475fcb5e0e3ae95c1ebb534"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73aedbc02475fcb5e0e3ae95c1ebb534">&#9670;&#160;</a></span>set_tree_parent_offset()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2639,7 +2640,7 @@ template&lt;typename T &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a>&#160;</td>
-          <td class="paramname"><em>parent</em>&#160;</td>
+          <td class="paramname"><em>v</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2654,12 +2655,12 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00974">974</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00977">977</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
-<a id="a9abca9612d6a6c0ef65797ba5ca8c773" name="a9abca9612d6a6c0ef65797ba5ca8c773"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9abca9612d6a6c0ef65797ba5ca8c773">&#9670;&#160;</a></span>set_tree_right_offset()</h2>
+<a id="ab5763096bb03b565c7aed312525589b0" name="ab5763096bb03b565c7aed312525589b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5763096bb03b565c7aed312525589b0">&#9670;&#160;</a></span>set_tree_right_offset()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2681,7 +2682,7 @@ template&lt;typename T &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a0aa110b9aa855174645e99305c822295">index_type</a>&#160;</td>
-          <td class="paramname"><em>right</em>&#160;</td>
+          <td class="paramname"><em>v</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2696,7 +2697,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00967">967</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00973">973</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -2738,7 +2739,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00992">992</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00991">991</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -2767,7 +2768,9 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01031">1031</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p>Returns the backend's total managed memory size. Special-cased to read from _backend (authoritative source of truth for physical size) rather than the header, so callers always see the real backend size even if the header is stale or corrupted. </p>
+
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01047">1047</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -2803,7 +2806,7 @@ template&lt;typename T &gt; </div>
 <div class="fragment"><div class="line"><span class="keyword">auto</span>&amp; tn = MyMgr::tree_node(p); tn.get_left(); tn.set_left(idx); </div>
 </div><!-- fragment --> <dl class="section warning"><dt>Warning</dt><dd>Reference valid only while manager initialized and block not freed. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01019">1019</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01018">1018</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -2832,7 +2835,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01039">1039</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01054">1054</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
@@ -2895,7 +2898,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 <p>Read-only structural diagnostics. Returns violations without modifying image. </p>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a> with ok=true if no violations, false otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01098">1098</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l01084">1084</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
 </div>
