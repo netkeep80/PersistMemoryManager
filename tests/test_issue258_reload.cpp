@@ -23,8 +23,10 @@
 
 // ─── B7: Reload at different buffer address ─────────────────────────────────
 //
-// Two managers with different InstanceIds map to different static backends,
-// meaning the loaded image sits at a different base address.
+// Both managers are kept alive simultaneously so that each holds its own
+// heap-allocated backend buffer.  Because two independent malloc'd regions
+// cannot overlap, the loaded image is guaranteed to reside at a different
+// virtual address than the original.
 // All offset-based data should still be valid because PMM uses granule indices,
 // not raw pointers.
 
@@ -36,6 +38,7 @@ TEST_CASE( "reload: different base address via different InstanceId", "[issue258
     const char*       kFile = "test_issue258_reload_base.dat";
     const std::size_t arena = 64 * 1024;
 
+    // Create Mgr1 and populate data.
     REQUIRE( Mgr1::create( arena ) );
 
     auto p1 = Mgr1::allocate_typed<std::uint64_t>( 8 );
@@ -49,11 +52,13 @@ TEST_CASE( "reload: different base address via different InstanceId", "[issue258
     auto saved_offset = p1.offset();
 
     REQUIRE( pmm::save_manager<Mgr1>( kFile ) );
-    auto* base1_ptr = Mgr1::backend().base_ptr();
-    Mgr1::destroy();
 
+    // Create Mgr2 while Mgr1 is still alive — guarantees a separate buffer.
     REQUIRE( Mgr2::create( arena ) );
+
+    auto* base1_ptr = Mgr1::backend().base_ptr();
     auto* base2_ptr = Mgr2::backend().base_ptr();
+    REQUIRE( base1_ptr != base2_ptr );
 
     pmm::VerifyResult result;
     REQUIRE( pmm::load_manager_from_file<Mgr2>( kFile, result ) );
@@ -69,6 +74,8 @@ TEST_CASE( "reload: different base address via different InstanceId", "[issue258
         REQUIRE( data2[i] == static_cast<std::uint64_t>( 0xDEAD000000000000ULL | i ) );
     }
 
+    // Clean up both managers.
+    Mgr1::destroy();
     Mgr2::destroy();
     std::remove( kFile );
 }
