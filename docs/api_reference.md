@@ -1005,5 +1005,3 @@ Thread safety depends on the `lock_policy` in the configuration:
 - Requires C++20 compiler (GCC 10+, Clang 10+, MSVC 2019 16.3+).
 
 ---
-
-*Document updated for Issue #188. Reflects the library API after code deduplication refactoring (avl_tree_mixin.h shared helpers, AvlInorderIterator, BlockPPtr adapter).*

@@ -85,10 +85,10 @@ buffer start. Contains:
 | `last_block_offset` | `uint32_t` | Granule index of the last block |
 | `free_tree_root` | `uint32_t` | Root of the AVL free block tree (granule index) |
 | `owns_memory` | `bool` | Runtime-only: true if manager owns the buffer |
-| `_pad` | `uint8_t` | Reserved padding byte (Issue #176: was `prev_owns_memory`) |
+| `_pad` | `uint8_t` | Reserved padding byte |
 | `granule_size` | `uint16_t` | Granule size at creation time; checked on `load()` |
 | `prev_total_size` | `uint64_t` | Runtime-only: previous buffer size after `expand()` |
-| `_reserved[8]` | `uint8_t[8]` | Reserved bytes (Issue #176: was `prev_base_ptr`) |
+| `_reserved[8]` | `uint8_t[8]` | Reserved bytes |
 
 ---
 
@@ -310,7 +310,7 @@ pmap::_root_idx
 All persistent containers (`pstringview`, `pmap`) and the free block tree
 (`AvlFreeTree`) share a single AVL implementation via free template functions in
 `pmm::detail`. This eliminates ~250 lines of previously duplicated code through
-C++ template metaprogramming (Issue #188).
+C++ template metaprogramming.
 
 #### Core AVL functions
 
