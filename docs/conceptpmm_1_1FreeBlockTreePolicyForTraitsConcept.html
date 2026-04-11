@@ -78,7 +78,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков для конкретного AddressTraitsT.  
+<p>C++20 concept: validates that Policy is a correct free-tree forest-policy for a specific AddressTraitsT.  
 <a href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>&gt;</code></p>
@@ -90,25 +90,25 @@ $(function() {
 <div class="line">    { Policy::remove( base, hdr, idx ) };</div>
 <div class="line">    { Policy::find_best_fit( base, hdr, idx ) } -&gt; std::convertible_to&lt;typename AddressTraitsT::index_type&gt;;</div>
 <div class="line">}</div>
-<div class="ttc" id="aconceptpmm_1_1FreeBlockTreePolicyForTraitsConcept_html"><div class="ttname"><a href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html">pmm::FreeBlockTreePolicyForTraitsConcept</a></div><div class="ttdoc">C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков для конкрет...</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00056">free_block_tree.h:56</a></div></div>
+<div class="ttc" id="aconceptpmm_1_1FreeBlockTreePolicyForTraitsConcept_html"><div class="ttname"><a href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html">pmm::FreeBlockTreePolicyForTraitsConcept</a></div><div class="ttdoc">C++20 concept: validates that Policy is a correct free-tree forest-policy for a specific AddressTrait...</div><div class="ttdef"><b>Definition</b> <a href="free__block__tree_8h_source.html#l00060">free_block_tree.h:60</a></div></div>
 <div class="ttc" id="anamespacepmm_1_1detail_html_ad76d7884ca672f08c204dde004e958b4"><div class="ttname"><a href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">pmm::detail::block_at</a></div><div class="ttdeci">pmm::Block&lt; AddressTraitsT &gt; * block_at(std::uint8_t *base, typename AddressTraitsT::index_type idx)</div><div class="ttdoc">Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...</div><div class="ttdef"><b>Definition</b> <a href="types_8h_source.html#l00369">types.h:369</a></div></div>
 </div><!-- fragment --><a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>C++20 концепт: проверяет, является ли Policy корректной политикой дерева свободных блоков для конкретного AddressTraitsT. </p>
-<p>Policy должна предоставлять три статических метода:</p><ul>
+<div class="textblock"><p>C++20 concept: validates that Policy is a correct free-tree forest-policy for a specific AddressTraitsT. </p>
+<p>A free-tree forest-policy must provide three static methods:</p><ul>
 <li><code>insert(uint8_t* base, ManagerHeader&lt;AT&gt;* hdr, AT::index_type blk_idx) -&gt; void</code></li>
 <li><code>remove(uint8_t* base, ManagerHeader&lt;AT&gt;* hdr, AT::index_type blk_idx) -&gt; void</code></li>
 <li><code>find_best_fit(uint8_t* base, ManagerHeader&lt;AT&gt;* hdr, AT::index_type n) -&gt; AT::index_type</code></li>
 </ul>
-<p>Issue #175: ManagerHeader is now templated on AddressTraitsT, so the concept must be checked against the specific AT used — not hardcoded to DefaultAddressTraits.</p>
+<p>The ordering policy (sort key, key derivation, weight interpretation) is determined by the concrete policy type. See AvlFreeTree for the standard policy.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">Policy</td><td>Тип, проверяемый на соответствие концепту. </td></tr>
-    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства (определяет типы индексов). </td></tr>
+    <tr><td class="paramname">Policy</td><td>Type to check against the concept. </td></tr>
+    <tr><td class="paramname">AddressTraitsT</td><td>Address space traits (defines index types). </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00056">56</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00060">60</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

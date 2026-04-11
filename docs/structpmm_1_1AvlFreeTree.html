@@ -78,12 +78,13 @@ $(function() {
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="structpmm_1_1AvlFreeTree-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">pmm::AvlFreeTree&lt; AddressTraitsT &gt; Struct Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Standard AVL tree implementation for free block tree policy.  
+<p>Specialized forest-policy: AVL tree for the free-tree domain.  
  <a href="structpmm_1_1AvlFreeTree.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>&gt;</code></p>
@@ -113,21 +114,33 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:afa68479f30a2da81de61c39545a4f07c" id="r_afa68479f30a2da81de61c39545a4f07c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html#afa68479f30a2da81de61c39545a4f07c">insert</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="structpmm_1_1AvlFreeTree.html#a3708f2fdce3240b0b15a398573a7c27f">index_type</a> blk_idx)</td></tr>
-<tr class="memdesc:afa68479f30a2da81de61c39545a4f07c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert block into AVL tree of free blocks.  <br /></td></tr>
+<tr class="memdesc:afa68479f30a2da81de61c39545a4f07c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert block into the free-tree (forest domain: system/free_tree).  <br /></td></tr>
 <tr class="separator:afa68479f30a2da81de61c39545a4f07c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a922681ad30a10e77964b90f5d22dc6e3" id="r_a922681ad30a10e77964b90f5d22dc6e3"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html#a922681ad30a10e77964b90f5d22dc6e3">remove</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="structpmm_1_1AvlFreeTree.html#a3708f2fdce3240b0b15a398573a7c27f">index_type</a> blk_idx)</td></tr>
-<tr class="memdesc:a922681ad30a10e77964b90f5d22dc6e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove block from AVL tree of free blocks.  <br /></td></tr>
+<tr class="memdesc:a922681ad30a10e77964b90f5d22dc6e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove block from the free-tree (forest domain: system/free_tree).  <br /></td></tr>
 <tr class="separator:a922681ad30a10e77964b90f5d22dc6e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afbbd8457902c8a87d3fe80ca3da40b48" id="r_afbbd8457902c8a87d3fe80ca3da40b48"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structpmm_1_1AvlFreeTree.html#a3708f2fdce3240b0b15a398573a7c27f">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html#afbbd8457902c8a87d3fe80ca3da40b48">find_best_fit</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="structpmm_1_1AvlFreeTree.html#a3708f2fdce3240b0b15a398573a7c27f">index_type</a> needed_granules)</td></tr>
-<tr class="memdesc:afbbd8457902c8a87d3fe80ca3da40b48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find smallest block &gt;= needed granules (best-fit, O(log n)).  <br /></td></tr>
+<tr class="memdesc:afbbd8457902c8a87d3fe80ca3da40b48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Best-fit search: find smallest free block &gt;= needed granules (O(log n)).  <br /></td></tr>
 <tr class="separator:afbbd8457902c8a87d3fe80ca3da40b48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a5591357d18ce7dad90addd96f5c84721" id="r_a5591357d18ce7dad90addd96f5c84721"><td class="memItemLeft" align="right" valign="top">static constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1AvlFreeTree.html#a5591357d18ce7dad90addd96f5c84721">kForestDomainName</a> = &quot;system/free_tree&quot;</td></tr>
+<tr class="memdesc:a5591357d18ce7dad90addd96f5c84721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forest-policy tag: identifies this as the free-tree domain policy (Issue #243).  <br /></td></tr>
+<tr class="separator:a5591357d18ce7dad90addd96f5c84721"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename AddressTraitsT = DefaultAddressTraits&gt;<br />
-struct pmm::AvlFreeTree&lt; AddressTraitsT &gt;</div><p>Standard AVL tree implementation for free block tree policy. </p>
-<p>All-static class for AVL tree of free blocks (Issue #73 FR-02, AR-03). Does not depend on <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> singleton — takes base_ptr and header as context.</p>
-<p>Sort key: (total_granules, block_index) — strict ordering. Best-fit search runs in O(log n).</p>
-<p>Issue #106/#112: Uses Block&lt;AddressTraitsT&gt; layout (BlockHeader struct removed). Issue #126: Fields reordered — weight moved to first <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a> field. Issue #188: Rotation, rebalancing, and min_node operations delegate to shared AVL functions via BlockPPtr adapter, eliminating ~120 lines of duplicate code.</p>
+struct pmm::AvlFreeTree&lt; AddressTraitsT &gt;</div><p>Specialized forest-policy: AVL tree for the free-tree domain. </p>
+<p>All-static class implementing the free-tree forest-policy (Issue #73 FR-02, AR-03). Does not depend on <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> singleton — takes base_ptr and header as context.</p>
+<p>Forest-policy details:</p><ul>
+<li>Sort key: (block_size_in_granules, block_index) — strict total ordering.</li>
+<li><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> size is derived from linear PAP geometry (next_offset - block_index).</li>
+<li><code>weight</code> is NOT used as sort key (it is 0 for free blocks — state discriminator).</li>
+<li>Best-fit search runs in O(log n).</li>
+<li>Uses shared AVL substrate via BlockPPtr adapter (Issue #188).</li>
+</ul>
+<dl class="section see"><dt>See also</dt><dd>docs/free_tree_forest_policy.md — canonical ordering policy documentation</dd></dl>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">AddressTraitsT</td><td>Address space traits (compatible with DefaultAddressTraits). </td></tr>
@@ -135,7 +148,7 @@ struct pmm::AvlFreeTree&lt; AddressTraitsT &gt;</div><p>Standard AVL tree implem
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00097">97</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00102">102</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a0fb648925a3cbd3f99de1ad0196e4781" name="a0fb648925a3cbd3f99de1ad0196e4781"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0fb648925a3cbd3f99de1ad0196e4781">&#9670;&#160;</a></span>address_traits</h2>
@@ -151,7 +164,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00099">99</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00104">104</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -169,7 +182,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00102">102</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00107">107</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -187,7 +200,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00101">101</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00106">106</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -205,7 +218,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00103">103</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00108">108</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -223,7 +236,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00100">100</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00105">105</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -326,9 +339,10 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Find smallest block &gt;= needed granules (best-fit, O(log n)). </p>
+<p>Best-fit search: find smallest free block &gt;= needed granules (O(log n)). </p>
+<p>Derives sort key from linear PAP geometry at each node during traversal. </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00209">209</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00222">222</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -374,9 +388,10 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Insert block into AVL tree of free blocks. </p>
+<p>Insert block into the free-tree (forest domain: system/free_tree). </p>
+<p>Derives sort key (block_size_in_granules, block_index) from linear PAP geometry. </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00110">110</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00120">120</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -450,9 +465,38 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Remove block from AVL tree of free blocks. </p>
+<p>Remove block from the free-tree (forest domain: system/free_tree). </p>
 
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00150">150</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00161">161</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a5591357d18ce7dad90addd96f5c84721" name="a5591357d18ce7dad90addd96f5c84721"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5591357d18ce7dad90addd96f5c84721">&#9670;&#160;</a></span>kForestDomainName</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const char* <a class="el" href="structpmm_1_1AvlFreeTree.html">pmm::AvlFreeTree</a>&lt; AddressTraitsT &gt;::kForestDomainName = &quot;system/free_tree&quot;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Forest-policy tag: identifies this as the free-tree domain policy (Issue #243). </p>
+
+<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00111">111</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
