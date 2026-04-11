@@ -29,6 +29,7 @@ packages
 *.vcxproj.user
 pmm_demo.bin
 *.dat
+imgui.ini
 
 # Windows image file caches
 Thumbs.db
