@@ -312,14 +312,17 @@ class AllocatorPolicy
         {
             void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
 
-            // Reset AVL fields via BlockStateBase (Issue #114, #168)
-            BlockState::reset_avl_fields_of( blk_ptr );
-
             // Issue #106: recover state — fix incorrect transitional states
             BlockState::recover_state( blk_ptr, idx );
 
             if ( BlockState::get_weight( blk_ptr ) == 0 ) // free block
+            {
+                // Reset AVL fields only for free blocks — allocated blocks may use
+                // TreeNode AVL fields for user-level trees (symbol tree, pmap, etc.)
+                // so resetting them would corrupt those data structures (Issue #241).
+                BlockState::reset_avl_fields_of( blk_ptr );
                 FreeBlockTreeT::insert( base, hdr, idx );
+            }
             // Issue #146: use AddressTraitsT::no_block for correct sentinel check.
             index_type next_idx = BlockState::get_next_offset( blk_ptr );
             if ( next_idx == AddressTraitsT::no_block )
