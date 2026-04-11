@@ -42,6 +42,7 @@
 
 #include "pmm/address_traits.h"
 #include "pmm/block.h"
+#include "pmm/diagnostics.h"
 #include "pmm/tree_node.h"
 
 #include <cstdint>
@@ -168,6 +169,33 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
         // Если weight == 0, но root_offset != 0 — исправляем
         if ( blk->weight() == 0 && blk->root_offset() != 0 )
             blk->set_root_offset( 0 );
+    }
+
+    /**
+     * @brief Verify block state consistency without modifying the image (Issue #245).
+     *
+     * Read-only counterpart of recover_state(). Checks that weight and root_offset
+     * are in a consistent (non-transitional) state. Reports violations into result.
+     *
+     * @param raw_blk   Pointer to the block (read-only).
+     * @param own_idx   Granule index of this block.
+     * @param result    Diagnostic result to append violations to.
+     */
+    static void verify_state( const void* raw_blk, index_type own_idx, VerifyResult& result ) noexcept
+    {
+        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
+        if ( blk->weight() > 0 && blk->root_offset() != own_idx )
+        {
+            result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( own_idx ), static_cast<std::uint64_t>( own_idx ),
+                        static_cast<std::uint64_t>( blk->root_offset() ) );
+        }
+        if ( blk->weight() == 0 && blk->root_offset() != 0 )
+        {
+            result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( own_idx ), 0,
+                        static_cast<std::uint64_t>( blk->root_offset() ) );
+        }
     }
 
     /**
@@ -863,6 +891,23 @@ template <typename AddressTraitsT>
 void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own_idx ) noexcept
 {
     BlockStateBase<AddressTraitsT>::recover_state( raw_blk, own_idx );
+}
+
+/**
+ * @brief Verify block state consistency without modification (Issue #245).
+ *
+ * Read-only counterpart of recover_block_state(). Reports violations into result.
+ *
+ * @tparam AddressTraitsT Traits адресного пространства.
+ * @param raw_blk   Pointer to the block (read-only).
+ * @param own_idx   Granule index of this block.
+ * @param result    Diagnostic result to append violations to.
+ */
+template <typename AddressTraitsT>
+void verify_block_state( const void* raw_blk, typename AddressTraitsT::index_type own_idx,
+                         VerifyResult& result ) noexcept
+{
+    BlockStateBase<AddressTraitsT>::verify_state( raw_blk, own_idx, result );
 }
 
 } // namespace pmm

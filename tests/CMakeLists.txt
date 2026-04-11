@@ -267,3 +267,6 @@ pmm_add_test(test_issue241_bootstrap test_issue241_bootstrap.cpp)
 
 # ─── Free-tree forest-policy regression tests (Issue #243) ───────────────────
 pmm_add_test(test_issue243_free_tree_policy test_issue243_free_tree_policy.cpp)
+
+# ─── Verify/repair mode separation tests (Issue #245) ────────────────────────
+pmm_add_test(test_issue245_verify_repair test_issue245_verify_repair.cpp)

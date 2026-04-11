@@ -23,6 +23,7 @@
 #include "pmm/allocator_policy.h"
 #include "pmm/block.h"
 #include "pmm/block_state.h"
+#include "pmm/diagnostics.h"
 #include "pmm/forest_registry.h"
 #include "pmm/logging_policy.h"
 #include "pmm/manager_configs.h"
@@ -103,96 +104,19 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     template <typename> friend struct pstringview;
 
-    /**
-     * @brief Вложенный псевдоним персистентного указателя, привязанного к данному менеджеру.
-     *
-     * `PersistMemoryManager<ConfigT, 0>::pptr<T>` и
-     * `PersistMemoryManager<ConfigT, 1>::pptr<T>` — разные типы.
-     *
-     * @tparam T Тип данных, на который указывает pptr.
-     */
+    /// @brief Persistent pointer bound to this manager. @tparam T Pointed-to type.
     template <typename T> using pptr = pmm::pptr<T, manager_type>;
-
-    /**
-     * @brief Псевдоним для персистентной интернированной строки, привязанной к данному менеджеру.
-     *
-     * Позволяет использовать краткий синтаксис:
-     * @code
-     *   Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("hello");
-     * @endcode
-     * вместо `Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");`
-     */
+    /// @brief Persistent interned string (shorthand for pmm::pstringview<Mgr>).
     using pstringview = pmm::pstringview<manager_type>;
-
-    /**
-     * @brief Псевдоним для мутабельной персистентной строки, привязанной к данному менеджеру.
-     *
-     * Позволяет использовать краткий синтаксис:
-     * @code
-     *   Mgr::pptr<Mgr::pstring> p = Mgr::create_typed<Mgr::pstring>();
-     *   p->assign("hello");
-     * @endcode
-     * вместо `Mgr::pptr<pmm::pstring<Mgr>> p = ...;`
-     */
+    /// @brief Persistent mutable string (shorthand for pmm::pstring<Mgr>).
     using pstring = pmm::pstring<manager_type>;
-
-    /**
-     * @brief Псевдоним для персистентного словаря (AVL-дерева), привязанного к данному менеджеру.
-     *
-     * Позволяет использовать краткий синтаксис:
-     * @code
-     *   Mgr::pmap<int, int> map;
-     *   map.insert(42, 100);
-     *   auto p = map.find(42);
-     * @endcode
-     * вместо `pmm::pmap<int, int, Mgr> map;`
-     *
-     * @tparam _K Тип ключа. Должен поддерживать operator< и operator==.
-     * @tparam _V Тип значения.
-     */
+    /// @brief Persistent sorted map (AVL). @tparam _K Key. @tparam _V Value.
     template <typename _K, typename _V> using pmap = pmm::pmap<_K, _V, manager_type>;
-
-    /**
-     * @brief Алиас для персистентного массива с O(1) индексацией (Issue #195, Phase 3.2).
-     *
-     * Позволяет писать:
-     * @code
-     *   Mgr::parray<int> arr;
-     *   arr.push_back(42);
-     *   int* elem = arr.at(0);
-     * @endcode
-     * вместо `pmm::parray<int, Mgr> arr;`
-     *
-     * @tparam T Тип элемента. Должен быть trivially copyable.
-     */
+    /// @brief Persistent array with O(1) random access. @tparam T Element type.
     template <typename T> using parray = pmm::parray<T, manager_type>;
-
-    /**
-     * @brief Алиас для STL-совместимого аллокатора (Issue #198, Phase 3.5).
-     *
-     * Позволяет писать:
-     * @code
-     *   std::vector<int, Mgr::pallocator<int>> vec;
-     *   vec.push_back(42);
-     * @endcode
-     * вместо `std::vector<int, pmm::pallocator<int, Mgr>> vec;`
-     *
-     * @tparam T Тип элемента.
-     */
+    /// @brief STL-compatible allocator. @tparam T Element type.
     template <typename T> using pallocator = pmm::pallocator<T, manager_type>;
-
-    /**
-     * @brief Алиас для персистентного пула объектов (Issue #199, Phase 3.6).
-     *
-     * Позволяет писать:
-     * @code
-     *   Mgr::pptr<Mgr::ppool<int>> pool = Mgr::create_typed<Mgr::ppool<int>>();
-     *   int* obj = pool->allocate();
-     * @endcode
-     * вместо `Mgr::pptr<pmm::ppool<int, Mgr>> pool = ...;`
-     *
-     * @tparam T Тип объекта. Должен быть trivially copyable.
-     */
+    /// @brief Persistent object pool. @tparam T Object type (trivially copyable).
     template <typename T> using ppool = pmm::ppool<T, manager_type>;
 
     // ─── Error code API (Issue #201, Phase 4.1) ───────────────────────────────
@@ -289,17 +213,32 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return ok;
     }
 
-    /**
-     * @brief Загрузить существующее состояние из бэкенда.
-     *
-     * @return true при успехе.
-     */
+    /// @brief Load existing state from backend (default: no diagnostics report).
     static bool load() noexcept
     {
+        VerifyResult unused;
+        return load( unused );
+    }
+
+    /**
+     * @brief Load existing state from backend with structured diagnostics (Issue #245).
+     *
+     * Performs verify-then-repair: first detects all violations, then applies
+     * documented fixes. The VerifyResult records every repair action taken.
+     * Header corruption (magic, size, granule) is non-recoverable and aborts load.
+     *
+     * @param result  VerifyResult populated with detected violations and repair actions.
+     * @return true on successful load (repairs applied), false on non-recoverable corruption.
+     */
+    static bool load( VerifyResult& result ) noexcept
+    {
+        result.mode = RecoveryMode::Repair;
+        result.ok   = true;
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < detail::kMinMemorySize )
         {
             _last_error = ( _backend.base_ptr() == nullptr ) ? PmmError::BackendError : PmmError::InvalidSize;
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted );
             return false;
         }
         std::uint8_t*                          base = _backend.base_ptr();
@@ -308,21 +247,34 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         {
             _last_error = PmmError::InvalidMagic;
             logging_policy::on_corruption_detected( PmmError::InvalidMagic );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0,
+                        static_cast<std::uint64_t>( kMagic ), static_cast<std::uint64_t>( hdr->magic ) );
             return false;
         }
         if ( hdr->total_size != _backend.total_size() )
         {
             _last_error = PmmError::SizeMismatch;
             logging_policy::on_corruption_detected( PmmError::SizeMismatch );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, _backend.total_size(),
+                        static_cast<std::uint64_t>( hdr->total_size ) );
             return false;
         }
-        // Issue #146: compare stored granule size against address_traits::granule_size.
         if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
         {
             _last_error = PmmError::GranuleMismatch;
             logging_policy::on_corruption_detected( PmmError::GranuleMismatch );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0,
+                        address_traits::granule_size, static_cast<std::uint64_t>( hdr->granule_size ) );
             return false;
         }
+        // Issue #245: verify before repair — detect violations in the raw image.
+        allocator::verify_block_states( base, hdr, result );
+        allocator::verify_linked_list( base, hdr, result );
+        allocator::verify_counters( base, hdr, result );
+        // Mark repair actions for any violations found above.
+        for ( std::size_t i = 0; i < result.entry_count; ++i )
+            result.entries[i].action = DiagnosticAction::Repaired;
+        // Repair phase (same as before).
         hdr->owns_memory     = false;
         hdr->prev_total_size = 0;
         allocator::repair_linked_list( base, hdr );
@@ -334,7 +286,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _initialized = false;
             return false;
         }
-        if ( !validate_bootstrap_invariants_unlocked() ) // Issue #241
+        if ( !validate_bootstrap_invariants_unlocked() )
         {
             _initialized = false;
             return false;
@@ -1040,6 +992,23 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
                    : 0;
     }
 
+    // ─── Verify / Repair (Issue #245) ───────────────────────────────────────────
+
+    /// @brief Read-only structural diagnostics. Returns violations without modifying image.
+    /// @return VerifyResult with ok=true if no violations, false otherwise.
+    static VerifyResult verify() noexcept
+    {
+        VerifyResult result;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized || _backend.base_ptr() == nullptr )
+        {
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted );
+            return result;
+        }
+        verify_image_unlocked( result );
+        return result;
+    }
+
     // ─── Итерация по блокам ────────────────────────────────────────────────────
 
     /**
@@ -1261,6 +1230,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     // Forest/domain registry private methods — extracted to forest_domain_mixin.inc
     // to keep this file under the 1500-line CI limit.
 #include "pmm/forest_domain_mixin.inc"
+    // Verify/repair methods — extracted to verify_repair_mixin.inc (Issue #245).
+#include "pmm/verify_repair_mixin.inc"
 
     /// @brief Find the mutable block header for a user-data pointer (or nullptr).
     static pmm::Block<address_traits>* find_block_from_user_ptr( void* ptr ) noexcept
