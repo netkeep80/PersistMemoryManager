@@ -12,7 +12,9 @@
 Стиль кода, комментариев и документации описан в `tasks/00_REPOSITORY_STYLE.md`.
 Правила удаления и архивации описаны в `docs/deletion_policy.md`.
 
-## Target top-level surface
+## Core model / invariants
+
+### Target top-level surface
 
 Целевая поверхность корня репозитория ограничивается следующими категориями:
 
@@ -29,83 +31,90 @@
 | Demo | `demo/` | Визуальное демо-приложение (ImGui) |
 | Examples | `examples/` | Примеры использования библиотеки |
 | Scripts | `scripts/` | Вспомогательные скрипты (сборка, релиз, генерация) |
-| Tasks | `tasks/` | Планирование: backlog компактификации |
 | Root docs | `README.md`, `CONTRIBUTING.md`, `LICENSE` | Главные точки входа и правовая информация |
 
 Ничего другого в корне репозитория быть не должно.
 
-## Directory contracts
+> **Примечание:** `tasks/` — временный planning-layer для backlog компактификации.
+> Он не является first-class частью target shape (см. `tasks/00_REPOSITORY_STYLE.md` § 2.1)
+> и будет удалён после завершения всех задач компактификации.
 
-### `include/pmm/`
+### Directory contracts
+
+#### `include/pmm/`
 
 - Содержит все публичные заголовки библиотеки.
 - `.h` файлы и `.inc` mixin-файлы.
 - Не содержит реализаций за пределами шаблонного / inline-кода.
 - Является canonical source; `single_include/` генерируется из `include/`.
 
-### `single_include/pmm/`
+#### `single_include/pmm/`
 
 - Генерируется скриптом `scripts/generate-single-headers.sh`.
 - Не редактируется вручную.
 - Содержит preset-варианты single-header для различных конфигураций.
 
-### `tests/`
+#### `tests/`
 
 - Один тест — один файл.
 - Имя файла: `test_<topic>.cpp` или `test_issue<N>_<topic>.cpp`.
 - Собственный `CMakeLists.txt`.
 
-### `benchmarks/`
+#### `benchmarks/`
 
 - Бенчмарки производительности.
 - Собственный `CMakeLists.txt`.
 
-### `docs/`
+#### `docs/`
 
 - Каноническая документация по текущему и целевому состоянию.
 - Исторические документы не участвуют в основной навигации (см. `deletion_policy.md`).
 - Каждый canonical doc следует структуре из `tasks/00_REPOSITORY_STYLE.md` § 3.2.
 
-### `demo/`
+#### `demo/`
 
 - Исходники визуального демо-приложения (ImGui + OpenGL).
 - Собственный `CMakeLists.txt`.
 
-### `examples/`
+#### `examples/`
 
 - Примеры использования библиотеки.
 - Собственный `CMakeLists.txt`.
 
-### `scripts/`
+#### `scripts/`
 
 - Вспомогательные скрипты: shell, Python.
 - Используются CI и разработчиками локально.
 - Включает: генерацию single-header, проверку changelog-фрагментов, проверку размера файлов, сбор changelog, миграцию тестов, очистку комментариев.
 
-### `changelog.d/`
+#### `changelog.d/`
 
 - Фрагменты changelog для текущего цикла.
 - Собираются при релизе скриптом `scripts/collect-changelog.sh`.
 - Формат описан в `changelog.d/README.md`.
 
-### `tasks/`
+#### `tasks/` (временный planning-layer)
 
 - Задачи компактификации.
 - Индекс: `00_INDEX.md`.
 - Стиль: `00_REPOSITORY_STYLE.md`.
 - Номерные задачи: `01_*.md` – `10_*.md`.
+- **Не является first-class частью target shape** (см. § 2.1 style guide).
+- Будет удалён после завершения всех задач компактификации.
 
-### `.github/workflows/`
+#### `.github/workflows/`
 
 - CI: `ci.yml` — сборка, тесты, проверки.
 - Docs: `docs.yml` — генерация Doxygen.
 - Release: `release.yml` — автоматический релиз.
 
-## Root-level inventory and decisions
+## Rules / contracts
+
+### Root-level inventory and decisions
 
 Для каждого существующего top-level элемента принято явное решение:
 
-### keep — активная часть репозитория
+#### keep — активная часть репозитория
 
 | Элемент | Обоснование |
 |---------|-------------|
@@ -127,10 +136,9 @@
 | `include/` | Исходники библиотеки |
 | `scripts/` | Вспомогательные скрипты |
 | `single_include/` | Генерируемые single-header |
-| `tasks/` | Задачи компактификации |
 | `tests/` | Автоматические тесты |
 
-### move — нужен, но лежит не там
+#### move — нужен, но лежит не там
 
 | Элемент | Куда | Обоснование |
 |---------|------|-------------|
@@ -138,14 +146,14 @@
 | `test.bat` | `scripts/test.bat` | Windows-скрипт запуска тестов — должен быть в `scripts/` |
 | `demo.md` | `docs/demo.md` | Техническое задание на демо — документация, не корень |
 
-### delete — не должен оставаться в репозитории
+#### delete — не должен оставаться в репозитории
 
 | Элемент | Обоснование |
 |---------|-------------|
 | `.gitkeep` | Автосгенерированный placeholder, не несёт полезной нагрузки |
 | `imgui.ini` | Файл состояния ImGui GUI layout, генерируется автоматически, не должен быть в VCS |
 
-## Navigation policy
+### Navigation policy
 
 Официальный маршрут чтения:
 
@@ -158,11 +166,11 @@
 Исторические и архивные документы не входят в маршрут и не должны выглядеть
 как обязательная часть чтения.
 
-## docs/ internal inventory
+### docs/ internal inventory
 
 Детальная реорганизация `docs/` выполняется в задаче 02. Здесь фиксируются текущие статусы:
 
-### Canonical (keep)
+#### Canonical (keep)
 
 - `architecture.md` — архитектура и инварианты
 - `api_reference.md` — справочник API
@@ -174,7 +182,7 @@
 - `thread_safety.md` — потокобезопасность
 - `atomic_writes.md` — атомарная запись
 
-### Archive (перенести в `docs/archive/` в задаче 02)
+#### Archive (перенести в `docs/archive/` в задаче 02)
 
 - `PMM_AVL_Forest_Concept.md` — пересекается с `pmm_avl_forest.md`
 - `avl_forest_analysis_ru.md` — исторический анализ
