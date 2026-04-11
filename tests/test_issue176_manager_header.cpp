@@ -102,7 +102,7 @@ TEST_CASE( "#176-R4: load() resets runtime fields (save/load round-trip)", "[tes
     M::destroy();
 
     REQUIRE( M::create( 64 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<M>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<M>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( M::is_initialized() );
 
     M::destroy();

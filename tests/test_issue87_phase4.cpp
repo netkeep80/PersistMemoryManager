@@ -3,8 +3,8 @@
  * @brief Tests Phase 4: FreeBlockTree as template policy.
  *
  * Verifies:
- *  - is_free_block_tree_policy_v<AvlFreeTree<DefaultAddressTraits>> == true
- *  - AvlFreeTree correctly delegates to PersistentAvlTree
+ *  - FreeBlockTreePolicyForTraitsConcept<AvlFreeTree<DefaultAddressTraits>> == true
+ *  - AvlFreeTree correctly delegates to AvlFreeTree<DefaultAddressTraits>
  *  - Concept applicable (SFINAE): non-conforming types return false
  *
  * @see include/pmm/free_block_tree.h
@@ -30,7 +30,7 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 TEST_CASE( "P4-A1: AvlFreeTree<Default> satisfies FreeBlockTreePolicy", "[test_issue87_phase4]" )
 {
     using Policy = pmm::AvlFreeTree<pmm::DefaultAddressTraits>;
-    static_assert( pmm::is_free_block_tree_policy_v<Policy>,
+    static_assert( pmm::FreeBlockTreePolicyForTraitsConcept<Policy, pmm::DefaultAddressTraits>,
                    "AvlFreeTree<DefaultAddressTraits> must satisfy FreeBlockTreePolicy" );
 }
 
@@ -40,8 +40,8 @@ TEST_CASE( "P4-A2: Non-policy type fails concept check", "[test_issue87_phase4]"
     {
         int x;
     };
-    static_assert( !pmm::is_free_block_tree_policy_v<NotAPolicy>, "NotAPolicy must not satisfy FreeBlockTreePolicy" );
-    static_assert( !pmm::is_free_block_tree_policy_v<int>, "int must not satisfy FreeBlockTreePolicy" );
+    static_assert( !pmm::FreeBlockTreePolicyForTraitsConcept<NotAPolicy, pmm::DefaultAddressTraits>, "NotAPolicy must not satisfy FreeBlockTreePolicy" );
+    static_assert( !pmm::FreeBlockTreePolicyForTraitsConcept<int, pmm::DefaultAddressTraits>, "int must not satisfy FreeBlockTreePolicy" );
 }
 
 TEST_CASE( "P4-A3: Partial policy (insert only) fails concept check", "[test_issue87_phase4]" )
@@ -54,7 +54,7 @@ TEST_CASE( "P4-A3: Partial policy (insert only) fails concept check", "[test_iss
         {
         }
     };
-    static_assert( !pmm::is_free_block_tree_policy_v<PartialPolicy>,
+    static_assert( !pmm::FreeBlockTreePolicyForTraitsConcept<PartialPolicy, pmm::DefaultAddressTraits>,
                    "PartialPolicy (insert only) must not satisfy FreeBlockTreePolicy" );
 }
 

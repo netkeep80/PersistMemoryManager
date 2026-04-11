@@ -13,7 +13,7 @@
  * - All methods are static (Mgr::create(), Mgr::allocate(), etc.)
  * - p.resolve() — no argument needed (uses static manager resolve)
  * - pmm::save_manager<Mgr>(filename) — template-based save
- * - pmm::load_manager_from_file<Mgr>(filename) — template-based load
+ * - pmm::load_manager_from_file<Mgr>(filename, result) — template-based load with diagnostics
  */
 
 #include "pmm_single_threaded_heap.h"
@@ -121,7 +121,7 @@ int main()
         std::cout << "\nSaved manager state to: " << DEMO_FILE << "\n";
         Mgr::destroy();
 
-        if ( Mgr2::create( memory_size ) && pmm::load_manager_from_file<Mgr2>( DEMO_FILE ) )
+        if ( Mgr2::create( memory_size ) && pmm::load_manager_from_file<Mgr2>( DEMO_FILE, pmm::VerifyResult{} ) )
         {
             std::cout << "Loaded manager state: " << ( Mgr2::is_initialized() ? "OK" : "FAIL" ) << "\n";
             Mgr2::destroy();

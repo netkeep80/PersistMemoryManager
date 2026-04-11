@@ -91,7 +91,7 @@ TEST_CASE( "forest registry persists user domains and legacy root", "[test_fores
 
     ForestPersistMgr::destroy();
     REQUIRE( ForestPersistMgr::create( 128 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<ForestPersistMgr>( filename ) );
+    REQUIRE( pmm::load_manager_from_file<ForestPersistMgr>( filename, pmm::VerifyResult{} ) );
 
     REQUIRE( ForestPersistMgr::has_domain( "app/alpha" ) );
     REQUIRE( ForestPersistMgr::has_domain( "app/beta" ) );

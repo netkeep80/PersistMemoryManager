@@ -85,7 +85,7 @@ TEST_CASE( "save_load_new_format", "[test_block_modernization]" )
 
     Mgr pmm2;
     REQUIRE( pmm2.create( 64 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( pmm2.is_initialized() );
 
     // Verify block counts are preserved
@@ -166,7 +166,7 @@ TEST_CASE( "stress_save_load", "[test_block_modernization]" )
 
     Mgr pmm2;
     REQUIRE( pmm2.create( 128 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( pmm2.is_initialized() );
 
     REQUIRE( pmm2.alloc_block_count() == alloc_before );

@@ -248,9 +248,9 @@ TEST_CASE( "on_corruption (bad magic)", "[test_issue202_logging_hooks]" )
     auto* hdr  = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base + kHdrOffset );
     hdr->magic = 0xDEADBEEFULL;
 
-    // Call load() directly (manager is still created, buffer has corrupted data).
     TestHookCounters::reset();
-    bool ok = Mgr::load();
+    pmm::VerifyResult vr;
+    bool ok = Mgr::load( vr );
     REQUIRE( !ok );
     REQUIRE( TestHookCounters::corruption_count == 1 );
     REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::InvalidMagic );
@@ -283,10 +283,9 @@ TEST_CASE( "on_corruption (size mismatch)", "[test_issue202_logging_hooks]" )
     auto* hdr       = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base + kHdrOffset );
     hdr->total_size = buf_size + 999;
 
-    // Call load() directly — manager is currently initialized so we can call load()
-    // which will re-validate the header. The _initialized flag doesn't gate load().
     TestHookCounters::reset();
-    bool ok = Mgr::load();
+    pmm::VerifyResult vr;
+    bool ok = Mgr::load( vr );
     REQUIRE( !ok );
     REQUIRE( TestHookCounters::corruption_count == 1 );
     REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::SizeMismatch );
@@ -320,7 +319,8 @@ TEST_CASE( "on_corruption (granule mismatch)", "[test_issue202_logging_hooks]" )
     hdr->granule_size = 99;
 
     TestHookCounters::reset();
-    bool ok = Mgr::load();
+    pmm::VerifyResult vr;
+    bool ok = Mgr::load( vr );
     REQUIRE( !ok );
     REQUIRE( TestHookCounters::corruption_count == 1 );
     REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::GranuleMismatch );
@@ -341,7 +341,7 @@ TEST_CASE( "on_load hook", "[test_issue202_logging_hooks]" )
 
     MgrSave::create( 4096 );
     TestHookCounters::reset();
-    bool ok = pmm::load_manager_from_file<MgrSave>( "test_issue202_load.dat" );
+    bool ok = pmm::load_manager_from_file<MgrSave>( "test_issue202_load.dat", pmm::VerifyResult{} );
     REQUIRE( ok );
     REQUIRE( TestHookCounters::load_count == 1 );
 
@@ -369,7 +369,7 @@ TEST_CASE( "on_corruption (CRC mismatch)", "[test_issue202_logging_hooks]" )
 
     MgrLogCrc::create( 4096 );
     TestHookCounters::reset();
-    bool ok = pmm::load_manager_from_file<MgrLogCrc>( "test_issue202_crc.dat" );
+    bool ok = pmm::load_manager_from_file<MgrLogCrc>( "test_issue202_crc.dat", pmm::VerifyResult{} );
     REQUIRE( !ok );
     REQUIRE( TestHookCounters::corruption_count == 1 );
     REQUIRE( TestHookCounters::last_corrupt_err == pmm::PmmError::CrcMismatch );

@@ -10,7 +10,7 @@
  *   - All methods are static: Mgr::create(), Mgr::allocate_typed(), etc.
  *   - p.resolve() — no argument needed (uses static manager resolve)
  *   - pmm::save_manager<Mgr>(filename) — template-based save
- *   - pmm::load_manager_from_file<Mgr>(filename) — template-based load
+ *   - pmm::load_manager_from_file<Mgr>(filename, result) — template-based load with diagnostics
  *   - Multiple independent managers via distinct InstanceIds
  *
  * Key advantages of pptr<T>:
@@ -164,7 +164,7 @@ static void demo_persistence()
         return;
     }
 
-    if ( pmm::load_manager_from_file<SessionB>( export_file ) )
+    if ( pmm::load_manager_from_file<SessionB>( export_file, pmm::VerifyResult{} ) )
     {
         // Reconstruct pptr from saved granule offset
         SessionB::pptr<double> q( saved_offset );

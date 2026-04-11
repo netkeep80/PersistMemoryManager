@@ -42,7 +42,7 @@ TEST_CASE( "persistence_basic_roundtrip", "[test_persistence]" )
     Mgr1::destroy();
 
     REQUIRE( Mgr2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( Mgr2::is_initialized() );
 
     REQUIRE( Mgr2::total_size() == total1 );
@@ -78,7 +78,7 @@ TEST_CASE( "persistence_user_data_preserved", "[test_persistence]" )
     Mgr1::destroy();
 
     REQUIRE( Mgr2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( Mgr2::is_initialized() );
 
     // 1 user block + system blocks
@@ -123,7 +123,7 @@ TEST_CASE( "persistence_multiple_blocks", "[test_persistence]" )
     Mgr1::destroy();
 
     REQUIRE( Mgr2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( Mgr2::is_initialized() );
 
     REQUIRE( Mgr2::block_count() == blocks1 );
@@ -153,7 +153,7 @@ TEST_CASE( "persistence_allocate_after_load", "[test_persistence]" )
     Mgr1::destroy();
 
     REQUIRE( Mgr2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( Mgr2::is_initialized() );
 
     Mgr2::pptr<std::uint8_t> p2 = Mgr2::allocate_typed<std::uint8_t>( 256 );
@@ -185,7 +185,7 @@ TEST_CASE( "persistence_load_nonexistent_file", "[test_persistence]" )
 
     REQUIRE( Mgr::create( 16 * 1024 ) );
 
-    REQUIRE( !pmm::load_manager_from_file<Mgr>( "no_such_file_xyz123.dat" ) );
+    REQUIRE( !pmm::load_manager_from_file<Mgr>( "no_such_file_xyz123.dat", pmm::VerifyResult{} ) );
 
     Mgr::destroy();
 }
@@ -196,7 +196,7 @@ TEST_CASE( "persistence_load_null_filename", "[test_persistence]" )
 
     REQUIRE( Mgr::create( 16 * 1024 ) );
 
-    REQUIRE( !pmm::load_manager_from_file<Mgr>( nullptr ) );
+    REQUIRE( !pmm::load_manager_from_file<Mgr>( nullptr, pmm::VerifyResult{} ) );
 
     Mgr::destroy();
 }
@@ -216,7 +216,7 @@ TEST_CASE( "persistence_corrupted_image", "[test_persistence]" )
 
     REQUIRE( Mgr::create( size ) );
 
-    REQUIRE( !pmm::load_manager_from_file<Mgr>( TEST_FILE ) );
+    REQUIRE( !pmm::load_manager_from_file<Mgr>( TEST_FILE, pmm::VerifyResult{} ) );
 
     Mgr::destroy();
     cleanup_file();
@@ -233,7 +233,7 @@ TEST_CASE( "persistence_buffer_too_small", "[test_persistence]" )
 
     // Create smaller manager — load should fail since file is larger
     REQUIRE( Mgr2::create( 4 * 1024 ) );
-    REQUIRE( !pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
+    REQUIRE( !pmm::load_manager_from_file<Mgr2>( TEST_FILE, pmm::VerifyResult{} ) );
 
     Mgr2::destroy();
     cleanup_file();
@@ -263,7 +263,7 @@ TEST_CASE( "persistence_double_save_load", "[test_persistence]" )
     Mgr1::destroy();
 
     REQUIRE( Mgr2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( Mgr2::is_initialized() );
 
     static const char* TEST_FILE2 = "test_heap2.dat";
@@ -271,7 +271,7 @@ TEST_CASE( "persistence_double_save_load", "[test_persistence]" )
     Mgr2::destroy();
 
     REQUIRE( Mgr3::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr3>( TEST_FILE2 ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr3>( TEST_FILE2, pmm::VerifyResult{} ) );
     REQUIRE( Mgr3::is_initialized() );
 
     REQUIRE( Mgr3::block_count() == blocks1 );
@@ -298,7 +298,7 @@ TEST_CASE( "persistence_empty_manager", "[test_persistence]" )
     Mgr1::destroy();
 
     REQUIRE( Mgr2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( Mgr2::is_initialized() );
 
     // Only system blocks remain as allocated
@@ -334,7 +334,7 @@ TEST_CASE( "persistence_deallocate_after_load", "[test_persistence]" )
     Mgr1::destroy();
 
     REQUIRE( Mgr2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( Mgr2::is_initialized() );
 
     Mgr2::pptr<std::uint8_t> q1( off1 );

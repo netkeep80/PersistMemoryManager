@@ -98,7 +98,7 @@ TEST_CASE( "bootstrap invariants hold after save/load", "[issue241]" )
 
     BootstrapPersist::destroy();
     REQUIRE( BootstrapPersist::create( 128 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<BootstrapPersist>( filename ) );
+    REQUIRE( pmm::load_manager_from_file<BootstrapPersist>( filename, pmm::VerifyResult{} ) );
 
     // Invariants must hold after load
     REQUIRE( BootstrapPersist::validate_bootstrap_invariants() );

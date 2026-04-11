@@ -79,7 +79,7 @@ TEST_CASE( "crc32_save_load_roundtrip", "[test_issue43_phase2_persistence]" )
 
     // Load into a new manager instance
     REQUIRE( M2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( M2::is_initialized() );
 
     M2::destroy();
@@ -116,7 +116,7 @@ TEST_CASE( "crc32_detects_corruption", "[test_issue43_phase2_persistence]" )
 
     // Load should fail due to CRC mismatch
     REQUIRE( M2::create( size ) );
-    REQUIRE( !pmm::load_manager_from_file<M2>( TEST_FILE ) );
+    REQUIRE( !pmm::load_manager_from_file<M2>( TEST_FILE, pmm::VerifyResult{} ) );
 
     M2::destroy();
     cleanup_file();
@@ -150,7 +150,7 @@ TEST_CASE( "crc32_backward_compat", "[test_issue43_phase2_persistence]" )
 
     // Load should succeed (crc32==0 accepted for backward compatibility)
     REQUIRE( M2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( M2::is_initialized() );
 
     M2::destroy();
@@ -208,7 +208,7 @@ TEST_CASE( "atomic_save_replaces_previous", "[test_issue43_phase2_persistence]" 
 
     // Load and verify the second save (not the first)
     REQUIRE( M2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<M2>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( M2::alloc_block_count() == alloc2 );
 
     M2::destroy();

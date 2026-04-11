@@ -255,9 +255,9 @@ TEST_CASE( "verify_repair: load_manager_from_file with VerifyResult reports repa
     std::remove( kFile );
 }
 
-// ─── Test 5: load without VerifyResult still works (backward compatible) ────
+// ─── Test 5: load_manager_from_file with temporary VerifyResult ─────────────
 
-TEST_CASE( "verify_repair: load() without VerifyResult is backward compatible", "[test_issue245]" )
+TEST_CASE( "verify_repair: load_manager_from_file with temporary VerifyResult", "[test_issue245]" )
 {
     using Mgr3 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2452>;
     using Mgr4 = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 2453>;
@@ -271,9 +271,9 @@ TEST_CASE( "verify_repair: load() without VerifyResult is backward compatible", 
     REQUIRE( pmm::save_manager<Mgr3>( kFile ) );
     Mgr3::destroy();
 
-    // Plain load() without VerifyResult — should still work.
     REQUIRE( Mgr4::create( 64 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr4>( kFile ) );
+    pmm::VerifyResult result;
+    REQUIRE( pmm::load_manager_from_file<Mgr4>( kFile, result ) );
     REQUIRE( Mgr4::is_initialized() );
 
     Mgr4::destroy();
@@ -529,7 +529,7 @@ TEST_CASE( "verify_repair: free-tree stale detected after save/load round-trip",
 
     // Load with VerifyResult to capture repair reporting.
     pmm::VerifyResult result;
-    REQUIRE( pmm::load_manager_from_file<Mgr6>( kFile ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr6>( kFile, pmm::VerifyResult{} ) );
 
     // After successful load, verify should show clean state.
     pmm::VerifyResult post_result = Mgr6::verify();
@@ -564,7 +564,7 @@ TEST_CASE( "verify_repair: Repaired vs Rebuilt distinction in load repair result
     Mgr7::destroy();
 
     REQUIRE( Mgr8::create( 64 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr8>( kFile ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr8>( kFile, pmm::VerifyResult{} ) );
 
     // After load, verify that the image is clean (repairs applied).
     pmm::VerifyResult post = Mgr8::verify();

@@ -192,7 +192,7 @@ TEST_CASE( "pptr_persistence", "[test_pptr]" )
     Mgr1::destroy();
 
     REQUIRE( Mgr2::create( size ) );
-    REQUIRE( pmm::load_manager_from_file<Mgr2>( filename ) );
+    REQUIRE( pmm::load_manager_from_file<Mgr2>( filename, pmm::VerifyResult{} ) );
     REQUIRE( Mgr2::is_initialized() );
 
     // Restore pptr by saved offset

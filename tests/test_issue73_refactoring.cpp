@@ -5,7 +5,7 @@
  * manager. Tests verify:
  * - FR-03: Block<DefaultAddressTraits> (32 bytes) and ManagerHeader (64 bytes) sizes unchanged
  *   (BlockHeader struct removed — Block<A> is the sole block type)
- * - FR-02/AR-03: PersistentAvlTree is a standalone class
+ * - FR-02/AR-03: AvlFreeTree<DefaultAddressTraits> is a standalone class
  * - FR-04/AR-01: Public API works through static PersistMemoryManager presets
  * - AR-02: No virtual functions — all polymorphism is static
  * - AR-04: File separation: types, avl, manager, io
@@ -31,9 +31,9 @@ static_assert( sizeof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits> ) =
                "FR-03: ManagerHeader<DefaultAddressTraits> must be exactly 64 bytes " );
 static_assert( sizeof( Mgr::pptr<int> ) == 4, "pptr<T> must be exactly 4 bytes " );
 
-// ─── FR-02/AR-03: PersistentAvlTree is a standalone class ────────────────────
+// ─── FR-02/AR-03: AvlFreeTree<DefaultAddressTraits> is a standalone class ────────────────────
 
-/// @brief Verify PersistentAvlTree is all-static and callable directly.
+/// @brief Verify AvlFreeTree<DefaultAddressTraits> is all-static and callable directly.
 TEST_CASE( "FR-02/AR-03: avl_tree_standalone", "[test_issue73_refactoring]" )
 {
     REQUIRE( Mgr::create( 128 * 1024 ) );
@@ -107,8 +107,8 @@ TEST_CASE( "FR-04/AR-01: two_instances_independent", "[test_issue73_refactoring]
 TEST_CASE( "AR-02: no_virtual_functions", "[test_issue73_refactoring]" )
 {
     static_assert( !std::is_polymorphic<Mgr>::value, "AR-02: PersistMemoryManager must have no virtual functions" );
-    static_assert( !std::is_polymorphic<pmm::PersistentAvlTree>::value,
-                   "AR-02: PersistentAvlTree must have no virtual functions" );
+    static_assert( !std::is_polymorphic<pmm::AvlFreeTree<pmm::DefaultAddressTraits>>::value,
+                   "AR-02: AvlFreeTree<DefaultAddressTraits> must have no virtual functions" );
 }
 
 // ─── AR-04: File separation ───────────────────────────────────────────────────
@@ -128,8 +128,8 @@ TEST_CASE( "AR-04: file_separation", "[test_issue73_refactoring]" )
     static_assert( pmm::config::kDefaultGrowNumerator == 5, "Config header: grow_numerator" );
     static_assert( pmm::config::kDefaultGrowDenominator == 4, "Config header: grow_denominator" );
 
-    // PersistentAvlTree from persist_avl_tree.h — just check it's a class
-    static_assert( std::is_class<pmm::PersistentAvlTree>::value, "persist_avl_tree.h: PersistentAvlTree" );
+    // AvlFreeTree<DefaultAddressTraits> from persist_avl_tree.h — just check it's a class
+    static_assert( std::is_class<pmm::AvlFreeTree<pmm::DefaultAddressTraits>>::value, "persist_avl_tree.h: AvlFreeTree<DefaultAddressTraits>" );
 
     // AddressTraits
     static_assert( std::is_class<pmm::DefaultAddressTraits>::value, "address_traits.h: DefaultAddressTraits" );

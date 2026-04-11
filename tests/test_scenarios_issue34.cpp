@@ -243,7 +243,7 @@ TEST_CASE( "persistent cycle (save/load pptr list)", "[test_scenarios_issue34]" 
     std::cout << "  Phase 3: loading state...\n";
     Mgr pmm2;
     REQUIRE( pmm2.create( memory_size ) );
-    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( filename ) );
+    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( filename, pmm::VerifyResult{} ) );
     REQUIRE( pmm2.is_initialized() );
     std::cout << "    Loaded (new manager instance)\n";
 

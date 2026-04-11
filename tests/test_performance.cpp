@@ -200,7 +200,7 @@ TEST_CASE( "free list after load", "[test_performance]" )
 
     Mgr pmm2;
     REQUIRE( pmm2.create( MEMORY_SIZE ) );
-    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE ) );
+    REQUIRE( pmm::load_manager_from_file<decltype( pmm2 )>( TEST_FILE, pmm::VerifyResult{} ) );
     REQUIRE( pmm2.is_initialized() );
 
     Mgr::pptr<std::uint8_t> p4 = pmm2.allocate_typed<std::uint8_t>( 64 );

@@ -122,7 +122,7 @@ TEST_CASE( "P97-B3: SingleThreadedHeap save_manager/load_manager_from_file", "[t
 
     // Создаём второй менеджер с тем же размером буфера и загружаем
     REQUIRE( STH2::create( 16 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<STH2>( test_file ) );
+    REQUIRE( pmm::load_manager_from_file<STH2>( test_file, pmm::VerifyResult{} ) );
     REQUIRE( STH2::is_initialized() );
     REQUIRE( STH2::alloc_block_count() == alloc_count_before );
     REQUIRE( STH2::free_block_count() == free_count_before );
@@ -274,7 +274,7 @@ TEST_CASE( "P97-F1: save_manager / load_manager_from_file", "[test_issue97_prese
 
     // Создаём второй менеджер и загружаем
     REQUIRE( STH2::create( 4096 ) );
-    REQUIRE( pmm::load_manager_from_file<STH2>( test_file ) );
+    REQUIRE( pmm::load_manager_from_file<STH2>( test_file, pmm::VerifyResult{} ) );
     REQUIRE( STH2::is_initialized() );
     REQUIRE( STH2::alloc_block_count() == alloc_count );
     STH2::destroy();
@@ -303,7 +303,7 @@ TEST_CASE( "P97-F4: load_manager_from_file(nullptr filename) returns false", "[t
 {
     using STH = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 313>;
     REQUIRE( STH::create( 8 * 1024 ) );
-    REQUIRE( !pmm::load_manager_from_file<STH>( nullptr ) );
+    REQUIRE( !pmm::load_manager_from_file<STH>( nullptr, pmm::VerifyResult{} ) );
     STH::destroy();
 }
 
@@ -481,7 +481,7 @@ TEST_CASE( "P97-G9: pptr<T> persistence via save_manager/load_manager_from_file"
 
     // Загружаем в новый менеджер
     REQUIRE( STH2::create( 16 * 1024 ) );
-    REQUIRE( pmm::load_manager_from_file<STH2>( test_file ) );
+    REQUIRE( pmm::load_manager_from_file<STH2>( test_file, pmm::VerifyResult{} ) );
     REQUIRE( STH2::is_initialized() );
 
     // Восстанавливаем pptr по сохранённому смещению
