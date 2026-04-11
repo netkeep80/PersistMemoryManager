@@ -530,3 +530,150 @@ TEST_CASE( "validation: clean image verify produces no violations", "[test_issue
 
     Mgr::destroy();
 }
+
+// ─── G. Caller nullptr-propagation tests (owner feedback) ────────────────────
+// Verify that wrapper APIs above block_raw_ptr_from_pptr / block_raw_mut_ptr_from_pptr
+// correctly handle nullptr for forged/out-of-bounds pptrs instead of dereferencing.
+
+TEST_CASE( "validation: get_tree_idx_field returns 0 and sets InvalidPointer for OOB pptr", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    // Forge a pptr with an absurdly large offset — well past the managed region.
+    Mgr::pptr<int> bad( 0xFFFF );
+
+    Mgr::clear_error();
+    auto left = Mgr::get_tree_left_offset( bad );
+    CHECK( left == 0 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::clear_error();
+    auto right = Mgr::get_tree_right_offset( bad );
+    CHECK( right == 0 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::clear_error();
+    auto parent = Mgr::get_tree_parent_offset( bad );
+    CHECK( parent == 0 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::destroy();
+}
+
+TEST_CASE( "validation: set_tree_idx_field is no-op and sets InvalidPointer for OOB pptr", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    Mgr::pptr<int> bad( 0xFFFF );
+
+    Mgr::clear_error();
+    Mgr::set_tree_left_offset( bad, 42 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::clear_error();
+    Mgr::set_tree_right_offset( bad, 42 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::clear_error();
+    Mgr::set_tree_parent_offset( bad, 42 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::destroy();
+}
+
+TEST_CASE( "validation: get_tree_weight returns 0 and sets InvalidPointer for OOB pptr", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    Mgr::pptr<int> bad( 0xFFFF );
+
+    Mgr::clear_error();
+    auto w = Mgr::get_tree_weight( bad );
+    CHECK( w == 0 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::destroy();
+}
+
+TEST_CASE( "validation: set_tree_weight is no-op and sets InvalidPointer for OOB pptr", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    Mgr::pptr<int> bad( 0xFFFF );
+
+    Mgr::clear_error();
+    Mgr::set_tree_weight( bad, 10 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::destroy();
+}
+
+TEST_CASE( "validation: get_tree_height returns 0 and sets InvalidPointer for OOB pptr", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    Mgr::pptr<int> bad( 0xFFFF );
+
+    Mgr::clear_error();
+    auto h = Mgr::get_tree_height( bad );
+    CHECK( h == 0 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::destroy();
+}
+
+TEST_CASE( "validation: set_tree_height is no-op and sets InvalidPointer for OOB pptr", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    Mgr::pptr<int> bad( 0xFFFF );
+
+    Mgr::clear_error();
+    Mgr::set_tree_height( bad, 5 );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::destroy();
+}
+
+TEST_CASE( "validation: tree_node returns sentinel and sets InvalidPointer for OOB pptr", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    Mgr::pptr<int> bad( 0xFFFF );
+
+    Mgr::clear_error();
+    auto& tn = Mgr::tree_node( bad );
+    CHECK( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    // Sentinel should be zero-initialized — reads return safe defaults.
+    (void)tn;
+
+    Mgr::destroy();
+}
+
+TEST_CASE( "validation: valid pptr still works correctly through wrapper APIs", "[test_issue257]" )
+{
+    setup_clean_image();
+
+    auto p = Mgr::allocate_typed<int>();
+    REQUIRE( !p.is_null() );
+
+    // The valid pptr should not set InvalidPointer.
+    Mgr::clear_error();
+    auto w = Mgr::get_tree_weight( p );
+    CHECK( Mgr::last_error() == pmm::PmmError::Ok );
+    CHECK( w > 0 ); // allocated block has a positive weight
+
+    Mgr::clear_error();
+    auto h = Mgr::get_tree_height( p );
+    CHECK( Mgr::last_error() == pmm::PmmError::Ok );
+    (void)h;
+
+    Mgr::clear_error();
+    auto left = Mgr::get_tree_left_offset( p );
+    CHECK( Mgr::last_error() == pmm::PmmError::Ok );
+    (void)left;
+
+    Mgr::deallocate_typed( p );
+    Mgr::destroy();
+}

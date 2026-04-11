@@ -4418,7 +4418,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        index_type v = getter( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        index_type v = getter( blk );
         return ( v == address_traits::no_block ) ? static_cast<index_type>( 0 ) : v;
     }
     
@@ -4427,7 +4433,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return;
-        setter( block_raw_mut_ptr_from_pptr( p ), ( val == 0 ) ? address_traits::no_block : val );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        setter( blk, ( val == 0 ) ? address_traits::no_block : val );
     }
 
   public:
@@ -4462,33 +4474,65 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        return BlockStateBase<address_traits>::get_weight( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        return BlockStateBase<address_traits>::get_weight( blk );
     }
     template <typename T> static void set_tree_weight( pptr<T> p, index_type w ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        BlockStateBase<address_traits>::set_weight_of( block_raw_mut_ptr_from_pptr( p ), w );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        BlockStateBase<address_traits>::set_weight_of( blk, w );
     }
     
     template <typename T> static std::int16_t get_tree_height( pptr<T> p ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return 0;
-        return BlockStateBase<address_traits>::get_avl_height( block_raw_ptr_from_pptr( p ) );
+        const void* blk = block_raw_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return 0;
+        }
+        return BlockStateBase<address_traits>::get_avl_height( blk );
     }
     template <typename T> static void set_tree_height( pptr<T> p, std::int16_t h ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return;
-        BlockStateBase<address_traits>::set_avl_height_of( block_raw_mut_ptr_from_pptr( p ), h );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return;
+        }
+        BlockStateBase<address_traits>::set_avl_height_of( blk, h );
     }
     
     template <typename T> static TreeNode<address_traits>& tree_node( pptr<T> p ) noexcept
     {
         assert( !p.is_null() && "tree_node: pptr must not be null" );
         assert( _initialized && "tree_node: manager must be initialized before calling tree_node" );
-        return *reinterpret_cast<TreeNode<address_traits>*>( block_raw_mut_ptr_from_pptr( p ) );
+        void* blk = block_raw_mut_ptr_from_pptr( p );
+        if ( blk == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            
+            static thread_local TreeNode<address_traits> sentinel{};
+            return sentinel;
+        }
+        return *reinterpret_cast<TreeNode<address_traits>*>( blk );
     }
 
   private:
