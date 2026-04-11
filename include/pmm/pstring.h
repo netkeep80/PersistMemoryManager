@@ -91,7 +91,7 @@ template <typename ManagerT> struct pstring
     // ─── Конструктор / Деструктор ────────────────────────────────────────────
 
     /// @brief Конструктор по умолчанию — пустая строка.
-    pstring() noexcept : _length( 0 ), _capacity( 0 ), _data_idx( static_cast<index_type>( 0 ) ) {}
+    pstring() noexcept : _length( 0 ), _capacity( 0 ), _data_idx( detail::kNullIdx_v<typename ManagerT::address_traits> ) {}
 
     /// @brief Деструктор — trivial (данные освобождаются через free_data()).
     ~pstring() noexcept = default;
@@ -108,7 +108,7 @@ template <typename ManagerT> struct pstring
      */
     const char* c_str() const noexcept
     {
-        if ( _data_idx == static_cast<index_type>( 0 ) )
+        if ( _data_idx == detail::kNullIdx_v<typename ManagerT::address_traits> )
             return "";
         char* data = resolve_data();
         return ( data != nullptr ) ? data : "";
@@ -188,7 +188,7 @@ template <typename ManagerT> struct pstring
     void clear() noexcept
     {
         _length = 0;
-        if ( _data_idx != static_cast<index_type>( 0 ) )
+        if ( _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
         {
             char* data = resolve_data();
             if ( data != nullptr )
@@ -205,11 +205,11 @@ template <typename ManagerT> struct pstring
      */
     void free_data() noexcept
     {
-        if ( _data_idx != static_cast<index_type>( 0 ) )
+        if ( _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
         {
             ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
                 ManagerT::backend().base_ptr(), _data_idx ) );
-            _data_idx = static_cast<index_type>( 0 );
+            _data_idx = detail::kNullIdx_v<typename ManagerT::address_traits>;
         }
         _length   = 0;
         _capacity = 0;
@@ -291,7 +291,7 @@ template <typename ManagerT> struct pstring
         index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
         // Копируем старые данные.
-        if ( _length > 0 && _data_idx != static_cast<index_type>( 0 ) )
+        if ( _length > 0 && _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
         {
             char* old_data = resolve_data();
             if ( old_data != nullptr )
@@ -304,7 +304,7 @@ template <typename ManagerT> struct pstring
         }
 
         // Освобождаем старый блок.
-        if ( _data_idx != static_cast<index_type>( 0 ) )
+        if ( _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
             ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 
         _data_idx = new_dat_idx;

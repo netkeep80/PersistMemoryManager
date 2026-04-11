@@ -110,7 +110,7 @@ template <typename T, typename ManagerT> struct parray
     // --- Constructor / Destructor -----------------------------------------------
 
     /// @brief Default constructor — empty array.
-    parray() noexcept : _size( 0 ), _capacity( 0 ), _data_idx( static_cast<index_type>( 0 ) ) {}
+    parray() noexcept : _size( 0 ), _capacity( 0 ), _data_idx( detail::kNullIdx_v<typename ManagerT::address_traits> ) {}
 
     /// @brief Destructor — trivial (data is freed via free_data()).
     ~parray() noexcept = default;
@@ -351,11 +351,11 @@ template <typename T, typename ManagerT> struct parray
      */
     void free_data() noexcept
     {
-        if ( _data_idx != static_cast<index_type>( 0 ) )
+        if ( _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
         {
             ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
                 ManagerT::backend().base_ptr(), _data_idx ) );
-            _data_idx = static_cast<index_type>( 0 );
+            _data_idx = detail::kNullIdx_v<typename ManagerT::address_traits>;
         }
         _size     = 0;
         _capacity = 0;
@@ -430,7 +430,7 @@ template <typename T, typename ManagerT> struct parray
         index_type    new_dat_idx = detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, new_raw );
 
         // Copy old data.
-        if ( _size > 0 && _data_idx != static_cast<index_type>( 0 ) )
+        if ( _size > 0 && _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
         {
             T* old_data = resolve_data();
             if ( old_data != nullptr )
@@ -438,7 +438,7 @@ template <typename T, typename ManagerT> struct parray
         }
 
         // Free old block.
-        if ( _data_idx != static_cast<index_type>( 0 ) )
+        if ( _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
             ManagerT::deallocate( detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, _data_idx ) );
 
         _data_idx = new_dat_idx;

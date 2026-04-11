@@ -926,60 +926,41 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return true;
     }
 
-    // ─── Методы доступа к полям AVL-узла блока ──────────
+    // ──��� Методы дост��па к полям AVL-узла блока ──────────
     // Safe-wrappers over BlockStateBase get_*/set_* with manager-level guards.
-    // Condensed Doxygen to reduce file size (was near 1500-line CI limit).
 
+  private:
+    /// @brief Read an index_type AVL field from pptr's block (returns 0 for null/no_block).
+    template <typename T>
+    static index_type get_tree_idx_field( pptr<T> p, index_type ( *getter )( const void* ) ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return 0;
+        index_type v = getter( block_raw_ptr_from_pptr( p ) );
+        return ( v == address_traits::no_block ) ? static_cast<index_type>( 0 ) : v;
+    }
+    /// @brief Write an index_type AVL field into pptr's block (0 maps to no_block).
+    template <typename T>
+    static void set_tree_idx_field( pptr<T> p, void ( *setter )( void*, index_type ), index_type val ) noexcept
+    {
+        if ( p.is_null() || !_initialized )
+            return;
+        setter( block_raw_mut_ptr_from_pptr( p ), ( val == 0 ) ? address_traits::no_block : val );
+    }
+
+  public:
     /// @brief Get left/right/parent AVL offset for pptr's block (0 if null/no_block).
     /// @{
-    template <typename T> static index_type get_tree_left_offset( pptr<T> p ) noexcept
-    {
-        if ( p.is_null() || !_initialized )
-            return 0;
-        index_type v = BlockStateBase<address_traits>::get_left_offset( block_raw_ptr_from_pptr( p ) );
-        return ( v == address_traits::no_block ) ? static_cast<index_type>( 0 ) : v;
-    }
-    template <typename T> static index_type get_tree_right_offset( pptr<T> p ) noexcept
-    {
-        if ( p.is_null() || !_initialized )
-            return 0;
-        index_type v = BlockStateBase<address_traits>::get_right_offset( block_raw_ptr_from_pptr( p ) );
-        return ( v == address_traits::no_block ) ? static_cast<index_type>( 0 ) : v;
-    }
-    template <typename T> static index_type get_tree_parent_offset( pptr<T> p ) noexcept
-    {
-        if ( p.is_null() || !_initialized )
-            return 0;
-        index_type v = BlockStateBase<address_traits>::get_parent_offset( block_raw_ptr_from_pptr( p ) );
-        return ( v == address_traits::no_block ) ? static_cast<index_type>( 0 ) : v;
-    }
+    template <typename T> static index_type get_tree_left_offset( pptr<T> p ) noexcept { return get_tree_idx_field( p, &BlockStateBase<address_traits>::get_left_offset ); }
+    template <typename T> static index_type get_tree_right_offset( pptr<T> p ) noexcept { return get_tree_idx_field( p, &BlockStateBase<address_traits>::get_right_offset ); }
+    template <typename T> static index_type get_tree_parent_offset( pptr<T> p ) noexcept { return get_tree_idx_field( p, &BlockStateBase<address_traits>::get_parent_offset ); }
     /// @}
-
     /// @brief Set left/right/parent AVL offset for pptr's block (0 maps to no_block).
     /// @{
-    template <typename T> static void set_tree_left_offset( pptr<T> p, index_type left ) noexcept
-    {
-        if ( p.is_null() || !_initialized )
-            return;
-        index_type v = ( left == 0 ) ? address_traits::no_block : left;
-        BlockStateBase<address_traits>::set_left_offset_of( block_raw_mut_ptr_from_pptr( p ), v );
-    }
-    template <typename T> static void set_tree_right_offset( pptr<T> p, index_type right ) noexcept
-    {
-        if ( p.is_null() || !_initialized )
-            return;
-        index_type v = ( right == 0 ) ? address_traits::no_block : right;
-        BlockStateBase<address_traits>::set_right_offset_of( block_raw_mut_ptr_from_pptr( p ), v );
-    }
-    template <typename T> static void set_tree_parent_offset( pptr<T> p, index_type parent ) noexcept
-    {
-        if ( p.is_null() || !_initialized )
-            return;
-        index_type v = ( parent == 0 ) ? address_traits::no_block : parent;
-        BlockStateBase<address_traits>::set_parent_offset_of( block_raw_mut_ptr_from_pptr( p ), v );
-    }
+    template <typename T> static void set_tree_left_offset( pptr<T> p, index_type v ) noexcept { set_tree_idx_field( p, &BlockStateBase<address_traits>::set_left_offset_of, v ); }
+    template <typename T> static void set_tree_right_offset( pptr<T> p, index_type v ) noexcept { set_tree_idx_field( p, &BlockStateBase<address_traits>::set_right_offset_of, v ); }
+    template <typename T> static void set_tree_parent_offset( pptr<T> p, index_type v ) noexcept { set_tree_idx_field( p, &BlockStateBase<address_traits>::set_parent_offset_of, v ); }
     /// @}
-
     /// @brief Get/set weight (data granule count) of pptr's block.
     /// @warning set_tree_weight: use only for permanently locked blocks.
     /// @{
@@ -1024,71 +1005,50 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     // ─── Статистика ────────────────────────────────────────────────────────────
-    // All read-only methods take shared_lock to prevent data races in
-    // multi-threaded configurations (e.g. SharedMutexLock). _initialized is
-    // std::atomic<bool> — we do a fast load first to avoid contention when not initialized.
+    // All read-only methods use read_stat() to eliminate repeated
+    // double-check-initialized + shared_lock boilerplate.
 
+  private:
+    /// @brief Shared-lock read with double-check-initialized guard.
+    /// Returns fn(hdr) if initialized, else 0.
+    template <typename Fn> static std::size_t read_stat( Fn fn ) noexcept
+    {
+        if ( !_initialized.load( std::memory_order_acquire ) )
+            return 0;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized.load( std::memory_order_relaxed ) )
+            return 0;
+        return fn( get_header_c( _backend.base_ptr() ) );
+    }
+
+  public:
     static std::size_t total_size() noexcept
     {
-        if ( !_initialized.load( std::memory_order_acquire ) )
-            return 0;
-        typename thread_policy::shared_lock_type lock( _mutex );
-        return _initialized.load( std::memory_order_relaxed ) ? _backend.total_size() : 0;
+        return read_stat( []( const auto* h ) { return static_cast<std::size_t>( h->total_size ); } );
     }
-
     static std::size_t used_size() noexcept
     {
-        if ( !_initialized.load( std::memory_order_acquire ) )
-            return 0;
-        typename thread_policy::shared_lock_type lock( _mutex );
-        if ( !_initialized.load( std::memory_order_relaxed ) )
-            return 0;
-        const detail::ManagerHeader<address_traits>* hdr = get_header_c( _backend.base_ptr() );
-        // Use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
-        return address_traits::granules_to_bytes( hdr->used_size );
+        return read_stat( []( const auto* h ) { return address_traits::granules_to_bytes( h->used_size ); } );
     }
-
     static std::size_t free_size() noexcept
     {
-        if ( !_initialized.load( std::memory_order_acquire ) )
-            return 0;
-        typename thread_policy::shared_lock_type lock( _mutex );
-        if ( !_initialized.load( std::memory_order_relaxed ) )
-            return 0;
-        const detail::ManagerHeader<address_traits>* hdr = get_header_c( _backend.base_ptr() );
-        // Use address_traits::granules_to_bytes() instead of deprecated detail::granules_to_bytes().
-        std::size_t used = address_traits::granules_to_bytes( hdr->used_size );
-        return ( hdr->total_size > used ) ? ( hdr->total_size - used ) : 0;
+        return read_stat( []( const auto* h )
+        {
+            std::size_t used = address_traits::granules_to_bytes( h->used_size );
+            return ( h->total_size > used ) ? ( h->total_size - used ) : std::size_t( 0 );
+        } );
     }
-
     static std::size_t block_count() noexcept
     {
-        if ( !_initialized.load( std::memory_order_acquire ) )
-            return 0;
-        typename thread_policy::shared_lock_type lock( _mutex );
-        return _initialized.load( std::memory_order_relaxed )
-                   ? static_cast<std::size_t>( get_header_c( _backend.base_ptr() )->block_count )
-                   : 0;
+        return read_stat( []( const auto* h ) { return static_cast<std::size_t>( h->block_count ); } );
     }
-
     static std::size_t free_block_count() noexcept
     {
-        if ( !_initialized.load( std::memory_order_acquire ) )
-            return 0;
-        typename thread_policy::shared_lock_type lock( _mutex );
-        return _initialized.load( std::memory_order_relaxed )
-                   ? static_cast<std::size_t>( get_header_c( _backend.base_ptr() )->free_count )
-                   : 0;
+        return read_stat( []( const auto* h ) { return static_cast<std::size_t>( h->free_count ); } );
     }
-
     static std::size_t alloc_block_count() noexcept
     {
-        if ( !_initialized.load( std::memory_order_acquire ) )
-            return 0;
-        typename thread_policy::shared_lock_type lock( _mutex );
-        return _initialized.load( std::memory_order_relaxed )
-                   ? static_cast<std::size_t>( get_header_c( _backend.base_ptr() )->alloc_count )
-                   : 0;
+        return read_stat( []( const auto* h ) { return static_cast<std::size_t>( h->alloc_count ); } );
     }
 
     // ─── Verify / Repair ───────────────────────────────────────────

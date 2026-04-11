@@ -295,104 +295,53 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     }
 
     // ─── Статические утилиты для AVL-дерева ────────────────────────────────
+    //
+    // Unified field access via memcpy (avoids separate cast+delegate per field).
+    // kOffset* constants are defined above; layout verified by static_assert.
 
-    /**
-     * @brief Прочитать left_offset блока.
-     */
-    static index_type get_left_offset( const void* raw_blk ) noexcept
+    /// @brief Read an index_type field from raw block memory at the given byte offset.
+    static index_type field_read_idx( const void* raw_blk, std::size_t offset ) noexcept
     {
-        return reinterpret_cast<const BlockStateBase*>( raw_blk )->left_offset();
+        index_type v;
+        std::memcpy( &v, static_cast<const std::uint8_t*>( raw_blk ) + offset, sizeof( v ) );
+        return v;
     }
-    /**
-     * @brief Прочитать right_offset блока.
-     */
-    static index_type get_right_offset( const void* raw_blk ) noexcept
+    /// @brief Write an index_type field into raw block memory at the given byte offset.
+    static void field_write_idx( void* raw_blk, std::size_t offset, index_type v ) noexcept
     {
-        return reinterpret_cast<const BlockStateBase*>( raw_blk )->right_offset();
+        std::memcpy( static_cast<std::uint8_t*>( raw_blk ) + offset, &v, sizeof( v ) );
     }
-    /**
-     * @brief Прочитать parent_offset блока.
-     */
-    static index_type get_parent_offset( const void* raw_blk ) noexcept
-    {
-        return reinterpret_cast<const BlockStateBase*>( raw_blk )->parent_offset();
-    }
-    /**
-     * @brief Прочитать avl_height блока.
-     */
+
+    static index_type     get_left_offset( const void* b ) noexcept { return field_read_idx( b, kOffsetLeftOffset ); }
+    static index_type     get_right_offset( const void* b ) noexcept { return field_read_idx( b, kOffsetRightOffset ); }
+    static index_type     get_parent_offset( const void* b ) noexcept { return field_read_idx( b, kOffsetParentOffset ); }
+    static index_type     get_root_offset( const void* b ) noexcept { return field_read_idx( b, kOffsetRootOffset ); }
+    static void           set_left_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetLeftOffset, v ); }
+    static void           set_right_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetRightOffset, v ); }
+    static void           set_parent_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetParentOffset, v ); }
+    static void           set_prev_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetPrevOffset, v ); }
+    static void           set_weight_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetWeight, v ); }
+    static void           set_root_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetRootOffset, v ); }
+
     static std::int16_t get_avl_height( const void* raw_blk ) noexcept
     {
-        return reinterpret_cast<const BlockStateBase*>( raw_blk )->avl_height();
+        std::int16_t v;
+        std::memcpy( &v, static_cast<const std::uint8_t*>( raw_blk ) + kOffsetAvlHeight, sizeof( v ) );
+        return v;
     }
-    /**
-     * @brief Установить left_offset блока.
-     */
-    static void set_left_offset_of( void* raw_blk, index_type v ) noexcept
-    {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_left_offset( v );
-    }
-    /**
-     * @brief Установить right_offset блока.
-     */
-    static void set_right_offset_of( void* raw_blk, index_type v ) noexcept
-    {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_right_offset( v );
-    }
-    /**
-     * @brief Установить parent_offset блока.
-     */
-    static void set_parent_offset_of( void* raw_blk, index_type v ) noexcept
-    {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_parent_offset( v );
-    }
-    /**
-     * @brief Установить avl_height блока.
-     */
     static void set_avl_height_of( void* raw_blk, std::int16_t v ) noexcept
     {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_avl_height( v );
+        std::memcpy( static_cast<std::uint8_t*>( raw_blk ) + kOffsetAvlHeight, &v, sizeof( v ) );
     }
-    /**
-     * @brief Прочитать root_offset блока.
-     */
-    static index_type get_root_offset( const void* raw_blk ) noexcept
-    {
-        return reinterpret_cast<const BlockStateBase*>( raw_blk )->root_offset();
-    }
-    /**
-     * @brief Установить prev_offset блока.
-     */
-    static void set_prev_offset_of( void* raw_blk, index_type v ) noexcept
-    {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_prev_offset( v );
-    }
-    /**
-     * @brief Установить weight блока.
-     */
-    static void set_weight_of( void* raw_blk, index_type v ) noexcept
-    {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_weight( v );
-    }
-    /**
-     * @brief Установить root_offset блока.
-     */
-    static void set_root_offset_of( void* raw_blk, index_type v ) noexcept
-    {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_root_offset( v );
-    }
-    /**
-     * @brief Прочитать node_type блока.
-     */
     static std::uint16_t get_node_type( const void* raw_blk ) noexcept
     {
-        return reinterpret_cast<const BlockStateBase*>( raw_blk )->node_type();
+        std::uint16_t v;
+        std::memcpy( &v, static_cast<const std::uint8_t*>( raw_blk ) + kOffsetNodeType, sizeof( v ) );
+        return v;
     }
-    /**
-     * @brief Установить node_type блока.
-     */
     static void set_node_type_of( void* raw_blk, std::uint16_t v ) noexcept
     {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_node_type( v );
+        std::memcpy( static_cast<std::uint8_t*>( raw_blk ) + kOffsetNodeType, &v, sizeof( v ) );
     }
 
   protected:
@@ -871,37 +820,18 @@ int detect_block_state( const void* raw_blk, typename AddressTraitsT::index_type
     return -1;    // Неопределённое состояние (ошибка или переходное)
 }
 
-/**
- * @brief Восстановить блок в корректное состояние (при load()).
- *
- * Используется для восстановления после crash — приводит блок к корректному
- * состоянию (FreeBlock или AllocatedBlock) в зависимости от weight и root_offset.
- *
- * @tparam AddressTraitsT Traits адресного пространства.
- * @param raw_blk   Указатель на блок.
- * @param own_idx   Гранульный индекс данного блока.
- */
-template <typename AddressTraitsT>
-void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own_idx ) noexcept
+/// @brief Alias for BlockStateBase<AT>::recover_state().
+template <typename AT>
+inline void recover_block_state( void* raw_blk, typename AT::index_type own_idx ) noexcept
 {
-    BlockStateBase<AddressTraitsT>::recover_state( raw_blk, own_idx );
+    BlockStateBase<AT>::recover_state( raw_blk, own_idx );
 }
 
-/**
- * @brief Verify block state consistency without modification.
- *
- * Read-only counterpart of recover_block_state(). Reports violations into result.
- *
- * @tparam AddressTraitsT Traits адресного пространства.
- * @param raw_blk   Pointer to the block (read-only).
- * @param own_idx   Granule index of this block.
- * @param result    Diagnostic result to append violations to.
- */
-template <typename AddressTraitsT>
-void verify_block_state( const void* raw_blk, typename AddressTraitsT::index_type own_idx,
-                         VerifyResult& result ) noexcept
+/// @brief Alias for BlockStateBase<AT>::verify_state().
+template <typename AT>
+inline void verify_block_state( const void* raw_blk, typename AT::index_type own_idx, VerifyResult& result ) noexcept
 {
-    BlockStateBase<AddressTraitsT>::verify_state( raw_blk, own_idx, result );
+    BlockStateBase<AT>::verify_state( raw_blk, own_idx, result );
 }
 
 } // namespace pmm

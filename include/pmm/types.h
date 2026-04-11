@@ -174,6 +174,11 @@ static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block, "kNoBlock must m
 template <typename AddressTraitsT>
 inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
 
+/// @brief Null granule index sentinel: index_type(0) means "no data" in persistent containers.
+/// Use this instead of `static_cast<index_type>(0)` in parray, pstring, ppool, pmap.
+template <typename AddressTraitsT>
+inline constexpr typename AddressTraitsT::index_type kNullIdx_v = static_cast<typename AddressTraitsT::index_type>( 0 );
+
 /// @brief Manager header parameterized on AddressTraitsT.
 /// All _offset and counter fields use index_type, so LargeDBConfig uses uint64_t indices
 /// and DefaultAddressTraits keeps uint32_t with exactly 64 bytes as before.

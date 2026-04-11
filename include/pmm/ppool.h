@@ -141,7 +141,7 @@ template <typename T, typename ManagerT> struct ppool
 
     /// @brief Default constructor — empty pool with default chunk size.
     ppool() noexcept
-        : _free_head_idx( static_cast<index_type>( 0 ) ), _chunk_head_idx( static_cast<index_type>( 0 ) ),
+        : _free_head_idx( detail::kNullIdx_v<typename ManagerT::address_traits> ), _chunk_head_idx( detail::kNullIdx_v<typename ManagerT::address_traits> ),
           _objects_per_chunk( default_objects_per_chunk ), _total_allocated( 0 ), _total_capacity( 0 )
     {
     }
@@ -160,7 +160,7 @@ template <typename T, typename ManagerT> struct ppool
      */
     void set_objects_per_chunk( std::uint32_t n ) noexcept
     {
-        if ( n >= 1 && _chunk_head_idx == static_cast<index_type>( 0 ) )
+        if ( n >= 1 && _chunk_head_idx == detail::kNullIdx_v<typename ManagerT::address_traits> )
             _objects_per_chunk = n;
     }
 
@@ -191,7 +191,7 @@ template <typename T, typename ManagerT> struct ppool
     T* allocate() noexcept
     {
         // If free-list is empty, allocate a new chunk.
-        if ( _free_head_idx == static_cast<index_type>( 0 ) )
+        if ( _free_head_idx == detail::kNullIdx_v<typename ManagerT::address_traits> )
         {
             if ( !allocate_chunk() )
                 return nullptr;
@@ -252,7 +252,7 @@ template <typename T, typename ManagerT> struct ppool
         // Walk the chunk list and deallocate each chunk.
         std::uint8_t* base      = ManagerT::backend().base_ptr();
         index_type    chunk_idx = _chunk_head_idx;
-        while ( chunk_idx != static_cast<index_type>( 0 ) )
+        while ( chunk_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
         {
             std::uint8_t* chunk_raw = reinterpret_cast<std::uint8_t*>(
                 detail::resolve_granule_ptr<typename ManagerT::address_traits>( base, chunk_idx ) );
@@ -267,8 +267,8 @@ template <typename T, typename ManagerT> struct ppool
             chunk_idx = next_chunk;
         }
 
-        _free_head_idx   = static_cast<index_type>( 0 );
-        _chunk_head_idx  = static_cast<index_type>( 0 );
+        _free_head_idx   = detail::kNullIdx_v<typename ManagerT::address_traits>;
+        _chunk_head_idx  = detail::kNullIdx_v<typename ManagerT::address_traits>;
         _total_allocated = 0;
         _total_capacity  = 0;
     }
