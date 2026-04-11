@@ -86,6 +86,7 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="address__traits_8h_source.html">pmm/address_traits.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="block_8h_source.html">pmm/block.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="diagnostics_8h_source.html">pmm/diagnostics.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tree__node_8h_source.html">pmm/tree_node.h</a>&quot;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
 <code>#include &lt;cstring&gt;</code><br />
@@ -132,6 +133,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3">pmm::recover_block_state</a> (void *raw_blk, typename AddressTraitsT::index_type own_idx) noexcept</td></tr>
 <tr class="memdesc:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a266b51319629389613a4c77f0935b64e" id="r_a266b51319629389613a4c77f0935b64e"><td class="memTemplParams" colspan="2">template&lt;typename AddressTraitsT &gt; </td></tr>
+<tr class="memitem:a266b51319629389613a4c77f0935b64e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a266b51319629389613a4c77f0935b64e">pmm::verify_block_state</a> (const void *raw_blk, typename AddressTraitsT::index_type own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:a266b51319629389613a4c77f0935b64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modification (Issue #245).  <br /></td></tr>
+<tr class="separator:a266b51319629389613a4c77f0935b64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>BlockState machine — автомат состояний блока для атомарных операций (Issue #93). </p>

@@ -162,6 +162,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_ab390678b3d4d95498d71d0a966b9deeb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb">recover_state</a> (void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx) noexcept</td></tr>
 <tr class="memdesc:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a28f4483be1d779ef6531574f0f6daa55"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a28f4483be1d779ef6531574f0f6daa55">verify_state</a> (const void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modifying the image (Issue #245).  <br /></td></tr>
+<tr class="separator:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a2208935a3d222b4564c7c53adf52ed2a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a2208935a3d222b4564c7c53adf52ed2a">reset_avl_fields_of</a> (void *raw_blk) noexcept</td></tr>
 <tr class="memdesc:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).  <br /></td></tr>
 <tr class="separator:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -290,7 +293,7 @@ class pmm::FreeBlock&lt; AddressTraitsT &gt;</div><p><a class="el" href="classpm
 <li><a class="el" href="classpmm_1_1FreeBlock.html#a919c1de955fc07a4bc6f498aa3bda411" title="Удалить блок из AVL-дерева (первый шаг allocate).">remove_from_avl()</a> → <a class="el" href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева.">FreeBlockRemovedAVL</a> (начало allocate) </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00413">413</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00440">440</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="aace3e9db443dc3d8b367db205e8afffe" name="aace3e9db443dc3d8b367db205e8afffe"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aace3e9db443dc3d8b367db205e8afffe">&#9670;&#160;</a></span>Base</h2>
@@ -306,7 +309,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00416">416</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00443">443</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -324,7 +327,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00417">417</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00444">444</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -355,7 +358,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00441">441</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00468">468</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -395,7 +398,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a>, или nullptr если raw==nullptr или блок не свободен.</dd></dl>
 <p>Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds if block is not in <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> state, instead of relying on assert only. В debug-режиме дополнительно срабатывает assert для диагностики. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00429">429</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00456">456</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -428,7 +431,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <dl class="section note"><dt>Note</dt><dd>AVL-операция выполняется вызывающим кодом отдельно. </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на блок в состоянии <a class="el" href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева.">FreeBlockRemovedAVL</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00465">465</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00492">492</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -460,7 +463,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <p>Проверить инварианты свободного блока. </p>
 <dl class="section return"><dt>Returns</dt><dd>true если блок в корректном состоянии <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00457">457</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00484">484</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

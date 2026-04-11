@@ -323,7 +323,7 @@ Variables</h2></td></tr>
 <p>Issue #43 Phase 2.2: Atomic file rename (write-then-rename pattern). On POSIX: std::rename is atomic if source and dest are on the same filesystem. On Windows: MoveFileExA with MOVEFILE_REPLACE_EXISTING. </p>
 <dl class="section return"><dt>Returns</dt><dd>true on success. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00067">67</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00068">68</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -566,7 +566,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><div class="memdoc">
 
 <p>Get granule index from byte offset (must be multiple of kGranuleSize). </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">byte_off_to_idx_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000006">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">byte_off_to_idx_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00352">352</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
@@ -629,7 +629,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><div class="memdoc">
 
 <p>Convert bytes to granules (ceiling). Returns 0 on overflow. </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">bytes_to_granules_t&lt;DefaultAddressTraits&gt;()</a> or <a class="el" href="structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75" title="Перевести байты в гранулы (потолок).">DefaultAddressTraits::bytes_to_granules()</a>. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">bytes_to_granules_t&lt;DefaultAddressTraits&gt;()</a> or <a class="el" href="structpmm_1_1AddressTraits.html#ad953d46f4b7539f8fe217347c6c1ac75" title="Перевести байты в гранулы (потолок).">DefaultAddressTraits::bytes_to_granules()</a>. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00328">328</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
@@ -1000,7 +1000,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><div class="memdoc">
 
 <p>Convert granules to bytes. </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>Use <a class="el" href="structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7" title="Перевести гранулы в байты.">DefaultAddressTraits::granules_to_bytes()</a> for new code. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated:</a></b></dt><dd>Use <a class="el" href="structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7" title="Перевести гранулы в байты.">DefaultAddressTraits::granules_to_bytes()</a> for new code. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00336">336</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
@@ -1079,7 +1079,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><div class="memdoc">
 
 <p>Get byte offset from granule index. </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated:</a></b></dt><dd>Use <a class="el" href="structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2" title="Получить байтовое смещение из гранульного индекса.">DefaultAddressTraits::idx_to_byte_off()</a> for new code. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">Deprecated:</a></b></dt><dd>Use <a class="el" href="structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2" title="Получить байтовое смещение из гранульного индекса.">DefaultAddressTraits::idx_to_byte_off()</a> for new code. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00344">344</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 
@@ -1260,7 +1260,7 @@ template&lt;<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c20
 </div><div class="memdoc">
 
 <p>Minimum block granules for user_bytes (header + data, minimum 1 data granule). </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">required_block_granules_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd>Use <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4" title="Get pointer to Block&lt;AddressTraitsT&gt; by granule index. Single canonical implementation replacing per-...">required_block_granules_t&lt;DefaultAddressTraits&gt;()</a> for new code. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00565">565</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
 

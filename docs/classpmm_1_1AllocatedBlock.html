@@ -167,6 +167,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_ab390678b3d4d95498d71d0a966b9deeb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb">recover_state</a> (void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx) noexcept</td></tr>
 <tr class="memdesc:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a28f4483be1d779ef6531574f0f6daa55"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a28f4483be1d779ef6531574f0f6daa55">verify_state</a> (const void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modifying the image (Issue #245).  <br /></td></tr>
+<tr class="separator:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a2208935a3d222b4564c7c53adf52ed2a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a2208935a3d222b4564c7c53adf52ed2a">reset_avl_fields_of</a> (void *raw_blk) noexcept</td></tr>
 <tr class="memdesc:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).  <br /></td></tr>
 <tr class="separator:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -296,7 +299,7 @@ class pmm::AllocatedBlock&lt; AddressTraitsT &gt;</div><p><a class="el" href="cl
 <li><a class="el" href="classpmm_1_1AllocatedBlock.html#a782a4e71731bf970050c1e21cda76d74" title="Получить указатель на пользовательские данные.">user_ptr()</a> — получить указатель на пользовательские данные </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00622">622</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00649">649</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a071ea70dcde9d1ef914d403bb943df8a" name="a071ea70dcde9d1ef914d403bb943df8a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a071ea70dcde9d1ef914d403bb943df8a">&#9670;&#160;</a></span>Base</h2>
@@ -312,7 +315,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00625">625</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00652">652</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -330,7 +333,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00626">626</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00653">653</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -361,7 +364,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00650">650</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00677">677</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -395,7 +398,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>, или nullptr если raw==nullptr или weight==0.</dd></dl>
 <p>Issue #43 Phase 1.4: runtime check — returns nullptr in Release builds if block is not allocated, instead of relying on assert only. В debug-режиме дополнительно срабатывает assert для диагностики. Полная проверка (root_offset == own_idx) доступна через verify_invariants(own_idx). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00638">638</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00665">665</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -427,7 +430,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <p>Пометить блок как свободный (первый шаг deallocate). </p>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на блок в состоянии <a class="el" href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL.">FreeBlockNotInAVL</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00685">685</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00712">712</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -456,7 +459,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00675">675</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00702">702</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -488,7 +491,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <p>Получить указатель на пользовательские данные. </p>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на данные (после заголовка блока). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00673">673</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00700">700</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -527,7 +530,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если блок в корректном состоянии <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00667">667</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00694">694</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

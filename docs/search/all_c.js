@@ -16,7 +16,8 @@ var searchData=
   ['min_5fslot_5fbytes_13',['min_slot_bytes',['../structpmm_1_1ppool.html#a9d7f5705455da79b9b132ac44d0a88d0',1,'pmm::ppool']]],
   ['mmap_5fstorage_2eh_14',['mmap_storage.h',['../mmap__storage_8h.html',1,'']]],
   ['mmapstorage_15',['mmapstorage',['../classpmm_1_1MMapStorage.html',1,'pmm::MMapStorage&lt; AddressTraitsT &gt;'],['../classpmm_1_1MMapStorage.html#a0b5769057cad68693b2f94130d4ecffd',1,'pmm::MMapStorage::MMapStorage() noexcept=default'],['../classpmm_1_1MMapStorage.html#a687440980f3343a3f0dace67bd4be0b3',1,'pmm::MMapStorage::MMapStorage(const MMapStorage &amp;)=delete'],['../classpmm_1_1MMapStorage.html#ac631220dd65e21c3ff21e0a9a468c66a',1,'pmm::MMapStorage::MMapStorage(MMapStorage &amp;&amp;other) noexcept']]],
-  ['model_16',['Field semantics in the forest model',['../tree__node_8h.html#autotoc_md1',1,'']]],
-  ['multithreadedheap_17',['MultiThreadedHeap',['../namespacepmm_1_1presets.html#a11b19ac031d0a909931c0daed9b24a69',1,'pmm::presets']]],
-  ['mutex_5ftype_18',['mutex_type',['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html',1,'pmm::config::NoLock::mutex_type'],['../structpmm_1_1config_1_1SharedMutexLock.html#ade9f918c8245c291bed83a84623bfa9c',1,'pmm::config::SharedMutexLock::mutex_type']]]
+  ['mode_16',['mode',['../structpmm_1_1VerifyResult.html#a4a8468aaabb2ada5a8d4fd31eaa8f315',1,'pmm::VerifyResult']]],
+  ['model_17',['Field semantics in the forest model',['../tree__node_8h.html#autotoc_md1',1,'']]],
+  ['multithreadedheap_18',['MultiThreadedHeap',['../namespacepmm_1_1presets.html#a11b19ac031d0a909931c0daed9b24a69',1,'pmm::presets']]],
+  ['mutex_5ftype_19',['mutex_type',['../structpmm_1_1config_1_1SharedMutexLock.html#ade9f918c8245c291bed83a84623bfa9c',1,'pmm::config::SharedMutexLock::mutex_type'],['../structpmm_1_1config_1_1NoLock_1_1mutex__type.html',1,'pmm::config::NoLock::mutex_type']]]
 ];

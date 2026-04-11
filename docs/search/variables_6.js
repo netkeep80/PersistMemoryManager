@@ -1,7 +1,10 @@
 var searchData=
 [
-  ['granule_5fsize_0',['granule_size',['../structpmm_1_1AddressTraits.html#ad57a3d585e4036f267c54b25265ca98a',1,'pmm::AddressTraits::granule_size'],['../structpmm_1_1BasicConfig.html#a62f974186624750126963323cf8d4649',1,'pmm::BasicConfig::granule_size'],['../structpmm_1_1StaticConfig.html#ad0d72e752dc61f8e5c275d0ccc4f6ed2',1,'pmm::StaticConfig::granule_size'],['../structpmm_1_1ppool.html#a5cbc364da17453e07c91cd1dd4804e3d',1,'pmm::ppool::granule_size'],['../structpmm_1_1detail_1_1ManagerHeader.html#a51fef3fead651864410af3bcde223308',1,'pmm::detail::ManagerHeader::granule_size']]],
-  ['granules_5fper_5fslot_1',['granules_per_slot',['../structpmm_1_1ppool.html#a6e33e6fc36b7c8295ade0b0d76f2ea2b',1,'pmm::ppool']]],
-  ['grow_5fdenominator_2',['grow_denominator',['../structpmm_1_1BasicConfig.html#a60163bfb9863a808c5bea01c44df7ebc',1,'pmm::BasicConfig::grow_denominator'],['../structpmm_1_1StaticConfig.html#a017d81b62131f6ffd5638aee45d3f3d4',1,'pmm::StaticConfig::grow_denominator']]],
-  ['grow_5fnumerator_3',['grow_numerator',['../structpmm_1_1BasicConfig.html#aa82f399b99db53224677486fcff6cb40',1,'pmm::BasicConfig::grow_numerator'],['../structpmm_1_1StaticConfig.html#a67a89894194a96502d1fe379b0f76132',1,'pmm::StaticConfig::grow_numerator']]]
+  ['first_5fblock_5foffset_0',['first_block_offset',['../structpmm_1_1ManagerInfo.html#ae96d28fab8cdb8150f7987b3948c1b69',1,'pmm::ManagerInfo::first_block_offset'],['../structpmm_1_1detail_1_1ManagerHeader.html#aa3ab14572b4497c20617262c3b8dbd7d',1,'pmm::detail::ManagerHeader::first_block_offset']]],
+  ['first_5ffree_5foffset_1',['first_free_offset',['../structpmm_1_1ManagerInfo.html#a9619f531a4e79e0daa75890d3e9fb70c',1,'pmm::ManagerInfo']]],
+  ['flags_2',['flags',['../structpmm_1_1detail_1_1ForestDomainRecord.html#a9afc538a2ff015f1783cfa1968369146',1,'pmm::detail::ForestDomainRecord']]],
+  ['free_5fblocks_3',['free_blocks',['../structpmm_1_1MemoryStats.html#a808dba4b6508e2e29232179ef2bb8ff6',1,'pmm::MemoryStats']]],
+  ['free_5fcount_4',['free_count',['../structpmm_1_1ManagerInfo.html#afb8d76713463278cc61106748f391e08',1,'pmm::ManagerInfo::free_count'],['../structpmm_1_1detail_1_1ManagerHeader.html#ac2f687e0f64c73dbb41cc520b58daa28',1,'pmm::detail::ManagerHeader::free_count']]],
+  ['free_5fsize_5',['free_size',['../structpmm_1_1FreeBlockView.html#ab5d38aaf78225dd8579bdd85180afb92',1,'pmm::FreeBlockView']]],
+  ['free_5ftree_5froot_6',['free_tree_root',['../structpmm_1_1detail_1_1ManagerHeader.html#ac282e37768152b5f235095ddb56a9a61',1,'pmm::detail::ManagerHeader']]]
 ];

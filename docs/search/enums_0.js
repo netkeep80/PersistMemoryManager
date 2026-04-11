@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['pmmerror_0',['PmmError',['../namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1',1,'pmm']]]
+  ['diagnosticaction_0',['DiagnosticAction',['../namespacepmm.html#ad59b75cdb8053e3545268672eaadea72',1,'pmm']]]
 ];

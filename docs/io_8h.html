@@ -83,7 +83,8 @@ $(function() {
 
 <p>Утилиты файлового ввода/вывода для PersistMemoryManager (Issue #102, #110)  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="diagnostics_8h_source.html">pmm/diagnostics.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
 <code>#include &lt;cstdio&gt;</code><br />
 <code>#include &lt;cstring&gt;</code><br />
@@ -109,6 +110,10 @@ Functions</h2></td></tr>
 <tr class="memitem:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#aa84c31a0bacf0828dc85574f21ab8e3f">pmm::save_manager</a> (const char *filename)</td></tr>
 <tr class="memdesc:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сохранить образ <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> в файл (Issue #110 — статический интерфейс).  <br /></td></tr>
 <tr class="separator:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8042ef62b5754498afc820dc45e9d106" id="r_a8042ef62b5754498afc820dc45e9d106"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
+<tr class="memitem:a8042ef62b5754498afc820dc45e9d106"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a8042ef62b5754498afc820dc45e9d106">pmm::load_manager_from_file</a> (const char *filename, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result)</td></tr>
+<tr class="memdesc:a8042ef62b5754498afc820dc45e9d106"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> с диагностикой (Issue #245).  <br /></td></tr>
+<tr class="separator:a8042ef62b5754498afc820dc45e9d106"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d63117e7feeaea782f0f3f420830b1a" id="r_a3d63117e7feeaea782f0f3f420830b1a"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
 <tr class="memitem:a3d63117e7feeaea782f0f3f420830b1a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a3d63117e7feeaea782f0f3f420830b1a">pmm::load_manager_from_file</a> (const char *filename)</td></tr>
 <tr class="memdesc:a3d63117e7feeaea782f0f3f420830b1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> (Issue #110 — статический интерфейс).  <br /></td></tr>
@@ -132,7 +137,7 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// Загрузить образ из файла (сначала нужно выделить буфер нужного размера)</span></div>
 <div class="line">MyMgr::create(64 * 1024);</div>
 <div class="line"><span class="keywordtype">bool</span> ok2 = pmm::load_manager_from_file&lt;MyMgr&gt;(<span class="stringliteral">&quot;heap.dat&quot;</span>);</div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00086">persist_memory_manager.h:87</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00087">persist_memory_manager.h:88</a></div></div>
 <div class="ttc" id="aio_8h_html"><div class="ttname"><a href="io_8h.html">io.h</a></div><div class="ttdoc">Утилиты файлового ввода/вывода для PersistMemoryManager (Issue #102, #110)</div></div>
 <div class="ttc" id="amanager__configs_8h_html"><div class="ttname"><a href="manager__configs_8h.html">manager_configs.h</a></div><div class="ttdoc">Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).</div></div>
 <div class="ttc" id="apersist__memory__manager_8h_html"><div class="ttname"><a href="persist__memory__manager_8h.html">persist_memory_manager.h</a></div><div class="ttdoc">PersistMemoryManager — unified static persistent memory manager (Issue #110).</div></div>

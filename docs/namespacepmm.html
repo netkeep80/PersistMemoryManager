@@ -122,6 +122,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1CoalescingBlock.html">CoalescingBlock</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями.">CoalescingBlock</a> — блок в процессе слияния с соседями.  <a href="classpmm_1_1CoalescingBlock.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1DiagnosticEntry.html">DiagnosticEntry</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A single diagnostic entry describing one violation.  <a href="structpmm_1_1DiagnosticEntry.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1FreeBlock.html">FreeBlock</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> — свободный блок в корректном состоянии.  <a href="classpmm_1_1FreeBlock.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,6 +189,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1typed__guard.html">typed_guard</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">RAII scope-guard for persistent typed objects.  <a href="classpmm_1_1typed__guard.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Aggregated result of a verify or repair pass.  <a href="structpmm_1_1VerifyResult.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="concepts" name="concepts"></a>
@@ -257,6 +263,34 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:a83a2faa503d613b891003574c09e73f9" id="r_a83a2faa503d613b891003574c09e73f9"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a83a2faa503d613b891003574c09e73f9">RecoveryMode</a> : std::uint8_t { <a class="el" href="namespacepmm.html#a83a2faa503d613b891003574c09e73f9a5a750f86ef41f22f852c43351e3ff383">Verify</a> = 0
+, <a class="el" href="namespacepmm.html#a83a2faa503d613b891003574c09e73f9a0493d27e20d11e356e53e0a730b0ad08">Repair</a> = 1
+ }</td></tr>
+<tr class="memdesc:a83a2faa503d613b891003574c09e73f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mode for recovery operations: verify-only or repair.  <a href="namespacepmm.html#a83a2faa503d613b891003574c09e73f9">More...</a><br /></td></tr>
+<tr class="separator:a83a2faa503d613b891003574c09e73f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ea9d49fd4293da690b4981891a6f381" id="r_a8ea9d49fd4293da690b4981891a6f381"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381">ViolationType</a> : std::uint8_t { <br />
+&#160;&#160;<a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381a6adf97f83acf6453d4a6a4b1070f3754">None</a> = 0
+, <a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381a70643bfbad8fae88cf57104c6254c669">BlockStateInconsistent</a>
+, <a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381ac40ef32d2d1ea85317a8a4b3657fce7b">PrevOffsetMismatch</a>
+, <a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381a811e6256256b2605458e9b549f4f3ab5">CounterMismatch</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381a8f9c2c3b2cc7bc9bbfad0db8f9452bba">FreeTreeStale</a>
+, <a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381aa91567a1cdd4b2b06a5570b29d1e8247">ForestRegistryMissing</a>
+, <a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381a66e7865d6553c427b93c4bdf21c83960">ForestDomainMissing</a>
+, <a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381af9d882494c4d58cbafd52a736cfb7767">ForestDomainFlagsMissing</a>
+, <br />
+&#160;&#160;<a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381a5cabcdda7d18581e962d789df7a10a4f">HeaderCorruption</a>
+<br />
+ }</td></tr>
+<tr class="memdesc:a8ea9d49fd4293da690b4981891a6f381"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of structural violation detected during verify/repair.  <a href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381">More...</a><br /></td></tr>
+<tr class="separator:a8ea9d49fd4293da690b4981891a6f381"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad59b75cdb8053e3545268672eaadea72" id="r_ad59b75cdb8053e3545268672eaadea72"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ad59b75cdb8053e3545268672eaadea72">DiagnosticAction</a> : std::uint8_t { <a class="el" href="namespacepmm.html#ad59b75cdb8053e3545268672eaadea72a1e601ea653db1c729c9ee5746730fabe">NoAction</a> = 0
+, <a class="el" href="namespacepmm.html#ad59b75cdb8053e3545268672eaadea72a5a50d51067957e621efb88bc79d2e84a">Repaired</a>
+, <a class="el" href="namespacepmm.html#ad59b75cdb8053e3545268672eaadea72ae930ab3bcf3c21299aa68d51621b1215">Rebuilt</a>
+, <a class="el" href="namespacepmm.html#ad59b75cdb8053e3545268672eaadea72a721c28f4c74928cc9e0bb3fef345e408">Aborted</a>
+ }</td></tr>
+<tr class="memdesc:ad59b75cdb8053e3545268672eaadea72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Action taken (or that would be taken) for a violation.  <a href="namespacepmm.html#ad59b75cdb8053e3545268672eaadea72">More...</a><br /></td></tr>
+<tr class="separator:ad59b75cdb8053e3545268672eaadea72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a030e138f0333b3e992a6141a013961b2" id="r_a030e138f0333b3e992a6141a013961b2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: std::uint16_t { <a class="el" href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2a7c460dc24ac944e43569e234270eff0a">kNodeReadWrite</a> = 0
 , <a class="el" href="namespacepmm.html#a030e138f0333b3e992a6141a013961b2ac11052e6ba72efb94e8f459ba6fb39b6">kNodeReadOnly</a> = 1
  }</td></tr>
@@ -294,10 +328,18 @@ Functions</h2></td></tr>
 <tr class="memitem:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3">recover_block_state</a> (void *raw_blk, typename AddressTraitsT::index_type own_idx) noexcept</td></tr>
 <tr class="memdesc:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a266b51319629389613a4c77f0935b64e" id="r_a266b51319629389613a4c77f0935b64e"><td class="memTemplParams" colspan="2">template&lt;typename AddressTraitsT &gt; </td></tr>
+<tr class="memitem:a266b51319629389613a4c77f0935b64e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a266b51319629389613a4c77f0935b64e">verify_block_state</a> (const void *raw_blk, typename AddressTraitsT::index_type own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:a266b51319629389613a4c77f0935b64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modification (Issue #245).  <br /></td></tr>
+<tr class="separator:a266b51319629389613a4c77f0935b64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa84c31a0bacf0828dc85574f21ab8e3f" id="r_aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
 <tr class="memitem:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#aa84c31a0bacf0828dc85574f21ab8e3f">save_manager</a> (const char *filename)</td></tr>
 <tr class="memdesc:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сохранить образ <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> в файл (Issue #110 — статический интерфейс).  <br /></td></tr>
 <tr class="separator:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8042ef62b5754498afc820dc45e9d106" id="r_a8042ef62b5754498afc820dc45e9d106"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
+<tr class="memitem:a8042ef62b5754498afc820dc45e9d106"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a8042ef62b5754498afc820dc45e9d106">load_manager_from_file</a> (const char *filename, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result)</td></tr>
+<tr class="memdesc:a8042ef62b5754498afc820dc45e9d106"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> с диагностикой (Issue #245).  <br /></td></tr>
+<tr class="separator:a8042ef62b5754498afc820dc45e9d106"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d63117e7feeaea782f0f3f420830b1a" id="r_a3d63117e7feeaea782f0f3f420830b1a"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
 <tr class="memitem:a3d63117e7feeaea782f0f3f420830b1a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a3d63117e7feeaea782f0f3f420830b1a">load_manager_from_file</a> (const char *filename)</td></tr>
 <tr class="memdesc:a3d63117e7feeaea782f0f3f420830b1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> (Issue #110 — статический интерфейс).  <br /></td></tr>
@@ -305,6 +347,9 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:aecb1f0560c371606c20f6fffb20c4390" id="r_aecb1f0560c371606c20f6fffb20c4390"><td class="memItemLeft" align="right" valign="top">constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#aecb1f0560c371606c20f6fffb20c4390">kMaxDiagnosticEntries</a> = 64</td></tr>
+<tr class="memdesc:aecb1f0560c371606c20f6fffb20c4390"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of diagnostic entries stored in a <a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a>.  <br /></td></tr>
+<tr class="separator:aecb1f0560c371606c20f6fffb20c4390"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d" id="r_a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplParams" colspan="2">template&lt;typename Policy &gt; </td></tr>
 <tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">is_free_block_tree_policy_v</a> = FreeBlockTreePolicyConcept&lt;Policy&gt;</td></tr>
 <tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.  <br /></td></tr>
@@ -385,7 +430,7 @@ Variables</h2></td></tr>
 
 <p>Псевдоним <a class="el" href="classpmm_1_1AllocatorPolicy.html" title="Политика выделения и освобождения памяти для ПАП-менеджера.">AllocatorPolicy</a> с настройками по умолчанию. </p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00493">493</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00634">634</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -516,7 +561,7 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <div class="line">BigDB::create(256 * 1024 * 1024); <span class="comment">// 256 МБ начальный размер</span></div>
 <div class="line"><span class="keywordtype">void</span>* ptr = BigDB::allocate(4096);</div>
 <div class="line"><span class="comment">// sizeof(BigDB::pptr&lt;int&gt;) == 8  (64-bit индекс)</span></div>
-<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00086">persist_memory_manager.h:87</a></div></div>
+<div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00087">persist_memory_manager.h:88</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00355">355</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
@@ -652,6 +697,42 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 
 </div>
 </div>
+<a id="ad59b75cdb8053e3545268672eaadea72" name="ad59b75cdb8053e3545268672eaadea72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad59b75cdb8053e3545268672eaadea72">&#9670;&#160;</a></span>DiagnosticAction</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespacepmm.html#ad59b75cdb8053e3545268672eaadea72">pmm::DiagnosticAction</a> : std::uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Action taken (or that would be taken) for a violation. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ad59b75cdb8053e3545268672eaadea72a1e601ea653db1c729c9ee5746730fabe" name="ad59b75cdb8053e3545268672eaadea72a1e601ea653db1c729c9ee5746730fabe"></a>NoAction&#160;</td><td class="fielddoc"><p>No action (verify mode or no fix available). </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad59b75cdb8053e3545268672eaadea72a5a50d51067957e621efb88bc79d2e84a" name="ad59b75cdb8053e3545268672eaadea72a5a50d51067957e621efb88bc79d2e84a"></a>Repaired&#160;</td><td class="fielddoc"><p>Field was repaired to correct value. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad59b75cdb8053e3545268672eaadea72ae930ab3bcf3c21299aa68d51621b1215" name="ad59b75cdb8053e3545268672eaadea72ae930ab3bcf3c21299aa68d51621b1215"></a>Rebuilt&#160;</td><td class="fielddoc"><p>Structure was rebuilt from scratch (AVL tree, counters). </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ad59b75cdb8053e3545268672eaadea72a721c28f4c74928cc9e0bb3fef345e408" name="ad59b75cdb8053e3545268672eaadea72a721c28f4c74928cc9e0bb3fef345e408"></a>Aborted&#160;</td><td class="fielddoc"><p>Recovery aborted — corruption too severe. </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="diagnostics_8h_source.html#l00050">50</a> of file <a class="el" href="diagnostics_8h_source.html">diagnostics.h</a>.</p>
+
+</div>
+</div>
 <a id="a8b10fe7af34016c8604a3f2b90f8b8c1" name="a8b10fe7af34016c8604a3f2b90f8b8c1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8b10fe7af34016c8604a3f2b90f8b8c1">&#9670;&#160;</a></span>PmmError</h2>
 
@@ -704,6 +785,84 @@ template&lt;std::size_t BufferSize = 1024&gt; </div>
 </table>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00048">48</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="a83a2faa503d613b891003574c09e73f9" name="a83a2faa503d613b891003574c09e73f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83a2faa503d613b891003574c09e73f9">&#9670;&#160;</a></span>RecoveryMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespacepmm.html#a83a2faa503d613b891003574c09e73f9">pmm::RecoveryMode</a> : std::uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Mode for recovery operations: verify-only or repair. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a83a2faa503d613b891003574c09e73f9a5a750f86ef41f22f852c43351e3ff383" name="a83a2faa503d613b891003574c09e73f9a5a750f86ef41f22f852c43351e3ff383"></a>Verify&#160;</td><td class="fielddoc"><p>Read-only diagnostics; no modifications to the image. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a83a2faa503d613b891003574c09e73f9a0493d27e20d11e356e53e0a730b0ad08" name="a83a2faa503d613b891003574c09e73f9a0493d27e20d11e356e53e0a730b0ad08"></a>Repair&#160;</td><td class="fielddoc"><p>Diagnose and then apply documented fixes. </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="diagnostics_8h_source.html#l00029">29</a> of file <a class="el" href="diagnostics_8h_source.html">diagnostics.h</a>.</p>
+
+</div>
+</div>
+<a id="a8ea9d49fd4293da690b4981891a6f381" name="a8ea9d49fd4293da690b4981891a6f381"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ea9d49fd4293da690b4981891a6f381">&#9670;&#160;</a></span>ViolationType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381">pmm::ViolationType</a> : std::uint8_t</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Type of structural violation detected during verify/repair. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381a6adf97f83acf6453d4a6a4b1070f3754" name="a8ea9d49fd4293da690b4981891a6f381a6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"><p>No violation. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381a70643bfbad8fae88cf57104c6254c669" name="a8ea9d49fd4293da690b4981891a6f381a70643bfbad8fae88cf57104c6254c669"></a>BlockStateInconsistent&#160;</td><td class="fielddoc"><p><a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> weight/root_offset mismatch (transitional state). </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381ac40ef32d2d1ea85317a8a4b3657fce7b" name="a8ea9d49fd4293da690b4981891a6f381ac40ef32d2d1ea85317a8a4b3657fce7b"></a>PrevOffsetMismatch&#160;</td><td class="fielddoc"><p>prev_offset does not match expected value. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381a811e6256256b2605458e9b549f4f3ab5" name="a8ea9d49fd4293da690b4981891a6f381a811e6256256b2605458e9b549f4f3ab5"></a>CounterMismatch&#160;</td><td class="fielddoc"><p>Recomputed counter differs from stored value. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381a8f9c2c3b2cc7bc9bbfad0db8f9452bba" name="a8ea9d49fd4293da690b4981891a6f381a8f9c2c3b2cc7bc9bbfad0db8f9452bba"></a>FreeTreeStale&#160;</td><td class="fielddoc"><p>Free tree root or AVL fields need rebuild. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381aa91567a1cdd4b2b06a5570b29d1e8247" name="a8ea9d49fd4293da690b4981891a6f381aa91567a1cdd4b2b06a5570b29d1e8247"></a>ForestRegistryMissing&#160;</td><td class="fielddoc"><p>Forest registry not found or invalid. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381a66e7865d6553c427b93c4bdf21c83960" name="a8ea9d49fd4293da690b4981891a6f381a66e7865d6553c427b93c4bdf21c83960"></a>ForestDomainMissing&#160;</td><td class="fielddoc"><p>Required system domain not found. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381af9d882494c4d58cbafd52a736cfb7767" name="a8ea9d49fd4293da690b4981891a6f381af9d882494c4d58cbafd52a736cfb7767"></a>ForestDomainFlagsMissing&#160;</td><td class="fielddoc"><p>System domain lacks required flags. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8ea9d49fd4293da690b4981891a6f381a5cabcdda7d18581e962d789df7a10a4f" name="a8ea9d49fd4293da690b4981891a6f381a5cabcdda7d18581e962d789df7a10a4f"></a>HeaderCorruption&#160;</td><td class="fielddoc"><p>Magic, granule_size, or total_size mismatch. </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="diagnostics_8h_source.html#l00036">36</a> of file <a class="el" href="diagnostics_8h_source.html">diagnostics.h</a>.</p>
 
 </div>
 </div>
@@ -760,12 +919,12 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 = <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a>, 1 = <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>, -1 = неопределённое/переходное. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00842">842</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00869">869</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
 <a id="a3d63117e7feeaea782f0f3f420830b1a" name="a3d63117e7feeaea782f0f3f420830b1a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d63117e7feeaea782f0f3f420830b1a">&#9670;&#160;</a></span>load_manager_from_file()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d63117e7feeaea782f0f3f420830b1a">&#9670;&#160;</a></span>load_manager_from_file() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -791,9 +950,7 @@ template&lt;typename MgrT &gt; </div>
 </div><div class="memdoc">
 
 <p>Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> (Issue #110 — статический интерфейс). </p>
-<p>Читает файл, записанный функцией <a class="el" href="namespacepmm.html#aa84c31a0bacf0828dc85574f21ab8e3f" title="Сохранить образ PersistMemoryManager в файл (Issue #110 — статический интерфейс).">save_manager()</a>, в буфер менеджера, затем вызывает MgrT::load() для проверки заголовка и восстановления состояния.</p>
-<p>Issue #43 Phase 2.1: After reading the file, verifies CRC32 before calling load(). If the CRC does not match, returns false without modifying manager state.</p>
-<p>Примечание: бэкенд менеджера должен уже иметь выделенный буфер достаточного размера. Для <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> вызовите MgrT::create(size) перед <a class="el" href="namespacepmm.html#a3d63117e7feeaea782f0f3f420830b1a" title="Загрузить образ менеджера из файла в PersistMemoryManager (Issue #110 — статический интерфейс).">load_manager_from_file()</a>.</p>
+<p>Обёртка для обратной совместимости. Предпочтительно использовать перегрузку с <a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a> для получения полной диагностики восстановления.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">MgrT</td><td>Тип статического менеджера (PersistMemoryManager&lt;ConfigT, Id&gt;). </td></tr>
@@ -807,9 +964,69 @@ template&lt;typename MgrT &gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true при успешной загрузке, false при ошибке.</dd></dl>
-<p>Предусловие: filename != nullptr, MgrT::backend().base_ptr() != nullptr. Постусловие: менеджер восстановлен из файла. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Используйте load_manager_from_file(filename, result) для получения диагностики. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00162">162</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00239">239</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+
+</div>
+</div>
+<a id="a8042ef62b5754498afc820dc45e9d106" name="a8042ef62b5754498afc820dc45e9d106"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8042ef62b5754498afc820dc45e9d106">&#9670;&#160;</a></span>load_manager_from_file() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename MgrT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool pmm::load_manager_from_file </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> с диагностикой (Issue #245). </p>
+<p>Читает файл, записанный функцией <a class="el" href="namespacepmm.html#aa84c31a0bacf0828dc85574f21ab8e3f" title="Сохранить образ PersistMemoryManager в файл (Issue #110 — статический интерфейс).">save_manager()</a>, в буфер менеджера, затем вызывает MgrT::load(result) для проверки заголовка и восстановления состояния. Все обнаруженные нарушения и выполненные исправления записываются в result.</p>
+<p>Issue #43 Phase 2.1: After reading the file, verifies CRC32 before calling load(). If the CRC does not match, returns false without modifying manager state.</p>
+<p>Примечание: бэкенд менеджера должен уже иметь выделенный буфер достаточного размера. Для <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> вызовите MgrT::create(size) перед <a class="el" href="namespacepmm.html#a8042ef62b5754498afc820dc45e9d106" title="Загрузить образ менеджера из файла в PersistMemoryManager с диагностикой (Issue #245).">load_manager_from_file()</a>.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">MgrT</td><td>Тип статического менеджера (PersistMemoryManager&lt;ConfigT, Id&gt;). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>Путь к файлу с образом. </td></tr>
+    <tr><td class="paramname">result</td><td><a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a>, заполняемый обнаруженными нарушениями и выполненными исправлениями. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true при успешной загрузке, false при ошибке.</dd></dl>
+<p>Предусловие: filename != nullptr, MgrT::backend().base_ptr() != nullptr. Постусловие: менеджер восстановлен из файла, result содержит полную диагностику. </p>
+
+<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00165">165</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -865,7 +1082,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00863">863</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00890">890</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -913,7 +1130,70 @@ template&lt;typename MgrT &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true при успешной записи, false при ошибке ввода/вывода или если не инициализирован.</dd></dl>
 <p>Предусловие: filename != nullptr, MgrT::is_initialized() == true. Постусловие: файл содержит точную копию управляемой области памяти с CRC32. </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00095">95</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00096">96</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+
+</div>
+</div>
+<a id="a266b51319629389613a4c77f0935b64e" name="a266b51319629389613a4c77f0935b64e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a266b51319629389613a4c77f0935b64e">&#9670;&#160;</a></span>verify_block_state()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename AddressTraitsT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pmm::verify_block_state </td>
+          <td>(</td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>raw_blk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">typename AddressTraitsT::index_type&#160;</td>
+          <td class="paramname"><em>own_idx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify block state consistency without modification (Issue #245). </p>
+<p>Read-only counterpart of <a class="el" href="namespacepmm.html#a5e9a3b51e3a66a8d725a027ef3f1d1d3" title="Восстановить блок в корректное состояние (при load()).">recover_block_state()</a>. Reports violations into result.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">raw_blk</td><td>Pointer to the block (read-only). </td></tr>
+    <tr><td class="paramname">own_idx</td><td>Granule index of this block. </td></tr>
+    <tr><td class="paramname">result</td><td>Diagnostic result to append violations to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00906">906</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1072,6 +1352,33 @@ template&lt;typename Backend &gt; </div>
 <p>"PMM_V098" (Issue #138: block layout changed — prev/next now after <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a> fields) </p>
 
 <p class="definition">Definition at line <a class="el" href="types_8h_source.html#l00074">74</a> of file <a class="el" href="types_8h_source.html">types.h</a>.</p>
+
+</div>
+</div>
+<a id="aecb1f0560c371606c20f6fffb20c4390" name="aecb1f0560c371606c20f6fffb20c4390"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecb1f0560c371606c20f6fffb20c4390">&#9670;&#160;</a></span>kMaxDiagnosticEntries</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr std::size_t pmm::kMaxDiagnosticEntries = 64</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Maximum number of diagnostic entries stored in a <a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a>. </p>
+<p>Keeps <a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a> on the stack without dynamic allocation. Additional violations beyond this limit are counted but not detailed. </p>
+
+<p class="definition">Definition at line <a class="el" href="diagnostics_8h_source.html#l00072">72</a> of file <a class="el" href="diagnostics_8h_source.html">diagnostics.h</a>.</p>
 
 </div>
 </div>

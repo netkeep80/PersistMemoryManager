@@ -163,6 +163,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_ab390678b3d4d95498d71d0a966b9deeb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb">recover_state</a> (void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx) noexcept</td></tr>
 <tr class="memdesc:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a28f4483be1d779ef6531574f0f6daa55"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a28f4483be1d779ef6531574f0f6daa55">verify_state</a> (const void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modifying the image (Issue #245).  <br /></td></tr>
+<tr class="separator:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a2208935a3d222b4564c7c53adf52ed2a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a2208935a3d222b4564c7c53adf52ed2a">reset_avl_fields_of</a> (void *raw_blk) noexcept</td></tr>
 <tr class="memdesc:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).  <br /></td></tr>
 <tr class="separator:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -289,7 +292,7 @@ class pmm::SplittingBlock&lt; AddressTraitsT &gt;</div><p><a class="el" href="cl
 <li><a class="el" href="classpmm_1_1SplittingBlock.html#aa6ec0ceea5688a51720b4d1281a55d6a" title="Завершить операцию split и пометить текущий блок как занятый.">finalize_split()</a> — завершить split и вернуться к mark_as_allocated </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00545">545</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00572">572</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ab9e5c55f84ddf334e535a17be64be688" name="ab9e5c55f84ddf334e535a17be64be688"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab9e5c55f84ddf334e535a17be64be688">&#9670;&#160;</a></span>Base</h2>
@@ -305,7 +308,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00548">548</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00575">575</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -323,7 +326,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00549">549</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00576">576</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -356,7 +359,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Интерпретировать сырые байты как <a class="el" href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два.">SplittingBlock</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00554">554</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00581">581</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -406,7 +409,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на блок в состоянии <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00601">601</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00628">628</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -462,7 +465,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00563">563</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00590">590</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -511,7 +514,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00584">584</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00611">611</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

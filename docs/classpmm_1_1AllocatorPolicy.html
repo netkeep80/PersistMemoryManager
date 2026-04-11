@@ -127,6 +127,18 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:afc8820ac39ec71c2c101fad4d2bdd857" id="r_afc8820ac39ec71c2c101fad4d2bdd857"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#afc8820ac39ec71c2c101fad4d2bdd857">recompute_counters</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr)</td></tr>
 <tr class="memdesc:afc8820ac39ec71c2c101fad4d2bdd857"><td class="mdescLeft">&#160;</td><td class="mdescRight">Пересчитать счётчики блоков и использованного размера.  <br /></td></tr>
 <tr class="separator:afc8820ac39ec71c2c101fad4d2bdd857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addeb9e969c2180a5e0bb65b4fdda6486" id="r_addeb9e969c2180a5e0bb65b4fdda6486"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#addeb9e969c2180a5e0bb65b4fdda6486">verify_linked_list</a> (const std::uint8_t *base, const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:addeb9e969c2180a5e0bb65b4fdda6486"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify linked list prev_offset consistency without modifying the image.  <br /></td></tr>
+<tr class="separator:addeb9e969c2180a5e0bb65b4fdda6486"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f93a584765196435c33d04f52d9e909" id="r_a1f93a584765196435c33d04f52d9e909"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a1f93a584765196435c33d04f52d9e909">verify_counters</a> (const std::uint8_t *base, const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:a1f93a584765196435c33d04f52d9e909"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block counters consistency without modifying the image.  <br /></td></tr>
+<tr class="separator:a1f93a584765196435c33d04f52d9e909"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a662a02032812dd269629a2e145f038b7" id="r_a662a02032812dd269629a2e145f038b7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a662a02032812dd269629a2e145f038b7">verify_block_states</a> (const std::uint8_t *base, const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:a662a02032812dd269629a2e145f038b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency for all blocks without modification.  <br /></td></tr>
+<tr class="separator:a662a02032812dd269629a2e145f038b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55f2cbf445c459b04d402f65f7e0a8a5" id="r_a55f2cbf445c459b04d402f65f7e0a8a5"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a55f2cbf445c459b04d402f65f7e0a8a5">verify_free_tree</a> (const std::uint8_t *base, const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
+<tr class="memdesc:a55f2cbf445c459b04d402f65f7e0a8a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify free tree root consistency without modifying the image (Issue #245).  <br /></td></tr>
+<tr class="separator:a55f2cbf445c459b04d402f65f7e0a8a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ece7f551af631f6e36d49a18c155255" id="r_a2ece7f551af631f6e36d49a18c155255"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a2ece7f551af631f6e36d49a18c155255">realloc_shrink</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> blk_idx, void *blk_raw, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> old_data_gran, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> new_data_gran) noexcept</td></tr>
 <tr class="memdesc:a2ece7f551af631f6e36d49a18c155255"><td class="mdescLeft">&#160;</td><td class="mdescRight">In-place shrink: update weight, split remainder into free block + coalesce.  <br /></td></tr>
 <tr class="separator:a2ece7f551af631f6e36d49a18c155255"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,7 +158,7 @@ class pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</div><p>По�
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00076">76</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00077">77</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a36d5f37f73bb26969f8fd0376c0a2cf3" name="a36d5f37f73bb26969f8fd0376c0a2cf3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36d5f37f73bb26969f8fd0376c0a2cf3">&#9670;&#160;</a></span>address_traits</h2>
@@ -162,7 +174,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00083">83</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00084">84</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -180,7 +192,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00087">87</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00088">88</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -198,7 +210,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00086">86</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00087">87</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -216,7 +228,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00084">84</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00085">85</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -234,7 +246,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00085">85</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00086">86</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -358,7 +370,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 <dl class="section return"><dt>Returns</dt><dd>Указатель на пользовательские данные или nullptr. </dd></dl>
 <p>&lt; <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header granules for this AT.</p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00114">114</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00115">115</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -416,7 +428,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00208">208</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00209">209</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -510,7 +522,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 
 <p>Try in-place grow by absorbing adjacent free block. Returns true on success. </p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00441">441</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00582">582</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -576,7 +588,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 
 <p>In-place shrink: update weight, split remainder into free block + coalesce. </p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00407">407</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00548">548</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -626,7 +638,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00306">306</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00307">307</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -676,7 +688,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00370">370</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00371">371</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -726,7 +738,235 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00343">343</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00344">344</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+
+</div>
+</div>
+<a id="a662a02032812dd269629a2e145f038b7" name="a662a02032812dd269629a2e145f038b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a662a02032812dd269629a2e145f038b7">&#9670;&#160;</a></span>verify_block_states()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classpmm_1_1AllocatorPolicy.html">pmm::AllocatorPolicy</a>&lt; FreeBlockTreeT, AddressTraitsT &gt;::verify_block_states </td>
+          <td>(</td>
+          <td class="paramtype">const std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *&#160;</td>
+          <td class="paramname"><em>hdr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify block state consistency for all blocks without modification. </p>
+<p>Walks the linked list and calls verify_state() for each block, detecting any transitional (inconsistent) states.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">base</td><td>Base pointer of the managed area. </td></tr>
+    <tr><td class="paramname">hdr</td><td>Manager header (read-only). </td></tr>
+    <tr><td class="paramname">result</td><td>Diagnostic result to append violations to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00495">495</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+
+</div>
+</div>
+<a id="a1f93a584765196435c33d04f52d9e909" name="a1f93a584765196435c33d04f52d9e909"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f93a584765196435c33d04f52d9e909">&#9670;&#160;</a></span>verify_counters()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classpmm_1_1AllocatorPolicy.html">pmm::AllocatorPolicy</a>&lt; FreeBlockTreeT, AddressTraitsT &gt;::verify_counters </td>
+          <td>(</td>
+          <td class="paramtype">const std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *&#160;</td>
+          <td class="paramname"><em>hdr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify block counters consistency without modifying the image. </p>
+<p>Recomputes block_count, free_count, alloc_count, used_size by walking the linked list and compares against stored header values.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">base</td><td>Base pointer of the managed area. </td></tr>
+    <tr><td class="paramname">hdr</td><td>Manager header (read-only). </td></tr>
+    <tr><td class="paramname">result</td><td>Diagnostic result to append violations to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00450">450</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+
+</div>
+</div>
+<a id="a55f2cbf445c459b04d402f65f7e0a8a5" name="a55f2cbf445c459b04d402f65f7e0a8a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a55f2cbf445c459b04d402f65f7e0a8a5">&#9670;&#160;</a></span>verify_free_tree()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classpmm_1_1AllocatorPolicy.html">pmm::AllocatorPolicy</a>&lt; FreeBlockTreeT, AddressTraitsT &gt;::verify_free_tree </td>
+          <td>(</td>
+          <td class="paramtype">const std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *&#160;</td>
+          <td class="paramname"><em>hdr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify free tree root consistency without modifying the image (Issue #245). </p>
+<p>Checks that the free_tree_root is consistent with the presence of free blocks. After file round-trip, AVL fields are not persisted, so the free tree root typically points to stale or zeroed AVL data. This check detects that condition.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">base</td><td>Base pointer of the managed area. </td></tr>
+    <tr><td class="paramname">hdr</td><td>Manager header (read-only). </td></tr>
+    <tr><td class="paramname">result</td><td>Diagnostic result to append violations to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00520">520</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+
+</div>
+</div>
+<a id="addeb9e969c2180a5e0bb65b4fdda6486" name="addeb9e969c2180a5e0bb65b4fdda6486"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addeb9e969c2180a5e0bb65b4fdda6486">&#9670;&#160;</a></span>verify_linked_list()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, typename AddressTraitsT  = DefaultAddressTraits&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classpmm_1_1AllocatorPolicy.html">pmm::AllocatorPolicy</a>&lt; FreeBlockTreeT, AddressTraitsT &gt;::verify_linked_list </td>
+          <td>(</td>
+          <td class="paramtype">const std::uint8_t *&#160;</td>
+          <td class="paramname"><em>base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *&#160;</td>
+          <td class="paramname"><em>hdr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify linked list prev_offset consistency without modifying the image. </p>
+<p>Walks the block chain via next_offset and checks that each block's prev_offset matches the index of the preceding block.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">base</td><td>Base pointer of the managed area. </td></tr>
+    <tr><td class="paramname">hdr</td><td>Manager header (read-only). </td></tr>
+    <tr><td class="paramname">result</td><td>Diagnostic result to append violations to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00417">417</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
