@@ -275,3 +275,12 @@ pmm_add_test(test_issue256_verify_repair_contract test_issue256_verify_repair_co
 
 # ─── Pointer and block validation layer tests ───────────────────
 pmm_add_test(test_issue257_validation test_issue257_validation.cpp)
+
+# ─── Issue 258: Test matrix — bootstrap, reload, structural, corruption,
+#     verify/repair behavior, and property/generative tests ──────
+pmm_add_test(test_issue258_bootstrap      test_issue258_bootstrap.cpp)
+pmm_add_test(test_issue258_reload         test_issue258_reload.cpp)
+pmm_add_test(test_issue258_structural     test_issue258_structural.cpp)
+pmm_add_test(test_issue258_corruption     test_issue258_corruption.cpp)
+pmm_add_test(test_issue258_verify_behavior test_issue258_verify_behavior.cpp)
+pmm_add_test(test_issue258_property       test_issue258_property.cpp)
