@@ -27,11 +27,11 @@ var searchData=
   ['forestregistrymissing_24',['ForestRegistryMissing',['../namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381aa91567a1cdd4b2b06a5570b29d1e8247',1,'pmm']]],
   ['free_5fall_25',['free_all',['../structpmm_1_1ppool.html#a33073b426df0a289c2086a46283adf91',1,'pmm::ppool']]],
   ['free_5fblock_5fcount_26',['free_block_count',['../classpmm_1_1PersistMemoryManager.html#aa83533fb25e93de9f1e42f2ee85d8c65',1,'pmm::PersistMemoryManager']]],
-  ['free_5fblock_5ftree_27',['free_block_tree',['../structpmm_1_1BasicConfig.html#a6a30a346bba3a57c4800514f7969247a',1,'pmm::BasicConfig::free_block_tree'],['../structpmm_1_1StaticConfig.html#a71f05bc078e22a3cbfc09b2eca4a93c2',1,'pmm::StaticConfig::free_block_tree'],['../classpmm_1_1PersistMemoryManager.html#ad107012f32abc286a000fe9dff9a6720',1,'pmm::PersistMemoryManager::free_block_tree'],['../classpmm_1_1AllocatorPolicy.html#ac7c45abb52719d611b4a013d199d54e4',1,'pmm::AllocatorPolicy::free_block_tree']]],
+  ['free_5fblock_5ftree_27',['free_block_tree',['../structpmm_1_1BasicConfig.html#a6a30a346bba3a57c4800514f7969247a',1,'pmm::BasicConfig::free_block_tree'],['../classpmm_1_1AllocatorPolicy.html#ac7c45abb52719d611b4a013d199d54e4',1,'pmm::AllocatorPolicy::free_block_tree'],['../classpmm_1_1PersistMemoryManager.html#ad107012f32abc286a000fe9dff9a6720',1,'pmm::PersistMemoryManager::free_block_tree'],['../structpmm_1_1StaticConfig.html#a71f05bc078e22a3cbfc09b2eca4a93c2',1,'pmm::StaticConfig::free_block_tree']]],
   ['free_5fblock_5ftree_2eh_28',['free_block_tree.h',['../free__block__tree_8h.html',1,'']]],
   ['free_5fblocks_29',['free_blocks',['../structpmm_1_1MemoryStats.html#a808dba4b6508e2e29232179ef2bb8ff6',1,'pmm::MemoryStats']]],
-  ['free_5fcount_30',['free_count',['../structpmm_1_1ppool.html#a15d7cc875ca27988d3082f75d1ab83d3',1,'pmm::ppool::free_count()'],['../structpmm_1_1detail_1_1ManagerHeader.html#ac2f687e0f64c73dbb41cc520b58daa28',1,'pmm::detail::ManagerHeader::free_count'],['../structpmm_1_1ManagerInfo.html#afb8d76713463278cc61106748f391e08',1,'pmm::ManagerInfo::free_count']]],
-  ['free_5fdata_31',['free_data',['../structpmm_1_1pstring.html#a1f60c3fea5365f6c1cb826f22562fea6',1,'pmm::pstring::free_data()'],['../structpmm_1_1parray.html#a3c7b5bba0cdeb5940169cc2ece4f74e8',1,'pmm::parray::free_data()']]],
+  ['free_5fcount_30',['free_count',['../structpmm_1_1detail_1_1ManagerHeader.html#ac2f687e0f64c73dbb41cc520b58daa28',1,'pmm::detail::ManagerHeader::free_count'],['../structpmm_1_1ppool.html#a15d7cc875ca27988d3082f75d1ab83d3',1,'pmm::ppool::free_count()'],['../structpmm_1_1ManagerInfo.html#afb8d76713463278cc61106748f391e08',1,'pmm::ManagerInfo::free_count']]],
+  ['free_5fdata_31',['free_data',['../structpmm_1_1parray.html#a3c7b5bba0cdeb5940169cc2ece4f74e8',1,'pmm::parray::free_data()'],['../structpmm_1_1pstring.html#a1f60c3fea5365f6c1cb826f22562fea6',1,'pmm::pstring::free_data()']]],
   ['free_5fsize_32',['free_size',['../structpmm_1_1FreeBlockView.html#ab5d38aaf78225dd8579bdd85180afb92',1,'pmm::FreeBlockView::free_size'],['../classpmm_1_1PersistMemoryManager.html#ac1d0faa6aa26f876603b8badbaeaa3c1',1,'pmm::PersistMemoryManager::free_size()']]],
   ['free_5ftree_5froot_33',['free_tree_root',['../structpmm_1_1detail_1_1ManagerHeader.html#ac282e37768152b5f235095ddb56a9a61',1,'pmm::detail::ManagerHeader']]],
   ['freeblock_34',['FreeBlock',['../classpmm_1_1FreeBlock.html',1,'pmm']]],
@@ -39,6 +39,5 @@ var searchData=
   ['freeblockremovedavl_36',['FreeBlockRemovedAVL',['../classpmm_1_1FreeBlockRemovedAVL.html',1,'pmm']]],
   ['freeblockview_37',['FreeBlockView',['../structpmm_1_1FreeBlockView.html',1,'pmm']]],
   ['freetreestale_38',['FreeTreeStale',['../namespacepmm.html#a8ea9d49fd4293da690b4981891a6f381a8f9c2c3b2cc7bc9bbfad0db8f9452bba',1,'pmm']]],
-  ['from_5fu32_5fidx_39',['from_u32_idx',['../namespacepmm_1_1detail.html#ad4a291437e5155ad28954d355946ff9f',1,'pmm::detail']]],
-  ['front_40',['front',['../structpmm_1_1parray.html#ae894b48d86971900bbab065b5be352ec',1,'pmm::parray::front() const noexcept'],['../structpmm_1_1parray.html#a2dcbfa513bab6e8a1f08157db4ea0dfc',1,'pmm::parray::front() noexcept']]]
+  ['front_39',['front',['../structpmm_1_1parray.html#ae894b48d86971900bbab065b5be352ec',1,'pmm::parray::front() const noexcept'],['../structpmm_1_1parray.html#a2dcbfa513bab6e8a1f08157db4ea0dfc',1,'pmm::parray::front() noexcept']]]
 ];

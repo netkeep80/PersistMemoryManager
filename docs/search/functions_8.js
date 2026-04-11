@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['idx_5fto_5fbyte_5foff_0',['idx_to_byte_off',['../structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2',1,'pmm::AddressTraits::idx_to_byte_off()'],['../namespacepmm_1_1detail.html#a2bafdf8dfaa8633692a4451d986d37a1',1,'pmm::detail::idx_to_byte_off(std::uint32_t idx)']]],
+  ['idx_5fto_5fbyte_5foff_0',['idx_to_byte_off',['../structpmm_1_1AddressTraits.html#a8f3d5adb88e47e5f0e70c2f0a4dccdd2',1,'pmm::AddressTraits']]],
   ['idx_5fto_5fbyte_5foff_5ft_1',['idx_to_byte_off_t',['../namespacepmm_1_1detail.html#ab11d76d66c78ea976c38f3832bd6970c',1,'pmm::detail']]],
   ['init_5ffields_2',['init_fields',['../classpmm_1_1BlockStateBase.html#ab6604943175788fe4d7d44bfc7821fcf',1,'pmm::BlockStateBase']]],
   ['initialize_5fnew_5fblock_3',['initialize_new_block',['../classpmm_1_1SplittingBlock.html#ab87db987a16fdbeaaae72e7c92ec2beb',1,'pmm::SplittingBlock']]],
@@ -14,6 +14,5 @@ var searchData=
   ['is_5fopen_11',['is_open',['../classpmm_1_1MMapStorage.html#a7b6756bbf0a7929a36a227d59f098890',1,'pmm::MMapStorage']]],
   ['is_5fpermanently_5flocked_12',['is_permanently_locked',['../classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda',1,'pmm::BlockStateBase::is_permanently_locked()'],['../classpmm_1_1PersistMemoryManager.html#ab3d073c0cdff0cf27816432777c01053',1,'pmm::PersistMemoryManager::is_permanently_locked()']]],
   ['is_5fvalid_5falignment_13',['is_valid_alignment',['../namespacepmm_1_1detail.html#a570c97994ec416915edafdbb1ed080b6',1,'pmm::detail']]],
-  ['is_5fvalid_5fblock_14',['is_valid_block',['../namespacepmm_1_1detail.html#a691ef48013a7a305e4c467028432cd2a',1,'pmm::detail']]],
-  ['is_5fvalid_5fptr_15',['is_valid_ptr',['../classpmm_1_1PersistMemoryManager.html#a27d4816b2748eeecf20a35c73104784d',1,'pmm::PersistMemoryManager']]]
+  ['is_5fvalid_5fptr_14',['is_valid_ptr',['../classpmm_1_1PersistMemoryManager.html#a27d4816b2748eeecf20a35c73104784d',1,'pmm::PersistMemoryManager']]]
 ];

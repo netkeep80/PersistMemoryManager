@@ -22,5 +22,5 @@ var searchData=
   ['get_5ftree_5fright_5foffset_19',['get_tree_right_offset',['../classpmm_1_1PersistMemoryManager.html#a13ea961178176ea5fde6cec70de2dc7a',1,'pmm::PersistMemoryManager']]],
   ['get_5ftree_5fweight_20',['get_tree_weight',['../classpmm_1_1PersistMemoryManager.html#add3d616d951a0dae10d32651c76d4af5',1,'pmm::PersistMemoryManager']]],
   ['get_5fweight_21',['get_weight',['../classpmm_1_1BlockStateBase.html#a020c57cf961ccb6b3f1fc63041caab18',1,'pmm::BlockStateBase::get_weight()'],['../structpmm_1_1TreeNode.html#ac50581a957748b2520039df2c9fb2c02',1,'pmm::TreeNode::get_weight()']]],
-  ['granules_5fto_5fbytes_22',['granules_to_bytes',['../structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7',1,'pmm::AddressTraits::granules_to_bytes()'],['../namespacepmm_1_1detail.html#a8b26126e4182bf35bdea93b5fbc4e867',1,'pmm::detail::granules_to_bytes()']]]
+  ['granules_5fto_5fbytes_22',['granules_to_bytes',['../structpmm_1_1AddressTraits.html#a3d71e1b6c8c9926e813da85d7373cea7',1,'pmm::AddressTraits']]]
 ];

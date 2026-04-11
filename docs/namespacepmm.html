@@ -199,9 +199,6 @@ Concepts</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1FreeBlockTreePolicyForTraitsConcept.html">FreeBlockTreePolicyForTraitsConcept</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 concept: validates that Policy is a correct free-tree forest-policy for a specific AddressTraitsT. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1FreeBlockTreePolicyConcept.html">FreeBlockTreePolicyConcept</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 concept: validates that Policy is a correct free-tree forest-policy. <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">concept &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="conceptpmm_1_1PersistMemoryManagerConcept.html">PersistMemoryManagerConcept</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">C++20 концепт: проверяет, является ли T корректным менеджером персистентной памяти. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -234,9 +231,6 @@ Typedefs</h2></td></tr>
 <tr class="memitem:ab7d4ff01179dde67748d6bb997ce50e7" id="r_ab7d4ff01179dde67748d6bb997ce50e7"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#ab7d4ff01179dde67748d6bb997ce50e7">DefaultAllocatorPolicy</a> = <a class="el" href="classpmm_1_1AllocatorPolicy.html">AllocatorPolicy</a>&lt; <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;, <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
 <tr class="memdesc:ab7d4ff01179dde67748d6bb997ce50e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Псевдоним <a class="el" href="classpmm_1_1AllocatorPolicy.html" title="Политика выделения и освобождения памяти для ПАП-менеджера.">AllocatorPolicy</a> с настройками по умолчанию.  <br /></td></tr>
 <tr class="separator:ab7d4ff01179dde67748d6bb997ce50e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a343de335e434d7d59ee388be5c798684" id="r_a343de335e434d7d59ee388be5c798684"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a343de335e434d7d59ee388be5c798684">PersistentAvlTree</a> = <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt; <a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a> &gt;</td></tr>
-<tr class="memdesc:a343de335e434d7d59ee388be5c798684"><td class="mdescLeft">&#160;</td><td class="mdescRight">Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead.  <br /></td></tr>
-<tr class="separator:a343de335e434d7d59ee388be5c798684"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96a68a0f555166cd33e2261e8aec95cc" id="r_a96a68a0f555166cd33e2261e8aec95cc"><td class="memTemplParams" colspan="2">template&lt;std::size_t BufferSize = 1024&gt; </td></tr>
 <tr class="memitem:a96a68a0f555166cd33e2261e8aec95cc"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a96a68a0f555166cd33e2261e8aec95cc">SmallEmbeddedStaticConfig</a> = <a class="el" href="structpmm_1_1StaticConfig.html">StaticConfig</a>&lt; <a class="el" href="namespacepmm.html#a0b844fd7256d6a2706303a0281dfbea2">SmallAddressTraits</a>, BufferSize &gt;</td></tr>
 <tr class="memdesc:a96a68a0f555166cd33e2261e8aec95cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Конфигурация small-embedded-менеджера со статическим буфером и 16-bit индексом.  <br /></td></tr>
@@ -340,20 +334,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a8042ef62b5754498afc820dc45e9d106"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a8042ef62b5754498afc820dc45e9d106">load_manager_from_file</a> (const char *filename, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result)</td></tr>
 <tr class="memdesc:a8042ef62b5754498afc820dc45e9d106"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> с диагностикой.  <br /></td></tr>
 <tr class="separator:a8042ef62b5754498afc820dc45e9d106"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d63117e7feeaea782f0f3f420830b1a" id="r_a3d63117e7feeaea782f0f3f420830b1a"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
-<tr class="memitem:a3d63117e7feeaea782f0f3f420830b1a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a3d63117e7feeaea782f0f3f420830b1a">load_manager_from_file</a> (const char *filename)</td></tr>
-<tr class="memdesc:a3d63117e7feeaea782f0f3f420830b1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>.  <br /></td></tr>
-<tr class="separator:a3d63117e7feeaea782f0f3f420830b1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:aecb1f0560c371606c20f6fffb20c4390" id="r_aecb1f0560c371606c20f6fffb20c4390"><td class="memItemLeft" align="right" valign="top">constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html#aecb1f0560c371606c20f6fffb20c4390">kMaxDiagnosticEntries</a> = 64</td></tr>
 <tr class="memdesc:aecb1f0560c371606c20f6fffb20c4390"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of diagnostic entries stored in a <a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a>.  <br /></td></tr>
 <tr class="separator:aecb1f0560c371606c20f6fffb20c4390"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d" id="r_a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplParams" colspan="2">template&lt;typename Policy &gt; </td></tr>
-<tr class="memitem:a13826d7e9e815fd280a91ffa868ce33d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a13826d7e9e815fd280a91ffa868ce33d">is_free_block_tree_policy_v</a> = FreeBlockTreePolicyConcept&lt;Policy&gt;</td></tr>
-<tr class="memdesc:a13826d7e9e815fd280a91ffa868ce33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept.  <br /></td></tr>
-<tr class="separator:a13826d7e9e815fd280a91ffa868ce33d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a70401630d11010442cb6026f2a5654" id="r_a7a70401630d11010442cb6026f2a5654"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a7a70401630d11010442cb6026f2a5654"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a7a70401630d11010442cb6026f2a5654">is_persist_memory_manager_v</a> = PersistMemoryManagerConcept&lt;T&gt;</td></tr>
 <tr class="memdesc:a7a70401630d11010442cb6026f2a5654"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вспомогательная переменная для <a class="el" href="structpmm_1_1is__persist__memory__manager.html" title="Проверить, является ли T корректным типом менеджера персистентной памяти.">is_persist_memory_manager</a>.  <br /></td></tr>
@@ -563,24 +549,6 @@ template&lt;std::size_t BufferSize = 4096&gt; </div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00087">persist_memory_manager.h:88</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00352">352</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
-
-</div>
-</div>
-<a id="a343de335e434d7d59ee388be5c798684" name="a343de335e434d7d59ee388be5c798684"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a343de335e434d7d59ee388be5c798684">&#9670;&#160;</a></span>PersistentAvlTree</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">using <a class="el" href="namespacepmm.html#a343de335e434d7d59ee388be5c798684">pmm::PersistentAvlTree</a> = typedef <a class="el" href="structpmm_1_1AvlFreeTree.html">AvlFreeTree</a>&lt;<a class="el" href="namespacepmm.html#a9ca69087900283384dda68352be048bb">DefaultAddressTraits</a>&gt;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Backward compatibility alias for PersistentAvlTree. Deprecated: Use AvlFreeTree&lt;DefaultAddressTraits&gt; instead. </p>
-
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00275">275</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
 
 </div>
 </div>
@@ -921,55 +889,8 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 </div>
 </div>
-<a id="a3d63117e7feeaea782f0f3f420830b1a" name="a3d63117e7feeaea782f0f3f420830b1a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d63117e7feeaea782f0f3f420830b1a">&#9670;&#160;</a></span>load_manager_from_file() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename MgrT &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool pmm::load_manager_from_file </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>. </p>
-<p>Обёртка для обратной совместимости. Предпочтительно использовать перегрузку с <a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a> для получения полной диагностики восстановления.</p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">MgrT</td><td>Тип статического менеджера (PersistMemoryManager&lt;ConfigT, Id&gt;). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>Путь к файлу с образом. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true при успешной загрузке, false при ошибке.</dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Используйте load_manager_from_file(filename, result) для получения диагностики. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8h_source.html#l00238">238</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
-
-</div>
-</div>
 <a id="a8042ef62b5754498afc820dc45e9d106" name="a8042ef62b5754498afc820dc45e9d106"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8042ef62b5754498afc820dc45e9d106">&#9670;&#160;</a></span>load_manager_from_file() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8042ef62b5754498afc820dc45e9d106">&#9670;&#160;</a></span>load_manager_from_file()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1196,40 +1117,6 @@ template&lt;typename AddressTraitsT &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="a13826d7e9e815fd280a91ffa868ce33d" name="a13826d7e9e815fd280a91ffa868ce33d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a13826d7e9e815fd280a91ffa868ce33d">&#9670;&#160;</a></span>is_free_block_tree_policy_v</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Policy &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">constexpr bool pmm::is_free_block_tree_policy_v = FreeBlockTreePolicyConcept&lt;Policy&gt;</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Вспомогательная переменная: true если Policy удовлетворяет FreeBlockTreePolicyConcept. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">Policy</td><td>Тип, проверяемый на соответствие концепту. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="free__block__tree_8h_source.html#l00083">83</a> of file <a class="el" href="free__block__tree_8h_source.html">free_block_tree.h</a>.</p>
-
-</div>
-</div>
 <a id="a7a70401630d11010442cb6026f2a5654" name="a7a70401630d11010442cb6026f2a5654"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7a70401630d11010442cb6026f2a5654">&#9670;&#160;</a></span>is_persist_memory_manager_v</h2>
 

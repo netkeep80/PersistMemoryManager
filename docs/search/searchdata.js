@@ -10,8 +10,7 @@ var indexSectionsWithContent =
   7: "dprv",
   8: "abcefghiknoprsv",
   9: "p",
-  10: "dl",
-  11: "p"
+  10: "p"
 };
 
 var indexSectionNames =
@@ -26,8 +25,7 @@ var indexSectionNames =
   7: "enums",
   8: "enumvalues",
   9: "related",
-  10: "pages",
-  11: "concepts"
+  10: "concepts"
 };
 
 var indexSectionLabels =
@@ -42,7 +40,6 @@ var indexSectionLabels =
   7: "Enumerations",
   8: "Enumerator",
   9: "Friends",
-  10: "Pages",
-  11: "Concepts"
+  10: "Concepts"
 };
 
