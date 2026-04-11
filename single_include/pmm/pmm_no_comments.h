@@ -192,8 +192,7 @@ template <typename AddressTraitsT> struct Block : TreeNode<AddressTraitsT>
     index_type next_offset;
 };
 
-static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes " );
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Block<DefaultAddressTraits> must be 32 bytes " );
 
 } 
 
@@ -792,8 +791,7 @@ static_assert( ( kGranuleSize & ( kGranuleSize - 1 ) ) == 0, "kGranuleSize must 
 static_assert( kGranuleSize == pmm::DefaultAddressTraits::granule_size,
                "kGranuleSize must match DefaultAddressTraits::granule_size " );
 
-inline constexpr std::uint64_t kMagic =
-    0x504D4D5F56303938ULL; 
+inline constexpr std::uint64_t kMagic = 0x504D4D5F56303938ULL; 
 
 struct MemoryStats
 {
@@ -860,8 +858,7 @@ inline std::uint32_t compute_crc32( const std::uint8_t* data, std::size_t length
     return crc ^ 0xFFFFFFFFU;
 }
 
-static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes " );
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Block<DefaultAddressTraits> must be 32 bytes " );
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) % kGranuleSize == 0,
                "Block<DefaultAddressTraits> must be granule-aligned " );
 
@@ -873,8 +870,7 @@ static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 5 * sizeof(
                "TreeNode<DefaultAddressTraits> must be 24 bytes " );
 
 inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; 
-static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block,
-               "kNoBlock must match DefaultAddressTraits::no_block " );
+static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block, "kNoBlock must match DefaultAddressTraits::no_block " );
 
 template <typename AddressTraitsT>
 inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
@@ -2380,7 +2376,7 @@ class AllocatorPolicy
             block_count++;
             used_gran += kBlkHdrGran;
             index_type w = BlockState::get_weight( blk_ptr );
-            if ( w > 0 )                                      
+            if ( w > 0 ) 
             {
                 alloc_count++;
                 used_gran += w;

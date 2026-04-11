@@ -655,8 +655,7 @@ template <typename AddressTraitsT> struct Block : TreeNode<AddressTraitsT>
 // Note: Block is NOT standard-layout (both base and derived have data members), but
 // the memory layout is still predictable: TreeNode fields first, then Block own fields.
 // The layout is validated via kOffset* constants in BlockStateBase (block_state.h).
-static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes " );
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Block<DefaultAddressTraits> must be 32 bytes " );
 
 } // namespace pmm
 
@@ -1725,8 +1724,7 @@ static_assert( ( kGranuleSize & ( kGranuleSize - 1 ) ) == 0, "kGranuleSize must 
 static_assert( kGranuleSize == pmm::DefaultAddressTraits::granule_size,
                "kGranuleSize must match DefaultAddressTraits::granule_size " );
 
-inline constexpr std::uint64_t kMagic =
-    0x504D4D5F56303938ULL; ///< "PMM_V098"
+inline constexpr std::uint64_t kMagic = 0x504D4D5F56303938ULL; ///< "PMM_V098"
 
 // ─── Public data structures ────────────────────────────────────────────────────
 
@@ -1812,8 +1810,7 @@ inline std::uint32_t compute_crc32( const std::uint8_t* data, std::size_t length
 // All block metadata is stored in Block<AddressTraitsT> (prev/next + TreeNode).
 
 // Verify Block<DefaultAddressTraits> layout and size constraints.
-static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
-               "Block<DefaultAddressTraits> must be 32 bytes " );
+static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Block<DefaultAddressTraits> must be 32 bytes " );
 static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) % kGranuleSize == 0,
                "Block<DefaultAddressTraits> must be granule-aligned " );
 
@@ -1830,8 +1827,7 @@ static_assert( sizeof( pmm::TreeNode<pmm::DefaultAddressTraits> ) == 5 * sizeof(
 // kBlockMagic removed: block validity now uses is_valid_block() structural invariants.
 /// Matches DefaultAddressTraits::no_block.
 inline constexpr std::uint32_t kNoBlock = 0xFFFFFFFFU; ///< Sentinel: no block (granule index)
-static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block,
-               "kNoBlock must match DefaultAddressTraits::no_block " );
+static_assert( kNoBlock == pmm::DefaultAddressTraits::no_block, "kNoBlock must match DefaultAddressTraits::no_block " );
 
 /// @brief Template alias for AddressTraitsT::no_block sentinel.
 /// Use this instead of detail::kNoBlock in generic (templated) code that works with any AT.
@@ -4145,7 +4141,7 @@ class AllocatorPolicy
             block_count++;
             used_gran += kBlkHdrGran;
             index_type w = BlockState::get_weight( blk_ptr );
-            if ( w > 0 )                                      // allocated block
+            if ( w > 0 ) // allocated block
             {
                 alloc_count++;
                 used_gran += w;
