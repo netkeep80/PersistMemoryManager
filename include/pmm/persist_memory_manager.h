@@ -263,8 +263,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         {
             _last_error = PmmError::GranuleMismatch;
             logging_policy::on_corruption_detected( PmmError::GranuleMismatch );
-            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0,
-                        address_traits::granule_size, static_cast<std::uint64_t>( hdr->granule_size ) );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, address_traits::granule_size,
+                        static_cast<std::uint64_t>( hdr->granule_size ) );
             return false;
         }
         // Issue #245: verify before repair — detect violations in the raw image.
@@ -998,7 +998,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     /// @return VerifyResult with ok=true if no violations, false otherwise.
     static VerifyResult verify() noexcept
     {
-        VerifyResult result;
+        VerifyResult                             result;
         typename thread_policy::shared_lock_type lock( _mutex );
         if ( !_initialized || _backend.base_ptr() == nullptr )
         {

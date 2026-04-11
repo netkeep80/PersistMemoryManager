@@ -24,8 +24,8 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
     // 1. Header validation
     if ( hdr->magic != kMagic )
     {
-        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0,
-                    static_cast<std::uint64_t>( kMagic ), static_cast<std::uint64_t>( hdr->magic ) );
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, static_cast<std::uint64_t>( kMagic ),
+                    static_cast<std::uint64_t>( hdr->magic ) );
         return; // Cannot proceed
     }
     if ( hdr->total_size != _backend.total_size() )

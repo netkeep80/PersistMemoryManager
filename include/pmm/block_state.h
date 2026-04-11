@@ -193,8 +193,7 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
         if ( blk->weight() == 0 && blk->root_offset() != 0 )
         {
             result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
-                        static_cast<std::uint64_t>( own_idx ), 0,
-                        static_cast<std::uint64_t>( blk->root_offset() ) );
+                        static_cast<std::uint64_t>( own_idx ), 0, static_cast<std::uint64_t>( blk->root_offset() ) );
         }
     }
 

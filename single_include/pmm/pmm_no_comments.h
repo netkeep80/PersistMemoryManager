@@ -197,6 +197,80 @@ static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
 
 } 
 
+#include <cstddef>
+#include <cstdint>
+
+namespace pmm
+{
+
+enum class RecoveryMode : std::uint8_t
+{
+    Verify = 0, 
+    Repair = 1, 
+};
+
+enum class ViolationType : std::uint8_t
+{
+    None = 0,                 
+    BlockStateInconsistent,   
+    PrevOffsetMismatch,       
+    CounterMismatch,          
+    FreeTreeStale,            
+    ForestRegistryMissing,    
+    ForestDomainMissing,      
+    ForestDomainFlagsMissing, 
+    HeaderCorruption,         
+};
+
+enum class DiagnosticAction : std::uint8_t
+{
+    NoAction = 0, 
+    Repaired,     
+    Rebuilt,      
+    Aborted,      
+};
+
+struct DiagnosticEntry
+{
+    ViolationType    type        = ViolationType::None;        
+    DiagnosticAction action      = DiagnosticAction::NoAction; 
+    std::uint64_t    block_index = 0;                          
+    std::uint64_t    expected    = 0;                          
+    std::uint64_t    actual      = 0;                          
+};
+
+inline constexpr std::size_t kMaxDiagnosticEntries = 64;
+
+struct VerifyResult
+{
+    RecoveryMode mode = RecoveryMode::Verify; 
+    bool         ok   = true;                 
+
+    std::size_t violation_count = 0;
+
+    DiagnosticEntry entries[kMaxDiagnosticEntries] = {};
+
+    std::size_t entry_count = 0;
+
+    void add( ViolationType type, DiagnosticAction action, std::uint64_t block_index = 0, std::uint64_t expected = 0,
+              std::uint64_t actual = 0 ) noexcept
+    {
+        ok = false;
+        violation_count++;
+        if ( entry_count < kMaxDiagnosticEntries )
+        {
+            entries[entry_count].type        = type;
+            entries[entry_count].action      = action;
+            entries[entry_count].block_index = block_index;
+            entries[entry_count].expected    = expected;
+            entries[entry_count].actual      = actual;
+            entry_count++;
+        }
+    }
+};
+
+} 
+
 #include <cstdint>
 #include <cstring>
 #include <type_traits>
@@ -270,6 +344,22 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
         
         if ( blk->weight() == 0 && blk->root_offset() != 0 )
             blk->set_root_offset( 0 );
+    }
+
+    static void verify_state( const void* raw_blk, index_type own_idx, VerifyResult& result ) noexcept
+    {
+        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
+        if ( blk->weight() > 0 && blk->root_offset() != own_idx )
+        {
+            result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( own_idx ), static_cast<std::uint64_t>( own_idx ),
+                        static_cast<std::uint64_t>( blk->root_offset() ) );
+        }
+        if ( blk->weight() == 0 && blk->root_offset() != 0 )
+        {
+            result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( own_idx ), 0, static_cast<std::uint64_t>( blk->root_offset() ) );
+        }
     }
 
     static void reset_avl_fields_of( void* raw_blk ) noexcept
@@ -659,6 +749,13 @@ template <typename AddressTraitsT>
 void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own_idx ) noexcept
 {
     BlockStateBase<AddressTraitsT>::recover_state( raw_blk, own_idx );
+}
+
+template <typename AddressTraitsT>
+void verify_block_state( const void* raw_blk, typename AddressTraitsT::index_type own_idx,
+                         VerifyResult& result ) noexcept
+{
+    BlockStateBase<AddressTraitsT>::verify_state( raw_blk, own_idx, result );
 }
 
 } 
@@ -2300,6 +2397,78 @@ class AllocatorPolicy
         hdr->used_size   = used_gran;
     }
 
+    static void verify_linked_list( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                    VerifyResult& result ) noexcept
+    {
+        index_type idx  = hdr->first_block_offset;
+        index_type prev = AddressTraitsT::no_block;
+        while ( idx != AddressTraitsT::no_block )
+        {
+            if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
+                break;
+            const void* blk_ptr     = detail::block_at<AddressTraitsT>( base, idx );
+            index_type  stored_prev = BlockState::get_prev_offset( blk_ptr );
+            if ( stored_prev != prev )
+            {
+                result.add( ViolationType::PrevOffsetMismatch, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( idx ), static_cast<std::uint64_t>( prev ),
+                            static_cast<std::uint64_t>( stored_prev ) );
+            }
+            prev                   = idx;
+            index_type next_offset = BlockState::get_next_offset( blk_ptr );
+            idx                    = next_offset;
+        }
+    }
+
+    static void verify_counters( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                 VerifyResult& result ) noexcept
+    {
+        static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
+
+        index_type block_count = 0, free_count = 0, alloc_count = 0;
+        index_type used_gran = 0;
+        index_type idx       = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
+        {
+            if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
+                break;
+            const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
+            block_count++;
+            used_gran += kBlkHdrGran;
+            index_type w = BlockState::get_weight( blk_ptr );
+            if ( w > 0 )
+            {
+                alloc_count++;
+                used_gran += w;
+            }
+            else
+            {
+                free_count++;
+            }
+            idx = BlockState::get_next_offset( blk_ptr );
+        }
+        if ( hdr->block_count != block_count || hdr->free_count != free_count || hdr->alloc_count != alloc_count ||
+             hdr->used_size != used_gran )
+        {
+            result.add( ViolationType::CounterMismatch, DiagnosticAction::NoAction, 0,
+                        static_cast<std::uint64_t>( block_count ), static_cast<std::uint64_t>( hdr->block_count ) );
+        }
+    }
+
+    static void verify_block_states( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                     VerifyResult& result ) noexcept
+    {
+        index_type idx = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
+        {
+            if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
+                break;
+            const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
+            BlockState::verify_state( blk_ptr, idx, result );
+            idx = BlockState::get_next_offset( blk_ptr );
+        }
+    }
+
     static void realloc_shrink( std::uint8_t* base, detail::ManagerHeader<AddressTraitsT>* hdr, index_type blk_idx,
                                 void* blk_raw, index_type old_data_gran, index_type new_data_gran ) noexcept
     {
@@ -3608,17 +3777,17 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     template <typename> friend struct pstringview;
 
     template <typename T> using pptr = pmm::pptr<T, manager_type>;
-
+    
     using pstringview = pmm::pstringview<manager_type>;
-
+    
     using pstring = pmm::pstring<manager_type>;
-
+    
     template <typename _K, typename _V> using pmap = pmm::pmap<_K, _V, manager_type>;
-
+    
     template <typename T> using parray = pmm::parray<T, manager_type>;
-
+    
     template <typename T> using pallocator = pmm::pallocator<T, manager_type>;
-
+    
     template <typename T> using ppool = pmm::ppool<T, manager_type>;
 
     static PmmError last_error() noexcept { return _last_error; }
@@ -3695,10 +3864,19 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     static bool load() noexcept
     {
+        VerifyResult unused;
+        return load( unused );
+    }
+
+    static bool load( VerifyResult& result ) noexcept
+    {
+        result.mode = RecoveryMode::Repair;
+        result.ok   = true;
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < detail::kMinMemorySize )
         {
             _last_error = ( _backend.base_ptr() == nullptr ) ? PmmError::BackendError : PmmError::InvalidSize;
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted );
             return false;
         }
         std::uint8_t*                          base = _backend.base_ptr();
@@ -3707,21 +3885,34 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         {
             _last_error = PmmError::InvalidMagic;
             logging_policy::on_corruption_detected( PmmError::InvalidMagic );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0,
+                        static_cast<std::uint64_t>( kMagic ), static_cast<std::uint64_t>( hdr->magic ) );
             return false;
         }
         if ( hdr->total_size != _backend.total_size() )
         {
             _last_error = PmmError::SizeMismatch;
             logging_policy::on_corruption_detected( PmmError::SizeMismatch );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, _backend.total_size(),
+                        static_cast<std::uint64_t>( hdr->total_size ) );
             return false;
         }
-        
         if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
         {
             _last_error = PmmError::GranuleMismatch;
             logging_policy::on_corruption_detected( PmmError::GranuleMismatch );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, address_traits::granule_size,
+                        static_cast<std::uint64_t>( hdr->granule_size ) );
             return false;
         }
+        
+        allocator::verify_block_states( base, hdr, result );
+        allocator::verify_linked_list( base, hdr, result );
+        allocator::verify_counters( base, hdr, result );
+        
+        for ( std::size_t i = 0; i < result.entry_count; ++i )
+            result.entries[i].action = DiagnosticAction::Repaired;
+        
         hdr->owns_memory     = false;
         hdr->prev_total_size = 0;
         allocator::repair_linked_list( base, hdr );
@@ -3733,7 +3924,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _initialized = false;
             return false;
         }
-        if ( !validate_bootstrap_invariants_unlocked() ) 
+        if ( !validate_bootstrap_invariants_unlocked() )
         {
             _initialized = false;
             return false;
@@ -4271,6 +4462,19 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return _initialized.load( std::memory_order_relaxed )
                    ? static_cast<std::size_t>( get_header_c( _backend.base_ptr() )->alloc_count )
                    : 0;
+    }
+
+    static VerifyResult verify() noexcept
+    {
+        VerifyResult                             result;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized || _backend.base_ptr() == nullptr )
+        {
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted );
+            return result;
+        }
+        verify_image_unlocked( result );
+        return result;
     }
 
     template <typename Callback> static bool for_each_block( Callback&& callback ) noexcept
@@ -4903,6 +5107,73 @@ static void for_each_free_block_inorder( const std::uint8_t* base, const detail:
     callback( view );
 
     for_each_free_block_inorder( base, hdr, right_off, depth + 1, callback );
+}
+
+static void verify_image_unlocked( VerifyResult& result ) noexcept
+{
+    result.mode = RecoveryMode::Verify;
+    result.ok   = true;
+
+    const std::uint8_t*                          base = _backend.base_ptr();
+    const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
+
+    if ( hdr->magic != kMagic )
+    {
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, static_cast<std::uint64_t>( kMagic ),
+                    static_cast<std::uint64_t>( hdr->magic ) );
+        return; 
+    }
+    if ( hdr->total_size != _backend.total_size() )
+    {
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, _backend.total_size(),
+                    static_cast<std::uint64_t>( hdr->total_size ) );
+    }
+    if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
+    {
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, address_traits::granule_size,
+                    static_cast<std::uint64_t>( hdr->granule_size ) );
+    }
+
+    allocator::verify_block_states( base, hdr, result );
+
+    allocator::verify_linked_list( base, hdr, result );
+
+    allocator::verify_counters( base, hdr, result );
+
+    verify_forest_registry_unlocked( result );
+}
+
+static void verify_forest_registry_unlocked( VerifyResult& result ) noexcept
+{
+    const forest_registry* reg = forest_registry_root_unlocked();
+    if ( reg == nullptr )
+    {
+        result.add( ViolationType::ForestRegistryMissing, DiagnosticAction::NoAction );
+        return;
+    }
+    if ( reg->magic != detail::kForestRegistryMagic || reg->version != detail::kForestRegistryVersion )
+    {
+        result.add( ViolationType::ForestRegistryMissing, DiagnosticAction::NoAction, 0,
+                    static_cast<std::uint64_t>( detail::kForestRegistryMagic ),
+                    static_cast<std::uint64_t>( reg->magic ) );
+        return;
+    }
+
+    static constexpr const char* kRequired[] = { detail::kSystemDomainFreeTree, detail::kSystemDomainSymbols,
+                                                 detail::kSystemDomainRegistry };
+    for ( const char* name : kRequired )
+    {
+        const forest_domain* rec = find_domain_by_name_unlocked( name );
+        if ( rec == nullptr )
+        {
+            result.add( ViolationType::ForestDomainMissing, DiagnosticAction::NoAction );
+            continue;
+        }
+        if ( ( rec->flags & detail::kForestDomainFlagSystem ) == 0 )
+        {
+            result.add( ViolationType::ForestDomainFlagsMissing, DiagnosticAction::NoAction );
+        }
+    }
 }
 
     static pmm::Block<address_traits>* find_block_from_user_ptr( void* ptr ) noexcept

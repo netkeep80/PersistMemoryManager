@@ -707,6 +707,112 @@ static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32,
  * @version 0.4 (Issue #168 — удалены дублирующие функции-обёртки)
  */
 
+/**
+ * @file pmm/diagnostics.h
+ * @brief Structured diagnostics for verify and repair modes (Issue #245).
+ *
+ * Provides:
+ *   - `RecoveryMode`     — enum to select verify-only vs. repair behaviour
+ *   - `DiagnosticEntry`  — single violation record with type, affected block, action
+ *   - `VerifyResult`     — aggregated result of a verify or repair pass
+ *
+ * The verify mode performs read-only diagnostics without modifying the image.
+ * The repair mode performs the same diagnostics, then applies documented fixes.
+ * Both modes populate a VerifyResult with structured diagnostic entries.
+ *
+ * @see block_state.h  — block-level verify_state / recover_state
+ * @see allocator_policy.h — verify_linked_list, verify_counters, verify_free_tree_candidates
+ * @see persist_memory_manager.h — PersistMemoryManager::verify, load
+ * @version 1.0 (Issue #245)
+ */
+
+#include <cstddef>
+#include <cstdint>
+
+namespace pmm
+{
+
+/// @brief Mode for recovery operations: verify-only or repair.
+enum class RecoveryMode : std::uint8_t
+{
+    Verify = 0, ///< Read-only diagnostics; no modifications to the image.
+    Repair = 1, ///< Diagnose and then apply documented fixes.
+};
+
+/// @brief Type of structural violation detected during verify/repair.
+enum class ViolationType : std::uint8_t
+{
+    None = 0,                 ///< No violation.
+    BlockStateInconsistent,   ///< Block weight/root_offset mismatch (transitional state).
+    PrevOffsetMismatch,       ///< prev_offset does not match expected value.
+    CounterMismatch,          ///< Recomputed counter differs from stored value.
+    FreeTreeStale,            ///< Free tree root or AVL fields need rebuild.
+    ForestRegistryMissing,    ///< Forest registry not found or invalid.
+    ForestDomainMissing,      ///< Required system domain not found.
+    ForestDomainFlagsMissing, ///< System domain lacks required flags.
+    HeaderCorruption,         ///< Magic, granule_size, or total_size mismatch.
+};
+
+/// @brief Action taken (or that would be taken) for a violation.
+enum class DiagnosticAction : std::uint8_t
+{
+    NoAction = 0, ///< No action (verify mode or no fix available).
+    Repaired,     ///< Field was repaired to correct value.
+    Rebuilt,      ///< Structure was rebuilt from scratch (AVL tree, counters).
+    Aborted,      ///< Recovery aborted — corruption too severe.
+};
+
+/// @brief A single diagnostic entry describing one violation.
+struct DiagnosticEntry
+{
+    ViolationType    type        = ViolationType::None;        ///< Kind of violation.
+    DiagnosticAction action      = DiagnosticAction::NoAction; ///< Action taken/proposed.
+    std::uint64_t    block_index = 0;                          ///< Affected block granule index (0 if N/A).
+    std::uint64_t    expected    = 0;                          ///< Expected value (interpretation depends on type).
+    std::uint64_t    actual      = 0;                          ///< Actual value found.
+};
+
+/// @brief Maximum number of diagnostic entries stored in a VerifyResult.
+///
+/// Keeps VerifyResult on the stack without dynamic allocation.
+/// Additional violations beyond this limit are counted but not detailed.
+inline constexpr std::size_t kMaxDiagnosticEntries = 64;
+
+/// @brief Aggregated result of a verify or repair pass.
+struct VerifyResult
+{
+    RecoveryMode mode = RecoveryMode::Verify; ///< Mode used for this pass.
+    bool         ok   = true;                 ///< true if no violations found.
+
+    /// @brief Number of violations detected.
+    std::size_t violation_count = 0;
+
+    /// @brief Detailed entries (up to kMaxDiagnosticEntries).
+    DiagnosticEntry entries[kMaxDiagnosticEntries] = {};
+
+    /// @brief Number of entries stored (may be < violation_count if overflow).
+    std::size_t entry_count = 0;
+
+    /// @brief Add a diagnostic entry. Thread-unsafe — caller holds lock.
+    void add( ViolationType type, DiagnosticAction action, std::uint64_t block_index = 0, std::uint64_t expected = 0,
+              std::uint64_t actual = 0 ) noexcept
+    {
+        ok = false;
+        violation_count++;
+        if ( entry_count < kMaxDiagnosticEntries )
+        {
+            entries[entry_count].type        = type;
+            entries[entry_count].action      = action;
+            entries[entry_count].block_index = block_index;
+            entries[entry_count].expected    = expected;
+            entries[entry_count].actual      = actual;
+            entry_count++;
+        }
+    }
+};
+
+} // namespace pmm
+
 #include <cstdint>
 #include <cstring>
 #include <type_traits>
@@ -831,6 +937,32 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
         // Если weight == 0, но root_offset != 0 — исправляем
         if ( blk->weight() == 0 && blk->root_offset() != 0 )
             blk->set_root_offset( 0 );
+    }
+
+    /**
+     * @brief Verify block state consistency without modifying the image (Issue #245).
+     *
+     * Read-only counterpart of recover_state(). Checks that weight and root_offset
+     * are in a consistent (non-transitional) state. Reports violations into result.
+     *
+     * @param raw_blk   Pointer to the block (read-only).
+     * @param own_idx   Granule index of this block.
+     * @param result    Diagnostic result to append violations to.
+     */
+    static void verify_state( const void* raw_blk, index_type own_idx, VerifyResult& result ) noexcept
+    {
+        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
+        if ( blk->weight() > 0 && blk->root_offset() != own_idx )
+        {
+            result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( own_idx ), static_cast<std::uint64_t>( own_idx ),
+                        static_cast<std::uint64_t>( blk->root_offset() ) );
+        }
+        if ( blk->weight() == 0 && blk->root_offset() != 0 )
+        {
+            result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( own_idx ), 0, static_cast<std::uint64_t>( blk->root_offset() ) );
+        }
     }
 
     /**
@@ -1526,6 +1658,23 @@ template <typename AddressTraitsT>
 void recover_block_state( void* raw_blk, typename AddressTraitsT::index_type own_idx ) noexcept
 {
     BlockStateBase<AddressTraitsT>::recover_state( raw_blk, own_idx );
+}
+
+/**
+ * @brief Verify block state consistency without modification (Issue #245).
+ *
+ * Read-only counterpart of recover_block_state(). Reports violations into result.
+ *
+ * @tparam AddressTraitsT Traits адресного пространства.
+ * @param raw_blk   Pointer to the block (read-only).
+ * @param own_idx   Granule index of this block.
+ * @param result    Diagnostic result to append violations to.
+ */
+template <typename AddressTraitsT>
+void verify_block_state( const void* raw_blk, typename AddressTraitsT::index_type own_idx,
+                         VerifyResult& result ) noexcept
+{
+    BlockStateBase<AddressTraitsT>::verify_state( raw_blk, own_idx, result );
 }
 
 } // namespace pmm
@@ -4043,6 +4192,110 @@ class AllocatorPolicy
         hdr->used_size   = used_gran;
     }
 
+    // ─── Verify-only diagnostics (Issue #245) ──────────────────────────────────
+
+    /**
+     * @brief Verify linked list prev_offset consistency without modifying the image.
+     *
+     * Walks the block chain via next_offset and checks that each block's prev_offset
+     * matches the index of the preceding block.
+     *
+     * @param base    Base pointer of the managed area.
+     * @param hdr     Manager header (read-only).
+     * @param result  Diagnostic result to append violations to.
+     */
+    static void verify_linked_list( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                    VerifyResult& result ) noexcept
+    {
+        index_type idx  = hdr->first_block_offset;
+        index_type prev = AddressTraitsT::no_block;
+        while ( idx != AddressTraitsT::no_block )
+        {
+            if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
+                break;
+            const void* blk_ptr     = detail::block_at<AddressTraitsT>( base, idx );
+            index_type  stored_prev = BlockState::get_prev_offset( blk_ptr );
+            if ( stored_prev != prev )
+            {
+                result.add( ViolationType::PrevOffsetMismatch, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( idx ), static_cast<std::uint64_t>( prev ),
+                            static_cast<std::uint64_t>( stored_prev ) );
+            }
+            prev                   = idx;
+            index_type next_offset = BlockState::get_next_offset( blk_ptr );
+            idx                    = next_offset;
+        }
+    }
+
+    /**
+     * @brief Verify block counters consistency without modifying the image.
+     *
+     * Recomputes block_count, free_count, alloc_count, used_size by walking the
+     * linked list and compares against stored header values.
+     *
+     * @param base    Base pointer of the managed area.
+     * @param hdr     Manager header (read-only).
+     * @param result  Diagnostic result to append violations to.
+     */
+    static void verify_counters( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                 VerifyResult& result ) noexcept
+    {
+        static constexpr index_type kBlkHdrGran = detail::kBlockHeaderGranules_t<AddressTraitsT>;
+
+        index_type block_count = 0, free_count = 0, alloc_count = 0;
+        index_type used_gran = 0;
+        index_type idx       = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
+        {
+            if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
+                break;
+            const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
+            block_count++;
+            used_gran += kBlkHdrGran;
+            index_type w = BlockState::get_weight( blk_ptr );
+            if ( w > 0 )
+            {
+                alloc_count++;
+                used_gran += w;
+            }
+            else
+            {
+                free_count++;
+            }
+            idx = BlockState::get_next_offset( blk_ptr );
+        }
+        if ( hdr->block_count != block_count || hdr->free_count != free_count || hdr->alloc_count != alloc_count ||
+             hdr->used_size != used_gran )
+        {
+            result.add( ViolationType::CounterMismatch, DiagnosticAction::NoAction, 0,
+                        static_cast<std::uint64_t>( block_count ), static_cast<std::uint64_t>( hdr->block_count ) );
+        }
+    }
+
+    /**
+     * @brief Verify block state consistency for all blocks without modification.
+     *
+     * Walks the linked list and calls verify_state() for each block, detecting
+     * any transitional (inconsistent) states.
+     *
+     * @param base    Base pointer of the managed area.
+     * @param hdr     Manager header (read-only).
+     * @param result  Diagnostic result to append violations to.
+     */
+    static void verify_block_states( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                     VerifyResult& result ) noexcept
+    {
+        index_type idx = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
+        {
+            if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
+                break;
+            const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
+            BlockState::verify_state( blk_ptr, idx, result );
+            idx = BlockState::get_next_offset( blk_ptr );
+        }
+    }
+
     // ─── Issue #210: reallocate_typed helpers ─────────────────────────────────
 
     /// @brief In-place shrink: update weight, split remainder into free block + coalesce.
@@ -6533,96 +6786,19 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     template <typename> friend struct pstringview;
 
-    /**
-     * @brief Вложенный псевдоним персистентного указателя, привязанного к данному менеджеру.
-     *
-     * `PersistMemoryManager<ConfigT, 0>::pptr<T>` и
-     * `PersistMemoryManager<ConfigT, 1>::pptr<T>` — разные типы.
-     *
-     * @tparam T Тип данных, на который указывает pptr.
-     */
+    /// @brief Persistent pointer bound to this manager. @tparam T Pointed-to type.
     template <typename T> using pptr = pmm::pptr<T, manager_type>;
-
-    /**
-     * @brief Псевдоним для персистентной интернированной строки, привязанной к данному менеджеру.
-     *
-     * Позволяет использовать краткий синтаксис:
-     * @code
-     *   Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("hello");
-     * @endcode
-     * вместо `Mgr::pptr<pmm::pstringview<Mgr>> p = pmm::pstringview<Mgr>("hello");`
-     */
+    /// @brief Persistent interned string (shorthand for pmm::pstringview<Mgr>).
     using pstringview = pmm::pstringview<manager_type>;
-
-    /**
-     * @brief Псевдоним для мутабельной персистентной строки, привязанной к данному менеджеру.
-     *
-     * Позволяет использовать краткий синтаксис:
-     * @code
-     *   Mgr::pptr<Mgr::pstring> p = Mgr::create_typed<Mgr::pstring>();
-     *   p->assign("hello");
-     * @endcode
-     * вместо `Mgr::pptr<pmm::pstring<Mgr>> p = ...;`
-     */
+    /// @brief Persistent mutable string (shorthand for pmm::pstring<Mgr>).
     using pstring = pmm::pstring<manager_type>;
-
-    /**
-     * @brief Псевдоним для персистентного словаря (AVL-дерева), привязанного к данному менеджеру.
-     *
-     * Позволяет использовать краткий синтаксис:
-     * @code
-     *   Mgr::pmap<int, int> map;
-     *   map.insert(42, 100);
-     *   auto p = map.find(42);
-     * @endcode
-     * вместо `pmm::pmap<int, int, Mgr> map;`
-     *
-     * @tparam _K Тип ключа. Должен поддерживать operator< и operator==.
-     * @tparam _V Тип значения.
-     */
+    /// @brief Persistent sorted map (AVL). @tparam _K Key. @tparam _V Value.
     template <typename _K, typename _V> using pmap = pmm::pmap<_K, _V, manager_type>;
-
-    /**
-     * @brief Алиас для персистентного массива с O(1) индексацией (Issue #195, Phase 3.2).
-     *
-     * Позволяет писать:
-     * @code
-     *   Mgr::parray<int> arr;
-     *   arr.push_back(42);
-     *   int* elem = arr.at(0);
-     * @endcode
-     * вместо `pmm::parray<int, Mgr> arr;`
-     *
-     * @tparam T Тип элемента. Должен быть trivially copyable.
-     */
+    /// @brief Persistent array with O(1) random access. @tparam T Element type.
     template <typename T> using parray = pmm::parray<T, manager_type>;
-
-    /**
-     * @brief Алиас для STL-совместимого аллокатора (Issue #198, Phase 3.5).
-     *
-     * Позволяет писать:
-     * @code
-     *   std::vector<int, Mgr::pallocator<int>> vec;
-     *   vec.push_back(42);
-     * @endcode
-     * вместо `std::vector<int, pmm::pallocator<int, Mgr>> vec;`
-     *
-     * @tparam T Тип элемента.
-     */
+    /// @brief STL-compatible allocator. @tparam T Element type.
     template <typename T> using pallocator = pmm::pallocator<T, manager_type>;
-
-    /**
-     * @brief Алиас для персистентного пула объектов (Issue #199, Phase 3.6).
-     *
-     * Позволяет писать:
-     * @code
-     *   Mgr::pptr<Mgr::ppool<int>> pool = Mgr::create_typed<Mgr::ppool<int>>();
-     *   int* obj = pool->allocate();
-     * @endcode
-     * вместо `Mgr::pptr<pmm::ppool<int, Mgr>> pool = ...;`
-     *
-     * @tparam T Тип объекта. Должен быть trivially copyable.
-     */
+    /// @brief Persistent object pool. @tparam T Object type (trivially copyable).
     template <typename T> using ppool = pmm::ppool<T, manager_type>;
 
     // ─── Error code API (Issue #201, Phase 4.1) ───────────────────────────────
@@ -6719,17 +6895,32 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return ok;
     }
 
-    /**
-     * @brief Загрузить существующее состояние из бэкенда.
-     *
-     * @return true при успехе.
-     */
+    /// @brief Load existing state from backend (default: no diagnostics report).
     static bool load() noexcept
     {
+        VerifyResult unused;
+        return load( unused );
+    }
+
+    /**
+     * @brief Load existing state from backend with structured diagnostics (Issue #245).
+     *
+     * Performs verify-then-repair: first detects all violations, then applies
+     * documented fixes. The VerifyResult records every repair action taken.
+     * Header corruption (magic, size, granule) is non-recoverable and aborts load.
+     *
+     * @param result  VerifyResult populated with detected violations and repair actions.
+     * @return true on successful load (repairs applied), false on non-recoverable corruption.
+     */
+    static bool load( VerifyResult& result ) noexcept
+    {
+        result.mode = RecoveryMode::Repair;
+        result.ok   = true;
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( _backend.base_ptr() == nullptr || _backend.total_size() < detail::kMinMemorySize )
         {
             _last_error = ( _backend.base_ptr() == nullptr ) ? PmmError::BackendError : PmmError::InvalidSize;
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted );
             return false;
         }
         std::uint8_t*                          base = _backend.base_ptr();
@@ -6738,21 +6929,34 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         {
             _last_error = PmmError::InvalidMagic;
             logging_policy::on_corruption_detected( PmmError::InvalidMagic );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0,
+                        static_cast<std::uint64_t>( kMagic ), static_cast<std::uint64_t>( hdr->magic ) );
             return false;
         }
         if ( hdr->total_size != _backend.total_size() )
         {
             _last_error = PmmError::SizeMismatch;
             logging_policy::on_corruption_detected( PmmError::SizeMismatch );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, _backend.total_size(),
+                        static_cast<std::uint64_t>( hdr->total_size ) );
             return false;
         }
-        // Issue #146: compare stored granule size against address_traits::granule_size.
         if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
         {
             _last_error = PmmError::GranuleMismatch;
             logging_policy::on_corruption_detected( PmmError::GranuleMismatch );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, address_traits::granule_size,
+                        static_cast<std::uint64_t>( hdr->granule_size ) );
             return false;
         }
+        // Issue #245: verify before repair — detect violations in the raw image.
+        allocator::verify_block_states( base, hdr, result );
+        allocator::verify_linked_list( base, hdr, result );
+        allocator::verify_counters( base, hdr, result );
+        // Mark repair actions for any violations found above.
+        for ( std::size_t i = 0; i < result.entry_count; ++i )
+            result.entries[i].action = DiagnosticAction::Repaired;
+        // Repair phase (same as before).
         hdr->owns_memory     = false;
         hdr->prev_total_size = 0;
         allocator::repair_linked_list( base, hdr );
@@ -6764,7 +6968,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _initialized = false;
             return false;
         }
-        if ( !validate_bootstrap_invariants_unlocked() ) // Issue #241
+        if ( !validate_bootstrap_invariants_unlocked() )
         {
             _initialized = false;
             return false;
@@ -7468,6 +7672,23 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return _initialized.load( std::memory_order_relaxed )
                    ? static_cast<std::size_t>( get_header_c( _backend.base_ptr() )->alloc_count )
                    : 0;
+    }
+
+    // ─── Verify / Repair (Issue #245) ───────────────────────────────────────────
+
+    /// @brief Read-only structural diagnostics. Returns violations without modifying image.
+    /// @return VerifyResult with ok=true if no violations, false otherwise.
+    static VerifyResult verify() noexcept
+    {
+        VerifyResult                             result;
+        typename thread_policy::shared_lock_type lock( _mutex );
+        if ( !_initialized || _backend.base_ptr() == nullptr )
+        {
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted );
+            return result;
+        }
+        verify_image_unlocked( result );
+        return result;
     }
 
     // ─── Итерация по блокам ────────────────────────────────────────────────────
@@ -8187,6 +8408,99 @@ static void for_each_free_block_inorder( const std::uint8_t* base, const detail:
 
     // Visit right subtree (larger blocks)
     for_each_free_block_inorder( base, hdr, right_off, depth + 1, callback );
+}
+
+    // Verify/repair methods — extracted to verify_repair_mixin.inc (Issue #245).
+// ─── Verify / Repair mixin (Issue #245) ──────────────────────────────────────
+// Included inside PersistMemoryManager<ConfigT, InstanceId> private section.
+// Provides verify_image_unlocked() — read-only structural diagnostics.
+
+/**
+ * @brief Verify structural integrity of the loaded image without modifications (Issue #245).
+ *
+ * Performs read-only checks on:
+ *   1. Block state consistency (weight/root_offset mismatches)
+ *   2. Linked list prev_offset correctness
+ *   3. Counter consistency (block_count, free_count, alloc_count, used_size)
+ *   4. Forest registry and system domain presence/flags
+ *
+ * @param result  VerifyResult to populate with diagnostic entries.
+ */
+static void verify_image_unlocked( VerifyResult& result ) noexcept
+{
+    result.mode = RecoveryMode::Verify;
+    result.ok   = true;
+
+    const std::uint8_t*                          base = _backend.base_ptr();
+    const detail::ManagerHeader<address_traits>* hdr  = get_header_c( base );
+
+    // 1. Header validation
+    if ( hdr->magic != kMagic )
+    {
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, static_cast<std::uint64_t>( kMagic ),
+                    static_cast<std::uint64_t>( hdr->magic ) );
+        return; // Cannot proceed
+    }
+    if ( hdr->total_size != _backend.total_size() )
+    {
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, _backend.total_size(),
+                    static_cast<std::uint64_t>( hdr->total_size ) );
+    }
+    if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
+    {
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, address_traits::granule_size,
+                    static_cast<std::uint64_t>( hdr->granule_size ) );
+    }
+
+    // 2. Block state consistency (transitional states)
+    allocator::verify_block_states( base, hdr, result );
+
+    // 3. Linked list prev_offset
+    allocator::verify_linked_list( base, hdr, result );
+
+    // 4. Counter consistency
+    allocator::verify_counters( base, hdr, result );
+
+    // 5. Forest registry validation
+    verify_forest_registry_unlocked( result );
+}
+
+/**
+ * @brief Verify forest registry and system domain integrity (Issue #245).
+ *
+ * @param result  VerifyResult to populate with diagnostic entries.
+ */
+static void verify_forest_registry_unlocked( VerifyResult& result ) noexcept
+{
+    const forest_registry* reg = forest_registry_root_unlocked();
+    if ( reg == nullptr )
+    {
+        result.add( ViolationType::ForestRegistryMissing, DiagnosticAction::NoAction );
+        return;
+    }
+    if ( reg->magic != detail::kForestRegistryMagic || reg->version != detail::kForestRegistryVersion )
+    {
+        result.add( ViolationType::ForestRegistryMissing, DiagnosticAction::NoAction, 0,
+                    static_cast<std::uint64_t>( detail::kForestRegistryMagic ),
+                    static_cast<std::uint64_t>( reg->magic ) );
+        return;
+    }
+
+    static constexpr const char* kRequired[] = { detail::kSystemDomainFreeTree, detail::kSystemDomainSymbols,
+                                                 detail::kSystemDomainRegistry };
+    for ( const char* name : kRequired )
+    {
+        const forest_domain* rec = find_domain_by_name_unlocked( name );
+        if ( rec == nullptr )
+        {
+            result.add( ViolationType::ForestDomainMissing, DiagnosticAction::NoAction );
+            continue;
+        }
+        if ( ( rec->flags & detail::kForestDomainFlagSystem ) == 0 )
+        {
+            result.add( ViolationType::ForestDomainFlagsMissing, DiagnosticAction::NoAction );
+        }
+    }
 }
 
     /// @brief Find the mutable block header for a user-data pointer (or nullptr).

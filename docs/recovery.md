@@ -353,7 +353,44 @@ pmm::load_manager_from_file<Mgr>("heap.pmm");
 
 ## Валидация целостности
 
-### Метод validate()
+### Режимы verify и repair (Issue #245)
+
+Начиная с Issue #245, библиотека предоставляет два явных режима:
+
+- **verify** (`Mgr::verify()`) — только диагностика, без модификации образа.
+  Возвращает `VerifyResult` с типами нарушений, affected blocks, и actions.
+- **repair** (`load(VerifyResult&)`) — диагностика + исправление с отчётностью.
+  Каждое исправление документируется в `VerifyResult`.
+
+```cpp
+// Verify — read-only diagnostics
+pmm::VerifyResult result = Mgr::verify();
+if (!result.ok) {
+    for (std::size_t i = 0; i < result.entry_count; ++i) {
+        auto& e = result.entries[i];
+        // e.type — тип нарушения (BlockStateInconsistent, PrevOffsetMismatch, ...)
+        // e.block_index — индекс затронутого блока
+        // e.expected, e.actual — ожидаемое и фактическое значение
+    }
+}
+
+// Load with repair reporting
+pmm::VerifyResult repair_result;
+bool ok = Mgr::load(repair_result);
+// repair_result содержит все обнаруженные нарушения и действия (Repaired/Rebuilt)
+```
+
+Типы нарушений (`ViolationType`):
+- `BlockStateInconsistent` — weight/root_offset mismatch
+- `PrevOffsetMismatch` — prev_offset не соответствует ожидаемому
+- `CounterMismatch` — счётчики не совпадают с пересчитанными
+- `FreeTreeStale` — AVL-дерево свободных блоков требует перестройки
+- `ForestRegistryMissing` — реестр доменов не найден
+- `ForestDomainMissing` — системный домен отсутствует
+- `ForestDomainFlagsMissing` — системный домен без required flags
+- `HeaderCorruption` — повреждение заголовка (magic, granule_size, total_size)
+
+### Метод validate() (legacy)
 
 `validate()` проверяет структурную целостность образа без его модификации:
 

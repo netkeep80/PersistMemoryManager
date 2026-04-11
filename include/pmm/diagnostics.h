@@ -49,20 +49,20 @@ enum class ViolationType : std::uint8_t
 /// @brief Action taken (or that would be taken) for a violation.
 enum class DiagnosticAction : std::uint8_t
 {
-    NoAction = 0,   ///< No action (verify mode or no fix available).
-    Repaired,       ///< Field was repaired to correct value.
-    Rebuilt,        ///< Structure was rebuilt from scratch (AVL tree, counters).
-    Aborted,        ///< Recovery aborted — corruption too severe.
+    NoAction = 0, ///< No action (verify mode or no fix available).
+    Repaired,     ///< Field was repaired to correct value.
+    Rebuilt,      ///< Structure was rebuilt from scratch (AVL tree, counters).
+    Aborted,      ///< Recovery aborted — corruption too severe.
 };
 
 /// @brief A single diagnostic entry describing one violation.
 struct DiagnosticEntry
 {
-    ViolationType  type   = ViolationType::None;     ///< Kind of violation.
-    DiagnosticAction action = DiagnosticAction::NoAction; ///< Action taken/proposed.
-    std::uint64_t  block_index = 0;                  ///< Affected block granule index (0 if N/A).
-    std::uint64_t  expected    = 0;                  ///< Expected value (interpretation depends on type).
-    std::uint64_t  actual      = 0;                  ///< Actual value found.
+    ViolationType    type        = ViolationType::None;        ///< Kind of violation.
+    DiagnosticAction action      = DiagnosticAction::NoAction; ///< Action taken/proposed.
+    std::uint64_t    block_index = 0;                          ///< Affected block granule index (0 if N/A).
+    std::uint64_t    expected    = 0;                          ///< Expected value (interpretation depends on type).
+    std::uint64_t    actual      = 0;                          ///< Actual value found.
 };
 
 /// @brief Maximum number of diagnostic entries stored in a VerifyResult.
@@ -87,8 +87,8 @@ struct VerifyResult
     std::size_t entry_count = 0;
 
     /// @brief Add a diagnostic entry. Thread-unsafe — caller holds lock.
-    void add( ViolationType type, DiagnosticAction action, std::uint64_t block_index = 0,
-              std::uint64_t expected = 0, std::uint64_t actual = 0 ) noexcept
+    void add( ViolationType type, DiagnosticAction action, std::uint64_t block_index = 0, std::uint64_t expected = 0,
+              std::uint64_t actual = 0 ) noexcept
     {
         ok = false;
         violation_count++;
