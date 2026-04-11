@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.49.2] - 2026-04-11
+
+### Changed
+- Removed 750+ historical issue references (`Issue #N`, `TODO for issue #N`, etc.) from code comments, Doxygen tags, and canonical documentation
+- Added `docs/comment_policy.md` defining the four allowed comment types (invariant, persistence contract, safety note, design note) and prohibited patterns
+- Updated `CONTRIBUTING.md` with comment policy rules to prevent re-accumulation of historical noise
+
+
 ## [0.49.1] - 2026-04-11
 
 ### Added
