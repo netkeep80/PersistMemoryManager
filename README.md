@@ -795,18 +795,18 @@ PersistMemoryManager/
 │   └── pmm/                          # Модульные заголовки
 │       ├── persist_memory_manager.h  # Главный класс менеджера
 │       ├── pptr.h                    # Персистентный указатель
-│       ├── pstring.h                 # Мутабельная строка (v0.27.0)
-│       ├── pstringview.h             # Интернированная строка (v0.11.0)
-│       ├── pmap.h                    # AVL-словарь (v0.12.0)
-│       ├── parray.h                  # Массив с O(1) индексацией (v0.27.0)
-│       ├── pallocator.h              # STL-совместимый аллокатор (v0.31.0)
-│       ├── ppool.h                   # Пул объектов с O(1) аллокацией (v0.32.0)
-│       ├── avl_tree_mixin.h          # Общие AVL-хелперы (v0.13.0)
+│       ├── pstring.h                 # Мутабельная строка
+│       ├── pstringview.h             # Интернированная строка
+│       ├── pmap.h                    # AVL-словарь
+│       ├── parray.h                  # Массив с O(1) индексацией
+│       ├── pallocator.h              # STL-совместимый аллокатор
+│       ├── ppool.h                   # Пул объектов с O(1) аллокацией
+│       ├── avl_tree_mixin.h          # Общие AVL-хелперы
 │       ├── pmm_presets.h             # Алиасы пресетов
 │       ├── manager_configs.h         # Конфигурации
 │       ├── address_traits.h          # Address traits (Small/Default/Large)
 │       ├── config.h                  # Политики блокировки
-│       ├── logging_policy.h          # Политики логирования (v0.35.0)
+│       ├── logging_policy.h          # Политики логирования
 │       ├── heap_storage.h            # malloc-бэкенд
 │       ├── mmap_storage.h            # mmap-бэкенд
 │       ├── static_storage.h          # Статический бэкенд
@@ -821,60 +821,27 @@ PersistMemoryManager/
 │       └── manager_concept.h         # C++20 concepts
 ├── single_include/
 │   └── pmm/                          # Single-header файлы
-│       ├── pmm.h                     # Полная библиотека (v0.10.0)
+│       ├── pmm.h                     # Полная библиотека
 │       └── pmm_*.h                   # Файлы пресетов
 ├── benchmarks/                       # Бенчмарки Google Benchmark
 ├── examples/                         # Примеры использования
 ├── tests/                            # Тесты Catch2 (160+)
 ├── demo/                             # Визуальное ImGui/OpenGL демо
-├── docs/                             # Архитектура, API, план развития
-│   ├── plan.md                       # План развития pmm
+├── docs/                             # Документация (index.md — точка входа)
+│   ├── index.md                      # Единый навигатор документации
 │   ├── pmm_avl_forest.md             # Каноническая forest-модель PMM
-│   ├── block_and_treenode_semantics.md # Каноническая семантика полей Block/TreeNode
+│   ├── block_and_treenode_semantics.md # Семантика полей Block/TreeNode
 │   ├── architecture.md               # Архитектура и внутреннее устройство
 │   ├── api_reference.md              # Справочник API (Markdown)
-│   ├── thread_safety.md              # Потокобезопасность
+│   ├── bootstrap.md                  # Инициализация ПАП
+│   ├── free_tree_forest_policy.md    # Политика free-tree
 │   ├── recovery.md                   # Восстановление после сбоев
-│   ├── phase3_types.md               # Фаза 3: типы для BinDiffSynchronizer
-│   ├── phase6_documentation.md       # Фаза 6: документация и рефакторинг
-│   └── plan4BinDiffSynchronizer.md   # План миграции BinDiffSynchronizer
+│   ├── atomic_writes.md              # Атомарные записи и машина состояний
+│   ├── thread_safety.md              # Потокобезопасность
+│   └── archive/                      # Исторические и фазовые документы
 ├── scripts/                          # Утилиты для релиза
 └── CMakeLists.txt
 ```
-
-## План развития
-
-Полный план развития: [docs/plan.md](docs/plan.md)
-
-**Фаза 3 (завершена)** — типы для [BinDiffSynchronizer](https://github.com/netkeep80/BinDiffSynchronizer):
-
-- ~~`pstring<ManagerT>` — мутабельная персистентная строка~~ ✅ (#45)
-- ~~`parray<T, ManagerT>` — массив с O(1) индексацией~~ ✅ (#195)
-- ~~`pmap::erase()` — удаление из словаря~~ ✅ (#196)
-- ~~`pallocator<T>` — STL-совместимый аллокатор~~ ✅ (#198)
-- ~~`ppool<T>` — пул объектов~~ ✅ (#199)
-- ~~`set_root<T>()` / `get_root<T>()` — корневой объект в ManagerHeader~~ ✅ (#200)
-
-**Фаза 4 (завершена)** — API и удобство использования:
-
-- ~~`PmmError` — коды ошибок вместо bool~~ ✅ (#201)
-- ~~Хуки логирования~~ ✅ (#202)
-- ~~`reallocate_typed<T>()` — нативное перераспределение~~ ✅ (#210)
-- ~~Конверсия pptr ↔ байтовые смещения~~ ✅ (#211)
-
-**Фаза 5 (завершена)** — Тестирование и качество:
-
-- ~~Миграция на Catch2~~ ✅ (#212)
-- ~~Расширение покрытия тестами (overflow, concurrent, fuzz)~~ ✅ (#213)
-- ~~Бенчмарки производительности (Google Benchmark)~~ ✅ (#214)
-
-**Фаза 6 (в процессе)** — Документация и рефакторинг:
-
-- ~~Документация потокобезопасности~~ ✅ (#215)
-- ~~Документация восстановления после сбоев~~ ✅ (#216)
-- ~~Устранение дублирования кода (метапрограммирование)~~ ✅ (#188)
-
-План миграции BinDiffSynchronizer: [docs/plan4BinDiffSynchronizer.md](docs/plan4BinDiffSynchronizer.md)
 
 ## Контрибьюция
 
@@ -899,16 +866,17 @@ cmake -B build && cmake --build build && ctest --test-dir build
 
 ## Документация
 
+Полный указатель: **[docs/index.md](docs/index.md)**
+
 - [API Reference (Doxygen)](https://netkeep80.github.io/PersistMemoryManager/)
-- [PMM AVL-Forest](docs/pmm_avl_forest.md)
-- [Block and TreeNode Semantics](docs/block_and_treenode_semantics.md)
-- [Архитектура](docs/architecture.md)
-- [API Reference (Markdown)](docs/api_reference.md)
+- [PMM AVL-Forest](docs/pmm_avl_forest.md) — каноническая архитектурная модель
+- [Block and TreeNode Semantics](docs/block_and_treenode_semantics.md) — семантика полей
+- [Архитектура](docs/architecture.md) — слои, layout, алгоритмы
+- [API Reference (Markdown)](docs/api_reference.md) — справочник API
+- [Bootstrap](docs/bootstrap.md) — инициализация ПАП
+- [Recovery](docs/recovery.md) — восстановление после сбоев
+- [Thread Safety](docs/thread_safety.md) — потокобезопасность
 - [Changelog](CHANGELOG.md)
-- [Потокобезопасность](docs/thread_safety.md)
-- [Восстановление после сбоев](docs/recovery.md)
-- [План развития](docs/plan.md)
-- [План миграции BinDiffSynchronizer](docs/plan4BinDiffSynchronizer.md)
 
 ## Лицензия
 
