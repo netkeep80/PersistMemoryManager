@@ -23,10 +23,11 @@ TEST_CASE( "free_block_has_zero_size", "[test_avl_allocator]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( size ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     // Immediately after creation: 1 free block
     REQUIRE( pmm.free_block_count() == 1 );
-    REQUIRE( pmm.alloc_block_count() == 1 ); // BlockHeader_0
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }
@@ -76,6 +77,7 @@ TEST_CASE( "avl_integrity_stress", "[test_avl_allocator]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( size ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     static const int        N = 50;
     Mgr::pptr<std::uint8_t> ptrs[N];
@@ -100,9 +102,9 @@ TEST_CASE( "avl_integrity_stress", "[test_avl_allocator]" )
         REQUIRE( pmm.is_initialized() );
     }
 
-    // After full release: should have 1 free block and BlockHeader_0 allocated
+    // After full release: should have 1 free block and system blocks allocated
     REQUIRE( pmm.free_block_count() == 1 );
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }
@@ -151,6 +153,7 @@ TEST_CASE( "block_count_consistency", "[test_avl_allocator]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( size ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     Mgr::pptr<std::uint8_t> p1 = pmm.allocate_typed<std::uint8_t>( 256 );
     Mgr::pptr<std::uint8_t> p2 = pmm.allocate_typed<std::uint8_t>( 512 );
@@ -159,8 +162,8 @@ TEST_CASE( "block_count_consistency", "[test_avl_allocator]" )
     // block_count = alloc_count + free_count
     REQUIRE( pmm.block_count() == pmm.alloc_block_count() + pmm.free_block_count() );
 
-    // Issue #75: 2 user blocks + BlockHeader_0 = 3 alloc blocks
-    REQUIRE( pmm.alloc_block_count() == 3 );
+    // 2 user blocks + system blocks
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc + 2 );
     REQUIRE( pmm.is_initialized() );
 
     pmm.deallocate_typed( p1 );
@@ -301,20 +304,21 @@ TEST_CASE( "block_count_after_dealloc", "[test_avl_allocator]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( size ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
-    // Fresh: 1 alloc (BlockHeader_0) + 1 free
-    REQUIRE( pmm.alloc_block_count() == 1 );
+    // Fresh: system blocks alloc + 1 free
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
     REQUIRE( pmm.free_block_count() == 1 );
 
     Mgr::pptr<std::uint32_t> p = pmm.allocate_typed<std::uint32_t>( 4 );
     REQUIRE( !p.is_null() );
-    REQUIRE( pmm.alloc_block_count() == 2 ); // BlockHeader_0 + p
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc + 1 ); // system + p
 
     pmm.deallocate_typed( p );
     REQUIRE( pmm.is_initialized() );
 
-    // After dealloc: back to 1 alloc + 1 free (coalesced)
-    REQUIRE( pmm.alloc_block_count() == 1 ); // only BlockHeader_0
+    // After dealloc: back to system blocks + 1 free (coalesced)
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc ); // only system blocks
     REQUIRE( pmm.free_block_count() == 1 );
 
     pmm.destroy();

@@ -60,18 +60,19 @@ TEST_CASE( "FR-04/AR-01: instance_api", "[test_issue73_refactoring]" )
 {
     REQUIRE( Mgr::create( 64 * 1024 ) );
     REQUIRE( Mgr::is_initialized() );
+    const auto baseline_alloc = Mgr::alloc_block_count();
 
-    REQUIRE( Mgr::alloc_block_count() > 0 ); // Block_0
+    REQUIRE( Mgr::alloc_block_count() > 0 ); // system blocks
     REQUIRE( Mgr::free_block_count() == 1 );
-    REQUIRE( Mgr::alloc_block_count() == 1 ); // Block_0
+    REQUIRE( Mgr::alloc_block_count() == baseline_alloc ); // system blocks
 
     Mgr::pptr<std::uint8_t> p = Mgr::allocate_typed<std::uint8_t>( 128 );
     REQUIRE( !p.is_null() );
 
-    REQUIRE( Mgr::alloc_block_count() == 2 ); // Block_0 + p
+    REQUIRE( Mgr::alloc_block_count() == baseline_alloc + 1 ); // system + p
 
     Mgr::deallocate_typed( p );
-    REQUIRE( Mgr::alloc_block_count() == 1 ); // Block_0 only
+    REQUIRE( Mgr::alloc_block_count() == baseline_alloc ); // system only
     Mgr::destroy();
 }
 
@@ -83,6 +84,7 @@ TEST_CASE( "FR-04/AR-01: two_instances_independent", "[test_issue73_refactoring]
 
     REQUIRE( Mgr1::create( 64 * 1024 ) );
     REQUIRE( Mgr2::create( 64 * 1024 ) );
+    const auto baseline_alloc2 = Mgr2::alloc_block_count();
 
     REQUIRE( Mgr1::is_initialized() );
     REQUIRE( Mgr2::is_initialized() );
@@ -93,7 +95,7 @@ TEST_CASE( "FR-04/AR-01: two_instances_independent", "[test_issue73_refactoring]
 
     Mgr1::pptr<std::uint32_t> p1 = Mgr1::allocate_typed<std::uint32_t>( 4 );
     REQUIRE( !p1.is_null() );
-    REQUIRE( Mgr2::alloc_block_count() == 1 ); // Mgr2 unaffected
+    REQUIRE( Mgr2::alloc_block_count() == baseline_alloc2 ); // Mgr2 unaffected
 
     Mgr1::deallocate_typed( p1 );
     Mgr1::destroy();

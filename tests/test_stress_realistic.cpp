@@ -64,6 +64,7 @@ TEST_CASE( "stress realistic", "[test_stress_realistic]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( memory_size ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     Rng rng( 12345 );
 
@@ -234,7 +235,7 @@ TEST_CASE( "stress realistic", "[test_stress_realistic]" )
 
         REQUIRE( live.empty() );
         REQUIRE( pmm.is_initialized() );
-        REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+        REQUIRE( pmm.alloc_block_count() == baseline_alloc );
     }
 
     double total_ms = elapsed_ms( total_start, now() );

@@ -108,6 +108,7 @@ TEST_CASE( "alloc/dealloc validate", "[test_performance]" )
     Mgr pmm;
     REQUIRE( pmm.create( MEMORY_SIZE ) );
     REQUIRE( pmm.is_initialized() );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     const int                            N = 1000;
     std::vector<Mgr::pptr<std::uint8_t>> ptrs( N );
@@ -124,7 +125,7 @@ TEST_CASE( "alloc/dealloc validate", "[test_performance]" )
 
     REQUIRE( pmm.is_initialized() );
     REQUIRE( pmm.free_block_count() == 1 );
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }
@@ -135,6 +136,7 @@ TEST_CASE( "memory reuse", "[test_performance]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( MEMORY_SIZE ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     const int                            N = 100;
     std::vector<Mgr::pptr<std::uint8_t>> ptrs( N );
@@ -169,7 +171,7 @@ TEST_CASE( "memory reuse", "[test_performance]" )
     }
 
     REQUIRE( pmm.is_initialized() );
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }
@@ -181,6 +183,7 @@ TEST_CASE( "free list after load", "[test_performance]" )
 
     Mgr pmm1;
     REQUIRE( pmm1.create( MEMORY_SIZE ) );
+    const auto baseline_alloc = pmm1.alloc_block_count();
 
     Mgr::pptr<std::uint8_t> p1 = pmm1.allocate_typed<std::uint8_t>( 64 );
     Mgr::pptr<std::uint8_t> p2 = pmm1.allocate_typed<std::uint8_t>( 128 );
@@ -213,7 +216,7 @@ TEST_CASE( "free list after load", "[test_performance]" )
     pmm2.deallocate_typed( p4 );
 
     REQUIRE( pmm2.is_initialized() );
-    REQUIRE( pmm2.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm2.alloc_block_count() == baseline_alloc );
 
     pmm2.destroy();
     std::remove( TEST_FILE );
@@ -271,6 +274,7 @@ TEST_CASE( "full coalesce after alloc/dealloc", "[test_performance]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( MEMORY_SIZE ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     const int                            N = 500;
     std::vector<Mgr::pptr<std::uint8_t>> ptrs( N );
@@ -287,7 +291,7 @@ TEST_CASE( "full coalesce after alloc/dealloc", "[test_performance]" )
         pmm.deallocate_typed( ptrs[i] );
 
     REQUIRE( pmm.is_initialized() );
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
     REQUIRE( pmm.free_block_count() == 1 );
 
     REQUIRE( pmm.free_size() > 0 );

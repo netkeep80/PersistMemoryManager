@@ -142,6 +142,7 @@ TEST_CASE( "coalesce_first_block_no_next_free", "[test_coalesce]" )
 TEST_CASE( "coalesce_zero_fragmentation_after_all_free", "[test_coalesce]" )
 {
     REQUIRE( Mgr::create( 256 * 1024 ) );
+    const auto baseline_alloc = Mgr::alloc_block_count();
 
     const int               N = 8;
     Mgr::pptr<std::uint8_t> ptrs[N];
@@ -160,8 +161,8 @@ TEST_CASE( "coalesce_zero_fragmentation_after_all_free", "[test_coalesce]" )
         Mgr::deallocate_typed( ptrs[i] );
 
     REQUIRE( Mgr::free_block_count() == 1 );
-    REQUIRE( Mgr::block_count() == 2 );
-    REQUIRE( Mgr::alloc_block_count() == 1 );
+    REQUIRE( Mgr::block_count() == baseline_alloc + 1 );
+    REQUIRE( Mgr::alloc_block_count() == baseline_alloc );
 
     Mgr::destroy();
 }
@@ -169,6 +170,7 @@ TEST_CASE( "coalesce_zero_fragmentation_after_all_free", "[test_coalesce]" )
 TEST_CASE( "coalesce_lifo_results_in_one_block", "[test_coalesce]" )
 {
     REQUIRE( Mgr::create( 128 * 1024 ) );
+    const auto baseline_alloc = Mgr::alloc_block_count();
 
     const int               N = 5;
     Mgr::pptr<std::uint8_t> ptrs[N];
@@ -181,7 +183,7 @@ TEST_CASE( "coalesce_lifo_results_in_one_block", "[test_coalesce]" )
     for ( int i = N - 1; i >= 0; i-- )
         Mgr::deallocate_typed( ptrs[i] );
 
-    REQUIRE( Mgr::block_count() == 2 );
+    REQUIRE( Mgr::block_count() == baseline_alloc + 1 );
     REQUIRE( Mgr::free_block_count() == 1 );
 
     Mgr::destroy();
@@ -190,6 +192,7 @@ TEST_CASE( "coalesce_lifo_results_in_one_block", "[test_coalesce]" )
 TEST_CASE( "coalesce_fifo_results_in_one_block", "[test_coalesce]" )
 {
     REQUIRE( Mgr::create( 128 * 1024 ) );
+    const auto baseline_alloc = Mgr::alloc_block_count();
 
     const int               N = 5;
     Mgr::pptr<std::uint8_t> ptrs[N];
@@ -202,7 +205,7 @@ TEST_CASE( "coalesce_fifo_results_in_one_block", "[test_coalesce]" )
     for ( int i = 0; i < N; i++ )
         Mgr::deallocate_typed( ptrs[i] );
 
-    REQUIRE( Mgr::block_count() == 2 );
+    REQUIRE( Mgr::block_count() == baseline_alloc + 1 );
     REQUIRE( Mgr::free_block_count() == 1 );
 
     Mgr::destroy();

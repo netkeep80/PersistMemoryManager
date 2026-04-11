@@ -22,16 +22,16 @@ TEST_CASE( "test_issue146_sh_small_embedded_static", "[test_issue146_sh_small_em
 {
     // SmallEmbeddedStaticHeap uses InstanceId=0 with default 1024-byte buffer.
     // We use a custom manager to avoid conflicts with other tests sharing InstanceId=0.
-    using SESH = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<1024>, 1466>;
+    using SESH = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<4096>, 1466>;
 
     // Verify 16-bit index size at compile time
     static_assert( sizeof( SESH::pptr<int> ) == 2, "SmallEmbeddedStaticHeap pptr<int> must be 2 bytes (16-bit index)" );
 
     REQUIRE( !SESH::is_initialized() );
-    bool created = SESH::create( 1024 );
+    bool created = SESH::create( 4096 );
     REQUIRE( created );
     REQUIRE( SESH::is_initialized() );
-    REQUIRE( SESH::total_size() == 1024 );
+    REQUIRE( SESH::total_size() == 4096 );
 
     void* ptr = SESH::allocate( 32 );
     REQUIRE( ptr != nullptr );

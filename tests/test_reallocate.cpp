@@ -300,6 +300,7 @@ TEST_CASE( "manual_grow_multiple_blocks_independent", "[test_reallocate]" )
     const std::size_t size = 512 * 1024;
     Mgr               pmm;
     REQUIRE( pmm.create( size ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     const int               N = 8;
     Mgr::pptr<std::uint8_t> ptrs[N];
@@ -325,6 +326,6 @@ TEST_CASE( "manual_grow_multiple_blocks_independent", "[test_reallocate]" )
     for ( int i = 0; i < N; ++i )
         pmm.deallocate_typed( ptrs[i] );
 
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
     pmm.destroy();
 }

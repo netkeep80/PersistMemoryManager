@@ -5,7 +5,7 @@
 
 #include <cstdio>
 
-using ForestMgr       = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 240>;
+using ForestMgr        = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 240>;
 using ForestPersistMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 241>;
 
 TEST_CASE( "forest registry bootstraps system domains", "[test_forest_registry]" )
@@ -30,9 +30,12 @@ TEST_CASE( "forest registry bootstraps system domains", "[test_forest_registry]"
              ForestMgr::get_domain_root_offset( pmm::detail::kSystemDomainFreeTree ) );
     REQUIRE( ForestMgr::get_domain_root_offset( pmm::detail::kSystemDomainSymbols ) != 0 );
 
-    ForestMgr::pptr<ForestMgr::pstringview> symbols_domain_symbol = ForestMgr::pstringview( pmm::detail::kSystemDomainSymbols );
-    ForestMgr::pptr<ForestMgr::pstringview> free_domain_symbol    = ForestMgr::pstringview( pmm::detail::kSystemDomainFreeTree );
-    ForestMgr::pptr<ForestMgr::pstringview> registry_symbol = ForestMgr::pstringview( pmm::detail::kSystemDomainRegistry );
+    ForestMgr::pptr<ForestMgr::pstringview> symbols_domain_symbol =
+        ForestMgr::pstringview( pmm::detail::kSystemDomainSymbols );
+    ForestMgr::pptr<ForestMgr::pstringview> free_domain_symbol =
+        ForestMgr::pstringview( pmm::detail::kSystemDomainFreeTree );
+    ForestMgr::pptr<ForestMgr::pstringview> registry_symbol =
+        ForestMgr::pstringview( pmm::detail::kSystemDomainRegistry );
     REQUIRE( !symbols_domain_symbol.is_null() );
     REQUIRE( !free_domain_symbol.is_null() );
     REQUIRE( !registry_symbol.is_null() );
@@ -118,8 +121,10 @@ TEST_CASE( "forest registry persists user domains and legacy root", "[test_fores
     ForestPersistMgr::pptr<ForestPersistMgr::pstringview> registry_type_after =
         ForestPersistMgr::pstringview( pmm::detail::kSystemTypeForestRegistry );
     REQUIRE( !registry_type_after.is_null() );
-    REQUIRE( ForestPersistMgr::find_domain_by_symbol( ForestPersistMgr::pstringview( pmm::detail::kSystemDomainSymbols ) ) != 0 );
-    REQUIRE( ForestPersistMgr::find_domain_by_symbol( ForestPersistMgr::pstringview( pmm::detail::kSystemDomainRegistry ) ) != 0 );
+    REQUIRE( ForestPersistMgr::find_domain_by_symbol(
+                 ForestPersistMgr::pstringview( pmm::detail::kSystemDomainSymbols ) ) != 0 );
+    REQUIRE( ForestPersistMgr::find_domain_by_symbol(
+                 ForestPersistMgr::pstringview( pmm::detail::kSystemDomainRegistry ) ) != 0 );
 
     ForestPersistMgr::destroy();
     std::remove( filename );

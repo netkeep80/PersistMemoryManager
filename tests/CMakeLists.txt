@@ -261,3 +261,6 @@ set_tests_properties(test_issue213_fuzz PROPERTIES TIMEOUT 120)
 
 # Persistent forest/domain registry coverage
 pmm_add_test(test_forest_registry test_forest_registry.cpp)
+
+# ─── Bootstrap invariant verification (Issue #241) ────────────────────────────
+pmm_add_test(test_issue241_bootstrap test_issue241_bootstrap.cpp)

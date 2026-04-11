@@ -132,6 +132,7 @@ TEST_CASE( "P6-B4: coalesce() merges adjacent free blocks", "[test_issue87_phase
 {
     Mgr pmm;
     REQUIRE( pmm.create( 8192 ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     // Allocate two blocks side-by-side
     auto p1 = pmm.allocate_typed<std::uint8_t>( 32 );
@@ -146,7 +147,7 @@ TEST_CASE( "P6-B4: coalesce() merges adjacent free blocks", "[test_issue87_phase
 
     // After coalesce, block count should be <= before (merged blocks disappear)
     REQUIRE( pmm.block_count() <= block_count_before );
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }

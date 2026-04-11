@@ -290,6 +290,7 @@ TEST_CASE( "    Multiple alloc/dealloc with state checks", "[test_issue106_block
 {
     Mgr pmm;
     REQUIRE( pmm.create( 64 * 1024 ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     // Allocate several blocks
     constexpr int N = 5;
@@ -311,9 +312,9 @@ TEST_CASE( "    Multiple alloc/dealloc with state checks", "[test_issue106_block
         pmm.deallocate( ptrs[i] );
     }
 
-    // After all deallocations, only the header block should remain allocated
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Only BlockHeader_0
-    REQUIRE( pmm.free_block_count() == 1 );  // All merged into one free block
+    // After all deallocations, only system blocks should remain allocated
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
+    REQUIRE( pmm.free_block_count() == 1 ); // All merged into one free block
 
     pmm.destroy();
 }
@@ -325,6 +326,7 @@ TEST_CASE( "    Split creates valid FreeBlock remainder", "[test_issue106_block_
 {
     Mgr pmm;
     REQUIRE( pmm.create( 64 * 1024 ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     // Initial state: 1 large free block
     REQUIRE( pmm.free_block_count() == 1 );
@@ -333,8 +335,8 @@ TEST_CASE( "    Split creates valid FreeBlock remainder", "[test_issue106_block_
     void* raw = pmm.allocate( 16 ); // 1 data granule = minimum
     REQUIRE( raw != nullptr );
 
-    // After allocation, should have 2 blocks (allocated + remainder free)
-    REQUIRE( pmm.block_count() == 3 ); // BlockHeader_0 + allocated + free remainder
+    // After allocation, should have system blocks + allocated + free remainder
+    REQUIRE( pmm.block_count() == baseline_alloc + 2 );
 
     pmm::Block<A>* blk = block_of( pmm, raw );
     std::uint32_t  idx = blk_idx_of( pmm, blk );

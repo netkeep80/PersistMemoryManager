@@ -65,6 +65,7 @@ TEST_CASE( "persistence_user_data_preserved", "[test_persistence]" )
     const std::size_t size = 64 * 1024;
 
     REQUIRE( Mgr1::create( size ) );
+    const auto baseline_alloc = Mgr1::alloc_block_count();
 
     const std::size_t        data_size = 256;
     Mgr1::pptr<std::uint8_t> ptr1      = Mgr1::allocate_typed<std::uint8_t>( data_size );
@@ -81,8 +82,8 @@ TEST_CASE( "persistence_user_data_preserved", "[test_persistence]" )
     REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
     REQUIRE( Mgr2::is_initialized() );
 
-    // Issue #75: 1 user block + BlockHeader_0
-    REQUIRE( Mgr2::alloc_block_count() == 2 );
+    // Issue #75: 1 user block + system blocks
+    REQUIRE( Mgr2::alloc_block_count() == baseline_alloc + 1 );
 
     // Recover pptr by saved offset
     Mgr2::pptr<std::uint8_t> ptr2( saved_offset );
@@ -144,6 +145,7 @@ TEST_CASE( "persistence_allocate_after_load", "[test_persistence]" )
     const std::size_t size = 64 * 1024;
 
     REQUIRE( Mgr1::create( size ) );
+    const auto baseline_alloc = Mgr1::alloc_block_count();
 
     Mgr1::pptr<std::uint8_t> p1 = Mgr1::allocate_typed<std::uint8_t>( 512 );
     REQUIRE( !p1.is_null() );
@@ -158,8 +160,8 @@ TEST_CASE( "persistence_allocate_after_load", "[test_persistence]" )
     Mgr2::pptr<std::uint8_t> p2 = Mgr2::allocate_typed<std::uint8_t>( 256 );
     REQUIRE( !p2.is_null() );
 
-    // Issue #75: 1 pre-load user + 1 new user + BlockHeader_0
-    REQUIRE( Mgr2::alloc_block_count() == 3 );
+    // Issue #75: 1 pre-load user + 1 new user + system blocks
+    REQUIRE( Mgr2::alloc_block_count() == baseline_alloc + 2 );
 
     Mgr2::deallocate_typed( p2 );
 
@@ -290,6 +292,7 @@ TEST_CASE( "persistence_empty_manager", "[test_persistence]" )
     const std::size_t size = 16 * 1024;
 
     REQUIRE( Mgr1::create( size ) );
+    const auto baseline_alloc = Mgr1::alloc_block_count();
 
     std::size_t free_blocks1 = Mgr1::free_block_count();
     REQUIRE( pmm::save_manager<Mgr1>( TEST_FILE ) );
@@ -299,8 +302,8 @@ TEST_CASE( "persistence_empty_manager", "[test_persistence]" )
     REQUIRE( pmm::load_manager_from_file<Mgr2>( TEST_FILE ) );
     REQUIRE( Mgr2::is_initialized() );
 
-    // Issue #75: only BlockHeader_0 remains as allocated
-    REQUIRE( Mgr2::alloc_block_count() == 1 );
+    // Issue #75: only system blocks remain as allocated
+    REQUIRE( Mgr2::alloc_block_count() == baseline_alloc );
     REQUIRE( Mgr2::free_block_count() == free_blocks1 );
 
     Mgr2::pptr<std::uint8_t> p = Mgr2::allocate_typed<std::uint8_t>( 512 );
@@ -319,6 +322,7 @@ TEST_CASE( "persistence_deallocate_after_load", "[test_persistence]" )
     const std::size_t size = 64 * 1024;
 
     REQUIRE( Mgr1::create( size ) );
+    const auto baseline_alloc = Mgr1::alloc_block_count();
 
     Mgr1::pptr<std::uint8_t> p1 = Mgr1::allocate_typed<std::uint8_t>( 256 );
     Mgr1::pptr<std::uint8_t> p2 = Mgr1::allocate_typed<std::uint8_t>( 512 );
@@ -340,8 +344,8 @@ TEST_CASE( "persistence_deallocate_after_load", "[test_persistence]" )
     Mgr2::deallocate_typed( q1 );
     Mgr2::deallocate_typed( q2 );
 
-    // Issue #75: only BlockHeader_0 remains
-    REQUIRE( Mgr2::alloc_block_count() == 1 );
+    // Issue #75: only system blocks remain
+    REQUIRE( Mgr2::alloc_block_count() == baseline_alloc );
 
     Mgr2::destroy();
     cleanup_file();

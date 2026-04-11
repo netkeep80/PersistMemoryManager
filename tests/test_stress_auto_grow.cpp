@@ -58,6 +58,7 @@ TEST_CASE( "single expand", "[test_stress_auto_grow]" )
     const std::size_t initial_size = 64UL * 1024;
 
     REQUIRE( MgrT::create( initial_size ) );
+    const auto baseline_alloc = MgrT::alloc_block_count();
 
     const std::size_t                     block_size = 512;
     std::vector<MgrT::pptr<std::uint8_t>> ptrs;
@@ -114,7 +115,7 @@ TEST_CASE( "single expand", "[test_stress_auto_grow]" )
     ptrs.clear();
 
     REQUIRE( MgrT::is_initialized() );
-    REQUIRE( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( MgrT::alloc_block_count() == baseline_alloc );
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
@@ -129,6 +130,7 @@ TEST_CASE( "multi expand", "[test_stress_auto_grow]" )
     const std::size_t initial_size = 16 * 1024; // start small
 
     REQUIRE( MgrT::create( initial_size ) );
+    const auto baseline_alloc = MgrT::alloc_block_count();
 
     Rng rng( 7777 );
 
@@ -198,7 +200,7 @@ TEST_CASE( "multi expand", "[test_stress_auto_grow]" )
     ptrs.clear();
 
     REQUIRE( MgrT::is_initialized() );
-    REQUIRE( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( MgrT::alloc_block_count() == baseline_alloc );
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
@@ -213,6 +215,7 @@ TEST_CASE( "expand with mixed ops", "[test_stress_auto_grow]" )
     const std::size_t initial_size = 32UL * 1024;
 
     REQUIRE( MgrT::create( initial_size ) );
+    const auto baseline_alloc = MgrT::alloc_block_count();
 
     Rng rng( 31415 );
 
@@ -276,7 +279,7 @@ TEST_CASE( "expand with mixed ops", "[test_stress_auto_grow]" )
     live.clear();
 
     REQUIRE( MgrT::is_initialized() );
-    REQUIRE( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( MgrT::alloc_block_count() == baseline_alloc );
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";
@@ -343,6 +346,7 @@ TEST_CASE( "grow factor >= 25%", "[test_stress_auto_grow]" )
     const std::size_t initial_size = 8UL * 1024;
 
     REQUIRE( MgrT::create( initial_size ) );
+    const auto baseline_alloc = MgrT::alloc_block_count();
 
     auto t0 = now();
 
@@ -388,7 +392,7 @@ TEST_CASE( "grow factor >= 25%", "[test_stress_auto_grow]" )
         MgrT::deallocate_typed( p );
 
     REQUIRE( MgrT::is_initialized() );
-    REQUIRE( MgrT::alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( MgrT::alloc_block_count() == baseline_alloc );
 
     double ms = elapsed_ms( t0, now() );
     std::cout << "    Time: " << ms << " ms\n";

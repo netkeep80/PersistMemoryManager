@@ -229,12 +229,12 @@ TEST_CASE( "I175-D1: SmallAddressTraits::no_block == 0xFFFF (correct 16-bit sent
 /// @brief SmallEmbeddedStaticHeap lifecycle with uint16_t indexes.
 TEST_CASE( "I175-D2: SmallEmbeddedStaticHeap lifecycle with uint16_t indexes", "[test_issue175_64bit_indexes]" )
 {
-    using SESH = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<512>, 17510>;
+    using SESH = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<4096>, 17510>;
 
     REQUIRE( !SESH::is_initialized() );
-    REQUIRE( SESH::create( 512 ) );
+    REQUIRE( SESH::create( 4096 ) );
     REQUIRE( SESH::is_initialized() );
-    REQUIRE( SESH::total_size() == 512 );
+    REQUIRE( SESH::total_size() == 4096 );
     REQUIRE( SESH::block_count() >= 1 );
     REQUIRE( SESH::free_block_count() >= 1 );
 
@@ -250,9 +250,9 @@ TEST_CASE( "I175-D2: SmallEmbeddedStaticHeap lifecycle with uint16_t indexes", "
 /// @brief SmallEmbeddedStaticHeap: alloc/dealloc cycle preserves counter correctness.
 TEST_CASE( "I175-D3: SmallEmbeddedStaticHeap alloc/dealloc counter correctness", "[test_issue175_64bit_indexes]" )
 {
-    using SESH = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<512>, 17511>;
+    using SESH = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<4096>, 17511>;
 
-    REQUIRE( SESH::create( 512 ) );
+    REQUIRE( SESH::create( 4096 ) );
 
     std::size_t initial_free  = SESH::free_block_count();
     std::size_t initial_alloc = SESH::alloc_block_count();
@@ -280,9 +280,9 @@ TEST_CASE( "I175-D3: SmallEmbeddedStaticHeap alloc/dealloc counter correctness",
 TEST_CASE( "I175-D4: SmallEmbeddedStaticHeap typed pptr<T> with uint16_t index (2-byte pptr)",
            "[test_issue175_64bit_indexes]" )
 {
-    using SESH = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<512>, 17512>;
+    using SESH = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<4096>, 17512>;
 
-    REQUIRE( SESH::create( 512 ) );
+    REQUIRE( SESH::create( 4096 ) );
 
     // pptr<int> with uint16_t index is 2 bytes
     static_assert( sizeof( SESH::pptr<int> ) == 2, "SmallEmbeddedStaticHeap pptr<int> must be 2 bytes (16-bit index)" );
@@ -318,9 +318,9 @@ TEST_CASE( "I175-E2: LargeDBHeap lifecycle with uint64_t indexes", "[test_issue1
     using LDB = pmm::PersistMemoryManager<pmm::LargeDBConfig, 17520>;
 
     REQUIRE( !LDB::is_initialized() );
-    REQUIRE( LDB::create( 4096 ) );
+    REQUIRE( LDB::create( 16384 ) );
     REQUIRE( LDB::is_initialized() );
-    REQUIRE( LDB::total_size() == 4096 );
+    REQUIRE( LDB::total_size() == 16384 );
     REQUIRE( LDB::block_count() >= 1 );
     REQUIRE( LDB::free_block_count() >= 1 );
 
@@ -338,7 +338,7 @@ TEST_CASE( "I175-E3: LargeDBHeap typed pptr<T> with uint64_t index (8-byte pptr)
 {
     using LDB = pmm::PersistMemoryManager<pmm::LargeDBConfig, 17521>;
 
-    REQUIRE( LDB::create( 4096 ) );
+    REQUIRE( LDB::create( 16384 ) );
 
     // pptr<int> with uint64_t index is 8 bytes
     static_assert( sizeof( LDB::pptr<int> ) == 8, "LargeDBHeap pptr<int> must be 8 bytes (64-bit index)" );
@@ -357,7 +357,7 @@ TEST_CASE( "I175-E4: LargeDBHeap multiple alloc/dealloc with uint64_t indexes", 
 {
     using LDB = pmm::PersistMemoryManager<pmm::LargeDBConfig, 17522>;
 
-    REQUIRE( LDB::create( 8192 ) );
+    REQUIRE( LDB::create( 16384 ) );
 
     void* ptrs[4];
     for ( int i = 0; i < 4; ++i )

@@ -97,6 +97,7 @@ TEST_CASE( "concurrent LIFO deallocation", "[test_issue213_concurrent]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( kMemSize ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     // Pre-allocate blocks for each thread.
     std::vector<std::vector<Mgr::pptr<std::uint8_t>>> blocks( kThreads );
@@ -128,8 +129,8 @@ TEST_CASE( "concurrent LIFO deallocation", "[test_issue213_concurrent]" )
     REQUIRE( pmm.is_initialized() );
     REQUIRE( pmm.is_initialized() );
 
-    // After all frees, only the initial block should remain.
-    REQUIRE( pmm.alloc_block_count() == 1 );
+    // After all frees, only system blocks should remain.
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }
@@ -146,6 +147,7 @@ TEST_CASE( "concurrent random deallocation order", "[test_issue213_concurrent]" 
 
     Mgr pmm;
     REQUIRE( pmm.create( kMemSize ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     // Pre-allocate blocks for each thread.
     std::vector<std::vector<Mgr::pptr<std::uint8_t>>> blocks( kThreads );
@@ -186,7 +188,7 @@ TEST_CASE( "concurrent random deallocation order", "[test_issue213_concurrent]" 
 
     REQUIRE( pmm.is_initialized() );
     REQUIRE( pmm.is_initialized() );
-    REQUIRE( pmm.alloc_block_count() == 1 );
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }

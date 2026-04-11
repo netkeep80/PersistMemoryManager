@@ -32,6 +32,7 @@ TEST_CASE( "basic_alloc_block_count", "[test_block_modernization]" )
     Mgr pmm;
     REQUIRE( pmm.create( 64 * 1024 ) );
     REQUIRE( pmm.is_initialized() );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     auto p1 = pmm.allocate_typed<std::uint32_t>( 16 );
     REQUIRE( !p1.is_null() );
@@ -47,7 +48,7 @@ TEST_CASE( "basic_alloc_block_count", "[test_block_modernization]" )
     pmm.deallocate_typed( p2 );
     REQUIRE( pmm.is_initialized() );
 
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }
@@ -102,7 +103,7 @@ TEST_CASE( "save_load_new_format", "[test_block_modernization]" )
 
     pmm2.deallocate_typed( q1 );
     pmm2.deallocate_typed( q3 );
-    REQUIRE( pmm2.alloc_block_count() == 1 ); // Issue #75
+    REQUIRE( pmm2.alloc_block_count() == alloc_before - 2 );
 
     pmm2.destroy();
     std::remove( TEST_FILE );
@@ -115,6 +116,7 @@ TEST_CASE( "coalesced_leaves_one_free_block", "[test_block_modernization]" )
 {
     Mgr pmm;
     REQUIRE( pmm.create( 16 * 1024 ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     // Allocate two adjacent blocks
     auto p1 = pmm.allocate_typed<std::uint8_t>( 64 );
@@ -126,7 +128,7 @@ TEST_CASE( "coalesced_leaves_one_free_block", "[test_block_modernization]" )
     pmm.deallocate_typed( p2 );
     REQUIRE( pmm.is_initialized() );
 
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
     // Free blocks: after coalesce should be 1 (all merged)
     REQUIRE( pmm.free_block_count() == 1 );
 

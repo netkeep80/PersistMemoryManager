@@ -69,6 +69,7 @@ TEST_CASE( "shredder (fragmentation & coalesce)", "[test_scenarios_issue34]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( memory_size ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     Rng rng( 31337 );
 
@@ -130,7 +131,7 @@ TEST_CASE( "shredder (fragmentation & coalesce)", "[test_scenarios_issue34]" )
         std::cout << "    Total blocks: " << pmm.block_count() << "  free: " << pmm.free_block_count()
                   << "  allocated: " << pmm.alloc_block_count() << "\n";
 
-        REQUIRE( pmm.alloc_block_count() == static_cast<std::uint32_t>( sorted_half.size() ) + 1 );
+        REQUIRE( pmm.alloc_block_count() == static_cast<std::uint32_t>( sorted_half.size() ) + baseline_alloc );
         REQUIRE( pmm.free_block_count() >= 1 );
     }
 
@@ -153,7 +154,7 @@ TEST_CASE( "shredder (fragmentation & coalesce)", "[test_scenarios_issue34]" )
         REQUIRE( pmm.is_initialized() );
         std::cout << "    Total blocks: " << pmm.block_count() << "  free: " << pmm.free_block_count()
                   << "  allocated: " << pmm.alloc_block_count() << "\n";
-        REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+        REQUIRE( pmm.alloc_block_count() == baseline_alloc );
         REQUIRE( pmm.free_block_count() <= 10 );
     }
 
@@ -188,6 +189,7 @@ TEST_CASE( "persistent cycle (save/load pptr list)", "[test_scenarios_issue34]" 
 
     Mgr pmm1;
     REQUIRE( pmm1.create( memory_size ) );
+    const auto baseline_alloc = pmm1.alloc_block_count();
 
     Mgr::pptr<Node> head;
     Mgr::pptr<Node> tail;
@@ -301,7 +303,7 @@ TEST_CASE( "persistent cycle (save/load pptr list)", "[test_scenarios_issue34]" 
     }
 
     REQUIRE( pmm2.is_initialized() );
-    REQUIRE( pmm2.alloc_block_count() == 1 ); // Issue #75
+    REQUIRE( pmm2.alloc_block_count() == baseline_alloc );
 
     pmm2.destroy();
     std::remove( filename );
@@ -315,6 +317,7 @@ TEST_CASE( "marathon (long-term stability)", "[test_scenarios_issue34]" )
 
     Mgr pmm;
     REQUIRE( pmm.create( memory_size ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     Rng rng( 99991 );
 
@@ -392,7 +395,7 @@ TEST_CASE( "marathon (long-term stability)", "[test_scenarios_issue34]" )
     live.clear();
 
     REQUIRE( pmm.is_initialized() );
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Issue #75: BlockHeader_0 always allocated
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     double total_ms = elapsed_ms( t0, now() );
     std::cout << "  Total: " << total_iterations << " iterations, " << alloc_ok << " allocs" << "  (" << alloc_fail

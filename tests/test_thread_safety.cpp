@@ -86,6 +86,7 @@ TEST_CASE( "test_concurrent_alloc_dealloc", "[test_thread_safety]" )
     Mgr pmm;
     INFO( "concurrent_alloc_dealloc: create" );
     REQUIRE( pmm.create( kMemSize ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     std::atomic<int>         errors{ 0 };
     std::vector<std::thread> threads;
@@ -133,7 +134,7 @@ TEST_CASE( "test_concurrent_alloc_dealloc", "[test_thread_safety]" )
     INFO( "concurrent_alloc_dealloc: no errors in threads" );
     REQUIRE( errors.load() == 0 );
     INFO( "concurrent_alloc_dealloc: all blocks freed" );
-    REQUIRE( pmm.alloc_block_count() == 1 );
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     pmm.destroy();
 }

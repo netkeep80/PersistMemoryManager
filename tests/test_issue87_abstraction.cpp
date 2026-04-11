@@ -266,14 +266,15 @@ TEST_CASE( "C3: stats via block_count methods", "[test_issue87_abstraction]" )
 {
     Mgr pmm;
     REQUIRE( pmm.create( 64 * 1024 ) );
+    const auto baseline_alloc = pmm.alloc_block_count();
 
     REQUIRE( pmm.free_block_count() == 1 );
-    REQUIRE( pmm.alloc_block_count() == 1 ); // Block_0 always allocated (Issue #75)
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc );
 
     auto p = pmm.allocate_typed<std::uint8_t>( 128 );
     REQUIRE( !p.is_null() );
 
-    REQUIRE( pmm.alloc_block_count() == 2 );
+    REQUIRE( pmm.alloc_block_count() == baseline_alloc + 1 );
 
     pmm.deallocate_typed( p );
     pmm.destroy();
