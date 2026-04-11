@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.49.1] - 2026-04-11
+
+### Added
+- `docs/repository_shape.md` — target repository shape with full root-level inventory
+- `docs/deletion_policy.md` — formal rules for keep / move / archive / delete decisions
+
+### Changed
+- Moved `demo.bat` and `test.bat` to `scripts/` per target shape rules
+- Moved `demo.md` to `docs/demo.md` as documentation
+- Added `imgui.ini` to `.gitignore` to prevent re-adding generated GUI state
+
+### Removed
+- `.gitkeep` placeholder file
+- `imgui.ini` generated ImGui layout state file
+
+
 ## [0.49.0] - 2026-04-11
 
 ### Added
