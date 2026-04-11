@@ -1721,20 +1721,20 @@ namespace pmm
  */
 enum class PmmError : std::uint8_t
 {
-    Ok              = 0,  ///< Operation succeeded
-    NotInitialized  = 1,  ///< Manager is not initialized
-    InvalidSize     = 2,  ///< Invalid size argument (zero, too small, etc.)
-    Overflow        = 3,  ///< Arithmetic overflow in size/granule computation
-    OutOfMemory     = 4,  ///< Allocation failed — not enough free space
-    ExpandFailed    = 5,  ///< Backend expand() failed
-    InvalidMagic    = 6,  ///< Magic number mismatch on load()
-    CrcMismatch     = 7,  ///< CRC32 mismatch on load (corrupted image)
-    SizeMismatch    = 8,  ///< Stored total_size does not match backend
-    GranuleMismatch = 9,  ///< Stored granule_size does not match address_traits
-    BackendError    = 10, ///< Backend returned null or invalid state
-    InvalidPointer  = 11, ///< Pointer is null or out of bounds
-    BlockLocked          = 12, ///< Block is permanently locked (cannot deallocate)
-    StructuralViolation  = 13, ///< Non-header structural violation detected during load (Issue #245)
+    Ok                  = 0,  ///< Operation succeeded
+    NotInitialized      = 1,  ///< Manager is not initialized
+    InvalidSize         = 2,  ///< Invalid size argument (zero, too small, etc.)
+    Overflow            = 3,  ///< Arithmetic overflow in size/granule computation
+    OutOfMemory         = 4,  ///< Allocation failed — not enough free space
+    ExpandFailed        = 5,  ///< Backend expand() failed
+    InvalidMagic        = 6,  ///< Magic number mismatch on load()
+    CrcMismatch         = 7,  ///< CRC32 mismatch on load (corrupted image)
+    SizeMismatch        = 8,  ///< Stored total_size does not match backend
+    GranuleMismatch     = 9,  ///< Stored granule_size does not match address_traits
+    BackendError        = 10, ///< Backend returned null or invalid state
+    InvalidPointer      = 11, ///< Pointer is null or out of bounds
+    BlockLocked         = 12, ///< Block is permanently locked (cannot deallocate)
+    StructuralViolation = 13, ///< Non-header structural violation detected during load (Issue #245)
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -4329,8 +4329,7 @@ class AllocatorPolicy
         if ( ( free_count > 0 && !root_present ) || ( free_count == 0 && root_present ) )
         {
             result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, 0,
-                        static_cast<std::uint64_t>( free_count ),
-                        static_cast<std::uint64_t>( hdr->free_tree_root ) );
+                        static_cast<std::uint64_t>( free_count ), static_cast<std::uint64_t>( hdr->free_tree_root ) );
         }
     }
 
@@ -6998,8 +6997,10 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
                         static_cast<std::uint64_t>( hdr->granule_size ) );
             return false;
         }
+        // Issue #245: verify before repair — detect violations in the raw image.
         // Issue #245: verify before repair — detect violations, then mark with repair actions.
-        auto mark_entries = []( VerifyResult& r, std::size_t from, DiagnosticAction act ) {
+        auto mark_entries = []( VerifyResult& r, std::size_t from, DiagnosticAction act )
+        {
             for ( std::size_t i = from; i < r.entry_count; ++i )
                 r.entries[i].action = act;
         };
