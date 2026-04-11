@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162, #188).  
+<p>Shared AVL tree helper functions for pmap and pstringview.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="block_8h_source.html">pmm/block.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="block__state_8h_source.html">pmm/block_state.h</a>&quot;</code><br />
@@ -95,11 +95,11 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm" id="r_namespacepmm"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html">pmm</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespacepmm_1_1detail" id="r_namespacepmm_1_1detail"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html">pmm::detail</a></td></tr>
-<tr class="memdesc:namespacepmm_1_1detail"><td class="mdescLeft">&#160;</td><td class="mdescRight">Унифицированный статический менеджер персистентной памяти (Issue #110). <br /></td></tr>
+<tr class="memdesc:namespacepmm_1_1detail"><td class="mdescLeft">&#160;</td><td class="mdescRight">Унифицированный статический менеджер персистентной памяти. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Shared AVL tree helper functions for pmap and pstringview (Issue #155, #162, #188). </p>
+<div class="textblock"><p>Shared AVL tree helper functions for pmap and pstringview. </p>
 <p>Provides a set of free static template functions implementing the core AVL tree operations (height, balance factor, rotations, rebalancing, insert, find, remove) that are shared between pmap&lt;_K,_V,ManagerT&gt; and pstringview&lt;ManagerT&gt;.</p>
 <p>All rotation and rebalance functions accept an optional NodeUpdateFn callback that is invoked after structural changes to update derived node attributes. By default avl_update_height is used (height-only).</p>
 <p>Template parameter PPtr must support:</p><ul>
@@ -108,14 +108,14 @@ Namespaces</h2></td></tr>
 <li>offset()</li>
 <li>PPtr::manager_type::address_traits::no_block sentinel</li>
 </ul>
-<p>Also provides BlockPPtr&lt;AddressTraitsT&gt; — a lightweight adapter that wraps raw (base_ptr, index) pairs and delegates to BlockStateBase&lt;AT&gt; static methods, enabling AvlFreeTree to reuse the shared AVL operations instead of maintaining its own duplicate rotation/rebalancing code (Issue #188).</p>
-<p>Additionally provides AvlInorderIterator&lt;NodePPtr&gt; — a shared in-order iterator template used by pmap (Issue #188).</p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="pmap_8h.html" title="pmap&lt;_K,_V,ManagerT&gt; — персистентный словарь на основе AVL-дерева (Issue #153, #196).">pmap.h</a> — pmap&lt;_K,_V,ManagerT&gt; (Issue #153) </dd>
+<p>Also provides BlockPPtr&lt;AddressTraitsT&gt; — a lightweight adapter that wraps raw (base_ptr, index) pairs and delegates to BlockStateBase&lt;AT&gt; static methods, enabling AvlFreeTree to reuse the shared AVL operations instead of maintaining its own duplicate rotation/rebalancing code.</p>
+<p>Additionally provides AvlInorderIterator&lt;NodePPtr&gt; — a shared in-order iterator template used by pmap.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="pmap_8h.html" title="pmap&lt;_K,_V,ManagerT&gt; — персистентный словарь на основе AVL-дерева.">pmap.h</a> — pmap&lt;_K,_V,ManagerT&gt; </dd>
 <dd>
-<a class="el" href="pstringview_8h.html" title="pstringview&lt;ManagerT&gt; — персистентная строка только для чтения с интернированием (Issue #151,...">pstringview.h</a> — pstringview&lt;ManagerT&gt; (Issue #151) </dd>
+<a class="el" href="pstringview_8h.html" title="pstringview&lt;ManagerT&gt; — персистентная строка только для чтения с интернированием.">pstringview.h</a> — pstringview&lt;ManagerT&gt; </dd>
 <dd>
-<a class="el" href="free__block__tree_8h.html" title="AvlFreeTree — specialized forest-policy for the free-tree domain (Issue #87, #95, #129,...">free_block_tree.h</a> — AvlFreeTree&lt;AT&gt; uses BlockPPtr adapter (Issue #188) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.5 (Issue #188 — BlockPPtr adapter for free_block_tree, AvlInorderIterator) </dd></dl>
+<a class="el" href="free__block__tree_8h.html" title="AvlFreeTree — specialized forest-policy for the free-tree domain.">free_block_tree.h</a> — AvlFreeTree&lt;AT&gt; uses BlockPPtr adapter </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.5 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="avl__tree__mixin_8h_source.html">avl_tree_mixin.h</a>.</p>
 </div></div><!-- contents -->

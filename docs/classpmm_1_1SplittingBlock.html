@@ -151,7 +151,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a00e102215f632beb708fbed942fb6cac inherit pub_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, является ли блок занятым (по структурным признакам).  <br /></td></tr>
 <tr class="separator:a00e102215f632beb708fbed942fb6cac inherit pub_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c0fe12d69ca589951ec931c873b2bda inherit pub_methods_classpmm_1_1BlockStateBase" id="r_a8c0fe12d69ca589951ec931c873b2bda"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda">is_permanently_locked</a> () const noexcept</td></tr>
-<tr class="memdesc:a8c0fe12d69ca589951ec931c873b2bda inherit pub_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, заблокирован ли блок навечно (Issue #126).  <br /></td></tr>
+<tr class="memdesc:a8c0fe12d69ca589951ec931c873b2bda inherit pub_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, заблокирован ли блок навечно.  <br /></td></tr>
 <tr class="separator:a8c0fe12d69ca589951ec931c873b2bda inherit pub_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
@@ -164,7 +164,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:ab390678b3d4d95498d71d0a966b9deeb inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a28f4483be1d779ef6531574f0f6daa55"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a28f4483be1d779ef6531574f0f6daa55">verify_state</a> (const void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
-<tr class="memdesc:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modifying the image (Issue #245).  <br /></td></tr>
+<tr class="memdesc:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modifying the image.  <br /></td></tr>
 <tr class="separator:a28f4483be1d779ef6531574f0f6daa55 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a2208935a3d222b4564c7c53adf52ed2a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a2208935a3d222b4564c7c53adf52ed2a">reset_avl_fields_of</a> (void *raw_blk) noexcept</td></tr>
 <tr class="memdesc:a2208935a3d222b4564c7c53adf52ed2a inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).  <br /></td></tr>
@@ -224,10 +224,10 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a128eb0a00b4a7de8724eeb3695bf3230 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить root_offset блока.  <br /></td></tr>
 <tr class="separator:a128eb0a00b4a7de8724eeb3695bf3230 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a954bd69709881c25d7122b60e91e8474 inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_a954bd69709881c25d7122b60e91e8474"><td class="memItemLeft" align="right" valign="top">static std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a954bd69709881c25d7122b60e91e8474">get_node_type</a> (const void *raw_blk) noexcept</td></tr>
-<tr class="memdesc:a954bd69709881c25d7122b60e91e8474 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать node_type блока (Issue #126).  <br /></td></tr>
+<tr class="memdesc:a954bd69709881c25d7122b60e91e8474 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать node_type блока.  <br /></td></tr>
 <tr class="separator:a954bd69709881c25d7122b60e91e8474 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc76b4fd19a7ae2cf0233d16173eea18 inherit pub_static_methods_classpmm_1_1BlockStateBase" id="r_abc76b4fd19a7ae2cf0233d16173eea18"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#abc76b4fd19a7ae2cf0233d16173eea18">set_node_type_of</a> (void *raw_blk, std::uint16_t v) noexcept</td></tr>
-<tr class="memdesc:abc76b4fd19a7ae2cf0233d16173eea18 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить node_type блока (Issue #126).  <br /></td></tr>
+<tr class="memdesc:abc76b4fd19a7ae2cf0233d16173eea18 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить node_type блока.  <br /></td></tr>
 <tr class="separator:abc76b4fd19a7ae2cf0233d16173eea18 inherit pub_static_methods_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
@@ -240,7 +240,7 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memdesc:a00e9b10610fac2190098bffadb06acb8 inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of next_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second direct field of <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>, after prev_offset).  <br /></td></tr>
 <tr class="separator:a00e9b10610fac2190098bffadb06acb8 inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a62f751f73050ee88505271cb7fbe67aa inherit pub_static_attribs_classpmm_1_1BlockStateBase" id="r_a62f751f73050ee88505271cb7fbe67aa"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a62f751f73050ee88505271cb7fbe67aa">kOffsetWeight</a> = 0</td></tr>
-<tr class="memdesc:a62f751f73050ee88505271cb7fbe67aa inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, Issue #126, #138).  <br /></td></tr>
+<tr class="memdesc:a62f751f73050ee88505271cb7fbe67aa inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>).  <br /></td></tr>
 <tr class="separator:a62f751f73050ee88505271cb7fbe67aa inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9136f988103a51137c2b8426973a7f68 inherit pub_static_attribs_classpmm_1_1BlockStateBase" id="r_a9136f988103a51137c2b8426973a7f68"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a9136f988103a51137c2b8426973a7f68">kOffsetLeftOffset</a> = sizeof( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
 <tr class="memdesc:a9136f988103a51137c2b8426973a7f68 inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of left_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, follows weight).  <br /></td></tr>
@@ -258,7 +258,7 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memdesc:af4e69f6da12c1e0dc674a5d3e8683911 inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of avl_height within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after weight+left+right+parent+root = 5 index_type fields).  <br /></td></tr>
 <tr class="separator:af4e69f6da12c1e0dc674a5d3e8683911 inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07dbf77c3aac828bb413349fc84bb275 inherit pub_static_attribs_classpmm_1_1BlockStateBase" id="r_a07dbf77c3aac828bb413349fc84bb275"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a07dbf77c3aac828bb413349fc84bb275">kOffsetNodeType</a> = 5 * sizeof( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> ) + 2</td></tr>
-<tr class="memdesc:a07dbf77c3aac828bb413349fc84bb275 inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of node_type within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> = 2 bytes, Issue #126, #138).  <br /></td></tr>
+<tr class="memdesc:a07dbf77c3aac828bb413349fc84bb275 inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of node_type within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> = 2 bytes).  <br /></td></tr>
 <tr class="separator:a07dbf77c3aac828bb413349fc84bb275 inherit pub_static_attribs_classpmm_1_1BlockStateBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classpmm_1_1BlockStateBase"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classpmm_1_1BlockStateBase')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classpmm_1_1BlockStateBase.html">pmm::BlockStateBase&lt; AddressTraitsT &gt;</a></td></tr>
 <tr class="memitem:a9d143830af430952b5253659fe8dacab inherit pro_methods_classpmm_1_1BlockStateBase" id="r_a9d143830af430952b5253659fe8dacab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a9d143830af430952b5253659fe8dacab">set_weight</a> (<a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> v) noexcept</td></tr>
@@ -292,7 +292,7 @@ class pmm::SplittingBlock&lt; AddressTraitsT &gt;</div><p><a class="el" href="cl
 <li><a class="el" href="classpmm_1_1SplittingBlock.html#aa6ec0ceea5688a51720b4d1281a55d6a" title="Завершить операцию split и пометить текущий блок как занятый.">finalize_split()</a> — завершить split и вернуться к mark_as_allocated </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00572">572</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00568">568</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ab9e5c55f84ddf334e535a17be64be688" name="ab9e5c55f84ddf334e535a17be64be688"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab9e5c55f84ddf334e535a17be64be688">&#9670;&#160;</a></span>Base</h2>
@@ -308,7 +308,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00575">575</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00571">571</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -326,7 +326,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00576">576</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00572">572</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -359,7 +359,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Интерпретировать сырые байты как <a class="el" href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два.">SplittingBlock</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00581">581</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00577">577</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -409,7 +409,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Указатель на блок в состоянии <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00628">628</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00624">624</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -465,7 +465,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00590">590</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00586">586</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -514,7 +514,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00611">611</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00607">607</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

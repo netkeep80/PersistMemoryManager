@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>ppool&lt;T, ManagerT&gt; — persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).  
+<p>ppool&lt;T, ManagerT&gt; — persistent object pool with O(1) allocate/deallocate.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
 <code>#include &lt;cassert&gt;</code><br />
@@ -95,7 +95,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1ppool.html">pmm::ppool&lt; T, ManagerT &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).  <a href="structpmm_1_1ppool.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Persistent object pool with O(1) allocate/deallocate.  <a href="structpmm_1_1ppool.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -104,7 +104,7 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>ppool&lt;T, ManagerT&gt; — persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6). </p>
+<div class="textblock"><p>ppool&lt;T, ManagerT&gt; — persistent object pool with O(1) allocate/deallocate. </p>
 <p>Implements a pool of fixed-size objects in the persistent address space (PAP). Objects are allocated from large chunks via a free-list, providing O(1) allocation and deallocation — ideal for mass creation of tree nodes, list nodes, graph nodes, and similar small objects.</p>
 <p>Key properties:</p><ul>
 <li>O(1) allocate() / deallocate() via embedded free-list.</li>
@@ -138,14 +138,14 @@ Namespaces</h2></td></tr>
 <div class="line"> </div>
 <div class="line">Mgr::destroy();</div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00087">persist_memory_manager.h:88</a></div></div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="parray_8h.html" title="parray&lt;T, ManagerT&gt; — persistent dynamic array with O(1) random access (Issue #195,...">parray.h</a> — parray&lt;T, ManagerT&gt; (persistent dynamic array with O(1) indexing) </dd>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="parray_8h.html" title="parray&lt;T, ManagerT&gt; — persistent dynamic array with O(1) random access.">parray.h</a> — parray&lt;T, ManagerT&gt; (persistent dynamic array with O(1) indexing) </dd>
 <dd>
-<a class="el" href="pallocator_8h.html" title="pallocator&lt;T, ManagerT&gt; — STL-compatible allocator for persistent address space (Issue #198,...">pallocator.h</a> — pallocator&lt;T, ManagerT&gt; (STL-compatible allocator) </dd>
+<a class="el" href="pallocator_8h.html" title="pallocator&lt;T, ManagerT&gt; — STL-compatible allocator for persistent address space.">pallocator.h</a> — pallocator&lt;T, ManagerT&gt; (STL-compatible allocator) </dd>
 <dd>
-<a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — unified static persistent memory manager (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (static model) </dd>
+<a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — unified static persistent memory manager.">persist_memory_manager.h</a> — PersistMemoryManager (static model) </dd>
 <dd>
-<a class="el" href="pptr_8h.html" title="pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129).">pptr.h</a> — pptr&lt;T, ManagerT&gt; (persistent pointer) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.1 (Issue #199 — Phase 3.6: persistent object pool) </dd></dl>
+<a class="el" href="pptr_8h.html" title="pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель.">pptr.h</a> — pptr&lt;T, ManagerT&gt; (persistent pointer) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.1 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="ppool_8h_source.html">ppool.h</a>.</p>
 </div></div><!-- contents -->

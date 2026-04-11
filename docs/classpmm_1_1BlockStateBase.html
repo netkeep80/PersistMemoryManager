@@ -143,7 +143,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a00e102215f632beb708fbed942fb6cac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, является ли блок занятым (по структурным признакам).  <br /></td></tr>
 <tr class="separator:a00e102215f632beb708fbed942fb6cac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c0fe12d69ca589951ec931c873b2bda" id="r_a8c0fe12d69ca589951ec931c873b2bda"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a8c0fe12d69ca589951ec931c873b2bda">is_permanently_locked</a> () const noexcept</td></tr>
-<tr class="memdesc:a8c0fe12d69ca589951ec931c873b2bda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, заблокирован ли блок навечно (Issue #126).  <br /></td></tr>
+<tr class="memdesc:a8c0fe12d69ca589951ec931c873b2bda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Определить, заблокирован ли блок навечно.  <br /></td></tr>
 <tr class="separator:a8c0fe12d69ca589951ec931c873b2bda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
@@ -152,7 +152,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:ab390678b3d4d95498d71d0a966b9deeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Восстановить блок в корректное состояние (при load()).  <br /></td></tr>
 <tr class="separator:ab390678b3d4d95498d71d0a966b9deeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28f4483be1d779ef6531574f0f6daa55" id="r_a28f4483be1d779ef6531574f0f6daa55"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a28f4483be1d779ef6531574f0f6daa55">verify_state</a> (const void *raw_blk, <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
-<tr class="memdesc:a28f4483be1d779ef6531574f0f6daa55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modifying the image (Issue #245).  <br /></td></tr>
+<tr class="memdesc:a28f4483be1d779ef6531574f0f6daa55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modifying the image.  <br /></td></tr>
 <tr class="separator:a28f4483be1d779ef6531574f0f6daa55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2208935a3d222b4564c7c53adf52ed2a" id="r_a2208935a3d222b4564c7c53adf52ed2a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a2208935a3d222b4564c7c53adf52ed2a">reset_avl_fields_of</a> (void *raw_blk) noexcept</td></tr>
 <tr class="memdesc:a2208935a3d222b4564c7c53adf52ed2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить AVL-поля блока перед перестройкой дерева (при rebuild_free_tree).  <br /></td></tr>
@@ -212,10 +212,10 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a128eb0a00b4a7de8724eeb3695bf3230"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить root_offset блока.  <br /></td></tr>
 <tr class="separator:a128eb0a00b4a7de8724eeb3695bf3230"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a954bd69709881c25d7122b60e91e8474" id="r_a954bd69709881c25d7122b60e91e8474"><td class="memItemLeft" align="right" valign="top">static std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a954bd69709881c25d7122b60e91e8474">get_node_type</a> (const void *raw_blk) noexcept</td></tr>
-<tr class="memdesc:a954bd69709881c25d7122b60e91e8474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать node_type блока (Issue #126).  <br /></td></tr>
+<tr class="memdesc:a954bd69709881c25d7122b60e91e8474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Прочитать node_type блока.  <br /></td></tr>
 <tr class="separator:a954bd69709881c25d7122b60e91e8474"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc76b4fd19a7ae2cf0233d16173eea18" id="r_abc76b4fd19a7ae2cf0233d16173eea18"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#abc76b4fd19a7ae2cf0233d16173eea18">set_node_type_of</a> (void *raw_blk, std::uint16_t v) noexcept</td></tr>
-<tr class="memdesc:abc76b4fd19a7ae2cf0233d16173eea18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить node_type блока (Issue #126).  <br /></td></tr>
+<tr class="memdesc:abc76b4fd19a7ae2cf0233d16173eea18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить node_type блока.  <br /></td></tr>
 <tr class="separator:abc76b4fd19a7ae2cf0233d16173eea18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
@@ -227,7 +227,7 @@ Static Public Attributes</h2></td></tr>
 <tr class="memdesc:a00e9b10610fac2190098bffadb06acb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of next_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second direct field of <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>, after prev_offset).  <br /></td></tr>
 <tr class="separator:a00e9b10610fac2190098bffadb06acb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a62f751f73050ee88505271cb7fbe67aa" id="r_a62f751f73050ee88505271cb7fbe67aa"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a62f751f73050ee88505271cb7fbe67aa">kOffsetWeight</a> = 0</td></tr>
-<tr class="memdesc:a62f751f73050ee88505271cb7fbe67aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, Issue #126, #138).  <br /></td></tr>
+<tr class="memdesc:a62f751f73050ee88505271cb7fbe67aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>).  <br /></td></tr>
 <tr class="separator:a62f751f73050ee88505271cb7fbe67aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9136f988103a51137c2b8426973a7f68" id="r_a9136f988103a51137c2b8426973a7f68"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a9136f988103a51137c2b8426973a7f68">kOffsetLeftOffset</a> = sizeof( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> )</td></tr>
 <tr class="memdesc:a9136f988103a51137c2b8426973a7f68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of left_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, follows weight).  <br /></td></tr>
@@ -245,7 +245,7 @@ Static Public Attributes</h2></td></tr>
 <tr class="memdesc:af4e69f6da12c1e0dc674a5d3e8683911"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of avl_height within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after weight+left+right+parent+root = 5 index_type fields).  <br /></td></tr>
 <tr class="separator:af4e69f6da12c1e0dc674a5d3e8683911"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07dbf77c3aac828bb413349fc84bb275" id="r_a07dbf77c3aac828bb413349fc84bb275"><td class="memItemLeft" align="right" valign="top">static constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1BlockStateBase.html#a07dbf77c3aac828bb413349fc84bb275">kOffsetNodeType</a> = 5 * sizeof( <a class="el" href="classpmm_1_1BlockStateBase.html#a51afb84c593f4cc8f92d439fa1bdafca">index_type</a> ) + 2</td></tr>
-<tr class="memdesc:a07dbf77c3aac828bb413349fc84bb275"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of node_type within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> = 2 bytes, Issue #126, #138).  <br /></td></tr>
+<tr class="memdesc:a07dbf77c3aac828bb413349fc84bb275"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of node_type within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> = 2 bytes).  <br /></td></tr>
 <tr class="separator:a07dbf77c3aac828bb413349fc84bb275"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
@@ -283,7 +283,7 @@ class pmm::BlockStateBase&lt; AddressTraitsT &gt;</div><p>Базовый кла�
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00077">77</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00074">74</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="aaa7d3f10ec2dc40b747b929bf46d3feb" name="aaa7d3f10ec2dc40b747b929bf46d3feb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaa7d3f10ec2dc40b747b929bf46d3feb">&#9670;&#160;</a></span>address_traits</h2>
@@ -299,7 +299,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00083">83</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00080">80</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -317,7 +317,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00085">85</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00082">82</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -335,7 +335,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00084">84</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00081">81</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -393,7 +393,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00125">125</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00122">122</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -425,7 +425,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Прочитать avl_height блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00326">326</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00323">323</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -457,7 +457,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Прочитать left_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00305">305</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00302">302</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -496,7 +496,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Гранульный индекс следующего блока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00246">246</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00243">243</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -526,9 +526,9 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Прочитать node_type блока (Issue #126). </p>
+<p>Прочитать node_type блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00389">389</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00386">386</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -560,7 +560,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Прочитать parent_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00319">319</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00316">316</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -599,7 +599,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Гранульный индекс предыдущего блока. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00234">234</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00231">231</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -631,7 +631,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Прочитать right_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00312">312</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00309">309</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -663,7 +663,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Прочитать root_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00361">361</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00358">358</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -702,7 +702,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Значение поля weight (0 = свободный, &gt;0 = занятый). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00258">258</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00255">255</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -779,7 +779,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00274">274</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00271">271</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -818,7 +818,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true если weight &gt; 0 и root_offset == own_idx. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00144">144</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00141">141</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -850,7 +850,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 <p>Определить, является ли блок свободным (по структурным признакам). </p>
 <dl class="section return"><dt>Returns</dt><dd>true если weight == 0 и root_offset == 0. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00137">137</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00134">134</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -879,10 +879,10 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Определить, заблокирован ли блок навечно (Issue #126). </p>
+<p>Определить, заблокирован ли блок навечно. </p>
 <dl class="section return"><dt>Returns</dt><dd>true если node_type == kNodeReadOnly. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00150">150</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00147">147</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -911,7 +911,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00122">122</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00119">119</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -940,7 +940,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00119">119</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00116">116</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -969,7 +969,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00131">131</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00128">128</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -998,7 +998,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00124">124</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00121">121</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1027,7 +1027,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00118">118</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00115">115</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1077,7 +1077,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00163">163</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00160">160</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1126,7 +1126,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00222">222</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00219">219</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1155,7 +1155,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00414">414</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00411">411</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1194,7 +1194,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00207">207</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00204">204</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1223,7 +1223,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00123">123</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00120">120</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1252,7 +1252,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00128">128</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00125">125</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1282,7 +1282,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00409">409</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00406">406</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1324,7 +1324,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Установить avl_height блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00354">354</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00351">351</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1354,7 +1354,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00406">406</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00403">403</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1396,7 +1396,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Установить left_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00333">333</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00330">330</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1426,7 +1426,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00405">405</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00402">402</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1475,7 +1475,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00294">294</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00291">291</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1505,7 +1505,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00411">411</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00408">408</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1545,9 +1545,9 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Установить node_type блока (Issue #126). </p>
+<p>Установить node_type блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00396">396</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00393">393</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1577,7 +1577,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00408">408</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00405">405</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1619,7 +1619,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Установить parent_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00347">347</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00344">344</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1649,7 +1649,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00404">404</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00401">401</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1691,7 +1691,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Установить prev_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00368">368</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00365">365</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1721,7 +1721,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00407">407</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00404">404</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1763,7 +1763,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Установить right_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00340">340</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00337">337</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1793,7 +1793,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00410">410</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00407">407</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1835,7 +1835,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Установить root_offset блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00382">382</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00379">379</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1865,7 +1865,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00403">403</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00400">400</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1907,7 +1907,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Установить weight блока. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00375">375</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00372">372</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1953,7 +1953,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Verify block state consistency without modifying the image (Issue #245). </p>
+<p>Verify block state consistency without modifying the image. </p>
 <p>Read-only counterpart of <a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb" title="Восстановить блок в корректное состояние (при load()).">recover_state()</a>. Checks that weight and root_offset are in a consistent (non-transitional) state. Reports violations into result.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1964,7 +1964,7 @@ template&lt;typename AddressTraitsT &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00184">184</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00181">181</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -1993,7 +1993,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00115">115</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00112">112</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2022,7 +2022,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Byte offset of avl_height within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after weight+left+right+parent+root = 5 index_type fields). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00107">107</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00104">104</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2050,7 +2050,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Byte offset of left_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, follows weight). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00099">99</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00096">96</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2078,7 +2078,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Byte offset of next_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (second direct field of <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>, after prev_offset). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00095">95</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00092">92</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2104,9 +2104,9 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Byte offset of node_type within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> = 2 bytes, Issue #126, #138). </p>
+<p>Byte offset of node_type within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (after <a class="el" href="structpmm_1_1TreeNode.html#aa55953de2301f09d07416860ab05cbf4" title="Высота AVL-поддерева (0 = узел не в дереве).">avl_height(2)</a> = 2 bytes). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00109">109</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00106">106</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2134,7 +2134,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Byte offset of parent_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00103">103</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00100">100</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2162,7 +2162,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Byte offset of prev_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first direct field of <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a>, after <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00093">93</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00090">90</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2190,7 +2190,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Byte offset of right_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00101">101</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00098">98</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2218,7 +2218,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Byte offset of root_offset within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout. </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00105">105</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00102">102</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>
@@ -2244,9 +2244,9 @@ template&lt;typename AddressTraitsT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>, Issue #126, #138). </p>
+<p>Byte offset of weight within <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout (first field of <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>). </p>
 
-<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00097">97</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block__state_8h_source.html#l00094">94</a> of file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 
 </div>
 </div>

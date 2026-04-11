@@ -83,7 +83,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Persistent dynamic array with O(1) random access (Issue #195, Phase 3.2).  
+<p>Persistent dynamic array with O(1) random access.  
  <a href="structpmm_1_1parray.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="parray_8h_source.html">parray.h</a>&gt;</code></p>
@@ -189,7 +189,7 @@ Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename T, typename ManagerT&gt;<br />
-struct pmm::parray&lt; T, ManagerT &gt;</div><p>Persistent dynamic array with O(1) random access (Issue #195, Phase 3.2). </p>
+struct pmm::parray&lt; T, ManagerT &gt;</div><p>Persistent dynamic array with O(1) random access. </p>
 <p>Stores a header (size, capacity, data block index) in PAP. Element data is stored in a separate contiguous block allocated via the manager.</p>
 <p>A parray object is created in PAP via create_typed&lt;parray&lt;T&gt;&gt;() and destroyed via destroy_typed() after calling <a class="el" href="structpmm_1_1parray.html#a3c7b5bba0cdeb5940169cc2ece4f74e8" title="Free the data block.">free_data()</a>.</p>
 <p>Invariants:</p><ul>
@@ -204,7 +204,7 @@ struct pmm::parray&lt; T, ManagerT &gt;</div><p>Persistent dynamic array with O(
 <div class="line">| <a class="code hl_variable" href="structpmm_1_1parray.html#ae612a24f38e9d6e9454b8dbe669b9e9d">_capacity</a>: u32 |---idx---&gt; |                          |</div>
 <div class="line">| <a class="code hl_variable" href="structpmm_1_1parray.html#a08cbfce3ebe82b3e48b4461ef31b6558">_data_idx</a>      |           +--------------------------+</div>
 <div class="line">+----------------+</div>
-<div class="ttc" id="astructpmm_1_1parray_html"><div class="ttname"><a href="structpmm_1_1parray.html">pmm::parray</a></div><div class="ttdoc">Persistent dynamic array with O(1) random access (Issue #195, Phase 3.2).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00098">parray.h:99</a></div></div>
+<div class="ttc" id="astructpmm_1_1parray_html"><div class="ttname"><a href="structpmm_1_1parray.html">pmm::parray</a></div><div class="ttdoc">Persistent dynamic array with O(1) random access.</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00098">parray.h:99</a></div></div>
 <div class="ttc" id="astructpmm_1_1parray_html_a08cbfce3ebe82b3e48b4461ef31b6558"><div class="ttname"><a href="structpmm_1_1parray.html#a08cbfce3ebe82b3e48b4461ef31b6558">pmm::parray::_data_idx</a></div><div class="ttdeci">index_type _data_idx</div><div class="ttdoc">Granule index of the data block (0 = no data).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00108">parray.h:108</a></div></div>
 <div class="ttc" id="astructpmm_1_1parray_html_a0b741418c33c41dcdedcd6101b3bf41f"><div class="ttname"><a href="structpmm_1_1parray.html#a0b741418c33c41dcdedcd6101b3bf41f">pmm::parray::_size</a></div><div class="ttdeci">std::uint32_t _size</div><div class="ttdoc">Number of elements currently stored.</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00106">parray.h:106</a></div></div>
 <div class="ttc" id="astructpmm_1_1parray_html_ae612a24f38e9d6e9454b8dbe669b9e9d"><div class="ttname"><a href="structpmm_1_1parray.html#ae612a24f38e9d6e9454b8dbe669b9e9d">pmm::parray::_capacity</a></div><div class="ttdeci">std::uint32_t _capacity</div><div class="ttdoc">Capacity of the data block (number of T elements).</div><div class="ttdef"><b>Definition</b> <a href="parray_8h_source.html#l00107">parray.h:107</a></div></div>

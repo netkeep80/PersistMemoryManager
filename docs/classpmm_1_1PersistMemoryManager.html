@@ -96,7 +96,6 @@ Public Types</h2></td></tr>
 <tr class="memitem:ad3666dc713110ae501fdb75922b6357b" id="r_ad3666dc713110ae501fdb75922b6357b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#ad3666dc713110ae501fdb75922b6357b">thread_policy</a> = typename ConfigT::lock_policy</td></tr>
 <tr class="separator:ad3666dc713110ae501fdb75922b6357b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aead8fd97a6e522a24ff77d0b68a5af47" id="r_aead8fd97a6e522a24ff77d0b68a5af47"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#aead8fd97a6e522a24ff77d0b68a5af47">logging_policy</a> = typename <a class="el" href="structpmm_1_1detail_1_1config__logging__policy.html">detail::config_logging_policy</a>&lt; ConfigT &gt;::type</td></tr>
-<tr class="memdesc:aead8fd97a6e522a24ff77d0b68a5af47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #202, Phase 4.2.  <br /></td></tr>
 <tr class="separator:aead8fd97a6e522a24ff77d0b68a5af47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3daa147f4159c893899ceac5b1afb444" id="r_a3daa147f4159c893899ceac5b1afb444"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a3daa147f4159c893899ceac5b1afb444">allocator</a> = <a class="el" href="classpmm_1_1AllocatorPolicy.html">AllocatorPolicy</a>&lt; <a class="el" href="classpmm_1_1PersistMemoryManager.html#ad107012f32abc286a000fe9dff9a6720">free_block_tree</a>, <a class="el" href="classpmm_1_1PersistMemoryManager.html#a642db76c919352d17346b65905fdaa33">address_traits</a> &gt;</td></tr>
 <tr class="separator:a3daa147f4159c893899ceac5b1afb444"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -125,15 +124,15 @@ Public Types</h2></td></tr>
 <tr class="separator:a04d8a7a501a4399e97a46add464c1420"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae292bff4475cb1d7e0ede68b648f0761" id="r_ae292bff4475cb1d7e0ede68b648f0761"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:ae292bff4475cb1d7e0ede68b648f0761"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#ae292bff4475cb1d7e0ede68b648f0761">parray</a> = <a class="el" href="structpmm_1_1parray.html">pmm::parray</a>&lt; T, <a class="el" href="classpmm_1_1PersistMemoryManager.html#ab7dc5f5527fcfc1ebe29528020635d87">manager_type</a> &gt;</td></tr>
-<tr class="memdesc:ae292bff4475cb1d7e0ede68b648f0761"><td class="mdescLeft">&#160;</td><td class="mdescRight">Алиас для персистентного массива с O(1) индексацией (Issue #195, Phase 3.2).  <br /></td></tr>
+<tr class="memdesc:ae292bff4475cb1d7e0ede68b648f0761"><td class="mdescLeft">&#160;</td><td class="mdescRight">Алиас для персистентного массива с O(1) индексацией.  <br /></td></tr>
 <tr class="separator:ae292bff4475cb1d7e0ede68b648f0761"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f580d45fd9bd87c119c7c5ec11b25a3" id="r_a7f580d45fd9bd87c119c7c5ec11b25a3"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a7f580d45fd9bd87c119c7c5ec11b25a3"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a7f580d45fd9bd87c119c7c5ec11b25a3">pallocator</a> = <a class="el" href="structpmm_1_1pallocator.html">pmm::pallocator</a>&lt; T, <a class="el" href="classpmm_1_1PersistMemoryManager.html#ab7dc5f5527fcfc1ebe29528020635d87">manager_type</a> &gt;</td></tr>
-<tr class="memdesc:a7f580d45fd9bd87c119c7c5ec11b25a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Алиас для STL-совместимого аллокатора (Issue #198, Phase 3.5).  <br /></td></tr>
+<tr class="memdesc:a7f580d45fd9bd87c119c7c5ec11b25a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Алиас для STL-совместимого аллокатора.  <br /></td></tr>
 <tr class="separator:a7f580d45fd9bd87c119c7c5ec11b25a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a555d9700f49d8b0c0186d57868a4a412" id="r_a555d9700f49d8b0c0186d57868a4a412"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a555d9700f49d8b0c0186d57868a4a412"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a555d9700f49d8b0c0186d57868a4a412">ppool</a> = <a class="el" href="structpmm_1_1ppool.html">pmm::ppool</a>&lt; T, <a class="el" href="classpmm_1_1PersistMemoryManager.html#ab7dc5f5527fcfc1ebe29528020635d87">manager_type</a> &gt;</td></tr>
-<tr class="memdesc:a555d9700f49d8b0c0186d57868a4a412"><td class="mdescLeft">&#160;</td><td class="mdescRight">Алиас для персистентного пула объектов (Issue #199, Phase 3.6).  <br /></td></tr>
+<tr class="memdesc:a555d9700f49d8b0c0186d57868a4a412"><td class="mdescLeft">&#160;</td><td class="mdescRight">Алиас для персистентного пула объектов.  <br /></td></tr>
 <tr class="separator:a555d9700f49d8b0c0186d57868a4a412"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
@@ -145,7 +144,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a6cfb97e65f8de37e57b879f19f9c07f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the last error code to <a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1aa60852f204ed8028c1c58808b746d115" title="Operation succeeded.">PmmError::Ok</a>.  <br /></td></tr>
 <tr class="separator:a6cfb97e65f8de37e57b879f19f9c07f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1eff6e80b9b6d8a75935676678684e89" id="r_a1eff6e80b9b6d8a75935676678684e89"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a1eff6e80b9b6d8a75935676678684e89">set_last_error</a> (<a class="el" href="namespacepmm.html#a8b10fe7af34016c8604a3f2b90f8b8c1">PmmError</a> err) noexcept</td></tr>
-<tr class="memdesc:a1eff6e80b9b6d8a75935676678684e89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the last error code (for use by utility functions like <a class="el" href="io_8h.html" title="Утилиты файлового ввода/вывода для PersistMemoryManager (Issue #102, #110)">io.h</a>).  <br /></td></tr>
+<tr class="memdesc:a1eff6e80b9b6d8a75935676678684e89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the last error code (for use by utility functions like <a class="el" href="io_8h.html" title="Утилиты файлового ввода/вывода для PersistMemoryManager.">io.h</a>).  <br /></td></tr>
 <tr class="separator:a1eff6e80b9b6d8a75935676678684e89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa013ea3a201ed0b5a7aca5548540e071" id="r_aa013ea3a201ed0b5a7aca5548540e071"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#aa013ea3a201ed0b5a7aca5548540e071">create</a> (std::size_t initial_size) noexcept</td></tr>
 <tr class="memdesc:aa013ea3a201ed0b5a7aca5548540e071"><td class="mdescLeft">&#160;</td><td class="mdescRight">Инициализировать менеджер с заданным начальным размером.  <br /></td></tr>
@@ -157,13 +156,13 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a1a06f87ac39f15a244522178c3576b22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load existing state from backend (compatibility path — no diagnostics report).  <br /></td></tr>
 <tr class="separator:a1a06f87ac39f15a244522178c3576b22"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a304fbbe8e30c9db5a12135ea0c2331e2" id="r_a304fbbe8e30c9db5a12135ea0c2331e2"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a304fbbe8e30c9db5a12135ea0c2331e2">load</a> (<a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
-<tr class="memdesc:a304fbbe8e30c9db5a12135ea0c2331e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load existing state from backend with structured diagnostics (Issue #245).  <br /></td></tr>
+<tr class="memdesc:a304fbbe8e30c9db5a12135ea0c2331e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load existing state from backend with structured diagnostics.  <br /></td></tr>
 <tr class="separator:a304fbbe8e30c9db5a12135ea0c2331e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a001123ac8daaf9da6e882fa6559a3131" id="r_a001123ac8daaf9da6e882fa6559a3131"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a001123ac8daaf9da6e882fa6559a3131">destroy</a> () noexcept</td></tr>
 <tr class="memdesc:a001123ac8daaf9da6e882fa6559a3131"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сбросить состояние менеджера (не освобождает бэкенд).  <br /></td></tr>
 <tr class="separator:a001123ac8daaf9da6e882fa6559a3131"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55c4db722ac210db29a7cfc73d4cc544" id="r_a55c4db722ac210db29a7cfc73d4cc544"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a55c4db722ac210db29a7cfc73d4cc544">is_initialized</a> () noexcept</td></tr>
-<tr class="memdesc:a55c4db722ac210db29a7cfc73d4cc544"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, инициализирован ли менеджер. Issue #172: _initialized is std::atomic&lt;bool&gt; — lock-free fast path.  <br /></td></tr>
+<tr class="memdesc:a55c4db722ac210db29a7cfc73d4cc544"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, инициализирован ли менеджер. _initialized is std::atomic&lt;bool&gt; — lock-free fast path.  <br /></td></tr>
 <tr class="separator:a55c4db722ac210db29a7cfc73d4cc544"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b67c007f4096ead20874e3fb3c39ec8" id="r_a4b67c007f4096ead20874e3fb3c39ec8"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a4b67c007f4096ead20874e3fb3c39ec8">allocate</a> (std::size_t user_size) noexcept</td></tr>
 <tr class="memdesc:a4b67c007f4096ead20874e3fb3c39ec8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Выделить <code>user_size</code> байт в управляемой области.  <br /></td></tr>
@@ -172,10 +171,10 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a137ddd1f39a739af82dd2450c02a8208"><td class="mdescLeft">&#160;</td><td class="mdescRight">Освободить блок по указателю на пользовательские данные.  <br /></td></tr>
 <tr class="separator:a137ddd1f39a739af82dd2450c02a8208"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a835d614b7a4f678729d1fbd58e42dcb5" id="r_a835d614b7a4f678729d1fbd58e42dcb5"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a835d614b7a4f678729d1fbd58e42dcb5">lock_block_permanent</a> (void *ptr) noexcept</td></tr>
-<tr class="memdesc:a835d614b7a4f678729d1fbd58e42dcb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Заблокировать блок навечно — сделать его невозможным для освобождения (Issue #126).  <br /></td></tr>
+<tr class="memdesc:a835d614b7a4f678729d1fbd58e42dcb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Заблокировать блок навечно — сделать его невозможным для освобождения.  <br /></td></tr>
 <tr class="separator:a835d614b7a4f678729d1fbd58e42dcb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3d073c0cdff0cf27816432777c01053" id="r_ab3d073c0cdff0cf27816432777c01053"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#ab3d073c0cdff0cf27816432777c01053">is_permanently_locked</a> (const void *ptr) noexcept</td></tr>
-<tr class="memdesc:ab3d073c0cdff0cf27816432777c01053"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, заблокирован ли блок навечно (Issue #126).  <br /></td></tr>
+<tr class="memdesc:ab3d073c0cdff0cf27816432777c01053"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, заблокирован ли блок навечно.  <br /></td></tr>
 <tr class="separator:ab3d073c0cdff0cf27816432777c01053"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1195a62d6d1ad521671f983a6f1fdbee" id="r_a1195a62d6d1ad521671f983a6f1fdbee"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a1195a62d6d1ad521671f983a6f1fdbee"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a1195a62d6d1ad521671f983a6f1fdbee">allocate_typed</a> () noexcept</td></tr>
@@ -203,7 +202,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a30e91e045b6e24a22313cebce340ed33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36771449706607318c6da56083968d26" id="r_a36771449706607318c6da56083968d26"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Args&gt; </td></tr>
 <tr class="memitem:a36771449706607318c6da56083968d26"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classpmm_1_1typed__guard.html">typed_guard</a>&lt; T, <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a36771449706607318c6da56083968d26">make_guard</a> (Args &amp;&amp;... args)</td></tr>
-<tr class="memdesc:a36771449706607318c6da56083968d26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a typed object and wrap it in a RAII scope-guard (Issue #235). The guard calls free_data()/free_all() + <a class="el" href="classpmm_1_1PersistMemoryManager.html#a30e91e045b6e24a22313cebce340ed33" title="Разрушить объект типа T (вызвать деструктор) и освободить память.">destroy_typed()</a> on scope exit.  <br /></td></tr>
+<tr class="memdesc:a36771449706607318c6da56083968d26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a typed object and wrap it in a RAII scope-guard. The guard calls free_data()/free_all() + <a class="el" href="classpmm_1_1PersistMemoryManager.html#a30e91e045b6e24a22313cebce340ed33" title="Разрушить объект типа T (вызвать деструктор) и освободить память.">destroy_typed()</a> on scope exit.  <br /></td></tr>
 <tr class="separator:a36771449706607318c6da56083968d26"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9742dd880c10aef9271a2a71a73d13d" id="r_aa9742dd880c10aef9271a2a71a73d13d"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:aa9742dd880c10aef9271a2a71a73d13d"><td class="memTemplItemLeft" align="right" valign="top">static T *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#aa9742dd880c10aef9271a2a71a73d13d">resolve</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p) noexcept</td></tr>
@@ -215,15 +214,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a62ff142221c6e1e54e6aee2b72588d72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9e620674b16d3b5395edd976b2210d8" id="r_ae9e620674b16d3b5395edd976b2210d8"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:ae9e620674b16d3b5395edd976b2210d8"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#ae9e620674b16d3b5395edd976b2210d8">pptr_from_byte_offset</a> (std::size_t byte_off) noexcept</td></tr>
-<tr class="memdesc:ae9e620674b16d3b5395edd976b2210d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Создать <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> из байтового смещения (Issue #211, Phase 4.4). Обратная операция к <a class="el" href="classpmm_1_1pptr.html#a26dbccf8fd0c7995dcdf12d13deb625e" title="Получить байтовое смещение из гранульного индекса (Issue #211, Phase 4.4).">pptr::byte_offset()</a>. Смещение должно быть кратно granule_size.  <br /></td></tr>
+<tr class="memdesc:ae9e620674b16d3b5395edd976b2210d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Создать <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> из байтового смещения. Обратная операция к <a class="el" href="classpmm_1_1pptr.html#a26dbccf8fd0c7995dcdf12d13deb625e" title="Получить байтовое смещение из гранульного индекса.">pptr::byte_offset()</a>. Смещение должно быть кратно granule_size.  <br /></td></tr>
 <tr class="separator:ae9e620674b16d3b5395edd976b2210d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27d4816b2748eeecf20a35c73104784d" id="r_a27d4816b2748eeecf20a35c73104784d"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a27d4816b2748eeecf20a35c73104784d"><td class="memTemplItemLeft" align="right" valign="top">static bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a27d4816b2748eeecf20a35c73104784d">is_valid_ptr</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p) noexcept</td></tr>
-<tr class="memdesc:a27d4816b2748eeecf20a35c73104784d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, что pptr указывает на валидную область внутри кучи (Issue #43 Phase 1.2).  <br /></td></tr>
+<tr class="memdesc:a27d4816b2748eeecf20a35c73104784d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверить, что pptr указывает на валидную область внутри кучи.  <br /></td></tr>
 <tr class="separator:a27d4816b2748eeecf20a35c73104784d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e382a49a504d23a795f451ef0ed6a32" id="r_a2e382a49a504d23a795f451ef0ed6a32"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a2e382a49a504d23a795f451ef0ed6a32"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a2e382a49a504d23a795f451ef0ed6a32">set_root</a> (<a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt; p) noexcept</td></tr>
-<tr class="memdesc:a2e382a49a504d23a795f451ef0ed6a32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить корневой объект в ManagerHeader (Issue #200, Phase 3.7).  <br /></td></tr>
+<tr class="memdesc:a2e382a49a504d23a795f451ef0ed6a32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Установить корневой объект в ManagerHeader.  <br /></td></tr>
 <tr class="separator:a2e382a49a504d23a795f451ef0ed6a32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1258120c73e4ca3c783b58fda582e4ad" id="r_a1258120c73e4ca3c783b58fda582e4ad"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a1258120c73e4ca3c783b58fda582e4ad"><td class="memTemplItemLeft" align="right" valign="top">static <a class="el" href="classpmm_1_1PersistMemoryManager.html#a9c3a9c4378e72b57955abc41a466d4c3">pptr</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a1258120c73e4ca3c783b58fda582e4ad">get_root</a> () noexcept</td></tr>
@@ -236,7 +235,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a222751039ae5528daa92999d69a7c587" id="r_a222751039ae5528daa92999d69a7c587"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a222751039ae5528daa92999d69a7c587">has_domain</a> (const char *name) noexcept</td></tr>
 <tr class="separator:a222751039ae5528daa92999d69a7c587"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab039de38337c947652bffb167ca04b67" id="r_ab039de38337c947652bffb167ca04b67"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#ab039de38337c947652bffb167ca04b67">validate_bootstrap_invariants</a> () noexcept</td></tr>
-<tr class="memdesc:ab039de38337c947652bffb167ca04b67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify that all bootstrap invariants hold (Issue #241). Returns true iff the image is a valid, self-described persistent environment.  <br /></td></tr>
+<tr class="memdesc:ab039de38337c947652bffb167ca04b67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify that all bootstrap invariants hold. Returns true iff the image is a valid, self-described persistent environment.  <br /></td></tr>
 <tr class="separator:ab039de38337c947652bffb167ca04b67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a640008da18990a73e9daaddcc66697" id="r_a2a640008da18990a73e9daaddcc66697"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1PersistMemoryManager.html#a2a640008da18990a73e9daaddcc66697">register_domain</a> (const char *name) noexcept</td></tr>
 <tr class="separator:a2a640008da18990a73e9daaddcc66697"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -462,8 +461,6 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
       </table>
 </div><div class="memdoc">
 
-<p>Issue #202, Phase 4.2. </p>
-
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00096">96</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
 </div>
@@ -504,10 +501,10 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Алиас для STL-совместимого аллокатора (Issue #198, Phase 3.5). </p>
+<p>Алиас для STL-совместимого аллокатора. </p>
 <p>Позволяет писать: </p><div class="fragment"><div class="line">std::vector&lt;int, Mgr::pallocator&lt;int&gt;&gt; vec;</div>
 <div class="line">vec.push_back(42);</div>
-</div><!-- fragment --><p> вместо <code>std::vector&lt;int, <a class="el" href="structpmm_1_1pallocator.html" title="STL-compatible allocator backed by PersistMemoryManager (Issue #198, Phase 3.5).">pmm::pallocator</a>&lt;int, Mgr&gt;&gt; vec;</code></p>
+</div><!-- fragment --><p> вместо <code>std::vector&lt;int, <a class="el" href="structpmm_1_1pallocator.html" title="STL-compatible allocator backed by PersistMemoryManager.">pmm::pallocator</a>&lt;int, Mgr&gt;&gt; vec;</code></p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип элемента. </td></tr>
@@ -535,11 +532,11 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Алиас для персистентного массива с O(1) индексацией (Issue #195, Phase 3.2). </p>
+<p>Алиас для персистентного массива с O(1) индексацией. </p>
 <p>Позволяет писать: </p><div class="fragment"><div class="line">Mgr::parray&lt;int&gt; arr;</div>
 <div class="line">arr.push_back(42);</div>
 <div class="line"><span class="keywordtype">int</span>* elem = arr.at(0);</div>
-</div><!-- fragment --><p> вместо <code><a class="el" href="structpmm_1_1parray.html" title="Persistent dynamic array with O(1) random access (Issue #195, Phase 3.2).">pmm::parray</a>&lt;int, Mgr&gt; arr;</code></p>
+</div><!-- fragment --><p> вместо <code><a class="el" href="structpmm_1_1parray.html" title="Persistent dynamic array with O(1) random access.">pmm::parray</a>&lt;int, Mgr&gt; arr;</code></p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип элемента. Должен быть trivially copyable. </td></tr>
@@ -571,7 +568,7 @@ template&lt;typename _K , typename _V &gt; </div>
 <p>Позволяет использовать краткий синтаксис: </p><div class="fragment"><div class="line">Mgr::pmap&lt;int, int&gt; map;</div>
 <div class="line">map.insert(42, 100);</div>
 <div class="line"><span class="keyword">auto</span> p = map.find(42);</div>
-</div><!-- fragment --><p> вместо <code><a class="el" href="structpmm_1_1pmap.html" title="Персистентный ассоциативный контейнер (словарь) на основе AVL-дерева (Issue #153).">pmm::pmap</a>&lt;int, int, Mgr&gt; map;</code></p>
+</div><!-- fragment --><p> вместо <code><a class="el" href="structpmm_1_1pmap.html" title="Персистентный ассоциативный контейнер (словарь) на основе AVL-дерева.">pmm::pmap</a>&lt;int, int, Mgr&gt; map;</code></p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">_K</td><td>Тип ключа. Должен поддерживать operator&lt; и operator==. </td></tr>
@@ -600,10 +597,10 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Алиас для персистентного пула объектов (Issue #199, Phase 3.6). </p>
+<p>Алиас для персистентного пула объектов. </p>
 <p>Позволяет писать: </p><div class="fragment"><div class="line">Mgr::pptr&lt;Mgr::ppool&lt;int&gt;&gt; pool = Mgr::create_typed&lt;Mgr::ppool&lt;int&gt;&gt;();</div>
 <div class="line"><span class="keywordtype">int</span>* obj = pool-&gt;allocate();</div>
-</div><!-- fragment --><p> вместо <code>Mgr::pptr&lt;<a class="el" href="structpmm_1_1ppool.html" title="Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).">pmm::ppool</a>&lt;int, Mgr&gt;&gt; pool = ...;</code></p>
+</div><!-- fragment --><p> вместо <code>Mgr::pptr&lt;<a class="el" href="structpmm_1_1ppool.html" title="Persistent object pool with O(1) allocate/deallocate.">pmm::ppool</a>&lt;int, Mgr&gt;&gt; pool = ...;</code></p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип объекта. Должен быть trivially copyable. </td></tr>
@@ -661,7 +658,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 <p>Псевдоним для мутабельной персистентной строки, привязанной к данному менеджеру. </p>
 <p>Позволяет использовать краткий синтаксис: </p><div class="fragment"><div class="line">Mgr::pptr&lt;Mgr::pstring&gt; p = Mgr::create_typed&lt;Mgr::pstring&gt;();</div>
 <div class="line">p-&gt;assign(<span class="stringliteral">&quot;hello&quot;</span>);</div>
-</div><!-- fragment --><p> вместо <code>Mgr::pptr&lt;<a class="el" href="structpmm_1_1pstring.html" title="Мутабельная персистентная строка (Issue #45, Phase 3.1).">pmm::pstring</a>&lt;Mgr&gt;&gt; p = ...;</code> </p>
+</div><!-- fragment --><p> вместо <code>Mgr::pptr&lt;<a class="el" href="structpmm_1_1pstring.html" title="Мутабельная персистентная строка.">pmm::pstring</a>&lt;Mgr&gt;&gt; p = ...;</code> </p>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00138">138</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
@@ -683,7 +680,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 
 <p>Псевдоним для персистентной интернированной строки, привязанной к данному менеджеру. </p>
 <p>Позволяет использовать краткий синтаксис: </p><div class="fragment"><div class="line">Mgr::pptr&lt;Mgr::pstringview&gt; p = Mgr::pstringview(<span class="stringliteral">&quot;hello&quot;</span>);</div>
-</div><!-- fragment --><p> вместо <code>Mgr::pptr&lt;<a class="el" href="structpmm_1_1pstringview.html" title="Персистентная интернированная read-only строка (Issue #151, #184).">pmm::pstringview</a>&lt;Mgr&gt;&gt; p = <a class="el" href="structpmm_1_1pstringview.html" title="Персистентная интернированная read-only строка (Issue #151, #184).">pmm::pstringview</a>&lt;Mgr&gt;("hello");</code> </p>
+</div><!-- fragment --><p> вместо <code>Mgr::pptr&lt;<a class="el" href="structpmm_1_1pstringview.html" title="Персистентная интернированная read-only строка.">pmm::pstringview</a>&lt;Mgr&gt;&gt; p = <a class="el" href="structpmm_1_1pstringview.html" title="Персистентная интернированная read-only строка.">pmm::pstringview</a>&lt;Mgr&gt;("hello");</code> </p>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00126">126</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
@@ -1387,10 +1384,10 @@ template&lt;typename Callback &gt; </div>
 </div><div class="memdoc">
 
 <p>Обойти только свободные блоки в AVL-дереве и вызвать callback для каждого. </p>
-<p>Callback принимает <code><a class="el" href="structpmm_1_1FreeBlockView.html" title="View of a single free block in the AVL tree for visualisation (Issue #65). All _offset fields are byt...">FreeBlockView</a></code> — описание свободного блока (смещение, размер, AVL-ссылки, высота). Итерация выполняется in-order (по возрастанию размера блока).</p>
+<p>Callback принимает <code><a class="el" href="structpmm_1_1FreeBlockView.html" title="View of a single free block in the AVL tree for visualisation. All _offset fields are byte offsets in...">FreeBlockView</a></code> — описание свободного блока (смещение, размер, AVL-ссылки, высота). Итерация выполняется in-order (по возрастанию размера блока).</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">Callback</td><td>Тип callable: <code>void(const <a class="el" href="structpmm_1_1FreeBlockView.html" title="View of a single free block in the AVL tree for visualisation (Issue #65). All _offset fields are byt...">pmm::FreeBlockView</a>&amp;)</code>. </td></tr>
+    <tr><td class="paramname">Callback</td><td>Тип callable: <code>void(const <a class="el" href="structpmm_1_1FreeBlockView.html" title="View of a single free block in the AVL tree for visualisation. All _offset fields are byte offsets in...">pmm::FreeBlockView</a>&amp;)</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1913,7 +1910,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p>Проверить, инициализирован ли менеджер. Issue #172: _initialized is std::atomic&lt;bool&gt; — lock-free fast path. </p>
+<p>Проверить, инициализирован ли менеджер. _initialized is std::atomic&lt;bool&gt; — lock-free fast path. </p>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00430">430</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
@@ -1945,7 +1942,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p>Проверить, заблокирован ли блок навечно (Issue #126). </p>
+<p>Проверить, заблокирован ли блок навечно. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ptr</td><td>Указатель на пользовательские данные. </td></tr>
@@ -1986,7 +1983,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Проверить, что pptr указывает на валидную область внутри кучи (Issue #43 Phase 1.2). </p>
+<p>Проверить, что pptr указывает на валидную область внутри кучи. </p>
 <p>Выполняет runtime-проверку: смещение не выходит за границы управляемой области и достаточно места для sizeof(T). Не проверяет, что блок действительно выделен.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
@@ -2063,7 +2060,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </div><div class="memdoc">
 
 <p>Load existing state from backend (compatibility path — no diagnostics report). </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>Prefer <a class="el" href="classpmm_1_1PersistMemoryManager.html#a304fbbe8e30c9db5a12135ea0c2331e2" title="Load existing state from backend with structured diagnostics (Issue #245).">load(VerifyResult&amp;)</a> to get structured diagnostics on any repairs performed. This overload is kept for backward compatibility only (Issue #245). </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>Prefer <a class="el" href="classpmm_1_1PersistMemoryManager.html#a304fbbe8e30c9db5a12135ea0c2331e2" title="Load existing state from backend with structured diagnostics.">load(VerifyResult&amp;)</a> to get structured diagnostics on any repairs performed. This overload is kept for backward compatibility only. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00299">299</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
@@ -2095,7 +2092,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p>Load existing state from backend with structured diagnostics (Issue #245). </p>
+<p>Load existing state from backend with structured diagnostics. </p>
 <p>Performs verify-then-repair: first detects all violations, then applies documented fixes. The <a class="el" href="structpmm_1_1VerifyResult.html" title="Aggregated result of a verify or repair pass.">VerifyResult</a> records every repair action taken. Header corruption (magic, size, granule) is non-recoverable and aborts load.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -2135,7 +2132,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p>Заблокировать блок навечно — сделать его невозможным для освобождения (Issue #126). </p>
+<p>Заблокировать блок навечно — сделать его невозможным для освобождения. </p>
 <p>После вызова этого метода блок не может быть освобождён через <a class="el" href="classpmm_1_1PersistMemoryManager.html#a137ddd1f39a739af82dd2450c02a8208" title="Освободить блок по указателю на пользовательские данные.">deallocate()</a>. Предназначено для блоков, содержащих постоянные данные (например, словарь stringview).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -2177,7 +2174,7 @@ template&lt;typename T , typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Create a typed object and wrap it in a RAII scope-guard (Issue #235). The guard calls free_data()/free_all() + <a class="el" href="classpmm_1_1PersistMemoryManager.html#a30e91e045b6e24a22313cebce340ed33" title="Разрушить объект типа T (вызвать деструктор) и освободить память.">destroy_typed()</a> on scope exit. </p>
+<p>Create a typed object and wrap it in a RAII scope-guard. The guard calls free_data()/free_all() + <a class="el" href="classpmm_1_1PersistMemoryManager.html#a30e91e045b6e24a22313cebce340ed33" title="Разрушить объект типа T (вызвать деструктор) и освободить память.">destroy_typed()</a> on scope exit. </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classpmm_1_1typed__guard.html" title="RAII scope-guard for persistent typed objects.">typed_guard</a> </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00732">732</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
@@ -2212,7 +2209,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Создать <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> из байтового смещения (Issue #211, Phase 4.4). Обратная операция к <a class="el" href="classpmm_1_1pptr.html#a26dbccf8fd0c7995dcdf12d13deb625e" title="Получить байтовое смещение из гранульного индекса (Issue #211, Phase 4.4).">pptr::byte_offset()</a>. Смещение должно быть кратно granule_size. </p>
+<p>Создать <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> из байтового смещения. Обратная операция к <a class="el" href="classpmm_1_1pptr.html#a26dbccf8fd0c7995dcdf12d13deb625e" title="Получить байтовое смещение из гранульного индекса.">pptr::byte_offset()</a>. Смещение должно быть кратно granule_size. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип данных.</td></tr>
@@ -2516,7 +2513,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p>Set the last error code (for use by utility functions like <a class="el" href="io_8h.html" title="Утилиты файлового ввода/вывода для PersistMemoryManager (Issue #102, #110)">io.h</a>). </p>
+<p>Set the last error code (for use by utility functions like <a class="el" href="io_8h.html" title="Утилиты файлового ввода/вывода для PersistMemoryManager.">io.h</a>). </p>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00208">208</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 
@@ -2550,7 +2547,7 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Установить корневой объект в ManagerHeader (Issue #200, Phase 3.7). </p>
+<p>Установить корневой объект в ManagerHeader. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип объекта.</td></tr>
@@ -2899,7 +2896,7 @@ template&lt;typename ConfigT  = CacheManagerConfig, std::size_t InstanceId = 0&g
 </table>
 </div><div class="memdoc">
 
-<p>Verify that all bootstrap invariants hold (Issue #241). Returns true iff the image is a valid, self-described persistent environment. </p>
+<p>Verify that all bootstrap invariants hold. Returns true iff the image is a valid, self-described persistent environment. </p>
 
 <p class="definition">Definition at line <a class="el" href="persist__memory__manager_8h_source.html#l00862">862</a> of file <a class="el" href="persist__memory__manager_8h_source.html">persist_memory_manager.h</a>.</p>
 

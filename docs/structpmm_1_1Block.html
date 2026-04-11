@@ -141,7 +141,7 @@ Protected Attributes</h2></td></tr>
 <tr class="memdesc:aa55953de2301f09d07416860ab05cbf4 inherit pro_attribs_structpmm_1_1TreeNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Высота AVL-поддерева (0 = узел не в дереве).  <br /></td></tr>
 <tr class="separator:aa55953de2301f09d07416860ab05cbf4 inherit pro_attribs_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a036af7961dcc42d6e9adb84e37d85d02 inherit pro_attribs_structpmm_1_1TreeNode" id="r_a036af7961dcc42d6e9adb84e37d85d02"><td class="memItemLeft" align="right" valign="top">std::uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1TreeNode.html#a036af7961dcc42d6e9adb84e37d85d02">node_type</a></td></tr>
-<tr class="memdesc:a036af7961dcc42d6e9adb84e37d85d02 inherit pro_attribs_structpmm_1_1TreeNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Тип узла (Issue #126): kNodeReadWrite (0) = чтение/запись, kNodeReadOnly (1) = только чтение.  <br /></td></tr>
+<tr class="memdesc:a036af7961dcc42d6e9adb84e37d85d02 inherit pro_attribs_structpmm_1_1TreeNode"><td class="mdescLeft">&#160;</td><td class="mdescRight">Тип узла: kNodeReadWrite (0) = чтение/запись, kNodeReadOnly (1) = только чтение.  <br /></td></tr>
 <tr class="separator:a036af7961dcc42d6e9adb84e37d85d02 inherit pro_attribs_structpmm_1_1TreeNode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
@@ -195,18 +195,17 @@ Additional Inherited Members</h2></td></tr>
 struct pmm::Block&lt; AddressTraitsT &gt;</div><p>Блок памяти ПАП — составной тип. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства (из <a class="el" href="address__traits_8h.html" title="AddressTraits — адресное пространство ПАП (Issue #87 Phase 1, #146).">address_traits.h</a>). Определяет тип индексных полей.</td></tr>
+    <tr><td class="paramname">AddressTraitsT</td><td>Traits адресного пространства (из <a class="el" href="address__traits_8h.html" title="AddressTraits — адресное пространство ПАП.">address_traits.h</a>). Определяет тип индексных полей.</td></tr>
   </table>
   </dd>
 </dl>
-<p>Наследует TreeNode&lt;AddressTraitsT&gt;. Поля связного списка (prev_offset, next_offset) хранятся прямо в <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> (Issue #138: LinkedListNode удалена как отдельная сущность).</p>
-<p>Доступ к полям:</p><ul>
+<p>Наследует TreeNode&lt;AddressTraitsT&gt;. Поля связного списка (prev_offset, next_offset) хранятся прямо в <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> Доступ к полям:</p><ul>
 <li>prev_offset, next_offset — прямые поля <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a></li>
 <li>weight, left_offset, right_offset, parent_offset, root_offset, avl_height, node_type — через <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a></li>
 </ul>
 <p>При AddressTraitsT = DefaultAddressTraits (uint32_t, 16): sizeof(Block&lt;DefaultAddressTraits&gt;) == 32 байта Layout: [0..23] <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a> fields, [24..31] prev_offset, next_offset </p>
 
-<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00065">65</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00062">62</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a5367137d23399bb1a28ec849cabab928" name="a5367137d23399bb1a28ec849cabab928"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5367137d23399bb1a28ec849cabab928">&#9670;&#160;</a></span>address_traits</h2>
@@ -222,7 +221,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00067">67</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00064">64</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
 
 </div>
 </div>
@@ -240,7 +239,7 @@ template&lt;typename AddressTraitsT &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00068">68</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00065">65</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
 
 </div>
 </div>
@@ -269,7 +268,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Гранульный индекс следующего блока (или no_block). </p>
 
-<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00074">74</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00071">71</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
 
 </div>
 </div>
@@ -297,7 +296,7 @@ template&lt;typename AddressTraitsT &gt; </div>
 
 <p>Гранульный индекс предыдущего блока (или no_block). </p>
 
-<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00072">72</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="block_8h_source.html#l00069">69</a> of file <a class="el" href="block_8h_source.html">block.h</a>.</p>
 
 </div>
 </div>

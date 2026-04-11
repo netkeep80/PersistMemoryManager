@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Утилиты файлового ввода/вывода для PersistMemoryManager (Issue #102, #110)  
+<p>Утилиты файлового ввода/вывода для PersistMemoryManager.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="diagnostics_8h_source.html">pmm/diagnostics.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="types_8h_source.html">pmm/types.h</a>&quot;</code><br />
@@ -98,33 +98,33 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespacepmm" id="r_namespacepmm"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm.html">pmm</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespacepmm_1_1detail" id="r_namespacepmm_1_1detail"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html">pmm::detail</a></td></tr>
-<tr class="memdesc:namespacepmm_1_1detail"><td class="mdescLeft">&#160;</td><td class="mdescRight">Унифицированный статический менеджер персистентной памяти (Issue #110). <br /></td></tr>
+<tr class="memdesc:namespacepmm_1_1detail"><td class="mdescLeft">&#160;</td><td class="mdescRight">Унифицированный статический менеджер персистентной памяти. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a02099bcb0dd9e581347c38d4ac4d9671" id="r_a02099bcb0dd9e581347c38d4ac4d9671"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepmm_1_1detail.html#a02099bcb0dd9e581347c38d4ac4d9671">pmm::detail::atomic_rename</a> (<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">tmp_path</a>, <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">const</a> <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">char</a> *<a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">final_path</a>) <a class="el" href="namespacepmm_1_1detail.html#ad76d7884ca672f08c204dde004e958b4">noexcept</a></td></tr>
-<tr class="memdesc:a02099bcb0dd9e581347c38d4ac4d9671"><td class="mdescLeft">&#160;</td><td class="mdescRight">Issue #43 Phase 2.2: Atomic file rename (write-then-rename pattern). On POSIX: std::rename is atomic if source and dest are on the same filesystem. On Windows: MoveFileExA with MOVEFILE_REPLACE_EXISTING.  <br /></td></tr>
+<tr class="memdesc:a02099bcb0dd9e581347c38d4ac4d9671"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atomic file rename (write-then-rename pattern). On POSIX: std::rename is atomic if source and dest are on the same filesystem. On Windows: MoveFileExA with MOVEFILE_REPLACE_EXISTING.  <br /></td></tr>
 <tr class="separator:a02099bcb0dd9e581347c38d4ac4d9671"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa84c31a0bacf0828dc85574f21ab8e3f" id="r_aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
 <tr class="memitem:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#aa84c31a0bacf0828dc85574f21ab8e3f">pmm::save_manager</a> (const char *filename)</td></tr>
-<tr class="memdesc:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сохранить образ <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> в файл (Issue #110 — статический интерфейс).  <br /></td></tr>
+<tr class="memdesc:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сохранить образ <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> в файл.  <br /></td></tr>
 <tr class="separator:aa84c31a0bacf0828dc85574f21ab8e3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8042ef62b5754498afc820dc45e9d106" id="r_a8042ef62b5754498afc820dc45e9d106"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
 <tr class="memitem:a8042ef62b5754498afc820dc45e9d106"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a8042ef62b5754498afc820dc45e9d106">pmm::load_manager_from_file</a> (const char *filename, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result)</td></tr>
-<tr class="memdesc:a8042ef62b5754498afc820dc45e9d106"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> с диагностикой (Issue #245).  <br /></td></tr>
+<tr class="memdesc:a8042ef62b5754498afc820dc45e9d106"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> с диагностикой.  <br /></td></tr>
 <tr class="separator:a8042ef62b5754498afc820dc45e9d106"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d63117e7feeaea782f0f3f420830b1a" id="r_a3d63117e7feeaea782f0f3f420830b1a"><td class="memTemplParams" colspan="2">template&lt;typename MgrT &gt; </td></tr>
 <tr class="memitem:a3d63117e7feeaea782f0f3f420830b1a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a3d63117e7feeaea782f0f3f420830b1a">pmm::load_manager_from_file</a> (const char *filename)</td></tr>
-<tr class="memdesc:a3d63117e7feeaea782f0f3f420830b1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> (Issue #110 — статический интерфейс).  <br /></td></tr>
+<tr class="memdesc:a3d63117e7feeaea782f0f3f420830b1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загрузить образ менеджера из файла в <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>.  <br /></td></tr>
 <tr class="separator:a3d63117e7feeaea782f0f3f420830b1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Утилиты файлового ввода/вывода для PersistMemoryManager (Issue #102, #110) </p>
+<div class="textblock"><p>Утилиты файлового ввода/вывода для PersistMemoryManager. </p>
 <p>Вспомогательный заголовочный файл с функциями сохранения и загрузки образа памяти в/из файла. Вынесен в отдельный файл, так как файловый ввод/вывод не является основной функциональностью менеджера памяти, но необходим для тестов и примеров использования персистентности.</p>
-<p>Issue #43 Phase 2.1: CRC32 checksum — save_manager computes and stores CRC32 in the ManagerHeader.crc32 field; load_manager_from_file verifies it.</p>
-<p>Issue #43 Phase 2.2: Atomic save — save_manager writes to a temporary file (filename + ".tmp") and atomically renames it to the target on success.</p>
-<p>Использование (Issue #110 — статический интерфейс): </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="manager__configs_8h.html">pmm/manager_configs.h</a>&quot;</span></div>
+<p>CRC32 checksum — save_manager computes and stores CRC32 in the ManagerHeader.crc32 field; load_manager_from_file verifies it.</p>
+<p>Atomic save — save_manager writes to a temporary file (filename + ".tmp") and atomically renames it to the target on success.</p>
+<p>Использование: </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="manager__configs_8h.html">pmm/manager_configs.h</a>&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;<a class="code" href="persist__memory__manager_8h.html">pmm/persist_memory_manager.h</a>&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;<a class="code" href="io_8h.html">pmm/io.h</a>&quot;</span></div>
 <div class="line"> </div>
@@ -138,10 +138,10 @@ Functions</h2></td></tr>
 <div class="line">MyMgr::create(64 * 1024);</div>
 <div class="line"><span class="keywordtype">bool</span> ok2 = pmm::load_manager_from_file&lt;MyMgr&gt;(<span class="stringliteral">&quot;heap.dat&quot;</span>);</div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00087">persist_memory_manager.h:88</a></div></div>
-<div class="ttc" id="aio_8h_html"><div class="ttname"><a href="io_8h.html">io.h</a></div><div class="ttdoc">Утилиты файлового ввода/вывода для PersistMemoryManager (Issue #102, #110)</div></div>
-<div class="ttc" id="amanager__configs_8h_html"><div class="ttname"><a href="manager__configs_8h.html">manager_configs.h</a></div><div class="ttdoc">Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).</div></div>
-<div class="ttc" id="apersist__memory__manager_8h_html"><div class="ttname"><a href="persist__memory__manager_8h.html">persist_memory_manager.h</a></div><div class="ttdoc">PersistMemoryManager — unified static persistent memory manager (Issue #110).</div></div>
-</div><!-- fragment --><dl class="section version"><dt>Version</dt><dd>0.3 (Issue #43 Phase 2 — CRC32 + atomic save) </dd></dl>
+<div class="ttc" id="aio_8h_html"><div class="ttname"><a href="io_8h.html">io.h</a></div><div class="ttdoc">Утилиты файлового ввода/вывода для PersistMemoryManager.</div></div>
+<div class="ttc" id="amanager__configs_8h_html"><div class="ttname"><a href="manager__configs_8h.html">manager_configs.h</a></div><div class="ttdoc">Готовые конфигурационные структуры для менеджеров ПАП.</div></div>
+<div class="ttc" id="apersist__memory__manager_8h_html"><div class="ttname"><a href="persist__memory__manager_8h.html">persist_memory_manager.h</a></div><div class="ttdoc">PersistMemoryManager — unified static persistent memory manager.</div></div>
+</div><!-- fragment --><dl class="section version"><dt>Version</dt><dd>0.3 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 </div></div><!-- contents -->

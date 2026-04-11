@@ -137,7 +137,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a662a02032812dd269629a2e145f038b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency for all blocks without modification.  <br /></td></tr>
 <tr class="separator:a662a02032812dd269629a2e145f038b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55f2cbf445c459b04d402f65f7e0a8a5" id="r_a55f2cbf445c459b04d402f65f7e0a8a5"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a55f2cbf445c459b04d402f65f7e0a8a5">verify_free_tree</a> (const std::uint8_t *base, const <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
-<tr class="memdesc:a55f2cbf445c459b04d402f65f7e0a8a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify free tree root consistency without modifying the image (Issue #245).  <br /></td></tr>
+<tr class="memdesc:a55f2cbf445c459b04d402f65f7e0a8a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify free tree root consistency without modifying the image.  <br /></td></tr>
 <tr class="separator:a55f2cbf445c459b04d402f65f7e0a8a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ece7f551af631f6e36d49a18c155255" id="r_a2ece7f551af631f6e36d49a18c155255"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1AllocatorPolicy.html#a2ece7f551af631f6e36d49a18c155255">realloc_shrink</a> (std::uint8_t *base, <a class="el" href="structpmm_1_1detail_1_1ManagerHeader.html">detail::ManagerHeader</a>&lt; AddressTraitsT &gt; *hdr, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> blk_idx, void *blk_raw, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> old_data_gran, <a class="el" href="classpmm_1_1AllocatorPolicy.html#a8d3fa77a13bef58140aae467f0aaf3a5">index_type</a> new_data_gran) noexcept</td></tr>
 <tr class="memdesc:a2ece7f551af631f6e36d49a18c155255"><td class="mdescLeft">&#160;</td><td class="mdescRight">In-place shrink: update weight, split remainder into free block + coalesce.  <br /></td></tr>
@@ -158,7 +158,7 @@ class pmm::AllocatorPolicy&lt; FreeBlockTreeT, AddressTraitsT &gt;</div><p>По�
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00077">77</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00073">73</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a36d5f37f73bb26969f8fd0376c0a2cf3" name="a36d5f37f73bb26969f8fd0376c0a2cf3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36d5f37f73bb26969f8fd0376c0a2cf3">&#9670;&#160;</a></span>address_traits</h2>
@@ -174,7 +174,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00084">84</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00080">80</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -192,7 +192,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00088">88</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00084">84</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -210,7 +210,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00087">87</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00083">83</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -228,7 +228,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00085">85</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00081">81</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -246,7 +246,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00086">86</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00082">82</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -357,7 +357,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 
 <p>Выделить память из найденного свободного блока. </p>
 <p>Убирает блок из дерева свободных блоков, при необходимости разбивает его на два: один — под запрошенные данные, второй — остаток (снова свободный).</p>
-<p>Граф состояний (Issue #97/#106, см. <a class="el" href="block__state_8h.html" title="BlockState machine — автомат состояний блока для атомарных операций (Issue #93).">block_state.h</a>): <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> → <a class="el" href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева.">FreeBlockRemovedAVL</a> [remove_from_avl] → [split] <a class="el" href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два.">SplittingBlock</a> [begin_splitting] → initialize_new_block + link_new_block + AVL insert → <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a> [finalize_split] → [no split] <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a> [mark_as_allocated]</p>
+<p>Граф состояний: <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> → <a class="el" href="classpmm_1_1FreeBlockRemovedAVL.html" title="FreeBlockRemovedAVL — свободный блок, удалённый из AVL-дерева.">FreeBlockRemovedAVL</a> [remove_from_avl] → [split] <a class="el" href="classpmm_1_1SplittingBlock.html" title="SplittingBlock — блок в процессе разбиения на два.">SplittingBlock</a> [begin_splitting] → initialize_new_block + link_new_block + AVL insert → <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a> [finalize_split] → [no split] <a class="el" href="classpmm_1_1AllocatedBlock.html" title="AllocatedBlock — занятый блок в корректном состоянии.">AllocatedBlock</a> [mark_as_allocated]</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">base</td><td>Базовый указатель управляемой области. </td></tr>
@@ -370,7 +370,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 <dl class="section return"><dt>Returns</dt><dd>Указатель на пользовательские данные или nullptr. </dd></dl>
 <p>&lt; <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> header granules for this AT.</p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00115">115</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00111">111</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -418,7 +418,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 
 <p>Слить освобождённый блок с соседними свободными блоками. </p>
 <p>Если следующий или предыдущий блок свободен, объединяет их. Добавляет результирующий свободный блок в дерево.</p>
-<p>Граф состояний (Issue #97/#106, см. <a class="el" href="block__state_8h.html" title="BlockState machine — автомат состояний блока для атомарных операций (Issue #93).">block_state.h</a>): <a class="el" href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL.">FreeBlockNotInAVL</a> → <a class="el" href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями.">CoalescingBlock</a> [begin_coalescing] → [правый сосед free] coalesce_with_next → [левый сосед free] coalesce_with_prev → CoalescingBlock(prv) → finalize_coalesce → <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> → [нет соседей] finalize_coalesce → <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> [insert в AVL]</p>
+<p>Граф состояний: <a class="el" href="classpmm_1_1FreeBlockNotInAVL.html" title="FreeBlockNotInAVL — только что освобождённый блок, ещё не в AVL.">FreeBlockNotInAVL</a> → <a class="el" href="classpmm_1_1CoalescingBlock.html" title="CoalescingBlock — блок в процессе слияния с соседями.">CoalescingBlock</a> [begin_coalescing] → [правый сосед free] coalesce_with_next → [левый сосед free] coalesce_with_prev → CoalescingBlock(prv) → finalize_coalesce → <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> → [нет соседей] finalize_coalesce → <a class="el" href="classpmm_1_1FreeBlock.html" title="FreeBlock — свободный блок в корректном состоянии.">FreeBlock</a> [insert в AVL]</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">base</td><td>Базовый указатель управляемой области. </td></tr>
@@ -428,7 +428,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00209">209</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00205">205</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -522,7 +522,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 
 <p>Try in-place grow by absorbing adjacent free block. Returns true on success. </p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00582">582</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00578">578</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -588,7 +588,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 
 <p>In-place shrink: update weight, split remainder into free block + coalesce. </p>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00548">548</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00544">544</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -629,7 +629,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 </div><div class="memdoc">
 
 <p>Перестроить дерево свободных блоков. </p>
-<p>Сбрасывает все AVL-ссылки в блоках и заново вставляет свободные блоки. Вызывается при <code>load()</code> после восстановления менеджера из файла. Также вызывает <a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb" title="Восстановить блок в корректное состояние (при load()).">BlockState::recover_state</a> для каждого блока (Issue #106).</p>
+<p>Сбрасывает все AVL-ссылки в блоках и заново вставляет свободные блоки. Вызывается при <code>load()</code> после восстановления менеджера из файла. Также вызывает <a class="el" href="classpmm_1_1BlockStateBase.html#ab390678b3d4d95498d71d0a966b9deeb" title="Восстановить блок в корректное состояние (при load()).">BlockState::recover_state</a> для каждого блока.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">base</td><td>Базовый указатель управляемой области. </td></tr>
@@ -638,7 +638,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00307">307</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00303">303</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -679,7 +679,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 </div><div class="memdoc">
 
 <p>Пересчитать счётчики блоков и использованного размера. </p>
-<p>Проходит по всем блокам и обновляет <code>block_count</code>, <code>free_count</code>, <code>alloc_count</code>, <code>used_size</code> в заголовке менеджера. Использует <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout: <code>weight</code> вместо <code>size</code> (Issue #106).</p>
+<p>Проходит по всем блокам и обновляет <code>block_count</code>, <code>free_count</code>, <code>alloc_count</code>, <code>used_size</code> в заголовке менеджера. Использует <a class="el" href="structpmm_1_1Block.html" title="Блок памяти ПАП — составной тип.">Block</a> layout: <code>weight</code> вместо <code>size</code>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">base</td><td>Базовый указатель управляемой области. </td></tr>
@@ -688,7 +688,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00371">371</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00367">367</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -738,7 +738,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00344">344</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00340">340</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -795,7 +795,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00495">495</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00491">491</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -852,7 +852,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00450">450</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00446">446</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -898,7 +898,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
 </table>
 </div><div class="memdoc">
 
-<p>Verify free tree root consistency without modifying the image (Issue #245). </p>
+<p>Verify free tree root consistency without modifying the image. </p>
 <p>Checks that the free_tree_root is consistent with the presence of free blocks. After file round-trip, AVL fields are not persisted, so the free tree root typically points to stale or zeroed AVL data. This check detects that condition.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -909,7 +909,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00520">520</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00516">516</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>
@@ -966,7 +966,7 @@ template&lt;typename FreeBlockTreeT  = AvlFreeTree&lt;DefaultAddressTraits&gt;, 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00417">417</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="allocator__policy_8h_source.html#l00413">413</a> of file <a class="el" href="allocator__policy_8h_source.html">allocator_policy.h</a>.</p>
 
 </div>
 </div>

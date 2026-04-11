@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>pallocator&lt;T, ManagerT&gt; — STL-compatible allocator for persistent address space (Issue #198, Phase 3.5).  
+<p>pallocator&lt;T, ManagerT&gt; — STL-compatible allocator for persistent address space.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;limits&gt;</code><br />
@@ -92,7 +92,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pallocator.html">pmm::pallocator&lt; T, ManagerT &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">STL-compatible allocator backed by <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a> (Issue #198, Phase 3.5).  <a href="structpmm_1_1pallocator.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">STL-compatible allocator backed by <a class="el" href="classpmm_1_1PersistMemoryManager.html">PersistMemoryManager</a>.  <a href="structpmm_1_1pallocator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -101,7 +101,7 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>pallocator&lt;T, ManagerT&gt; — STL-compatible allocator for persistent address space (Issue #198, Phase 3.5). </p>
+<div class="textblock"><p>pallocator&lt;T, ManagerT&gt; — STL-compatible allocator for persistent address space. </p>
 <p>Implements an allocator that satisfies std::allocator_traits requirements, delegating allocation/deallocation to a PersistMemoryManager instance. This allows using STL containers with persistent memory:</p>
 <div class="fragment"><div class="line"><span class="keyword">using </span>Mgr = <a class="code hl_typedef" href="namespacepmm_1_1presets.html#a26c22130e79e20183d2df7c4bec45b00">pmm::presets::SingleThreadedHeap</a>;</div>
 <div class="line">Mgr::create(64 * 1024);</div>
@@ -128,12 +128,12 @@ Namespaces</h2></td></tr>
 <li>Throws std::bad_alloc on allocation failure (STL containers expect this).</li>
 </ul>
 <dl class="section warning"><dt>Warning</dt><dd>The allocated memory resides in the persistent address space (PAP). Raw pointers returned by allocate() are only valid while the manager is initialized and the PAP is mapped at the same base address. Do NOT store raw pointers across manager destroy/load cycles — use <a class="el" href="classpmm_1_1pptr.html">pptr&lt;T&gt;</a> for persistence.</dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — unified static persistent memory manager (Issue #110).">persist_memory_manager.h</a> — PersistMemoryManager (static model) </dd>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="persist__memory__manager_8h.html" title="PersistMemoryManager — unified static persistent memory manager.">persist_memory_manager.h</a> — PersistMemoryManager (static model) </dd>
 <dd>
-<a class="el" href="pptr_8h.html" title="pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель (Issue #102, #129).">pptr.h</a> — pptr&lt;T, ManagerT&gt; (persistent pointer) </dd>
+<a class="el" href="pptr_8h.html" title="pptr&lt;T, ManagerT&gt; — персистентный типизированный указатель.">pptr.h</a> — pptr&lt;T, ManagerT&gt; (persistent pointer) </dd>
 <dd>
-<a class="el" href="parray_8h.html" title="parray&lt;T, ManagerT&gt; — persistent dynamic array with O(1) random access (Issue #195,...">parray.h</a> — parray&lt;T, ManagerT&gt; (persistent dynamic array with O(1) indexing) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.1 (Issue #198 — Phase 3.5: STL-compatible allocator) </dd></dl>
+<a class="el" href="parray_8h.html" title="parray&lt;T, ManagerT&gt; — persistent dynamic array with O(1) random access.">parray.h</a> — parray&lt;T, ManagerT&gt; (persistent dynamic array with O(1) indexing) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.1 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="pallocator_8h_source.html">pallocator.h</a>.</p>
 </div></div><!-- contents -->

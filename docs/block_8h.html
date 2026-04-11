@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Block&lt;AddressTraits&gt; — блок памяти как составной тип (Issue #87 Phase 3, #138).  
+<p>Block&lt;AddressTraits&gt; — блок памяти как составной тип.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="address__traits_8h_source.html">pmm/address_traits.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tree__node_8h_source.html">pmm/tree_node.h</a>&quot;</code><br />
@@ -102,17 +102,16 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Block&lt;AddressTraits&gt; — блок памяти как составной тип (Issue #87 Phase 3, #138). </p>
+<div class="textblock"><p>Block&lt;AddressTraits&gt; — блок памяти как составной тип. </p>
 <p>Block&lt;AddressTraits&gt; является составным типом, объединяющим:</p><ul>
 <li>поля связного списка (prev_offset, next_offset) — хранятся прямо в Block</li>
 <li>TreeNode&lt;AddressTraits&gt; — узел AVL-дерева (включает weight и root_offset)</li>
 </ul>
 <p>Концептуальная модель: ПАП-менеджер организует память как лес AVL-деревьев. Каждый блок является одновременно узлом двухсвязного списка (охватывает всё адресное пространство) и узлом одного из AVL-деревьев леса. Поля <code>weight</code> и <code>root_offset</code> принадлежат узлу дерева (TreeNode), а не блоку напрямую.</p>
-<p>Раскладка полей при AddressTraitsT = DefaultAddressTraits (uint32_t, 16): [0..23] TreeNode: weight (4), left_offset (4), right_offset (4), parent_offset (4), root_offset (4), avl_height (2), node_type (2) [24..31] Block: prev_offset (4), next_offset (4)</p>
-<p>Issue #126: поле weight перемещено в начало TreeNode для ускорения доступа. avl_height и node_type (бывший _pad) перемещены в конец TreeNode. Issue #138: LinkedListNode удалена как отдельная сущность; поля prev_offset и next_offset перемещены прямо в Block.</p>
-<p>Размер и выравнивание: sizeof(Block&lt;DefaultAddressTraits&gt;) == 32 байта (2 гранулы по 16 байт). Подтверждено через static_assert в <a class="el" href="types_8h.html" title="Core types and constants for PersistMemoryManager (Issue #95 refactoring).">types.h</a>. Issue #112: Block — единственный тип блока.</p>
-<dl class="section see"><dt>See also</dt><dd>plan_issue87.md §5 «Фаза 3: Block — блок как составной тип» </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.5 (Issue #138 — LinkedListNode merged into Block) </dd></dl>
+<p>Раскладка полей при AddressTraitsT = DefaultAddressTraits (uint32_t, 16): [0..23] TreeNode: weight (4), left_offset (4), right_offset (4), parent_offset (4), root_offset (4), avl_height (2), node_type (2) [24..31] Block: prev_offset (4), next_offset (4) </p><pre class="fragment">      avl_height и node_type (бывший _pad) перемещены в конец TreeNode.
+      и next_offset перемещены прямо в Block.
+</pre><p> Размер и выравнивание: sizeof(Block&lt;DefaultAddressTraits&gt;) == 32 байта (2 гранулы по 16 байт). Подтверждено через static_assert в <a class="el" href="types_8h.html" title="Core types and constants for PersistMemoryManager.">types.h</a>. Block — единственный тип блока.</p>
+<dl class="section version"><dt>Version</dt><dd>0.5 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="block_8h_source.html">block.h</a>.</p>
 </div></div><!-- contents -->

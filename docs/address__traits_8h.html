@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>AddressTraits — адресное пространство ПАП (Issue #87 Phase 1, #146).  
+<p>AddressTraits — адресное пространство ПАП.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cassert&gt;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
@@ -115,30 +115,28 @@ Typedefs</h2></td></tr>
 <tr class="separator:a0fdf4565dee15a7a4ee46b0680df33f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>AddressTraits — адресное пространство ПАП (Issue #87 Phase 1, #146). </p>
+<div class="textblock"><p>AddressTraits — адресное пространство ПАП. </p>
 <p>Параметризует три взаимосвязанные характеристики адресного пространства:</p><ul>
 <li><code>index_type</code> — тип гранульного индекса (uint16_t / uint32_t / uint64_t)</li>
 <li><code>granule_size</code> — размер гранулы в байтах (степень двойки, минимум 4)</li>
 <li><code>no_block</code> — sentinel «нет блока» = максимальное значение index_type</li>
 </ul>
-<p>Поддерживаемые размеры индекса (Issue #146):</p><ul>
+<p>Поддерживаемые размеры индекса:</p><ul>
 <li>uint16_t (SmallAddressTraits, 16B гранула) — до ~1 МБ, малые embedded-системы.</li>
 <li>uint32_t (DefaultAddressTraits, 16B гранула) — до 64 ГБ, основной вариант.</li>
 <li>uint64_t (LargeAddressTraits, 64B гранула) — до петабайт, крупные БД.</li>
 </ul>
-<p>Правила выбора конфигурации (Issue #146):</p><ol type="1">
-<li>granule_size &gt;= 4 (минимальный размер слова архитектуры = kMinGranuleSize в <a class="el" href="manager__configs_8h.html" title="Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).">manager_configs.h</a>).</li>
+<p>Правила выбора конфигурации:</p><ol type="1">
+<li>granule_size &gt;= 4 (минимальный размер слова архитектуры = kMinGranuleSize в <a class="el" href="manager__configs_8h.html" title="Готовые конфигурационные структуры для менеджеров ПАП.">manager_configs.h</a>).</li>
 <li>granule_size — степень двойки.</li>
 <li>Для минимального расхода памяти выбирайте конфигурации без потерь: DefaultAddressTraits (Block=32B, granule=16B, 0 байт потерь на блок), LargeAddressTraits (Block=64B, granule=64B, 0 байт потерь на блок). SmallAddressTraits допустима, но с потерями (Block=18B, granule=16B, ceil(18/16)=2 гранулы выделяется под заголовок = 14 байт потерь на блок).</li>
 </ol>
-<p>Недопустимые конфигурации (Issue #146):</p><ul>
+<p>Недопустимые конфигурации:</p><ul>
 <li>uint8_t индекс (TinyAddressTraits удалена): максимум 255 гранул — практически непригодно для реальных сценариев использования менеджера ПАП.</li>
 </ul>
-<p>Обратная совместимость: <a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac" title="Granule size in bytes (Issue #59, #83). All alignment/granularity expressed via this constant....">pmm::kGranuleSize</a> и <a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e" title="Issue #87 Phase 1: matches DefaultAddressTraits::no_block.">pmm::detail::kNoBlock</a> остаются в persist_memory_types.h, но теперь выводятся из DefaultAddressTraits через static_assert.</p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="manager__configs_8h.html" title="Готовые конфигурационные структуры для менеджеров ПАП (Issue #100, #110, #146, #155).">manager_configs.h</a> — ValidPmmAddressTraits концепт и правила конфигурации </dd>
-<dd>
-plan_issue87.md §5 «Фаза 1: AddressTraits» </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.2 (Issue #146 — removed TinyAddressTraits; documented valid index types and granule rules) </dd></dl>
+<p>Обратная совместимость: <a class="el" href="namespacepmm.html#ad3e17dab8c53a80a62be5d276867a8ac" title="Granule size in bytes. All alignment/granularity expressed via this constant. Matches DefaultAddressT...">pmm::kGranuleSize</a> и <a class="el" href="namespacepmm_1_1detail.html#a23294eec2b364ce17d1ec029963d885e" title="Matches DefaultAddressTraits::no_block.">pmm::detail::kNoBlock</a> остаются в persist_memory_types.h, но теперь выводятся из DefaultAddressTraits через static_assert.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="manager__configs_8h.html" title="Готовые конфигурационные структуры для менеджеров ПАП.">manager_configs.h</a> — ValidPmmAddressTraits концепт и правила конфигурации </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.2 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="address__traits_8h_source.html">address_traits.h</a>.</p>
 </div></div><!-- contents -->

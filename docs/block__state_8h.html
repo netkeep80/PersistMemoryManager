@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>BlockState machine — автомат состояний блока для атомарных операций (Issue #93).  
+<p>BlockState machine — автомат состояний блока для атомарных операций.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="address__traits_8h_source.html">pmm/address_traits.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="block_8h_source.html">pmm/block.h</a>&quot;</code><br />
@@ -135,11 +135,11 @@ Functions</h2></td></tr>
 <tr class="separator:a5e9a3b51e3a66a8d725a027ef3f1d1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a266b51319629389613a4c77f0935b64e" id="r_a266b51319629389613a4c77f0935b64e"><td class="memTemplParams" colspan="2">template&lt;typename AddressTraitsT &gt; </td></tr>
 <tr class="memitem:a266b51319629389613a4c77f0935b64e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepmm.html#a266b51319629389613a4c77f0935b64e">pmm::verify_block_state</a> (const void *raw_blk, typename AddressTraitsT::index_type own_idx, <a class="el" href="structpmm_1_1VerifyResult.html">VerifyResult</a> &amp;result) noexcept</td></tr>
-<tr class="memdesc:a266b51319629389613a4c77f0935b64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modification (Issue #245).  <br /></td></tr>
+<tr class="memdesc:a266b51319629389613a4c77f0935b64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify block state consistency without modification.  <br /></td></tr>
 <tr class="separator:a266b51319629389613a4c77f0935b64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>BlockState machine — автомат состояний блока для атомарных операций (Issue #93). </p>
+<div class="textblock"><p>BlockState machine — автомат состояний блока для атомарных операций. </p>
 <p>Реализует state machine через наследование состояний, где каждое состояние — это наследник Block с доступными методами работы. Каждый метод выполняет один атомарный шаг критической операции и возвращает следующего наследника, соответствующего новому состоянию блока.</p>
 <p>Корректные состояния:</p><ul>
 <li>FreeBlock — свободный блок (weight=0, root_offset=0, в AVL-дереве)</li>
@@ -157,17 +157,15 @@ Functions</h2></td></tr>
 <li>Атомарность: каждый метод выполняет один атомарный шаг</li>
 <li>Завершаемость: цепочка вызовов приводит к корректному состоянию</li>
 </ol>
-<p>Issue #114: Добавлены статические методы в BlockStateBase для recovery-операций:</p><ul>
+<ul>
 <li>reset_avl_fields_of() — сброс AVL-полей перед rebuild_free_tree</li>
 <li>repair_prev_offset() — восстановление prev_offset при repair_linked_list</li>
 <li>get_next_offset() — чтение next_offset в recovery-методах</li>
 <li>get_weight() — чтение weight в recovery-методах</li>
 </ul>
-<p>Issue #168: Удалены избыточные функции-обёртки reset_block_avl_fields(), repair_block_prev_offset(), read_block_next_offset(), read_block_weight() — AllocatorPolicy вызывает BlockStateBase&lt;AT&gt;::* напрямую.</p>
-<dl class="section see"><dt>See also</dt><dd>docs/atomic_writes.md «Граф состояний блока» </dd>
-<dd>
-plan_issue87.md §5 «Фаза 9: BlockState machine» </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.4 (Issue #168 — удалены дублирующие функции-обёртки) </dd></dl>
+<p>repair_block_prev_offset(), read_block_next_offset(), read_block_weight() AllocatorPolicy вызывает BlockStateBase&lt;AT&gt;::* напрямую.</p>
+<dl class="section see"><dt>See also</dt><dd>docs/atomic_writes.md «Граф состояний блока» </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.4 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="block__state_8h_source.html">block_state.h</a>.</p>
 </div></div><!-- contents -->

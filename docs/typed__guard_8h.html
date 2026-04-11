@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>RAII scope-guard for persistent containers (Issue #235).  
+<p>RAII scope-guard for persistent containers.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;type_traits&gt;</code><br />
 <code>#include &lt;utility&gt;</code><br />
@@ -113,7 +113,7 @@ Concepts</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>RAII scope-guard for persistent containers (Issue #235). </p>
+<div class="textblock"><p>RAII scope-guard for persistent containers. </p>
 <p>Provides typed_guard&lt;T, ManagerT&gt; — an RAII wrapper that automatically calls the container's cleanup method (free_data() or free_all()) and then ManagerT::destroy_typed() when the guard goes out of scope.</p>
 <p>This prevents resource leaks when users forget to call free_data()/free_all() before destroy_typed().</p>
 <p>Usage: </p><div class="fragment"><div class="line"><span class="keyword">using </span>Mgr = <a class="code hl_class" href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager&lt;pmm::CacheManagerConfig&gt;</a>;</div>
@@ -127,8 +127,8 @@ Concepts</h2></td></tr>
 <div class="line"> </div>
 <div class="line">Mgr::destroy();</div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00087">persist_memory_manager.h:88</a></div></div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="pstring_8h.html" title="pstring&lt;ManagerT&gt; — мутабельная персистентная строка (Issue #45, Phase 3.1).">pstring.h</a>, <a class="el" href="parray_8h.html" title="parray&lt;T, ManagerT&gt; — persistent dynamic array with O(1) random access (Issue #195,...">parray.h</a>, <a class="el" href="ppool_8h.html" title="ppool&lt;T, ManagerT&gt; — persistent object pool with O(1) allocate/deallocate (Issue #199,...">ppool.h</a> — containers requiring explicit cleanup </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>0.1 (Issue #235 — RAII scope-guard) </dd></dl>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="pstring_8h.html" title="pstring&lt;ManagerT&gt; — мутабельная персистентная строка.">pstring.h</a>, <a class="el" href="parray_8h.html" title="parray&lt;T, ManagerT&gt; — persistent dynamic array with O(1) random access.">parray.h</a>, <a class="el" href="ppool_8h.html" title="ppool&lt;T, ManagerT&gt; — persistent object pool with O(1) allocate/deallocate.">ppool.h</a> — containers requiring explicit cleanup </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.1 </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="typed__guard_8h_source.html">typed_guard.h</a>.</p>
 </div></div><!-- contents -->

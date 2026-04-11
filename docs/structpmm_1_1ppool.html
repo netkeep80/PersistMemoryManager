@@ -84,7 +84,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).  
+<p>Persistent object pool with O(1) allocate/deallocate.  
  <a href="structpmm_1_1ppool.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="ppool_8h_source.html">ppool.h</a>&gt;</code></p>
@@ -168,7 +168,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename T, typename ManagerT&gt;<br />
-struct pmm::ppool&lt; T, ManagerT &gt;</div><p>Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6). </p>
+struct pmm::ppool&lt; T, ManagerT &gt;</div><p>Persistent object pool with O(1) allocate/deallocate. </p>
 <p>Allocates large chunks from the memory manager and subdivides them into fixed-size, granule-aligned slots. Free slots are linked via an embedded free-list (the slot data area stores the granule index of the next free slot).</p>
 <p>A ppool object is created in PAP via create_typed&lt;ppool&lt;T&gt;&gt;() and destroyed via destroy_typed() after calling <a class="el" href="structpmm_1_1ppool.html#a33073b426df0a289c2086a46283adf91" title="Free all chunks allocated by this pool.">free_all()</a>.</p>
 <p>Each slot occupies one or more granules to ensure correct granule index addressing. This means small types (e.g. int on a 16-byte-granule system) use one full granule per slot. This is a deliberate trade-off: pool objects are typically small and numerous (tree/graph nodes), and granule alignment ensures persistence safety.</p>
@@ -195,7 +195,7 @@ struct pmm::ppool&lt; T, ManagerT &gt;</div><p>Persistent object pool with O(1) 
 <div class="line"> </div>
 <div class="line">Free slots store the granule index of the next free slot in their</div>
 <div class="line">first <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="structpmm_1_1ppool.html#a266c5ab3e49e2860888c739e8b0713b6">index_type</a>) bytes (embedded free-list).</div>
-<div class="ttc" id="astructpmm_1_1ppool_html"><div class="ttname"><a href="structpmm_1_1ppool.html">pmm::ppool</a></div><div class="ttdoc">Persistent object pool with O(1) allocate/deallocate (Issue #199, Phase 3.6).</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00111">ppool.h:112</a></div></div>
+<div class="ttc" id="astructpmm_1_1ppool_html"><div class="ttname"><a href="structpmm_1_1ppool.html">pmm::ppool</a></div><div class="ttdoc">Persistent object pool with O(1) allocate/deallocate.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00111">ppool.h:112</a></div></div>
 <div class="ttc" id="astructpmm_1_1ppool_html_a266c5ab3e49e2860888c739e8b0713b6"><div class="ttname"><a href="structpmm_1_1ppool.html#a266c5ab3e49e2860888c739e8b0713b6">pmm::ppool::index_type</a></div><div class="ttdeci">typename ManagerT::index_type index_type</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00116">ppool.h:116</a></div></div>
 <div class="ttc" id="astructpmm_1_1ppool_html_a53b7816ae2d7d7e72cebf4f3606d0dd3"><div class="ttname"><a href="structpmm_1_1ppool.html#a53b7816ae2d7d7e72cebf4f3606d0dd3">pmm::ppool::_total_capacity</a></div><div class="ttdeci">std::uint32_t _total_capacity</div><div class="ttdoc">Total slot count across all chunks.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00138">ppool.h:138</a></div></div>
 <div class="ttc" id="astructpmm_1_1ppool_html_a5bb76745e30e99ebdfc68928ec8a0df7"><div class="ttname"><a href="structpmm_1_1ppool.html#a5bb76745e30e99ebdfc68928ec8a0df7">pmm::ppool::_objects_per_chunk</a></div><div class="ttdeci">std::uint32_t _objects_per_chunk</div><div class="ttdoc">Number of T objects per chunk.</div><div class="ttdef"><b>Definition</b> <a href="ppool_8h_source.html#l00136">ppool.h:136</a></div></div>

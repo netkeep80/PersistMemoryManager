@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Базовый шаблон конфигурации менеджера с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> (Issue #160).  
+<p>Базовый шаблон конфигурации менеджера с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a>.  
  <a href="structpmm_1_1BasicConfig.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>&gt;</code></p>
@@ -113,8 +113,8 @@ Static Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename AddressTraitsT = DefaultAddressTraits, typename LockPolicyT = config::NoLock, std::size_t GrowNum = config::kDefaultGrowNumerator, std::size_t GrowDen = config::kDefaultGrowDenominator, std::size_t MaxMemoryGB = 64, typename LoggingPolicyT = logging::NoLogging&gt;<br />
-struct pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;</div><p>Базовый шаблон конфигурации менеджера с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a> (Issue #160). </p>
-<p>Устраняет дублирование между CacheManagerConfig, PersistentDataConfig, EmbeddedManagerConfig, IndustrialDBConfig и LargeDBConfig. Готовые конфигурации теперь являются псевдонимами <a class="el" href="structpmm_1_1BasicConfig.html" title="Базовый шаблон конфигурации менеджера с HeapStorage (Issue #160).">BasicConfig</a> с конкретными параметрами.</p>
+struct pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMemoryGB, LoggingPolicyT &gt;</div><p>Базовый шаблон конфигурации менеджера с <a class="el" href="classpmm_1_1HeapStorage.html" title="Динамический бэкенд хранилища — malloc/free.">HeapStorage</a>. </p>
+<p>Устраняет дублирование между CacheManagerConfig, PersistentDataConfig, EmbeddedManagerConfig, IndustrialDBConfig и LargeDBConfig. Готовые конфигурации теперь являются псевдонимами <a class="el" href="structpmm_1_1BasicConfig.html" title="Базовый шаблон конфигурации менеджера с HeapStorage.">BasicConfig</a> с конкретными параметрами.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">AddressTraitsT</td><td>Тип адресного пространства (DefaultAddressTraits, LargeAddressTraits, etc.) </td></tr>
@@ -122,7 +122,7 @@ struct pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMe
     <tr><td class="paramname">GrowNum</td><td>Числитель коэффициента роста хранилища (по умолчанию 5) </td></tr>
     <tr><td class="paramname">GrowDen</td><td>Знаменатель коэффициента роста хранилища (по умолчанию 4, т.е. рост 25%) </td></tr>
     <tr><td class="paramname">MaxMemoryGB</td><td>Максимальный объём памяти в ГБ (0 = без ограничения) </td></tr>
-    <tr><td class="paramname">LoggingPolicyT</td><td>Политика логирования (<a class="el" href="structpmm_1_1logging_1_1NoLogging.html" title="Политика без логирования (нулевые накладные расходы, по умолчанию).">logging::NoLogging</a> по умолчанию) (Issue #202, Phase 4.2)</td></tr>
+    <tr><td class="paramname">LoggingPolicyT</td><td>Политика логирования (<a class="el" href="structpmm_1_1logging_1_1NoLogging.html" title="Политика без логирования (нулевые накладные расходы, по умолчанию).">logging::NoLogging</a> по умолчанию)</td></tr>
   </table>
   </dd>
 </dl>
@@ -143,13 +143,13 @@ struct pmm::BasicConfig&lt; AddressTraitsT, LockPolicyT, GrowNum, GrowDen, MaxMe
 <div class="line">    <a class="code hl_struct" href="structpmm_1_1logging_1_1StderrLogging.html">pmm::logging::StderrLogging</a></div>
 <div class="line">&gt;;</div>
 <div class="ttc" id="aclasspmm_1_1PersistMemoryManager_html"><div class="ttname"><a href="classpmm_1_1PersistMemoryManager.html">pmm::PersistMemoryManager</a></div><div class="ttdef"><b>Definition</b> <a href="persist__memory__manager_8h_source.html#l00087">persist_memory_manager.h:88</a></div></div>
-<div class="ttc" id="anamespacepmm_html_a9ca69087900283384dda68352be048bb"><div class="ttname"><a href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a></div><div class="ttdeci">AddressTraits&lt; std::uint32_t, 16 &gt; DefaultAddressTraits</div><div class="ttdoc">32-bit вариант, 16-байтная гранула — текущий дефолт (без потерь: Block=32B=2*16B).</div><div class="ttdef"><b>Definition</b> <a href="address__traits_8h_source.html#l00140">address_traits.h:140</a></div></div>
-<div class="ttc" id="astructpmm_1_1BasicConfig_html"><div class="ttname"><a href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a></div><div class="ttdoc">Базовый шаблон конфигурации менеджера с HeapStorage (Issue #160).</div><div class="ttdef"><b>Definition</b> <a href="manager__configs_8h_source.html#l00184">manager_configs.h:185</a></div></div>
+<div class="ttc" id="anamespacepmm_html_a9ca69087900283384dda68352be048bb"><div class="ttname"><a href="namespacepmm.html#a9ca69087900283384dda68352be048bb">pmm::DefaultAddressTraits</a></div><div class="ttdeci">AddressTraits&lt; std::uint32_t, 16 &gt; DefaultAddressTraits</div><div class="ttdoc">32-bit вариант, 16-байтная гранула — текущий дефолт (без потерь: Block=32B=2*16B).</div><div class="ttdef"><b>Definition</b> <a href="address__traits_8h_source.html#l00139">address_traits.h:139</a></div></div>
+<div class="ttc" id="astructpmm_1_1BasicConfig_html"><div class="ttname"><a href="structpmm_1_1BasicConfig.html">pmm::BasicConfig</a></div><div class="ttdoc">Базовый шаблон конфигурации менеджера с HeapStorage.</div><div class="ttdef"><b>Definition</b> <a href="manager__configs_8h_source.html#l00183">manager_configs.h:184</a></div></div>
 <div class="ttc" id="astructpmm_1_1config_1_1NoLock_html"><div class="ttname"><a href="structpmm_1_1config_1_1NoLock.html">pmm::config::NoLock</a></div><div class="ttdoc">Политика без блокировок (однопоточный режим, нет накладных расходов).</div><div class="ttdef"><b>Definition</b> <a href="config_8h_source.html#l00044">config.h:45</a></div></div>
 <div class="ttc" id="astructpmm_1_1config_1_1SharedMutexLock_html"><div class="ttname"><a href="structpmm_1_1config_1_1SharedMutexLock.html">pmm::config::SharedMutexLock</a></div><div class="ttdoc">Политика блокировки с std::shared_mutex (многопоточная, по умолчанию).</div><div class="ttdef"><b>Definition</b> <a href="config_8h_source.html#l00036">config.h:37</a></div></div>
 <div class="ttc" id="astructpmm_1_1logging_1_1StderrLogging_html"><div class="ttname"><a href="structpmm_1_1logging_1_1StderrLogging.html">pmm::logging::StderrLogging</a></div><div class="ttdoc">Политика логирования в stderr.</div><div class="ttdef"><b>Definition</b> <a href="logging__policy_8h_source.html#l00100">logging_policy.h:101</a></div></div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00184">184</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00183">183</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a14de5b47afec59f6695083874ddacd3b" name="a14de5b47afec59f6695083874ddacd3b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a14de5b47afec59f6695083874ddacd3b">&#9670;&#160;</a></span>address_traits</h2>
@@ -165,7 +165,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00189">189</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00188">188</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -183,7 +183,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00191">191</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00190">190</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -201,7 +201,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00192">192</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00191">191</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -219,7 +219,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00193">193</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00192">192</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -237,7 +237,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00190">190</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00189">189</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -264,7 +264,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00194">194</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00193">193</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -290,7 +290,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00197">197</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00196">196</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -316,7 +316,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00196">196</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00195">195</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>
@@ -342,7 +342,7 @@ template&lt;typename AddressTraitsT  = DefaultAddressTraits, typename LockPolicy
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00195">195</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="manager__configs_8h_source.html#l00194">194</a> of file <a class="el" href="manager__configs_8h_source.html">manager_configs.h</a>.</p>
 
 </div>
 </div>

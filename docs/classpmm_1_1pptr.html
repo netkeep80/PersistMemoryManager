@@ -129,7 +129,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a537df6e8ba0bf2831199d3b12bb1a838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить гранульный индекс (для сохранения/восстановления).  <br /></td></tr>
 <tr class="separator:a537df6e8ba0bf2831199d3b12bb1a838"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26dbccf8fd0c7995dcdf12d13deb625e" id="r_a26dbccf8fd0c7995dcdf12d13deb625e"><td class="memItemLeft" align="right" valign="top">constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a26dbccf8fd0c7995dcdf12d13deb625e">byte_offset</a> () const noexcept</td></tr>
-<tr class="memdesc:a26dbccf8fd0c7995dcdf12d13deb625e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить байтовое смещение из гранульного индекса (Issue #211, Phase 4.4).  <br /></td></tr>
+<tr class="memdesc:a26dbccf8fd0c7995dcdf12d13deb625e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить байтовое смещение из гранульного индекса.  <br /></td></tr>
 <tr class="separator:a26dbccf8fd0c7995dcdf12d13deb625e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ed0ce34d7c191c07f5eebb3cc54bae9" id="r_a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a0ed0ce34d7c191c07f5eebb3cc54bae9">operator==</a> (const <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;other) const noexcept</td></tr>
 <tr class="memdesc:a0ed0ce34d7c191c07f5eebb3cc54bae9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Сравнение персистентных указателей одного типа по индексу.  <br /></td></tr>
@@ -137,7 +137,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a0d32271a6705486f1e690ec4ac24339a" id="r_a0d32271a6705486f1e690ec4ac24339a"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a0d32271a6705486f1e690ec4ac24339a">operator!=</a> (const <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;other) const noexcept</td></tr>
 <tr class="separator:a0d32271a6705486f1e690ec4ac24339a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a708712be67f31f497b8afa696f37b70a" id="r_a708712be67f31f497b8afa696f37b70a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a708712be67f31f497b8afa696f37b70a">operator&lt;</a> (const <a class="el" href="classpmm_1_1pptr.html">pptr</a> &amp;other) const noexcept</td></tr>
-<tr class="memdesc:a708712be67f31f497b8afa696f37b70a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Упорядочивание персистентных указателей для использования как ключ в pmap (Issue #184).  <br /></td></tr>
+<tr class="memdesc:a708712be67f31f497b8afa696f37b70a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Упорядочивание персистентных указателей для использования как ключ в pmap.  <br /></td></tr>
 <tr class="separator:a708712be67f31f497b8afa696f37b70a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6cb94453f12e106b13c75d39f5771c0e" id="r_a6cb94453f12e106b13c75d39f5771c0e"><td class="memItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a6cb94453f12e106b13c75d39f5771c0e">operator*</a> () const noexcept</td></tr>
 <tr class="memdesc:a6cb94453f12e106b13c75d39f5771c0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разыменование указателя (статическая модель).  <br /></td></tr>
@@ -149,7 +149,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ada7fb7a391b0d6fdf1cbace8f4a6622c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить сырой указатель (низкоуровневый доступ).  <br /></td></tr>
 <tr class="separator:ada7fb7a391b0d6fdf1cbace8f4a6622c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70ca5482e2f592a8833e362ccfa82f66" id="r_a70ca5482e2f592a8833e362ccfa82f66"><td class="memItemLeft" align="right" valign="top">auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpmm_1_1pptr.html#a70ca5482e2f592a8833e362ccfa82f66">tree_node</a> () const noexcept</td></tr>
-<tr class="memdesc:a70ca5482e2f592a8833e362ccfa82f66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить ссылку на узел AVL-дерева в заголовке блока (Issue #138).  <br /></td></tr>
+<tr class="memdesc:a70ca5482e2f592a8833e362ccfa82f66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить ссылку на узел AVL-дерева в заголовке блока.  <br /></td></tr>
 <tr class="separator:a70ca5482e2f592a8833e362ccfa82f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -157,7 +157,7 @@ Public Member Functions</h2></td></tr>
 requires ( !std::is_void_v&lt;ManagerT&gt; )<br />
 class pmm::pptr&lt; T, ManagerT &gt;</div><p>Персистентный типизированный указатель (гранульный индекс). </p>
 <p>Хранит гранульный индекс пользовательских данных, а не адрес. Адресно-независим: корректно загружается из файла по другому базовому адресу.</p>
-<p>Тип индекса определяется через <code>ManagerT::address_traits::index_type</code> (Issue #110).</p>
+<p>Тип индекса определяется через <code>ManagerT::address_traits::index_type</code>.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Тип данных, на который указывает pptr. </td></tr>
@@ -372,7 +372,7 @@ template&lt;class T , class ManagerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Получить байтовое смещение из гранульного индекса (Issue #211, Phase 4.4). </p>
+<p>Получить байтовое смещение из гранульного индекса. </p>
 <p>Возвращает <code><a class="el" href="classpmm_1_1pptr.html#a537df6e8ba0bf2831199d3b12bb1a838" title="Получить гранульный индекс (для сохранения/восстановления).">offset()</a> * granule_size</code>. Упрощает интеграцию с внешними системами, работающими с байтовыми адресами (например, BinDiffSynchronizer pam_adapter).</p>
 <dl class="section return"><dt>Returns</dt><dd>Байтовое смещение в управляемой области. Для null pptr возвращает 0. </dd></dl>
 
@@ -705,7 +705,7 @@ template&lt;class T , class ManagerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Упорядочивание персистентных указателей для использования как ключ в pmap (Issue #184). </p>
+<p>Упорядочивание персистентных указателей для использования как ключ в pmap. </p>
 <p>Сравнивает указываемые объекты через <code>*this &lt; *other</code>, если оба указателя не null. Null pptr считается меньше любого ненулевого указателя.</p>
 <dl class="section note"><dt>Note</dt><dd>Требует, чтобы тип T поддерживал <code>operator&lt;</code>. </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>true если <code>*this</code> должен быть перед <code>other</code> в упорядоченной последовательности. </dd></dl>
@@ -833,7 +833,7 @@ template&lt;class T , class ManagerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Получить ссылку на узел AVL-дерева в заголовке блока (Issue #138). </p>
+<p>Получить ссылку на узел AVL-дерева в заголовке блока. </p>
 <p>Позволяет работать с узлом дерева напрямую через методы <a class="el" href="structpmm_1_1TreeNode.html">TreeNode</a>: get_left(), set_left(), get_right(), set_right(), get_parent(), set_parent(), get_weight(), set_weight(), get_height(), set_height(), get_node_type(), set_node_type().</p>
 <p>Использование: </p><div class="fragment"><div class="line"><span class="keyword">auto</span>&amp; tn = p.tree_node();</div>
 <div class="line"><span class="keyword">auto</span> left_idx = tn.get_left();  <span class="comment">// no_block если нет левого потомка</span></div>

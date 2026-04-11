@@ -84,7 +84,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Персистентная интернированная read-only строка (Issue #151, #184).  
+<p>Персистентная интернированная read-only строка.  
  <a href="structpmm_1_1pstringview.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="pstringview_8h_source.html">pstringview.h</a>&gt;</code></p>
@@ -107,7 +107,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:af0585357350592dc26812384eeec7c70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implicit conversion к pptr&lt;pstringview&lt;ManagerT&gt;&gt;.  <br /></td></tr>
 <tr class="separator:af0585357350592dc26812384eeec7c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ef3cecb9e01a657216c845ccd675332" id="r_a1ef3cecb9e01a657216c845ccd675332"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pstringview.html#a1ef3cecb9e01a657216c845ccd675332">c_str</a> () const noexcept</td></tr>
-<tr class="memdesc:a1ef3cecb9e01a657216c845ccd675332"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить raw C-строку. Действителен, пока менеджер инициализирован. Issue #184: строка хранится непосредственно в блоке после поля length.  <br /></td></tr>
+<tr class="memdesc:a1ef3cecb9e01a657216c845ccd675332"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получить raw C-строку. Действителен, пока менеджер инициализирован. Строка хранится непосредственно в блоке после поля length.  <br /></td></tr>
 <tr class="separator:a1ef3cecb9e01a657216c845ccd675332"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70f3a14e91b85683aca994354b86d7d5" id="r_a70f3a14e91b85683aca994354b86d7d5"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpmm_1_1pstringview.html#a70f3a14e91b85683aca994354b86d7d5">size</a> () const noexcept</td></tr>
 <tr class="memdesc:a70f3a14e91b85683aca994354b86d7d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Длина строки (без нулевого терминатора).  <br /></td></tr>
@@ -156,8 +156,8 @@ Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename ManagerT&gt;<br />
-struct pmm::pstringview&lt; ManagerT &gt;</div><p>Персистентная интернированная read-only строка (Issue #151, #184). </p>
-<p>Хранит длину и строковые данные непосредственно в блоке (Issue #184). Оптимизация: вместо двух блоков (pstringview + char[]) используется один блок, содержащий длину и строку. Это существенно экономит память и ускоряет работу pmap&lt;<a class="el" href="classpmm_1_1pptr.html">pptr&lt;pstringview&gt;</a>, _Tvalue&gt;.</p>
+struct pmm::pstringview&lt; ManagerT &gt;</div><p>Персистентная интернированная read-only строка. </p>
+<p>Хранит длину и строковые данные непосредственно в блоке. Оптимизация: вместо двух блоков (pstringview + char[]) используется один блок, содержащий длину и строку. Это существенно экономит память и ускоряет работу pmap&lt;<a class="el" href="classpmm_1_1pptr.html">pptr&lt;pstringview&gt;</a>, _Tvalue&gt;.</p>
 <p>Объекты pstringview живут в ПАП и не могут быть созданы на стеке напрямую.</p>
 <p>Простой API (рекомендуемый способ): </p><div class="fragment"><div class="line"><span class="comment">// Конструктор-хелпер: создаёт временный объект, возвращает pptr через implicit conversion</span></div>
 <div class="line">Mgr::pptr&lt;Mgr::pstringview&gt; p = Mgr::pstringview(<span class="stringliteral">&quot;hello&quot;</span>);</div>
@@ -324,7 +324,7 @@ template&lt;typename ManagerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Получить raw C-строку. Действителен, пока менеджер инициализирован. Issue #184: строка хранится непосредственно в блоке после поля length. </p>
+<p>Получить raw C-строку. Действителен, пока менеджер инициализирован. Строка хранится непосредственно в блоке после поля length. </p>
 
 <p class="definition">Definition at line <a class="el" href="pstringview_8h_source.html#l00133">133</a> of file <a class="el" href="pstringview_8h_source.html">pstringview.h</a>.</p>
 
@@ -388,7 +388,7 @@ template&lt;typename ManagerT &gt; </div>
 </div><div class="memdoc">
 
 <p>Интернировать строку s: найти существующий pstringview или создать новый. </p>
-<p>Выполняет поиск в AVL-дереве по лексикографическому ключу. Если строка найдена — возвращает существующий pptr. Если нет — создаёт новый pstringview-блок, блокирует его навечно и вставляет в AVL-дерево.</p>
+<p>Выполняет поиск в AVL-дереве по лексикографическому ключу. Если строка найдена возвращает существующий pptr. Если нет — создаёт новый pstringview-блок, блокирует его навечно и вставляет в AVL-дерево.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">s</td><td>C-строка для интернирования (nullptr обрабатывается как ""). </td></tr>
@@ -588,7 +588,7 @@ template&lt;typename ManagerT &gt; </div>
 </div><div class="memdoc">
 
 <p>Равенство двух pstringview. </p>
-<p>Интернирование гарантирует: одинаковые строки → один и тот же блок. Однако при копировании (например, как ключ в <a class="el" href="structpmm_1_1pmap__node.html" title="Узел pmap — хранит пару ключ-значение в ПАП (Issue #153).">pmap_node</a>) сравниваем по содержимому. </p>
+<p>Интернирование гарантирует: одинаковые строки → один и тот же блок. Однако при копировании (например, как ключ в <a class="el" href="structpmm_1_1pmap__node.html" title="Узел pmap — хранит пару ключ-значение в ПАП.">pmap_node</a>) сравниваем по содержимому. </p>
 
 <p class="definition">Definition at line <a class="el" href="pstringview_8h_source.html#l00153">153</a> of file <a class="el" href="pstringview_8h_source.html">pstringview.h</a>.</p>
 
