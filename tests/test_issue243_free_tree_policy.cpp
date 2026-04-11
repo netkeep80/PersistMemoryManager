@@ -123,8 +123,9 @@ TEST_CASE( "free_tree_policy: same-size blocks ordered by block_index", "[test_i
     {
         if ( same_size_blocks[i].total_size == same_size_blocks[i - 1].total_size )
         {
-            INFO( "Block at offset " << same_size_blocks[i - 1].offset << " (size " << same_size_blocks[i - 1].total_size
-                                     << ") must come before block at offset " << same_size_blocks[i].offset );
+            INFO( "Block at offset " << same_size_blocks[i - 1].offset << " (size "
+                                     << same_size_blocks[i - 1].total_size << ") must come before block at offset "
+                                     << same_size_blocks[i].offset );
             REQUIRE( same_size_blocks[i].offset > same_size_blocks[i - 1].offset );
         }
     }
@@ -199,9 +200,9 @@ TEST_CASE( "free_tree_policy: find_best_fit selects minimum fitting block", "[te
     // Verify the in-order traversal is sorted by (total_size, offset) — the policy.
     for ( std::size_t i = 1; i < blocks.size(); ++i )
     {
-        bool correctly_ordered = ( blocks[i].total_size > blocks[i - 1].total_size ) ||
-                                 ( blocks[i].total_size == blocks[i - 1].total_size &&
-                                   blocks[i].offset > blocks[i - 1].offset );
+        bool correctly_ordered =
+            ( blocks[i].total_size > blocks[i - 1].total_size ) ||
+            ( blocks[i].total_size == blocks[i - 1].total_size && blocks[i].offset > blocks[i - 1].offset );
         INFO( "In-order block [" << ( i - 1 ) << "] size=" << blocks[i - 1].total_size
                                  << " offset=" << blocks[i - 1].offset << " -> block [" << i
                                  << "] size=" << blocks[i].total_size << " offset=" << blocks[i].offset );
@@ -212,7 +213,7 @@ TEST_CASE( "free_tree_policy: find_best_fit selects minimum fitting block", "[te
     // The best-fit policy should select the medium gap (smallest fitting block).
     // Request size > small_bytes but <= medium_bytes.
     const std::size_t request_bytes = small_bytes + 64; // 192 bytes — won't fit in small (128), fits in medium (512)
-    Mgr::pptr<std::uint8_t> result = pmm.allocate_typed<std::uint8_t>( request_bytes );
+    Mgr::pptr<std::uint8_t> result  = pmm.allocate_typed<std::uint8_t>( request_bytes );
     REQUIRE( !result.is_null() );
 
     // The result pointer should land inside the medium gap's former region.
