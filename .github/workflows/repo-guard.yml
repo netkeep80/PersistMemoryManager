@@ -18,7 +18,7 @@ jobs:
         run: |
           git clone https://github.com/netkeep80/repo-guard.git /tmp/repo-guard
           cd /tmp/repo-guard
-          git checkout 539484836dcc5b3bdf5ea099cfabd9e65ccb2a0d
+          git checkout 7877108e84fcc6539ded13ac09ad9358bc9cf529
 
       - uses: actions/setup-node@v4
         with:

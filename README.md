@@ -6,7 +6,7 @@
 [![CI](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml/badge.svg)](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/std/the-standard)
-[![Version](https://img.shields.io/badge/version-0.55.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.55.1-green.svg)](CHANGELOG.md)
 
 ## Обзор
 
@@ -876,10 +876,6 @@ cmake -B build && cmake --build build && ctest --test-dir build
 - [Recovery](docs/recovery.md) — восстановление после сбоев
 - [Thread Safety](docs/thread_safety.md) — потокобезопасность
 - [Changelog](CHANGELOG.md)
-
-**Doxygen** — вторичная автогенерируемая документация, доступна по адресу
-[netkeep80.github.io/PersistMemoryManager](https://netkeep80.github.io/PersistMemoryManager/).
-Она не является каноническим источником; при расхождениях приоритет у Markdown-документов.
 
 ## Лицензия
 

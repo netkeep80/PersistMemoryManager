@@ -17,7 +17,6 @@
       "README.md",
       "CONTRIBUTING.md",
       "CHANGELOG.md",
-      "docs/index.md",
       "docs/architecture.md",
       "docs/api_reference.md",
       "docs/pmm_avl_forest.md",
@@ -31,10 +30,7 @@
       "docs/core_invariants.md",
       "docs/diagnostics_taxonomy.md",
       "docs/validation_model.md",
-      "docs/verify_repair_contract.md",
-      "docs/repository_shape.md",
-      "docs/deletion_policy.md",
-      "docs/comment_policy.md"
+      "docs/verify_repair_contract.md"
     ],
     "governance_paths": [
       "repo-policy.json",

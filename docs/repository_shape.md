@@ -20,7 +20,7 @@
 
 | Категория | Элементы | Роль |
 |-----------|----------|------|
-| Build / release | `CMakeLists.txt`, `Doxyfile`, `.clang-format`, `.pre-commit-config.yaml`, `.gitignore` | Конфигурация сборки, форматирования, CI |
+| Build / release | `CMakeLists.txt`, `.clang-format`, `.pre-commit-config.yaml`, `.gitignore` | Конфигурация сборки, форматирования, CI |
 | CI / CD | `.github/` | GitHub Actions workflows |
 | Changelog | `changelog.d/`, `CHANGELOG.md` | Фрагменты и собранная история релизов |
 | Library source | `include/` | Публичные заголовки библиотеки (canonical source) |
@@ -105,7 +105,8 @@
 #### `.github/workflows/`
 
 - CI: `ci.yml` — сборка, тесты, проверки.
-- Docs: `docs.yml` — генерация Doxygen.
+- Docs-consistency: `docs-consistency.yml` — проверка консистентности документации.
+- Repo-guard: `repo-guard.yml` — аудит политики репозитория.
 - Release: `release.yml` — автоматический релиз.
 
 ## Rules / contracts
@@ -125,7 +126,6 @@
 | `CHANGELOG.md` | История релизов |
 | `CMakeLists.txt` | Корневой build-файл |
 | `CONTRIBUTING.md` | Руководство для контрибьюторов |
-| `Doxyfile` | Конфигурация генерации API-документации |
 | `LICENSE` | Лицензия |
 | `README.md` | Главная точка входа |
 | `benchmarks/` | Бенчмарки производительности |
