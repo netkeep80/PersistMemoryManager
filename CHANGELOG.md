@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.1] - 2026-04-12
+
+### Fixed
+- Synchronized README version badge (`0.26.0` → `0.55.0`) with CMakeLists.txt and CHANGELOG.md
+- Clarified Doxygen as secondary generated documentation; Markdown docs are the canonical surface
+- Added lightweight `docs-consistency` CI workflow to detect version and doc drift on markdown changes
+
+
 ## [0.55.0] - 2026-04-12
 
 ### Added
