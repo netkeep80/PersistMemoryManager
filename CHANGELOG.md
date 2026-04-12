@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.0] - 2026-04-12
+
+### Added
+- Initial `repo-policy.json` for repo-guard audit integration
+- GitHub Actions workflow (`repo-guard.yml`) running repo-guard checks in non-blocking audit mode on PRs
+
+
 ## [0.54.0] - 2026-04-11
 
 ### Added
