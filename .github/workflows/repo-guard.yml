@@ -1,0 +1,39 @@
+name: repo-guard audit
+
+on:
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  audit:
+    name: repo-guard audit check
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone repo-guard
+        run: git clone --depth 1 https://github.com/netkeep80/repo-guard.git /tmp/repo-guard
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install repo-guard dependencies
+        working-directory: /tmp/repo-guard
+        run: npm ci
+
+      - name: Inject PMM policy into repo-guard
+        run: cp repo-policy.json /tmp/repo-guard/repo-policy.json
+
+      - name: Validate repo-policy.json
+        run: node /tmp/repo-guard/src/repo-guard.mjs
+
+      - name: Run PR policy check (audit)
+        run: node /tmp/repo-guard/src/repo-guard.mjs check-pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_DIR: ${{ github.workspace }}/.git
+          GIT_WORK_TREE: ${{ github.workspace }}

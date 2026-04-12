@@ -1,0 +1,71 @@
+{
+  "policy_format_version": "0.3.0",
+  "repository_kind": "library",
+  "paths": {
+    "forbidden": [
+      "docs/phase-*",
+      "docs/phase[0-9]*",
+      "*.bak",
+      "*.tmp",
+      "*.orig",
+      "imgui.ini",
+      "demo.bat",
+      "test.bat",
+      "demo.md"
+    ],
+    "canonical_docs": [
+      "README.md",
+      "CONTRIBUTING.md",
+      "CHANGELOG.md",
+      "docs/index.md",
+      "docs/architecture.md",
+      "docs/api_reference.md",
+      "docs/pmm_avl_forest.md",
+      "docs/block_and_treenode_semantics.md",
+      "docs/bootstrap.md",
+      "docs/free_tree_forest_policy.md",
+      "docs/recovery.md",
+      "docs/thread_safety.md",
+      "docs/mutation_ordering.md",
+      "docs/storage_seams.md",
+      "docs/core_invariants.md",
+      "docs/diagnostics_taxonomy.md",
+      "docs/validation_model.md",
+      "docs/verify_repair_contract.md",
+      "docs/repository_shape.md",
+      "docs/deletion_policy.md",
+      "docs/comment_policy.md"
+    ],
+    "governance_paths": [
+      "repo-policy.json",
+      "CONTRIBUTING.md",
+      "docs/repository_shape.md",
+      "docs/deletion_policy.md",
+      "docs/comment_policy.md"
+    ],
+    "operational_paths": [
+      ".claude/**",
+      ".gitkeep",
+      "tasks/**"
+    ]
+  },
+  "diff_rules": {
+    "max_new_docs": 3,
+    "max_new_files": 20,
+    "max_net_added_lines": 3000
+  },
+  "content_rules": [
+    {
+      "id": "no-todo-without-issue",
+      "glob": "**/*.{h,cpp,inc}",
+      "mode": "added_lines",
+      "forbid_regex": ["TODO(?!\\(#\\d+\\))"]
+    }
+  ],
+  "cochange_rules": [
+    {
+      "if_changed": ["include/**"],
+      "must_change_any": ["tests/**"]
+    }
+  ]
+}
