@@ -28,15 +28,10 @@ jobs:
         working-directory: /tmp/repo-guard
         run: npm ci
 
-      - name: Inject PMM policy into repo-guard
-        run: cp repo-policy.json /tmp/repo-guard/repo-policy.json
-
       - name: Validate repo-policy.json
-        run: node /tmp/repo-guard/src/repo-guard.mjs
+        run: node /tmp/repo-guard/src/repo-guard.mjs --repo-root ${{ github.workspace }}
 
       - name: Run PR policy check (audit)
-        run: node /tmp/repo-guard/src/repo-guard.mjs check-pr
+        run: node /tmp/repo-guard/src/repo-guard.mjs --repo-root ${{ github.workspace }} check-pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_DIR: ${{ github.workspace }}/.git
-          GIT_WORK_TREE: ${{ github.workspace }}
