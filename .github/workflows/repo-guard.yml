@@ -15,7 +15,10 @@ jobs:
           fetch-depth: 0
 
       - name: Clone repo-guard
-        run: git clone --depth 1 https://github.com/netkeep80/repo-guard.git /tmp/repo-guard
+        run: |
+          git clone https://github.com/netkeep80/repo-guard.git /tmp/repo-guard
+          cd /tmp/repo-guard
+          git checkout 539484836dcc5b3bdf5ea099cfabd9e65ccb2a0d
 
       - uses: actions/setup-node@v4
         with:
@@ -32,8 +35,7 @@ jobs:
         run: node /tmp/repo-guard/src/repo-guard.mjs
 
       - name: Run PR policy check (audit)
-        run: |
-          node /tmp/repo-guard/src/repo-guard.mjs check-pr || echo "::warning::repo-guard audit found issues (non-blocking)"
+        run: node /tmp/repo-guard/src/repo-guard.mjs check-pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_DIR: ${{ github.workspace }}/.git
