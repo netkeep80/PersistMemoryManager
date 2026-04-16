@@ -8,7 +8,11 @@ on:
       - "CMakeLists.txt"
       - "repo-policy.json"
       - "scripts/check-docs-consistency.sh"
+      - "scripts/check-repo-guard-rollout.sh"
       - ".github/workflows/docs-consistency.yml"
+      - ".github/workflows/repo-guard.yml"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/ISSUE_TEMPLATE/**"
   pull_request:
     branches: ["**"]
     paths:
@@ -16,7 +20,11 @@ on:
       - "CMakeLists.txt"
       - "repo-policy.json"
       - "scripts/check-docs-consistency.sh"
+      - "scripts/check-repo-guard-rollout.sh"
       - ".github/workflows/docs-consistency.yml"
+      - ".github/workflows/repo-guard.yml"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/ISSUE_TEMPLATE/**"
 
 jobs:
   docs-consistency:
@@ -27,3 +35,6 @@ jobs:
 
       - name: Check version and docs consistency
         run: bash scripts/check-docs-consistency.sh
+
+      - name: Check repo-guard rollout wiring
+        run: bash scripts/check-repo-guard-rollout.sh

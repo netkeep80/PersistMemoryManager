@@ -21,7 +21,7 @@
 | Категория | Элементы | Роль |
 |-----------|----------|------|
 | Build / release | `CMakeLists.txt`, `.clang-format`, `.pre-commit-config.yaml`, `.gitignore` | Конфигурация сборки, форматирования, CI |
-| CI / CD | `.github/` | GitHub Actions workflows |
+| CI / CD | `.github/` | GitHub Actions workflows and repository templates |
 | Changelog | `changelog.d/`, `CHANGELOG.md` | Фрагменты и собранная история релизов |
 | Library source | `include/` | Публичные заголовки библиотеки (canonical source) |
 | Amalgamated headers | `single_include/` | Генерируемые single-header варианты |
@@ -102,11 +102,16 @@
 - **Не является first-class частью target shape** (см. § 2.1 style guide).
 - Будет удалён после завершения всех задач компактификации.
 
+#### `.github/`
+
+- Pull request template: `PULL_REQUEST_TEMPLATE.md` — repo-guard YAML change contract template.
+- Issue template: `ISSUE_TEMPLATE/change-contract.yml` — issue form for changes with repo-guard contracts.
+
 #### `.github/workflows/`
 
 - CI: `ci.yml` — сборка, тесты, проверки.
-- Docs-consistency: `docs-consistency.yml` — проверка консистентности документации.
-- Repo-guard: `repo-guard.yml` — аудит политики репозитория.
+- Docs-consistency: `docs-consistency.yml` — проверка консистентности документации и repo-guard rollout wiring.
+- Repo-guard: `repo-guard.yml` — advisory policy check through the reusable repo-guard Action.
 - Release: `release.yml` — автоматический релиз.
 
 ## Rules / contracts
@@ -120,7 +125,7 @@
 | Элемент | Обоснование |
 |---------|-------------|
 | `.clang-format` | Конфигурация стиля кода |
-| `.github/` | CI/CD workflows |
+| `.github/` | CI/CD workflows and repository templates |
 | `.gitignore` | Конфигурация Git |
 | `.pre-commit-config.yaml` | Pre-commit hooks |
 | `CHANGELOG.md` | История релизов |

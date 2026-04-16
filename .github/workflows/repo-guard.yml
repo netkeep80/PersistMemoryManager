@@ -1,37 +1,36 @@
-name: repo-guard audit
+name: repo-guard policy check
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: ["**"]
 
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
 jobs:
-  audit:
-    name: repo-guard audit check
+  policy-check:
+    name: repo-guard advisory check
     runs-on: ubuntu-latest
-    continue-on-error: true
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Clone repo-guard
-        run: |
-          git clone https://github.com/netkeep80/repo-guard.git /tmp/repo-guard
-          cd /tmp/repo-guard
-          git checkout 7877108e84fcc6539ded13ac09ad9358bc9cf529
-
-      - uses: actions/setup-node@v4
+      - name: Run repo-guard
+        id: repo_guard
+        uses: netkeep80/repo-guard@b1d16b8eb69755898c248d6e3dde31fa03d1becc
         with:
-          node-version: "20"
-
-      - name: Install repo-guard dependencies
-        working-directory: /tmp/repo-guard
-        run: npm ci
-
-      - name: Validate repo-policy.json
-        run: node /tmp/repo-guard/src/repo-guard.mjs --repo-root ${{ github.workspace }}
-
-      - name: Run PR policy check (audit)
-        run: node /tmp/repo-guard/src/repo-guard.mjs check-pr --repo-root ${{ github.workspace }}
+          mode: check-pr
+          enforcement: advisory
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish repo-guard summary
+        if: always()
+        run: |
+          echo "repo-guard result: ${{ steps.repo_guard.outputs.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.repo_guard.outputs.summary }}" >> "$GITHUB_STEP_SUMMARY"
