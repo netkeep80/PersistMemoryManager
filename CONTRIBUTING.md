@@ -129,6 +129,31 @@ The CI will fail if source files change without a changelog fragment. Source fil
 
 Docs-only changes (`docs/`, `*.md`, `.github/workflows/`) do not require a fragment.
 
+## Docs-owned vs Release-owned Surface
+
+The repository distinguishes two CI surfaces so that atomic docs-only PRs are
+not blocked by release-state drift:
+
+| Surface            | Owned by                 | Checked in                          |
+|--------------------|--------------------------|-------------------------------------|
+| **Docs-owned**     | Contributors             | `scripts/check-docs-consistency.sh` |
+| **Release-owned**  | Release workflow (bot)   | `scripts/check-version-consistency.sh` |
+
+**Docs-owned** means docs/governance invariants that every PR touching docs
+must honour (for example, every canonical doc listed in `repo-policy.json`
+must exist).
+
+**Release-owned** means state that the release workflow is responsible for
+keeping in sync. The canonical example is the version triple:
+
+- `CMakeLists.txt` `project(... VERSION X.Y.Z ...)`
+- `README.md` version badge
+- `CHANGELOG.md` latest `## [X.Y.Z]` heading
+
+A docs-only PR **must not** bump the README version badge — that belongs to
+the release cut. The version-consistency check only runs when a PR actually
+touches release-owned paths, so docs-only work never inherits a forced bump.
+
 ## Pull Request Process
 
 1. Create a feature branch from `main`
