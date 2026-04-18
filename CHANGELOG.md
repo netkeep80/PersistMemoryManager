@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.4] - 2026-04-18
+
+### Changed
+- Split `docs-consistency` CI into two independent concerns to remove a
+  governance deadlock for atomic docs-only PRs:
+  - `scripts/check-docs-consistency.sh` now only enforces docs-owned
+    invariants (canonical docs existence).
+  - `scripts/check-version-consistency.sh` (new) enforces release-owned
+    invariants: `CMakeLists.txt` ↔ `README.md` badge ↔ `CHANGELOG.md`.
+- The version-consistency check runs only when release-owned paths change,
+  so docs-only PRs no longer require a forced `README.md` version bump.
+- Documented the docs-owned vs release-owned surface split in
+  `CONTRIBUTING.md`.
+
+
 ## [0.55.3] - 2026-04-16
 
 ### Changed
