@@ -19,6 +19,7 @@
     "canonical_docs": [
       "docs/pmm_target_model.md",
       "docs/pmm_transformation_rules.md",
+      "docs/comment_policy.md",
       "docs/block_and_treenode_semantics.md",
       "docs/architecture.md",
       "docs/api_reference.md",
@@ -34,6 +35,8 @@
       ".github/PULL_REQUEST_TEMPLATE.md",
       ".github/ISSUE_TEMPLATE/change-contract.yml",
       "scripts/check-repo-guard-rollout.sh",
+      "docs/pmm_target_model.md",
+      "docs/pmm_transformation_rules.md",
       "docs/repository_shape.md",
       "docs/deletion_policy.md",
       "docs/comment_policy.md"
@@ -45,9 +48,9 @@
     ]
   },
   "diff_rules": {
-    "max_new_docs": 3,
-    "max_new_files": 20,
-    "max_net_added_lines": 3000
+    "max_new_docs": 0,
+    "max_new_files": 3,
+    "max_net_added_lines": 35
   },
   "content_rules": [
     {

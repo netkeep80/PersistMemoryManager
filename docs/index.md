@@ -9,6 +9,7 @@ Single entry point for PMM documentation. The canonical set below must match
 |----------|------|
 | [PMM Target Model](pmm_target_model.md) | Normative top-level model: PMM as compact persistent storage kernel; boundary vs `pjson` / `pjson_db` / execution / product layers |
 | [PMM Transformation Rules](pmm_transformation_rules.md) | Normative operational rulebook: allowed issue types, atomic-issue / no-mixed-PR / extraction-first / surface-compression rules, PR review semantics |
+| [Comment Policy](comment_policy.md) | Canonical text discipline for comments, docs placement, and text-surface review |
 | [Block and TreeNode Semantics](block_and_treenode_semantics.md) | Field-level specification of `Block` and `TreeNode` headers |
 | [Architecture](architecture.md) | Layer stack, memory layout, algorithms, storage backends, configuration |
 | [API Reference](api_reference.md) | Complete public API: lifecycle, allocation, containers, I/O, error codes |
@@ -31,7 +32,6 @@ Single entry point for PMM documentation. The canonical set below must match
 | [Mutation Ordering](mutation_ordering.md) | Write ordering rules and crash-consistency analysis |
 | [Repository Shape](repository_shape.md) | Target directory structure and file placement rules |
 | [Deletion Policy](deletion_policy.md) | Rules for file lifecycle: keep, move, archive, delete |
-| [Comment Policy](comment_policy.md) | Canonical text discipline for comments, docs placement, and text-surface review |
 | [Code Reduction Report](code_reduction_report.md) | Supporting report on code-volume reduction |
 | [Compatibility Audit](compatibility_audit.md) | Supporting compatibility inventory |
 | [Internal Structure](internal_structure.md) | Supporting implementation structure notes |
