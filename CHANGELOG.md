@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.5] - 2026-04-18
+
+### Changed
+- Enforce alignment between the canonical docs index and repo policy registry.
+
+
 ## [0.55.4] - 2026-04-18
 
 ### Changed
