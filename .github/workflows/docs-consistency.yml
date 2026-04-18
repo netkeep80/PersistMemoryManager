@@ -1,5 +1,14 @@
 name: Docs Consistency
 
+# Two independent concerns live here, split to remove a governance deadlock:
+#
+#   docs-consistency      — docs-owned invariants. Runs on any docs/governance
+#                           change. Must NOT require a README version bump.
+#   version-consistency   — release-owned invariants (CMakeLists ↔ README badge
+#                           ↔ CHANGELOG). Runs only when release-related files
+#                           change, so docs-only PRs are not blocked by a stale
+#                           badge the release workflow is responsible for.
+
 on:
   push:
     branches: ["**"]
@@ -8,6 +17,7 @@ on:
       - "CMakeLists.txt"
       - "repo-policy.json"
       - "scripts/check-docs-consistency.sh"
+      - "scripts/check-version-consistency.sh"
       - "scripts/check-repo-guard-rollout.sh"
       - ".github/workflows/docs-consistency.yml"
       - ".github/workflows/repo-guard.yml"
@@ -20,6 +30,7 @@ on:
       - "CMakeLists.txt"
       - "repo-policy.json"
       - "scripts/check-docs-consistency.sh"
+      - "scripts/check-version-consistency.sh"
       - "scripts/check-repo-guard-rollout.sh"
       - ".github/workflows/docs-consistency.yml"
       - ".github/workflows/repo-guard.yml"
@@ -33,8 +44,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check version and docs consistency
+      - name: Check docs-owned invariants
         run: bash scripts/check-docs-consistency.sh
 
       - name: Check repo-guard rollout wiring
         run: bash scripts/check-repo-guard-rollout.sh
+
+  version-consistency:
+    name: Version consistency check (release-owned)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect release-related changes
+        id: detect
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          # Release-owned surface: files that encode the published version
+          # triple. Touching any of these signals a release-state change and
+          # triggers the check. Changelog fragments, governance scripts and
+          # the workflow itself are intentionally NOT in this list — they do
+          # not alter the published version and must not force a README bump.
+          release_paths='^(CMakeLists\.txt|README\.md|CHANGELOG\.md)'
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git fetch origin "$BASE_REF" --depth=1
+            changed=$(git diff --name-only "origin/$BASE_REF"...HEAD)
+          else
+            # push event: compare against previous commit
+            changed=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git ls-files)
+          fi
+
+          if echo "$changed" | grep -Eq "$release_paths"; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "Release-related paths changed — running version-consistency check."
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "No release-related paths changed — skipping version-consistency check."
+          fi
+
+      - name: Check version-consistency (release-owned)
+        if: steps.detect.outputs.should_run == 'true'
+        run: bash scripts/check-version-consistency.sh

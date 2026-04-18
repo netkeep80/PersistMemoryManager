@@ -1,45 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# docs-owned invariants only.
+#
+# Scope: governance/docs coherence that must hold for ANY PR touching docs.
+# Out of scope: version/release coherence (README badge, CHANGELOG, CMakeLists
+# version). Those are release-owned and live in scripts/check-version-consistency.sh
+# so that docs-only PRs do not get blocked on a forced README version bump.
+
 FAILED=0
 
-# --- 1. Extract version from each canonical source ---
-
-# CMakeLists.txt: project(PersistMemoryManager VERSION X.Y.Z ...)
-cmake_version=$(grep -oP 'project\(PersistMemoryManager VERSION \K[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt) || {
-  echo "FAIL: could not extract version from CMakeLists.txt"
-  exit 1
-}
-
-# README.md: badge like version-X.Y.Z-green
-readme_version=$(grep -oP 'badge/version-\K[0-9]+\.[0-9]+\.[0-9]+' README.md) || {
-  echo "FAIL: could not extract version badge from README.md"
-  exit 1
-}
-
-# CHANGELOG.md: first ## [X.Y.Z] entry
-changelog_version=$(grep -oP '^\#\# \[\K[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | head -1) || {
-  echo "FAIL: could not extract latest version from CHANGELOG.md"
-  exit 1
-}
-
-echo "CMakeLists.txt version: $cmake_version"
-echo "README.md badge version: $readme_version"
-echo "CHANGELOG.md latest version: $changelog_version"
-
-# --- 2. Check consistency ---
-
-if [ "$cmake_version" != "$readme_version" ]; then
-  echo "FAIL: README badge version ($readme_version) does not match CMakeLists.txt ($cmake_version)"
-  FAILED=1
-fi
-
-if [ "$cmake_version" != "$changelog_version" ]; then
-  echo "FAIL: CHANGELOG latest version ($changelog_version) does not match CMakeLists.txt ($cmake_version)"
-  FAILED=1
-fi
-
-# --- 3. Check that canonical docs listed in repo-policy.json exist ---
+# --- Canonical docs listed in repo-policy.json must exist ---
 
 if [ -f repo-policy.json ]; then
   in_canonical=false
