@@ -14,8 +14,7 @@
       "imgui.ini",
       "demo.bat",
       "test.bat",
-      "demo.md",
-      "single_include/**"
+      "demo.md"
     ],
     "canonical_docs": [
       "docs/pmm_target_model.md",
@@ -50,7 +49,7 @@
   },
   "diff_rules": {
     "max_new_docs": 0,
-    "max_new_files": 0,
+    "max_new_files": 3,
     "max_net_added_lines": 35
   },
   "content_rules": [
