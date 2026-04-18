@@ -163,10 +163,9 @@
 Официальный маршрут чтения:
 
 1. `README.md` — обзор, быстрый старт, ссылки на документацию.
-2. `docs/` index (будет создан в задаче 02) — перечень канонических документов.
-3. Канонические docs: `architecture.md`, `api_reference.md`, `pmm_avl_forest.md`,
-   `block_and_treenode_semantics.md`, `bootstrap.md`, `free_tree_forest_policy.md`,
-   `recovery.md`, `thread_safety.md`, `atomic_writes.md`.
+2. `docs/index.md` — перечень канонических, supporting и архивных документов.
+3. Канонические docs перечислены только в `docs/index.md` и
+   `repo-policy.json` `paths.canonical_docs`; эти списки должны совпадать.
 
 Исторические и архивные документы не входят в маршрут и не должны выглядеть
 как обязательная часть чтения.
@@ -175,20 +174,15 @@
 
 #### Canonical
 
-- `architecture.md` — архитектура и инварианты
-- `api_reference.md` — справочник API
-- `pmm_avl_forest.md` — каноническая модель AVL-forest
-- `block_and_treenode_semantics.md` — семантика Block / TreeNode
-- `bootstrap.md` — инициализация и bootstrap
-- `free_tree_forest_policy.md` — политика free-tree
-- `recovery.md` — recovery и валидация
-- `thread_safety.md` — потокобезопасность
-- `atomic_writes.md` — атомарная запись
+Canonical docs are listed in `docs/index.md` and enforced by
+`repo-policy.json` `paths.canonical_docs`. This document must not duplicate the
+registry.
 
 #### Supporting
 
 - `repository_shape.md` — целевая структура репозитория
 - `deletion_policy.md` — правила удаления и архивации
+- `comment_policy.md` — дисциплина текстовой поверхности
 - `index.md` — единая точка входа в документацию
 
 #### Archive (`docs/archive/`)

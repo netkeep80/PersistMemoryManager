@@ -24,13 +24,33 @@ if [ -f repo-policy.json ]; then
       continue
     fi
     if $in_canonical; then
-      doc_path=$(echo "$line" | grep -oP '"[^"]*\.md"' | tr -d '"')
+      doc_path=$(echo "$line" | grep -oP '"[^"]*\.md"' | tr -d '"' || true)
       if [ -n "$doc_path" ] && [ ! -f "$doc_path" ]; then
         echo "FAIL: canonical doc listed in repo-policy.json does not exist: $doc_path"
         FAILED=1
       fi
     fi
   done < repo-policy.json
+fi
+
+# --- Canonical docs in docs/index.md must match repo-policy.json ---
+
+if [ -f repo-policy.json ] && [ -f docs/index.md ]; then
+  policy_docs=$(mktemp)
+  index_docs=$(mktemp)
+  trap 'rm -f "$policy_docs" "$index_docs"' EXIT
+
+  sed -n '/"canonical_docs"/,/\]/p' repo-policy.json \
+    | grep -oP '"docs/[^"]*\.md"' | tr -d '"' > "$policy_docs" || true
+
+  sed -n '/^## Canonical Documents/,/^## /p' docs/index.md \
+    | grep -oP '\]\([^)]+\.md\)' \
+    | sed -E 's/.*\]\(([^)]+)\)/docs\/\1/' > "$index_docs" || true
+
+  if ! diff -u <(sort "$policy_docs") <(sort "$index_docs"); then
+    echo "FAIL: docs/index.md canonical documents differ from repo-policy.json paths.canonical_docs"
+    FAILED=1
+  fi
 fi
 
 if [ "$FAILED" -eq 0 ]; then
