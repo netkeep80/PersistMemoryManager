@@ -7,6 +7,7 @@ Single entry point for all PMM documentation. Each topic is covered by exactly o
 | Document | Role |
 |----------|------|
 | [PMM Target Model](pmm_target_model.md) | Normative top-level model: PMM as compact persistent storage kernel; boundary vs `pjson` / `pjson_db` / execution / product layers |
+| [PMM Transformation Rules](pmm_transformation_rules.md) | Normative operational rulebook: allowed issue types, atomic-issue / no-mixed-PR / extraction-first / surface-compression rules, PR review semantics |
 | [PMM AVL-Forest](pmm_avl_forest.md) | Canonical architectural model: AVL-forest as first-class abstraction, forest-domains, design constraints |
 | [Block and TreeNode Semantics](block_and_treenode_semantics.md) | Field-level specification of `Block` and `TreeNode` headers |
 | [Core Invariants](core_invariants.md) | Frozen invariant set after issues 01–07: model boundary, block semantics, forest, bootstrap, free-tree, verify/repair |
