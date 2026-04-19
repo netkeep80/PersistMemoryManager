@@ -78,6 +78,7 @@
     "governance": [".github/**", "scripts/check-*.sh", "repo-policy.json"],
     "release": ["changelog.d/*.md"],
     "generated": ["single_include/**"],
+    "kernel_module": ["include/pmm/*.h"],
     "kernel_shard": ["include/pmm/**/*.inc", "include/pmm/**/*.inl", "include/pmm/**/*.ipp"]
   },
   "new_file_rules": {
@@ -90,9 +91,10 @@
       "max_new_files": 0
     },
     "kernel-compaction": {
-      "allow_classes": ["test", "release"],
+      "allow_classes": ["test", "release", "kernel_module"],
       "max_per_class": {
-        "release": 1
+        "release": 1,
+        "kernel_module": 1
       }
     },
     "kernel-hardening": {
@@ -102,9 +104,10 @@
       }
     },
     "extraction-prep": {
-      "allow_classes": ["test", "release"],
+      "allow_classes": ["test", "release", "kernel_module"],
       "max_per_class": {
-        "release": 1
+        "release": 1,
+        "kernel_module": 1
       }
     },
     "generated-refresh": {

@@ -85,6 +85,25 @@ checks.append((expected_change_classes <= change_classes, "repo-policy.json chan
 new_file_rules = policy.get("new_file_rules", {})
 checks.append((expected_change_classes <= set(new_file_rules), "new_file_rules must cover PMM v1 classes"))
 
+new_file_classes = policy.get("new_file_classes", {})
+checks.append(
+    (
+        "kernel_module" in new_file_classes,
+        "new_file_classes must distinguish legitimate kernel modules from forbidden shard files",
+    )
+)
+
+for change_type in ("kernel-compaction", "extraction-prep"):
+    rule = new_file_rules.get(change_type, {})
+    allowed_classes = set(rule.get("allow_classes", []))
+    max_per_class = rule.get("max_per_class", {})
+    checks.append(
+        (
+            "kernel_module" in allowed_classes and max_per_class.get("kernel_module") == 1,
+            f"{change_type} must allow exactly one legitimate kernel module extraction file",
+        )
+    )
+
 change_type_rules = policy.get("change_type_rules", {})
 checks.append((expected_change_classes <= set(change_type_rules), "change_type_rules must cover PMM v1 types"))
 checks.append(("surface_matrix" not in policy, "surface_matrix is intentionally deferred in this rollout"))
