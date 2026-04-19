@@ -294,4 +294,6 @@ template <typename ManagerT> class PersistMemoryTypedApi
     }
 };
 
-} // namespace pmm::detail
+// clang-format off
+}
+// clang-format on
