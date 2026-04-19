@@ -1,5 +1,9 @@
 name: CI
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  CTEST_PARALLEL_LEVEL: 4
+
 on:
   push:
     branches: ["**"]
