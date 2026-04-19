@@ -501,6 +501,23 @@ static pmm::Block<address_traits>* find_block_from_user_ptr( void* ptr ) noexcep
 {
     std::uint8_t*                          base = _backend.base_ptr();
     detail::ManagerHeader<address_traits>* hdr  = get_header( base );
+    if constexpr ( sizeof( Block<address_traits> ) % address_traits::granule_size != 0 )
+    {
+        constexpr std::size_t rounded_header_size =
+            static_cast<std::size_t>( kBlockHdrGranules ) * address_traits::granule_size;
+        if ( ptr != nullptr && base != nullptr )
+        {
+            auto* raw = static_cast<std::uint8_t*>( ptr );
+            if ( raw >= base + rounded_header_size && raw < base + static_cast<std::size_t>( hdr->total_size ) )
+            {
+                std::uint8_t* cand = raw - rounded_header_size;
+                if ( ( static_cast<std::size_t>( cand - base ) % address_traits::granule_size ) == 0 &&
+                     cand + sizeof( Block<address_traits> ) <= base + static_cast<std::size_t>( hdr->total_size ) &&
+                     BlockStateBase<address_traits>::get_weight( cand ) != 0 )
+                    return reinterpret_cast<pmm::Block<address_traits>*>( cand );
+            }
+        }
+    }
     return detail::header_from_ptr_t<address_traits>( base, ptr, static_cast<std::size_t>( hdr->total_size ) );
 }
 
@@ -509,9 +526,26 @@ static pmm::Block<address_traits>* find_block_from_user_ptr( void* ptr ) noexcep
 static const pmm::Block<address_traits>* find_block_from_user_ptr( const void* ptr ) noexcept
 {
     const std::uint8_t* base = _backend.base_ptr();
-    return detail::header_from_ptr_t<address_traits>(
-        const_cast<std::uint8_t*>( base ), const_cast<void*>( ptr ),
-        static_cast<std::size_t>( get_header_c( base )->total_size ) );
+    const auto*         hdr  = get_header_c( base );
+    if constexpr ( sizeof( Block<address_traits> ) % address_traits::granule_size != 0 )
+    {
+        constexpr std::size_t rounded_header_size =
+            static_cast<std::size_t>( kBlockHdrGranules ) * address_traits::granule_size;
+        if ( ptr != nullptr && base != nullptr )
+        {
+            const auto* raw = static_cast<const std::uint8_t*>( ptr );
+            if ( raw >= base + rounded_header_size && raw < base + static_cast<std::size_t>( hdr->total_size ) )
+            {
+                const std::uint8_t* cand = raw - rounded_header_size;
+                if ( ( static_cast<std::size_t>( cand - base ) % address_traits::granule_size ) == 0 &&
+                     cand + sizeof( Block<address_traits> ) <= base + static_cast<std::size_t>( hdr->total_size ) &&
+                     BlockStateBase<address_traits>::get_weight( cand ) != 0 )
+                    return reinterpret_cast<const pmm::Block<address_traits>*>( cand );
+            }
+        }
+    }
+    return detail::header_from_ptr_t<address_traits>( const_cast<std::uint8_t*>( base ), const_cast<void*>( ptr ),
+                                                      static_cast<std::size_t>( hdr->total_size ) );
 }
 
 // ─── raw ↔ pptr helpers ───────────────────────────────────────
@@ -526,7 +560,7 @@ template <typename T> static pptr<T> make_pptr_from_raw( void* raw ) noexcept
     if ( raw_byte < base || raw_byte >= base + _backend.total_size() )
         return pptr<T>();
     std::size_t byte_off = static_cast<std::size_t>( raw_byte - base );
-    std::size_t idx      = ( byte_off + address_traits::granule_size - 1 ) / address_traits::granule_size;
+    std::size_t idx      = byte_off / address_traits::granule_size;
     if ( idx > static_cast<std::size_t>( std::numeric_limits<index_type>::max() ) )
         return pptr<T>();
     return pptr<T>( static_cast<index_type>( idx ) );
@@ -577,19 +611,28 @@ template <typename T> static void* raw_user_ptr_from_pptr( pptr<T> p ) noexcept
 
     std::uint8_t* base     = _backend.base_ptr();
     std::size_t   byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+    if ( byte_off + sizeof( T ) > _backend.total_size() )
+        return nullptr;
+    return base + byte_off;
+}
+
+template <typename T> static void* raw_block_user_ptr_from_pptr( pptr<T> p ) noexcept
+{
+    if ( p.is_null() || !_initialized )
+        return nullptr;
+
+    std::uint8_t* base = _backend.base_ptr();
     if constexpr ( sizeof( Block<address_traits> ) % address_traits::granule_size == 0 )
     {
-        if ( byte_off + sizeof( T ) > _backend.total_size() )
-            return nullptr;
-        return base + byte_off;
+        return raw_user_ptr_from_pptr( p );
     }
     else
     {
-        constexpr std::size_t hdr_granules =
-            ( sizeof( Block<address_traits> ) + address_traits::granule_size - 1 ) / address_traits::granule_size;
-        if ( p.offset() < hdr_granules )
+        constexpr index_type kHdrGranules = static_cast<index_type>(
+            ( sizeof( Block<address_traits> ) + address_traits::granule_size - 1 ) / address_traits::granule_size );
+        if ( p.offset() < kHdrGranules )
             return nullptr;
-        std::size_t blk_off = static_cast<std::size_t>( p.offset() - hdr_granules ) * address_traits::granule_size;
+        std::size_t blk_off = static_cast<std::size_t>( p.offset() - kHdrGranules ) * address_traits::granule_size;
         if ( blk_off + sizeof( Block<address_traits> ) > _backend.total_size() )
             return nullptr;
         return base + blk_off + sizeof( Block<address_traits> );

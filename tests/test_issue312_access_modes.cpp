@@ -8,6 +8,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
+#include <cstddef>
 
 namespace
 {
@@ -50,6 +51,8 @@ TEST_CASE( "I312: SmallAddressTraits resolves to canonical non-aligned user poin
     REQUIRE( checked != nullptr );
     REQUIRE( unchecked != nullptr );
     REQUIRE( checked == unchecked );
+    REQUIRE( reinterpret_cast<std::uintptr_t>( checked ) % alignof( std::uint32_t ) == 0 );
+    REQUIRE( reinterpret_cast<std::uintptr_t>( checked ) % pmm::SmallAddressTraits::granule_size == 0 );
     REQUIRE( p.resolve() == checked );
     REQUIRE( p.resolve_unchecked() == unchecked );
 
