@@ -70,8 +70,15 @@ Convenience surface is not a valid justification for growth.
 
 - Generated surface (`single_include/**` and comparable artifacts) must not be
   updated in the same PR as kernel or governance changes.
-- Regeneration PRs are their own change type and must be minimal and isolated.
+- Regeneration PRs are their own change type and must be minimal and isolated,
+  except when the generated diff is the mechanically required closure of an
+  allowed canonical source change in the same PR.
 - Hand-edits of generated surface are forbidden.
+- Closure means the source diff is primary, the generated diff is directly
+  derivable from it, and no independent logic or unrelated churn appears in the
+  generated layer.
+- Issue contracts that mark generated surface `must_not_touch` still allow this
+  minimal source -> generated closure unless they explicitly forbid it.
 
 ## 7. Text discipline rule
 
@@ -96,6 +103,8 @@ A PR is first assessed on **contract conformance**, not on local code quality:
 A technically correct PR that violates its issue contract is rejected.
 A minimal PR that respects its contract is preferred over a broader one that
 "also fixes a few other things".
+For generated closure, reviewers check that the generated diff is mechanically
+explained by the allowed source diff and is not a disguised mixed change.
 
 ## Success criterion
 
