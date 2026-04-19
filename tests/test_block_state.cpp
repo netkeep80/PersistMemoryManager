@@ -14,7 +14,7 @@
  * @version 0.2
  */
 
-#include "pmm_single_threaded_heap.h"
+#include "pmm/block_state.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
@@ -52,6 +52,77 @@ TEST_CASE( "    All states same size", "[test_block_state]" )
     static_assert( sizeof( pmm::FreeBlockNotInAVL<A> ) == 32, "FreeBlockNotInAVL must be 32 bytes" );
     static_assert( sizeof( pmm::SplittingBlock<A> ) == 32, "SplittingBlock must be 32 bytes" );
     static_assert( sizeof( pmm::CoalescingBlock<A> ) == 32, "CoalescingBlock must be 32 bytes" );
+}
+
+/// @brief Issue #317: descriptor offsets match concrete Block/TreeNode layout.
+TEST_CASE( "issue317: block field descriptors preserve layout offsets", "[test_block_state][issue317]" )
+{
+    using A     = pmm::DefaultAddressTraits;
+    using TinyA = pmm::AddressTraits<std::uint8_t, 8>;
+
+    using BlockState     = pmm::BlockStateBase<A>;
+    using TinyBlockState = pmm::BlockStateBase<TinyA>;
+    using TinyLayout     = pmm::detail::BlockFieldLayout<std::uint8_t>;
+
+    static_assert( BlockState::kOffsetWeight == 0, "weight remains the first field" );
+    static_assert( BlockState::kOffsetPrevOffset == sizeof( pmm::TreeNode<A> ), "prev_offset starts after TreeNode" );
+    static_assert( pmm::detail::block_tree_slot_size_v<A> == sizeof( pmm::TreeNode<A> ),
+                   "descriptor tree slot size matches TreeNode" );
+    static_assert( pmm::detail::block_layout_size_v<A> == sizeof( pmm::Block<A> ),
+                   "descriptor block size matches Block" );
+
+    static_assert( TinyBlockState::kOffsetAvlHeight == offsetof( TinyLayout, avl_height ),
+                   "descriptor honors padding before avl_height for uint8_t index layouts" );
+    static_assert( TinyBlockState::kOffsetNodeType == offsetof( TinyLayout, node_type ),
+                   "descriptor honors node_type offset for uint8_t index layouts" );
+    static_assert( TinyBlockState::kOffsetPrevOffset == sizeof( pmm::TreeNode<TinyA> ),
+                   "tiny prev_offset still starts after TreeNode" );
+    static_assert( pmm::detail::block_layout_size_v<TinyA> == sizeof( pmm::Block<TinyA> ),
+                   "tiny descriptor block size matches Block" );
+
+    REQUIRE( TinyBlockState::kOffsetAvlHeight == 6 );
+    REQUIRE( TinyBlockState::kOffsetNodeType == 8 );
+}
+
+/// @brief Issue #317: generic descriptors read/write every metadata field.
+TEST_CASE( "issue317: descriptor access reads and writes block fields", "[test_block_state][issue317]" )
+{
+    using A          = pmm::DefaultAddressTraits;
+    using BlockState = pmm::BlockStateBase<A>;
+
+    alignas( 16 ) std::uint8_t buffer[sizeof( pmm::Block<A> )];
+    std::memset( buffer, 0, sizeof( buffer ) );
+
+    BlockState::set_field_of<pmm::detail::BlockWeightField>( buffer, 7u );
+    BlockState::set_field_of<pmm::detail::BlockLeftOffsetField>( buffer, 11u );
+    BlockState::set_field_of<pmm::detail::BlockRightOffsetField>( buffer, 13u );
+    BlockState::set_field_of<pmm::detail::BlockParentOffsetField>( buffer, 17u );
+    BlockState::set_field_of<pmm::detail::BlockRootOffsetField>( buffer, 19u );
+    BlockState::set_field_of<pmm::detail::BlockAvlHeightField>( buffer, static_cast<std::int16_t>( 3 ) );
+    BlockState::set_field_of<pmm::detail::BlockNodeTypeField>( buffer, pmm::kNodeReadOnly );
+    BlockState::set_field_of<pmm::detail::BlockPrevOffsetField>( buffer, 23u );
+    BlockState::set_field_of<pmm::detail::BlockNextOffsetField>( buffer, 29u );
+
+    REQUIRE( BlockState::get_weight( buffer ) == 7u );
+    REQUIRE( BlockState::get_left_offset( buffer ) == 11u );
+    REQUIRE( BlockState::get_right_offset( buffer ) == 13u );
+    REQUIRE( BlockState::get_parent_offset( buffer ) == 17u );
+    REQUIRE( BlockState::get_root_offset( buffer ) == 19u );
+    REQUIRE( BlockState::get_avl_height( buffer ) == 3 );
+    REQUIRE( BlockState::get_node_type( buffer ) == pmm::kNodeReadOnly );
+    REQUIRE( BlockState::get_prev_offset( buffer ) == 23u );
+    REQUIRE( BlockState::get_next_offset( buffer ) == 29u );
+
+    auto* state = reinterpret_cast<pmm::BlockStateBase<A>*>( buffer );
+    REQUIRE( state->weight() == 7u );
+    REQUIRE( state->left_offset() == 11u );
+    REQUIRE( state->right_offset() == 13u );
+    REQUIRE( state->parent_offset() == 17u );
+    REQUIRE( state->root_offset() == 19u );
+    REQUIRE( state->avl_height() == 3 );
+    REQUIRE( state->node_type() == pmm::kNodeReadOnly );
+    REQUIRE( state->prev_offset() == 23u );
+    REQUIRE( state->next_offset() == 29u );
 }
 
 // ─── P9-B: Read-only accessors ────────────────────────────────────────────────

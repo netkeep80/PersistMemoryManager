@@ -221,12 +221,11 @@ class AllocatorPolicy
         index_type curr_next = coalescing->next_offset();
         if ( curr_next != AddressTraitsT::no_block )
         {
-            const BlockStateBase<AddressTraitsT>* nxt_state = reinterpret_cast<const BlockStateBase<AddressTraitsT>*>(
-                detail::block_at<AddressTraitsT>( base, curr_next ) );
-            if ( nxt_state->weight() == 0 ) // free block
+            void* nxt_raw = detail::block_at<AddressTraitsT>( base, curr_next );
+            if ( BlockState::get_weight( nxt_raw ) == 0 ) // free block
             {
                 index_type nxt_idx     = curr_next;
-                index_type nxt_next    = nxt_state->next_offset();
+                index_type nxt_next    = BlockState::get_next_offset( nxt_raw );
                 BlockT*    nxt_nxt_blk = ( nxt_next != AddressTraitsT::no_block )
                                              ? detail::block_at<AddressTraitsT>( base, nxt_next )
                                              : nullptr;
@@ -251,9 +250,8 @@ class AllocatorPolicy
         index_type curr_prev = coalescing->prev_offset();
         if ( curr_prev != AddressTraitsT::no_block )
         {
-            const BlockStateBase<AddressTraitsT>* prv_state = reinterpret_cast<const BlockStateBase<AddressTraitsT>*>(
-                detail::block_at<AddressTraitsT>( base, curr_prev ) );
-            if ( prv_state->weight() == 0 ) // free block
+            void* prv_raw = detail::block_at<AddressTraitsT>( base, curr_prev );
+            if ( BlockState::get_weight( prv_raw ) == 0 ) // free block
             {
                 index_type prv_idx  = curr_prev;
                 index_type blk_next = coalescing->next_offset();
@@ -264,8 +262,8 @@ class AllocatorPolicy
                 FreeBlockTreeT::remove( base, hdr, prv_idx );
 
                 // CoalescingBlock::coalesce_with_prev — current block (blk) is absorbed into prv
-                CoalescingBlock<AddressTraitsT>* result_coalescing = coalescing->coalesce_with_prev(
-                    detail::block_at<AddressTraitsT>( base, prv_idx ), next_blk, prv_idx );
+                CoalescingBlock<AddressTraitsT>* result_coalescing =
+                    coalescing->coalesce_with_prev( prv_raw, next_blk, prv_idx );
 
                 if ( next_blk == nullptr )
                     hdr->last_block_offset = prv_idx;

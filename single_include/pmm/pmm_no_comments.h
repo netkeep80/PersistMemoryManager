@@ -108,6 +108,163 @@ inline constexpr std::size_t kDefaultGrowDenominator = 4;
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <type_traits>
+
+namespace pmm
+{
+namespace detail
+{
+
+template <typename IndexT> struct BlockFieldLayout
+{
+    IndexT        weight;
+    IndexT        left_offset;
+    IndexT        right_offset;
+    IndexT        parent_offset;
+    IndexT        root_offset;
+    std::int16_t  avl_height;
+    std::uint16_t node_type;
+    IndexT        prev_offset;
+    IndexT        next_offset;
+};
+
+static_assert( std::is_standard_layout<BlockFieldLayout<std::uint32_t>>::value,
+               "BlockFieldLayout must remain standard-layout" );
+
+struct BlockWeightField
+{
+};
+struct BlockLeftOffsetField
+{
+};
+struct BlockRightOffsetField
+{
+};
+struct BlockParentOffsetField
+{
+};
+struct BlockRootOffsetField
+{
+};
+struct BlockAvlHeightField
+{
+};
+struct BlockNodeTypeField
+{
+};
+struct BlockPrevOffsetField
+{
+};
+struct BlockNextOffsetField
+{
+};
+
+template <typename AddressTraitsT, typename FieldTag> struct BlockFieldTraits;
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockWeightField>
+{
+    using value_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<value_type>, weight );
+};
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockLeftOffsetField>
+{
+    using value_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<value_type>, left_offset );
+};
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockRightOffsetField>
+{
+    using value_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<value_type>, right_offset );
+};
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockParentOffsetField>
+{
+    using value_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<value_type>, parent_offset );
+};
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockRootOffsetField>
+{
+    using value_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<value_type>, root_offset );
+};
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockAvlHeightField>
+{
+    using value_type                    = std::int16_t;
+    using index_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<index_type>, avl_height );
+};
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockNodeTypeField>
+{
+    using value_type                    = std::uint16_t;
+    using index_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<index_type>, node_type );
+};
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockPrevOffsetField>
+{
+    using value_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<value_type>, prev_offset );
+};
+
+template <typename AddressTraitsT> struct BlockFieldTraits<AddressTraitsT, BlockNextOffsetField>
+{
+    using value_type                    = typename AddressTraitsT::index_type;
+    static constexpr std::size_t offset = offsetof( BlockFieldLayout<value_type>, next_offset );
+};
+
+template <typename AddressTraitsT, typename FieldTag>
+using block_field_value_t = typename BlockFieldTraits<AddressTraitsT, FieldTag>::value_type;
+
+template <typename AddressTraitsT, typename FieldTag>
+inline constexpr std::size_t block_field_offset_v = BlockFieldTraits<AddressTraitsT, FieldTag>::offset;
+
+struct BlockFieldByteAccess
+{
+    template <typename ValueT> static ValueT read( const void* raw, std::size_t offset ) noexcept
+    {
+        ValueT value{};
+        std::memcpy( &value, static_cast<const std::uint8_t*>( raw ) + offset, sizeof( value ) );
+        return value;
+    }
+
+    template <typename ValueT> static void write( void* raw, std::size_t offset, ValueT value ) noexcept
+    {
+        std::memcpy( static_cast<std::uint8_t*>( raw ) + offset, &value, sizeof( value ) );
+    }
+};
+
+template <typename AddressTraitsT, typename FieldTag, typename AccessPolicy = BlockFieldByteAccess>
+block_field_value_t<AddressTraitsT, FieldTag> read_block_field( const void* raw ) noexcept
+{
+    return AccessPolicy::template read<block_field_value_t<AddressTraitsT, FieldTag>>(
+        raw, block_field_offset_v<AddressTraitsT, FieldTag> );
+}
+
+template <typename AddressTraitsT, typename FieldTag, typename AccessPolicy = BlockFieldByteAccess>
+void write_block_field( void* raw, block_field_value_t<AddressTraitsT, FieldTag> value ) noexcept
+{
+    AccessPolicy::template write<block_field_value_t<AddressTraitsT, FieldTag>>(
+        raw, block_field_offset_v<AddressTraitsT, FieldTag>, value );
+}
+
+template <typename AddressTraitsT>
+inline constexpr std::size_t block_tree_slot_size_v =
+    offsetof( BlockFieldLayout<typename AddressTraitsT::index_type>, prev_offset );
+
+template <typename AddressTraitsT>
+inline constexpr std::size_t block_layout_size_v = sizeof( BlockFieldLayout<typename AddressTraitsT::index_type> );
+
+} 
+} 
+
+#include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 namespace pmm
@@ -124,33 +281,75 @@ template <typename AddressTraitsT> struct TreeNode
     using address_traits = AddressTraitsT;
     using index_type     = typename AddressTraitsT::index_type;
 
-    index_type get_left() const noexcept { return left_offset; }
+    index_type get_left() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockLeftOffsetField>( this );
+    }
 
-    index_type get_right() const noexcept { return right_offset; }
+    index_type get_right() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockRightOffsetField>( this );
+    }
 
-    index_type get_parent() const noexcept { return parent_offset; }
+    index_type get_parent() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockParentOffsetField>( this );
+    }
 
-    index_type get_root() const noexcept { return root_offset; }
+    index_type get_root() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockRootOffsetField>( this );
+    }
 
-    index_type get_weight() const noexcept { return weight; }
+    index_type get_weight() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockWeightField>( this );
+    }
 
-    std::int16_t get_height() const noexcept { return avl_height; }
+    std::int16_t get_height() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockAvlHeightField>( this );
+    }
 
-    std::uint16_t get_node_type() const noexcept { return node_type; }
+    std::uint16_t get_node_type() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockNodeTypeField>( this );
+    }
 
-    void set_left( index_type v ) noexcept { left_offset = v; }
+    void set_left( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockLeftOffsetField>( this, v );
+    }
 
-    void set_right( index_type v ) noexcept { right_offset = v; }
+    void set_right( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockRightOffsetField>( this, v );
+    }
 
-    void set_parent( index_type v ) noexcept { parent_offset = v; }
+    void set_parent( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockParentOffsetField>( this, v );
+    }
 
-    void set_root( index_type v ) noexcept { root_offset = v; }
+    void set_root( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockRootOffsetField>( this, v );
+    }
 
-    void set_weight( index_type v ) noexcept { weight = v; }
+    void set_weight( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockWeightField>( this, v );
+    }
 
-    void set_height( std::int16_t v ) noexcept { avl_height = v; }
+    void set_height( std::int16_t v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockAvlHeightField>( this, v );
+    }
 
-    void set_node_type( std::uint16_t v ) noexcept { node_type = v; }
+    void set_node_type( std::uint16_t v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockNodeTypeField>( this, v );
+    }
 
   protected:
     
@@ -270,6 +469,7 @@ struct VerifyResult
 
 } 
 
+#include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <type_traits>
@@ -294,177 +494,228 @@ template <typename AddressTraitsT> class BlockStateBase : private Block<AddressT
     using index_type     = typename AddressTraitsT::index_type;
     using BaseBlock      = Block<AddressTraitsT>;
 
-    static constexpr std::size_t kOffsetPrevOffset = sizeof( TNode );
+    template <typename FieldTag> using field_value_type = detail::block_field_value_t<AddressTraitsT, FieldTag>;
+
+    template <typename FieldTag>
+    static constexpr std::size_t field_offset = detail::block_field_offset_v<AddressTraitsT, FieldTag>;
+
+    template <typename FieldTag> static field_value_type<FieldTag> get_field_of( const void* raw_blk ) noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, FieldTag>( raw_blk );
+    }
+
+    template <typename FieldTag> static void set_field_of( void* raw_blk, field_value_type<FieldTag> value ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, FieldTag>( raw_blk, value );
+    }
+
+    static bool is_free_raw( const void* raw_blk ) noexcept
+    {
+        return get_weight( raw_blk ) == 0 && get_root_offset( raw_blk ) == 0;
+    }
+
+    static bool is_allocated_raw( const void* raw_blk, index_type own_idx ) noexcept
+    {
+        return get_weight( raw_blk ) > 0 && get_root_offset( raw_blk ) == own_idx;
+    }
+
+    static constexpr std::size_t kOffsetPrevOffset = field_offset<detail::BlockPrevOffsetField>;
     
-    static constexpr std::size_t kOffsetNextOffset = sizeof( TNode ) + sizeof( index_type );
+    static constexpr std::size_t kOffsetNextOffset = field_offset<detail::BlockNextOffsetField>;
     
-    static constexpr std::size_t kOffsetWeight = 0;
+    static constexpr std::size_t kOffsetWeight = field_offset<detail::BlockWeightField>;
     
-    static constexpr std::size_t kOffsetLeftOffset = sizeof( index_type );
+    static constexpr std::size_t kOffsetLeftOffset = field_offset<detail::BlockLeftOffsetField>;
     
-    static constexpr std::size_t kOffsetRightOffset = 2 * sizeof( index_type );
+    static constexpr std::size_t kOffsetRightOffset = field_offset<detail::BlockRightOffsetField>;
     
-    static constexpr std::size_t kOffsetParentOffset = 3 * sizeof( index_type );
+    static constexpr std::size_t kOffsetParentOffset = field_offset<detail::BlockParentOffsetField>;
     
-    static constexpr std::size_t kOffsetRootOffset = 4 * sizeof( index_type );
+    static constexpr std::size_t kOffsetRootOffset = field_offset<detail::BlockRootOffsetField>;
     
-    static constexpr std::size_t kOffsetAvlHeight = 5 * sizeof( index_type );
+    static constexpr std::size_t kOffsetAvlHeight = field_offset<detail::BlockAvlHeightField>;
     
-    static constexpr std::size_t kOffsetNodeType = 5 * sizeof( index_type ) + 2;
+    static constexpr std::size_t kOffsetNodeType = field_offset<detail::BlockNodeTypeField>;
+
+    static_assert( detail::block_tree_slot_size_v<AddressTraitsT> == sizeof( TNode ),
+                   "Block field descriptors must match TreeNode layout" );
+    static_assert( detail::block_layout_size_v<AddressTraitsT> == sizeof( BaseBlock ),
+                   "Block field descriptors must match Block layout" );
 
     BlockStateBase() = delete;
 
-    index_type weight() const noexcept { return TNode::weight; }
+    index_type weight() const noexcept { return get_weight( this ); }
 
-    index_type prev_offset() const noexcept { return Block<AddressTraitsT>::prev_offset; }
-    index_type next_offset() const noexcept { return Block<AddressTraitsT>::next_offset; }
+    index_type prev_offset() const noexcept { return get_prev_offset( this ); }
+    index_type next_offset() const noexcept { return get_next_offset( this ); }
 
-    index_type   left_offset() const noexcept { return TNode::left_offset; }
-    index_type   right_offset() const noexcept { return TNode::right_offset; }
-    index_type   parent_offset() const noexcept { return TNode::parent_offset; }
-    std::int16_t avl_height() const noexcept { return TNode::avl_height; }
+    index_type   left_offset() const noexcept { return get_left_offset( this ); }
+    index_type   right_offset() const noexcept { return get_right_offset( this ); }
+    index_type   parent_offset() const noexcept { return get_parent_offset( this ); }
+    std::int16_t avl_height() const noexcept { return get_avl_height( this ); }
 
-    index_type root_offset() const noexcept { return TNode::root_offset; }
+    index_type root_offset() const noexcept { return get_root_offset( this ); }
 
-    std::uint16_t node_type() const noexcept { return TNode::node_type; }
+    std::uint16_t node_type() const noexcept { return get_node_type( this ); }
 
-    bool is_free() const noexcept { return weight() == 0 && root_offset() == 0; }
+    bool is_free() const noexcept { return is_free_raw( this ); }
 
-    bool is_allocated( index_type own_idx ) const noexcept { return weight() > 0 && root_offset() == own_idx; }
+    bool is_allocated( index_type own_idx ) const noexcept { return is_allocated_raw( this, own_idx ); }
 
     bool is_permanently_locked() const noexcept { return node_type() == pmm::kNodeReadOnly; }
 
     static void recover_state( void* raw_blk, index_type own_idx ) noexcept
     {
-        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
+        const index_type weight_val = get_weight( raw_blk );
+        const index_type root_val   = get_root_offset( raw_blk );
         
-        if ( blk->weight() > 0 && blk->root_offset() != own_idx )
-            blk->set_root_offset( own_idx );
+        if ( weight_val > 0 && root_val != own_idx )
+            set_root_offset_of( raw_blk, own_idx );
         
-        if ( blk->weight() == 0 && blk->root_offset() != 0 )
-            blk->set_root_offset( 0 );
+        if ( weight_val == 0 && root_val != 0 )
+            set_root_offset_of( raw_blk, 0 );
     }
 
     static void verify_state( const void* raw_blk, index_type own_idx, VerifyResult& result ) noexcept
     {
-        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
-        if ( blk->weight() > 0 && blk->root_offset() != own_idx )
+        const index_type weight_val = get_weight( raw_blk );
+        const index_type root_val   = get_root_offset( raw_blk );
+        if ( weight_val > 0 && root_val != own_idx )
         {
             result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
                         static_cast<std::uint64_t>( own_idx ), static_cast<std::uint64_t>( own_idx ),
-                        static_cast<std::uint64_t>( blk->root_offset() ) );
+                        static_cast<std::uint64_t>( root_val ) );
         }
-        if ( blk->weight() == 0 && blk->root_offset() != 0 )
+        if ( weight_val == 0 && root_val != 0 )
         {
             result.add( ViolationType::BlockStateInconsistent, DiagnosticAction::NoAction,
-                        static_cast<std::uint64_t>( own_idx ), 0, static_cast<std::uint64_t>( blk->root_offset() ) );
+                        static_cast<std::uint64_t>( own_idx ), 0, static_cast<std::uint64_t>( root_val ) );
         }
     }
 
     static void reset_avl_fields_of( void* raw_blk ) noexcept
     {
-        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
-        blk->set_left_offset( AddressTraitsT::no_block );
-        blk->set_right_offset( AddressTraitsT::no_block );
-        blk->set_parent_offset( AddressTraitsT::no_block );
-        blk->set_avl_height( 0 );
+        set_left_offset_of( raw_blk, AddressTraitsT::no_block );
+        set_right_offset_of( raw_blk, AddressTraitsT::no_block );
+        set_parent_offset_of( raw_blk, AddressTraitsT::no_block );
+        set_avl_height_of( raw_blk, 0 );
     }
 
     static void repair_prev_offset( void* raw_blk, index_type prev_idx ) noexcept
     {
-        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
-        blk->set_prev_offset( prev_idx );
+        set_prev_offset_of( raw_blk, prev_idx );
     }
 
     static index_type get_prev_offset( const void* raw_blk ) noexcept
     {
-        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
-        return blk->prev_offset();
+        return get_field_of<detail::BlockPrevOffsetField>( raw_blk );
     }
 
     static index_type get_next_offset( const void* raw_blk ) noexcept
     {
-        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
-        return blk->next_offset();
+        return get_field_of<detail::BlockNextOffsetField>( raw_blk );
     }
 
     static index_type get_weight( const void* raw_blk ) noexcept
     {
-        const auto* blk = reinterpret_cast<const BlockStateBase*>( raw_blk );
-        return blk->weight();
+        return get_field_of<detail::BlockWeightField>( raw_blk );
     }
 
     static void init_fields( void* raw_blk, index_type prev_idx, index_type next_idx, std::int16_t avl_height_val,
                              index_type weight_val, index_type root_offset_val ) noexcept
     {
-        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
-        blk->set_prev_offset( prev_idx );
-        blk->set_next_offset( next_idx );
-        blk->set_left_offset( AddressTraitsT::no_block );
-        blk->set_right_offset( AddressTraitsT::no_block );
-        blk->set_parent_offset( AddressTraitsT::no_block );
-        blk->set_avl_height( avl_height_val );
-        blk->set_weight( weight_val );
-        blk->set_root_offset( root_offset_val );
+        set_prev_offset_of( raw_blk, prev_idx );
+        set_next_offset_of( raw_blk, next_idx );
+        set_left_offset_of( raw_blk, AddressTraitsT::no_block );
+        set_right_offset_of( raw_blk, AddressTraitsT::no_block );
+        set_parent_offset_of( raw_blk, AddressTraitsT::no_block );
+        set_avl_height_of( raw_blk, avl_height_val );
+        set_weight_of( raw_blk, weight_val );
+        set_root_offset_of( raw_blk, root_offset_val );
     }
 
     static void set_next_offset_of( void* raw_blk, index_type next_idx ) noexcept
     {
-        auto* blk = reinterpret_cast<BlockStateBase*>( raw_blk );
-        blk->set_next_offset( next_idx );
+        set_field_of<detail::BlockNextOffsetField>( raw_blk, next_idx );
     }
 
-    static index_type field_read_idx( const void* raw_blk, std::size_t offset ) noexcept
+    static index_type get_left_offset( const void* b ) noexcept
     {
-        index_type v;
-        std::memcpy( &v, static_cast<const std::uint8_t*>( raw_blk ) + offset, sizeof( v ) );
-        return v;
+        return get_field_of<detail::BlockLeftOffsetField>( b );
     }
-    
-    static void field_write_idx( void* raw_blk, std::size_t offset, index_type v ) noexcept
+    static index_type get_right_offset( const void* b ) noexcept
     {
-        std::memcpy( static_cast<std::uint8_t*>( raw_blk ) + offset, &v, sizeof( v ) );
+        return get_field_of<detail::BlockRightOffsetField>( b );
     }
-
-    static index_type get_left_offset( const void* b ) noexcept { return field_read_idx( b, kOffsetLeftOffset ); }
-    static index_type get_right_offset( const void* b ) noexcept { return field_read_idx( b, kOffsetRightOffset ); }
-    static index_type get_parent_offset( const void* b ) noexcept { return field_read_idx( b, kOffsetParentOffset ); }
-    static index_type get_root_offset( const void* b ) noexcept { return field_read_idx( b, kOffsetRootOffset ); }
-    static void set_left_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetLeftOffset, v ); }
-    static void set_right_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetRightOffset, v ); }
-    static void set_parent_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetParentOffset, v ); }
-    static void set_prev_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetPrevOffset, v ); }
-    static void set_weight_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetWeight, v ); }
-    static void set_root_offset_of( void* b, index_type v ) noexcept { field_write_idx( b, kOffsetRootOffset, v ); }
+    static index_type get_parent_offset( const void* b ) noexcept
+    {
+        return get_field_of<detail::BlockParentOffsetField>( b );
+    }
+    static index_type get_root_offset( const void* b ) noexcept
+    {
+        return get_field_of<detail::BlockRootOffsetField>( b );
+    }
+    static void set_left_offset_of( void* b, index_type v ) noexcept
+    {
+        set_field_of<detail::BlockLeftOffsetField>( b, v );
+    }
+    static void set_right_offset_of( void* b, index_type v ) noexcept
+    {
+        set_field_of<detail::BlockRightOffsetField>( b, v );
+    }
+    static void set_parent_offset_of( void* b, index_type v ) noexcept
+    {
+        set_field_of<detail::BlockParentOffsetField>( b, v );
+    }
+    static void set_prev_offset_of( void* b, index_type v ) noexcept
+    {
+        set_field_of<detail::BlockPrevOffsetField>( b, v );
+    }
+    static void set_weight_of( void* b, index_type v ) noexcept { set_field_of<detail::BlockWeightField>( b, v ); }
+    static void set_root_offset_of( void* b, index_type v ) noexcept
+    {
+        set_field_of<detail::BlockRootOffsetField>( b, v );
+    }
 
     static std::int16_t get_avl_height( const void* raw_blk ) noexcept
     {
-        return reinterpret_cast<const BlockStateBase*>( raw_blk )->avl_height();
+        return get_field_of<detail::BlockAvlHeightField>( raw_blk );
     }
     static void set_avl_height_of( void* raw_blk, std::int16_t v ) noexcept
     {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_avl_height( v );
+        set_field_of<detail::BlockAvlHeightField>( raw_blk, v );
     }
     static std::uint16_t get_node_type( const void* raw_blk ) noexcept
     {
-        return reinterpret_cast<const BlockStateBase*>( raw_blk )->node_type();
+        return get_field_of<detail::BlockNodeTypeField>( raw_blk );
     }
     static void set_node_type_of( void* raw_blk, std::uint16_t v ) noexcept
     {
-        reinterpret_cast<BlockStateBase*>( raw_blk )->set_node_type( v );
+        set_field_of<detail::BlockNodeTypeField>( raw_blk, v );
     }
 
   protected:
-    
-    void set_weight( index_type v ) noexcept { TNode::weight = v; }
-    void set_prev_offset( index_type v ) noexcept { Block<AddressTraitsT>::prev_offset = v; }
-    void set_next_offset( index_type v ) noexcept { Block<AddressTraitsT>::next_offset = v; }
-    void set_left_offset( index_type v ) noexcept { TNode::left_offset = v; }
-    void set_right_offset( index_type v ) noexcept { TNode::right_offset = v; }
-    void set_parent_offset( index_type v ) noexcept { TNode::parent_offset = v; }
-    void set_avl_height( std::int16_t v ) noexcept { TNode::avl_height = v; }
-    void set_root_offset( index_type v ) noexcept { TNode::root_offset = v; }
-    void set_node_type( std::uint16_t v ) noexcept { TNode::node_type = v; }
+    template <typename StateT> static StateT* state_from_raw( void* raw ) noexcept
+    {
+        return reinterpret_cast<StateT*>( raw );
+    }
+
+    template <typename StateT> static const StateT* state_from_raw( const void* raw ) noexcept
+    {
+        return reinterpret_cast<const StateT*>( raw );
+    }
+
+    template <typename StateT> StateT* state_as() noexcept { return reinterpret_cast<StateT*>( this ); }
+
+    void set_weight( index_type v ) noexcept { set_weight_of( this, v ); }
+    void set_prev_offset( index_type v ) noexcept { set_prev_offset_of( this, v ); }
+    void set_next_offset( index_type v ) noexcept { set_next_offset_of( this, v ); }
+    void set_left_offset( index_type v ) noexcept { set_left_offset_of( this, v ); }
+    void set_right_offset( index_type v ) noexcept { set_right_offset_of( this, v ); }
+    void set_parent_offset( index_type v ) noexcept { set_parent_offset_of( this, v ); }
+    void set_avl_height( std::int16_t v ) noexcept { set_avl_height_of( this, v ); }
+    void set_root_offset( index_type v ) noexcept { set_root_offset_of( this, v ); }
+    void set_node_type( std::uint16_t v ) noexcept { set_node_type_of( this, v ); }
 
     void reset_avl_fields() noexcept
     {
@@ -490,24 +741,24 @@ template <typename AddressTraitsT> class FreeBlock : public BlockStateBase<Addre
     {
         if ( raw == nullptr )
             return nullptr;
-        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        if ( !Base::is_free_raw( raw ) )
         {
             assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
             return nullptr;
         }
-        return reinterpret_cast<FreeBlock*>( raw );
+        return Base::template state_from_raw<FreeBlock<AddressTraitsT>>( raw );
     }
 
     static const FreeBlock* cast_from_raw( const void* raw ) noexcept
     {
         if ( raw == nullptr )
             return nullptr;
-        if ( !reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->is_free() )
+        if ( !Base::is_free_raw( raw ) )
         {
             assert( false && "cast_from_raw<FreeBlock>: block is not in FreeBlock state" );
             return nullptr;
         }
-        return reinterpret_cast<const FreeBlock*>( raw );
+        return Base::template state_from_raw<FreeBlock<AddressTraitsT>>( raw );
     }
 
     bool verify_invariants() const noexcept { return Base::is_free(); }
@@ -515,7 +766,7 @@ template <typename AddressTraitsT> class FreeBlock : public BlockStateBase<Addre
     FreeBlockRemovedAVL<AddressTraitsT>* remove_from_avl() noexcept
     {
         
-        return reinterpret_cast<FreeBlockRemovedAVL<AddressTraitsT>*>( this );
+        return this->template state_as<FreeBlockRemovedAVL<AddressTraitsT>>();
     }
 };
 
@@ -527,7 +778,7 @@ template <typename AddressTraitsT> class FreeBlockRemovedAVL : public BlockState
 
     static FreeBlockRemovedAVL* cast_from_raw( void* raw ) noexcept
     {
-        return reinterpret_cast<FreeBlockRemovedAVL*>( raw );
+        return Base::template state_from_raw<FreeBlockRemovedAVL<AddressTraitsT>>( raw );
     }
 
     AllocatedBlock<AddressTraitsT>* mark_as_allocated( index_type data_granules, index_type own_idx ) noexcept
@@ -535,15 +786,15 @@ template <typename AddressTraitsT> class FreeBlockRemovedAVL : public BlockState
         Base::set_weight( data_granules );
         Base::set_root_offset( own_idx );
         Base::reset_avl_fields();
-        return reinterpret_cast<AllocatedBlock<AddressTraitsT>*>( this );
+        return this->template state_as<AllocatedBlock<AddressTraitsT>>();
     }
 
     SplittingBlock<AddressTraitsT>* begin_splitting() noexcept
     {
-        return reinterpret_cast<SplittingBlock<AddressTraitsT>*>( this );
+        return this->template state_as<SplittingBlock<AddressTraitsT>>();
     }
 
-    FreeBlock<AddressTraitsT>* insert_to_avl() noexcept { return reinterpret_cast<FreeBlock<AddressTraitsT>*>( this ); }
+    FreeBlock<AddressTraitsT>* insert_to_avl() noexcept { return this->template state_as<FreeBlock<AddressTraitsT>>(); }
 };
 
 template <typename AddressTraitsT> class SplittingBlock : public BlockStateBase<AddressTraitsT>
@@ -552,29 +803,22 @@ template <typename AddressTraitsT> class SplittingBlock : public BlockStateBase<
     using Base       = BlockStateBase<AddressTraitsT>;
     using index_type = typename AddressTraitsT::index_type;
 
-    static SplittingBlock* cast_from_raw( void* raw ) noexcept { return reinterpret_cast<SplittingBlock*>( raw ); }
+    static SplittingBlock* cast_from_raw( void* raw ) noexcept
+    {
+        return Base::template state_from_raw<SplittingBlock<AddressTraitsT>>( raw );
+    }
 
     void initialize_new_block( void* new_blk_ptr, [[maybe_unused]] index_type new_idx, index_type own_idx ) noexcept
     {
         std::memset( new_blk_ptr, 0, sizeof( Block<AddressTraitsT> ) );
-        
-        auto* new_blk = reinterpret_cast<SplittingBlock<AddressTraitsT>*>( new_blk_ptr );
-        new_blk->set_prev_offset( own_idx );
-        new_blk->set_next_offset( Base::next_offset() );
-        new_blk->set_left_offset( AddressTraitsT::no_block );
-        new_blk->set_right_offset( AddressTraitsT::no_block );
-        new_blk->set_parent_offset( AddressTraitsT::no_block );
-        new_blk->set_avl_height( 1 ); 
-        new_blk->set_weight( 0 );
-        new_blk->set_root_offset( 0 );
+        Base::init_fields( new_blk_ptr, own_idx, this->next_offset(), 1, 0, 0 );
     }
 
     void link_new_block( void* old_next_blk, index_type new_idx ) noexcept
     {
         if ( old_next_blk != nullptr )
         {
-            auto* old_next_blk_state = reinterpret_cast<SplittingBlock<AddressTraitsT>*>( old_next_blk );
-            old_next_blk_state->set_prev_offset( new_idx );
+            Base::set_prev_offset_of( old_next_blk, new_idx );
         }
         Base::set_next_offset( new_idx );
     }
@@ -584,7 +828,7 @@ template <typename AddressTraitsT> class SplittingBlock : public BlockStateBase<
         Base::set_weight( data_granules );
         Base::set_root_offset( own_idx );
         Base::reset_avl_fields();
-        return reinterpret_cast<AllocatedBlock<AddressTraitsT>*>( this );
+        return this->template state_as<AllocatedBlock<AddressTraitsT>>();
     }
 };
 
@@ -598,24 +842,24 @@ template <typename AddressTraitsT> class AllocatedBlock : public BlockStateBase<
     {
         if ( raw == nullptr )
             return nullptr;
-        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        if ( Base::get_weight( raw ) == 0 )
         {
             assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
             return nullptr;
         }
-        return reinterpret_cast<AllocatedBlock*>( raw );
+        return Base::template state_from_raw<AllocatedBlock<AddressTraitsT>>( raw );
     }
 
     static const AllocatedBlock* cast_from_raw( const void* raw ) noexcept
     {
         if ( raw == nullptr )
             return nullptr;
-        if ( reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw )->weight() == 0 )
+        if ( Base::get_weight( raw ) == 0 )
         {
             assert( false && "cast_from_raw<AllocatedBlock>: block is not allocated (weight==0)" );
             return nullptr;
         }
-        return reinterpret_cast<const AllocatedBlock*>( raw );
+        return Base::template state_from_raw<AllocatedBlock<AddressTraitsT>>( raw );
     }
 
     bool verify_invariants( index_type own_idx ) const noexcept { return Base::is_allocated( own_idx ); }
@@ -631,7 +875,7 @@ template <typename AddressTraitsT> class AllocatedBlock : public BlockStateBase<
     {
         Base::set_weight( 0 );
         Base::set_root_offset( 0 );
-        return reinterpret_cast<FreeBlockNotInAVL<AddressTraitsT>*>( this );
+        return this->template state_as<FreeBlockNotInAVL<AddressTraitsT>>();
     }
 };
 
@@ -643,18 +887,18 @@ template <typename AddressTraitsT> class FreeBlockNotInAVL : public BlockStateBa
 
     static FreeBlockNotInAVL* cast_from_raw( void* raw ) noexcept
     {
-        return reinterpret_cast<FreeBlockNotInAVL*>( raw );
+        return Base::template state_from_raw<FreeBlockNotInAVL<AddressTraitsT>>( raw );
     }
 
     CoalescingBlock<AddressTraitsT>* begin_coalescing() noexcept
     {
-        return reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( this );
+        return this->template state_as<CoalescingBlock<AddressTraitsT>>();
     }
 
     FreeBlock<AddressTraitsT>* insert_to_avl() noexcept
     {
         Base::set_avl_height( 1 ); 
-        return reinterpret_cast<FreeBlock<AddressTraitsT>*>( this );
+        return this->template state_as<FreeBlock<AddressTraitsT>>();
     }
 };
 
@@ -664,17 +908,18 @@ template <typename AddressTraitsT> class CoalescingBlock : public BlockStateBase
     using Base       = BlockStateBase<AddressTraitsT>;
     using index_type = typename AddressTraitsT::index_type;
 
-    static CoalescingBlock* cast_from_raw( void* raw ) noexcept { return reinterpret_cast<CoalescingBlock*>( raw ); }
+    static CoalescingBlock* cast_from_raw( void* raw ) noexcept
+    {
+        return Base::template state_from_raw<CoalescingBlock<AddressTraitsT>>( raw );
+    }
 
     void coalesce_with_next( void* next_blk, void* next_next_blk, index_type own_idx ) noexcept
     {
-        auto* nxt = reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( next_blk );
-
-        Base::set_next_offset( nxt->next_offset() );
+        
+        Base::set_next_offset( Base::get_next_offset( next_blk ) );
         if ( next_next_blk != nullptr )
         {
-            auto* nxt_nxt = reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( next_next_blk );
-            nxt_nxt->set_prev_offset( own_idx );
+            Base::set_prev_offset_of( next_next_blk, own_idx );
         }
 
         std::memset( next_blk, 0, sizeof( Block<AddressTraitsT> ) );
@@ -682,34 +927,32 @@ template <typename AddressTraitsT> class CoalescingBlock : public BlockStateBase
 
     CoalescingBlock<AddressTraitsT>* coalesce_with_prev( void* prev_blk, void* next_blk, index_type prev_idx ) noexcept
     {
-        auto* prv = reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( prev_blk );
-        prv->set_next_offset( Base::next_offset() );
+        Base::set_next_offset_of( prev_blk, Base::next_offset() );
 
         if ( next_blk != nullptr )
         {
-            auto* nxt = reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( next_blk );
-            nxt->set_prev_offset( prev_idx );
+            Base::set_prev_offset_of( next_blk, prev_idx );
         }
 
         std::memset( this, 0, sizeof( Block<AddressTraitsT> ) );
 
-        return reinterpret_cast<CoalescingBlock<AddressTraitsT>*>( prev_blk );
+        return Base::template state_from_raw<CoalescingBlock<AddressTraitsT>>( prev_blk );
     }
 
     FreeBlock<AddressTraitsT>* finalize_coalesce() noexcept
     {
         Base::set_avl_height( 1 ); 
-        return reinterpret_cast<FreeBlock<AddressTraitsT>*>( this );
+        return this->template state_as<FreeBlock<AddressTraitsT>>();
     }
 };
 
 template <typename AddressTraitsT>
 int detect_block_state( const void* raw_blk, typename AddressTraitsT::index_type own_idx ) noexcept
 {
-    const auto* base = reinterpret_cast<const BlockStateBase<AddressTraitsT>*>( raw_blk );
-    if ( base->is_free() )
+    using BlockState = BlockStateBase<AddressTraitsT>;
+    if ( BlockState::is_free_raw( raw_blk ) )
         return 0; 
-    if ( base->is_allocated( own_idx ) )
+    if ( BlockState::is_allocated_raw( raw_blk, own_idx ) )
         return 1; 
     return -1;    
 }
@@ -2351,12 +2594,11 @@ class AllocatorPolicy
         index_type curr_next = coalescing->next_offset();
         if ( curr_next != AddressTraitsT::no_block )
         {
-            const BlockStateBase<AddressTraitsT>* nxt_state = reinterpret_cast<const BlockStateBase<AddressTraitsT>*>(
-                detail::block_at<AddressTraitsT>( base, curr_next ) );
-            if ( nxt_state->weight() == 0 ) 
+            void* nxt_raw = detail::block_at<AddressTraitsT>( base, curr_next );
+            if ( BlockState::get_weight( nxt_raw ) == 0 ) 
             {
                 index_type nxt_idx     = curr_next;
-                index_type nxt_next    = nxt_state->next_offset();
+                index_type nxt_next    = BlockState::get_next_offset( nxt_raw );
                 BlockT*    nxt_nxt_blk = ( nxt_next != AddressTraitsT::no_block )
                                              ? detail::block_at<AddressTraitsT>( base, nxt_next )
                                              : nullptr;
@@ -2378,9 +2620,8 @@ class AllocatorPolicy
         index_type curr_prev = coalescing->prev_offset();
         if ( curr_prev != AddressTraitsT::no_block )
         {
-            const BlockStateBase<AddressTraitsT>* prv_state = reinterpret_cast<const BlockStateBase<AddressTraitsT>*>(
-                detail::block_at<AddressTraitsT>( base, curr_prev ) );
-            if ( prv_state->weight() == 0 ) 
+            void* prv_raw = detail::block_at<AddressTraitsT>( base, curr_prev );
+            if ( BlockState::get_weight( prv_raw ) == 0 ) 
             {
                 index_type prv_idx  = curr_prev;
                 index_type blk_next = coalescing->next_offset();
@@ -2390,8 +2631,8 @@ class AllocatorPolicy
 
                 FreeBlockTreeT::remove( base, hdr, prv_idx );
 
-                CoalescingBlock<AddressTraitsT>* result_coalescing = coalescing->coalesce_with_prev(
-                    detail::block_at<AddressTraitsT>( base, prv_idx ), next_blk, prv_idx );
+                CoalescingBlock<AddressTraitsT>* result_coalescing =
+                    coalescing->coalesce_with_prev( prv_raw, next_blk, prv_idx );
 
                 if ( next_blk == nullptr )
                     hdr->last_block_offset = prv_idx;

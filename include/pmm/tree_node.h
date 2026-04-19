@@ -29,6 +29,7 @@
 #pragma once
 
 #include "pmm/address_traits.h"
+#include "pmm/block_field.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -87,59 +88,101 @@ template <typename AddressTraitsT> struct TreeNode
 
     /// @brief Получить гранульный индекс левого дочернего узла AVL-дерева.
     /// @return Гранульный индекс или no_block если нет левого потомка.
-    index_type get_left() const noexcept { return left_offset; }
+    index_type get_left() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockLeftOffsetField>( this );
+    }
 
     /// @brief Получить гранульный индекс правого дочернего узла AVL-дерева.
     /// @return Гранульный индекс или no_block если нет правого потомка.
-    index_type get_right() const noexcept { return right_offset; }
+    index_type get_right() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockRightOffsetField>( this );
+    }
 
     /// @brief Получить гранульный индекс родительского узла AVL-дерева.
     /// @return Гранульный индекс или no_block если нет родителя (корень).
-    index_type get_parent() const noexcept { return parent_offset; }
+    index_type get_parent() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockParentOffsetField>( this );
+    }
 
     /// @brief Get the owner-domain marker (root_offset).
     /// @return 0 = free-tree domain; own_idx = allocated block.
-    index_type get_root() const noexcept { return root_offset; }
+    index_type get_root() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockRootOffsetField>( this );
+    }
 
     /// @brief Get the universal granule-key (weight).
     /// @return Domain-specific scalar (free-tree: 0 = free; user domains: sort key).
-    index_type get_weight() const noexcept { return weight; }
+    index_type get_weight() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockWeightField>( this );
+    }
 
     /// @brief Получить высоту AVL-поддерева.
     /// @return Высота (0 = узел не в дереве).
-    std::int16_t get_height() const noexcept { return avl_height; }
+    std::int16_t get_height() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockAvlHeightField>( this );
+    }
 
     /// @brief Получить тип узла.
     /// @return kNodeReadWrite (0) или kNodeReadOnly (1).
-    std::uint16_t get_node_type() const noexcept { return node_type; }
+    std::uint16_t get_node_type() const noexcept
+    {
+        return detail::read_block_field<AddressTraitsT, detail::BlockNodeTypeField>( this );
+    }
 
     /// @brief Установить гранульный индекс левого дочернего узла AVL-дерева.
     /// @param v Гранульный индекс или no_block.
-    void set_left( index_type v ) noexcept { left_offset = v; }
+    void set_left( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockLeftOffsetField>( this, v );
+    }
 
     /// @brief Установить гранульный индекс правого дочернего узла AVL-дерева.
     /// @param v Гранульный индекс или no_block.
-    void set_right( index_type v ) noexcept { right_offset = v; }
+    void set_right( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockRightOffsetField>( this, v );
+    }
 
     /// @brief Установить гранульный индекс родительского узла AVL-дерева.
     /// @param v Гранульный индекс или no_block.
-    void set_parent( index_type v ) noexcept { parent_offset = v; }
+    void set_parent( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockParentOffsetField>( this, v );
+    }
 
     /// @brief Set the owner-domain marker (root_offset).
     /// @param v 0 = free-tree domain; own_idx = allocated block.
-    void set_root( index_type v ) noexcept { root_offset = v; }
+    void set_root( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockRootOffsetField>( this, v );
+    }
 
     /// @brief Set the universal granule-key (weight).
     /// @param v Domain-specific scalar value.
-    void set_weight( index_type v ) noexcept { weight = v; }
+    void set_weight( index_type v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockWeightField>( this, v );
+    }
 
     /// @brief Установить высоту AVL-поддерева.
     /// @param v Новая высота (0 = не в дереве).
-    void set_height( std::int16_t v ) noexcept { avl_height = v; }
+    void set_height( std::int16_t v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockAvlHeightField>( this, v );
+    }
 
     /// @brief Установить тип узла.
     /// @param v kNodeReadWrite (0) или kNodeReadOnly (1).
-    void set_node_type( std::uint16_t v ) noexcept { node_type = v; }
+    void set_node_type( std::uint16_t v ) noexcept
+    {
+        detail::write_block_field<AddressTraitsT, detail::BlockNodeTypeField>( this, v );
+    }
 
   protected:
     /// Universal granule-key / granule-scalar. First field for cache-efficient access.
