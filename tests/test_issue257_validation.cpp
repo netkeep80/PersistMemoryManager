@@ -338,6 +338,14 @@ TEST_CASE( "validation: validate_user_ptr rejects pointer before min address", "
     REQUIRE_FALSE( pmm::detail::validate_user_ptr<AT>( dummy, 256, dummy + 16, min_offset ) );
 }
 
+TEST_CASE( "validation: validate_user_ptr rejects image-end pointer", "[test_issue257]" )
+{
+    std::uint8_t dummy[256] = {};
+    std::size_t  min_offset =
+        sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
+    REQUIRE_FALSE( pmm::detail::validate_user_ptr<AT>( dummy, 256, dummy + 256, min_offset ) );
+}
+
 TEST_CASE( "validation: validate_user_ptr rejects misaligned pointer", "[test_issue257]" )
 {
     std::uint8_t dummy[256] = {};
@@ -355,6 +363,25 @@ TEST_CASE( "validation: validate_user_ptr accepts valid pointer", "[test_issue25
     // Valid pointer: at min_offset, and (min_offset - sizeof(Block<AT>)) % granule_size == 0.
     // min_offset = 32 + 64 + 32 = 128. Block header candidate = 128 - 32 = 96. 96 % 16 == 0. Valid.
     REQUIRE( pmm::detail::validate_user_ptr<AT>( dummy, 256, dummy + min_offset, min_offset ) );
+}
+
+TEST_CASE( "validation: header_from_ptr uses validate_user_ptr for cheap rejection", "[test_issue257]" )
+{
+    std::uint8_t dummy[256] = {};
+    std::size_t  min_offset =
+        sizeof( pmm::Block<AT> ) + sizeof( pmm::detail::ManagerHeader<AT> ) + sizeof( pmm::Block<AT> );
+    void* cases[] = {
+        nullptr,
+        dummy + 16,
+        dummy + 256,
+        dummy + min_offset + 1,
+    };
+
+    for ( void* ptr : cases )
+    {
+        CHECK_FALSE( pmm::detail::validate_user_ptr<AT>( dummy, 256, ptr, min_offset ) );
+        CHECK( pmm::detail::header_from_ptr_t<AT>( dummy, ptr, 256 ) == nullptr );
+    }
 }
 
 // ─── E. block_at_checked tests ────────────────────────────────────────────────

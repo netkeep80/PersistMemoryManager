@@ -77,16 +77,26 @@ inline bool validate_user_ptr( const std::uint8_t* base, std::size_t total_size,
 {
     if ( ptr == nullptr || base == nullptr )
         return false;
-    const auto* raw_ptr = static_cast<const std::uint8_t*>( ptr );
-    // Must be within managed area.
-    if ( raw_ptr < base || raw_ptr >= base + total_size )
+    if ( min_user_offset < sizeof( pmm::Block<AT> ) )
+        return false;
+    if ( total_size < min_user_offset )
+        return false;
+    const auto*          raw_ptr   = static_cast<const std::uint8_t*>( ptr );
+    const std::uintptr_t raw_addr  = reinterpret_cast<std::uintptr_t>( raw_ptr );
+    const std::uintptr_t base_addr = reinterpret_cast<std::uintptr_t>( base );
+    if ( raw_addr < base_addr )
+        return false;
+    const std::size_t byte_off = static_cast<std::size_t>( raw_addr - base_addr );
+    // Must be within managed area. Unsigned subtraction keeps foreign pointers as invalid
+    // without forming out-of-object pointer sums such as base + total_size.
+    if ( byte_off >= total_size )
         return false;
     // Must be past minimum user-data address.
-    if ( static_cast<std::size_t>( raw_ptr - base ) < min_user_offset )
+    if ( byte_off < min_user_offset )
         return false;
     // The block header candidate must be granule-aligned relative to base.
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<AT> );
-    std::size_t                  cand_off   = static_cast<std::size_t>( raw_ptr - base ) - kBlockSize;
+    std::size_t                  cand_off   = byte_off - kBlockSize;
     if ( cand_off % AT::granule_size != 0 )
         return false;
     return true;

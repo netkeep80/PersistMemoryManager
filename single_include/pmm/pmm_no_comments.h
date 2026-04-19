@@ -755,16 +755,25 @@ inline bool validate_user_ptr( const std::uint8_t* base, std::size_t total_size,
 {
     if ( ptr == nullptr || base == nullptr )
         return false;
-    const auto* raw_ptr = static_cast<const std::uint8_t*>( ptr );
+    if ( min_user_offset < sizeof( pmm::Block<AT> ) )
+        return false;
+    if ( total_size < min_user_offset )
+        return false;
+    const auto*          raw_ptr   = static_cast<const std::uint8_t*>( ptr );
+    const std::uintptr_t raw_addr  = reinterpret_cast<std::uintptr_t>( raw_ptr );
+    const std::uintptr_t base_addr = reinterpret_cast<std::uintptr_t>( base );
+    if ( raw_addr < base_addr )
+        return false;
+    const std::size_t byte_off = static_cast<std::size_t>( raw_addr - base_addr );
     
-    if ( raw_ptr < base || raw_ptr >= base + total_size )
+    if ( byte_off >= total_size )
         return false;
     
-    if ( static_cast<std::size_t>( raw_ptr - base ) < min_user_offset )
+    if ( byte_off < min_user_offset )
         return false;
     
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<AT> );
-    std::size_t                  cand_off   = static_cast<std::size_t>( raw_ptr - base ) - kBlockSize;
+    std::size_t                  cand_off   = byte_off - kBlockSize;
     if ( cand_off % AT::granule_size != 0 )
         return false;
     return true;
@@ -1185,26 +1194,14 @@ template <typename AddressTraitsT>
 inline pmm::Block<AddressTraitsT>* header_from_ptr_t( std::uint8_t* base, void* ptr, std::size_t total_size )
 {
     using BlockState                        = pmm::BlockStateBase<AddressTraitsT>;
-    static constexpr std::size_t kGranSz    = AddressTraitsT::granule_size;
     static constexpr std::size_t kBlockSize = sizeof( pmm::Block<AddressTraitsT> );
 
-    if ( ptr == nullptr )
+    const std::size_t min_user_offset = kBlockSize + sizeof( ManagerHeader<AddressTraitsT> ) + kBlockSize;
+    if ( !validate_user_ptr<AddressTraitsT>( base, total_size, ptr, min_user_offset ) )
         return nullptr;
-    std::uint8_t* raw_ptr = reinterpret_cast<std::uint8_t*>( ptr );
-    
-    std::uint8_t* min_addr = base + kBlockSize + sizeof( ManagerHeader<AddressTraitsT> ) + kBlockSize;
-    if ( raw_ptr < min_addr )
-        return nullptr;
-    if ( raw_ptr > base + total_size )
-        return nullptr;
-    std::uint8_t* cand_addr = raw_ptr - kBlockSize;
-    if ( ( reinterpret_cast<std::size_t>( cand_addr ) - reinterpret_cast<std::size_t>( base ) ) % kGranSz != 0 )
-        return nullptr;
-    
+
+    std::uint8_t* cand_addr = static_cast<std::uint8_t*>( ptr ) - kBlockSize;
     if ( BlockState::get_weight( cand_addr ) == 0 )
-        return nullptr;
-    
-    if ( cand_addr < base || cand_addr + kBlockSize > base + total_size )
         return nullptr;
     return reinterpret_cast<pmm::Block<AddressTraitsT>*>( cand_addr );
 }
