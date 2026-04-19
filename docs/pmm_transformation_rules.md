@@ -66,6 +66,18 @@ Reference boundary: [pmm_target_model.md § 2–3](pmm_target_model.md).
 
 Convenience surface is not a valid justification for growth.
 
+Header/file surface must not be reduced by moving parts of the same
+`include/pmm/**` module into `.inc`, `.inl`, `.ipp`, or similar textual include
+shards. A shorter parent header after such a split is not compaction; it is the
+same module fragmented across more files and is a policy violation.
+
+When a header approaches an operational limit such as 1500 lines, reviewers
+expect one of two outcomes:
+
+- **compaction**: less code, less duplication, or simpler responsibility;
+- **real module extraction**: a normal `.h` module with its own role and a
+  genuine boundary, not the second half of the original file.
+
 ## 6. Source / generated separation rule
 
 - Generated surface (`single_include/**` and comparable artifacts) must not be

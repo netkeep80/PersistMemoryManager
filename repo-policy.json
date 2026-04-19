@@ -8,6 +8,9 @@
     "forbidden": [
       "docs/phase-*",
       "docs/phase[0-9]*",
+      "include/pmm/**/*.inc",
+      "include/pmm/**/*.inl",
+      "include/pmm/**/*.ipp",
       "*.bak",
       "*.tmp",
       "*.orig",

@@ -78,6 +78,10 @@ Each source file must not exceed **1500 lines**. This constraint:
 - Encourages modular design
 - Ensures AI tools can read entire files within their context window
 
+Do not satisfy this limit by splitting `include/pmm/**` headers into `.inc`,
+`.inl`, `.ipp`, or similar include shards. A large header is a signal for real
+compaction or extraction into a normal `.h` module with its own responsibility.
+
 ## Changelog Fragments
 
 Every pull request that modifies source code must include a **changelog fragment** in `changelog.d/`. This system prevents merge conflicts between parallel PRs and automates release notes.
