@@ -4300,39 +4300,185 @@ class AllocatorPolicy
     }
 
     /**
-     * @brief Verify free tree root consistency without modifying the image.
+     * @brief Verify free tree structure without modifying the image.
      *
-     * Checks that the free_tree_root is consistent with the presence of free blocks.
-     * After file round-trip, AVL fields are not persisted, so the free tree root
-     * typically points to stale or zeroed AVL data. This check detects that condition.
-     *
-     * @param base    Base pointer of the managed area.
-     * @param hdr     Manager header (read-only).
-     * @param result  Diagnostic result to append violations to.
+     * Checks root validity, AVL parent/child links, strict ordering, height/balance,
+     * duplicate visits, and membership equality with the linked-list free blocks.
      */
     static void verify_free_tree( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
                                   VerifyResult& result ) noexcept
     {
-        // Count free blocks by walking the linked list.
-        index_type free_count = 0;
-        index_type idx        = hdr->first_block_offset;
+        std::size_t expected_count = 0;
+        index_type  idx            = hdr->first_block_offset;
         while ( idx != AddressTraitsT::no_block )
         {
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
                 break;
             const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             if ( BlockState::get_weight( blk_ptr ) == 0 )
-                free_count++;
+                ++expected_count;
             idx = BlockState::get_next_offset( blk_ptr );
         }
-        // If free blocks exist but the tree root is no_block (or vice versa),
-        // the free tree is stale and needs rebuild.
-        bool root_present = ( hdr->free_tree_root != AddressTraitsT::no_block );
-        if ( ( free_count > 0 && !root_present ) || ( free_count == 0 && root_present ) )
+
+        const bool root_present = ( hdr->free_tree_root != AddressTraitsT::no_block );
+        if ( expected_count == 0 )
+        {
+            if ( root_present )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, 0, 0,
+                            static_cast<std::uint64_t>( hdr->free_tree_root ) );
+            }
+            return;
+        }
+        if ( !root_present )
         {
             result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, 0,
-                        static_cast<std::uint64_t>( free_count ), static_cast<std::uint64_t>( hdr->free_tree_root ) );
+                        static_cast<std::uint64_t>( expected_count ),
+                        static_cast<std::uint64_t>( hdr->free_tree_root ) );
+            return;
         }
+        if ( !detail::validate_block_index<AddressTraitsT>( hdr->total_size, hdr->free_tree_root ) )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( hdr->free_tree_root ), 1, 0 );
+            return;
+        }
+        const void* root = detail::block_at<AddressTraitsT>( base, hdr->free_tree_root );
+        if ( BlockState::get_weight( root ) != 0 || BlockState::get_parent_offset( root ) != AddressTraitsT::no_block )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( hdr->free_tree_root ), 0,
+                        static_cast<std::uint64_t>( BlockState::get_parent_offset( root ) ) );
+        }
+
+        std::size_t visited_count = 0;
+        verify_free_tree_node( base, hdr, hdr->free_tree_root, AddressTraitsT::no_block, {}, false, {}, false,
+                               expected_count, visited_count, result );
+
+        idx = hdr->first_block_offset;
+        while ( idx != AddressTraitsT::no_block )
+        {
+            if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
+                break;
+            const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
+            if ( BlockState::get_weight( blk_ptr ) == 0 &&
+                 !free_tree_contains( base, hdr, hdr->free_tree_root, idx, expected_count ) )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, static_cast<std::uint64_t>( idx ),
+                            1, 0 );
+            }
+            idx = BlockState::get_next_offset( blk_ptr );
+        }
+        if ( visited_count != expected_count )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, 0,
+                        static_cast<std::uint64_t>( expected_count ), static_cast<std::uint64_t>( visited_count ) );
+        }
+    }
+
+    static index_type free_tree_block_granules( const std::uint8_t*                          base,
+                                                const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                                index_type                                   block_idx ) noexcept
+    {
+        const void* n      = detail::block_at<AddressTraitsT>( base, block_idx );
+        index_type  n_next = BlockState::get_next_offset( n );
+        index_type  total  = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
+        return ( n_next != AddressTraitsT::no_block ) ? static_cast<index_type>( n_next - block_idx )
+                                                      : static_cast<index_type>( total - block_idx );
+    }
+
+    static bool free_tree_less_key( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                    index_type a, index_type b ) noexcept
+    {
+        index_type a_gran = free_tree_block_granules( base, hdr, a );
+        index_type b_gran = free_tree_block_granules( base, hdr, b );
+        return ( a_gran < b_gran ) || ( a_gran == b_gran && a < b );
+    }
+
+    static bool free_tree_contains( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
+                                    index_type node_idx, index_type target, std::size_t step_limit ) noexcept
+    {
+        while ( node_idx != AddressTraitsT::no_block && step_limit-- > 0 )
+        {
+            if ( !detail::validate_block_index<AddressTraitsT>( hdr->total_size, node_idx ) )
+                return false;
+            const void* node = detail::block_at<AddressTraitsT>( base, node_idx );
+            if ( BlockState::get_weight( node ) != 0 )
+                return false;
+            if ( node_idx == target )
+                return true;
+            node_idx = free_tree_less_key( base, hdr, target, node_idx ) ? BlockState::get_left_offset( node )
+                                                                         : BlockState::get_right_offset( node );
+        }
+        return false;
+    }
+
+    static std::int16_t verify_free_tree_node( const std::uint8_t*                          base,
+                                               const detail::ManagerHeader<AddressTraitsT>* hdr, index_type node_idx,
+                                               index_type parent, index_type lower, bool has_lower, index_type upper,
+                                               bool has_upper, std::size_t expected_count, std::size_t& visited_count,
+                                               VerifyResult& result ) noexcept
+    {
+        if ( node_idx == AddressTraitsT::no_block )
+            return 0;
+        if ( visited_count >= expected_count )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( node_idx ), 1, 2 );
+            return 0;
+        }
+        ++visited_count;
+
+        if ( !detail::validate_block_index<AddressTraitsT>( hdr->total_size, node_idx ) )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, static_cast<std::uint64_t>( parent ),
+                        0, static_cast<std::uint64_t>( node_idx ) );
+            return 0;
+        }
+
+        const void* node = detail::block_at<AddressTraitsT>( base, node_idx );
+        if ( BlockState::get_weight( node ) != 0 )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( node_idx ), 0,
+                        static_cast<std::uint64_t>( BlockState::get_weight( node ) ) );
+            return 0;
+        }
+        if ( BlockState::get_parent_offset( node ) != parent )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( node_idx ), static_cast<std::uint64_t>( parent ),
+                        static_cast<std::uint64_t>( BlockState::get_parent_offset( node ) ) );
+        }
+        if ( has_lower && !free_tree_less_key( base, hdr, lower, node_idx ) )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( node_idx ), static_cast<std::uint64_t>( lower ),
+                        static_cast<std::uint64_t>( node_idx ) );
+        }
+        if ( has_upper && !free_tree_less_key( base, hdr, node_idx, upper ) )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( node_idx ), static_cast<std::uint64_t>( node_idx ),
+                        static_cast<std::uint64_t>( upper ) );
+        }
+
+        index_type left  = BlockState::get_left_offset( node );
+        index_type right = BlockState::get_right_offset( node );
+
+        std::int16_t left_h     = verify_free_tree_node( base, hdr, left, node_idx, lower, has_lower, node_idx, true,
+                                                         expected_count, visited_count, result );
+        std::int16_t right_h    = verify_free_tree_node( base, hdr, right, node_idx, node_idx, true, upper, has_upper,
+                                                         expected_count, visited_count, result );
+        std::int16_t expected_h = static_cast<std::int16_t>( 1 + ( left_h > right_h ? left_h : right_h ) );
+        std::int16_t stored_h   = BlockState::get_avl_height( node );
+        if ( stored_h != expected_h || left_h - right_h > 1 || right_h - left_h > 1 )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( node_idx ), static_cast<std::uint64_t>( expected_h ),
+                        static_cast<std::uint64_t>( stored_h ) );
+        }
+        return expected_h;
     }
 
     // ─── reallocate_typed helpers ─────────────────────────────────

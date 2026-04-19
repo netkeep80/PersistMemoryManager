@@ -285,6 +285,9 @@ pmm_add_test(test_issue258_corruption     test_issue258_corruption.cpp)
 pmm_add_test(test_issue258_verify_behavior test_issue258_verify_behavior.cpp)
 pmm_add_test(test_issue258_property       test_issue258_property.cpp)
 
+# ─── Issue 303: full free-tree structural verifier ──────────────
+pmm_add_test(test_issue303_free_tree_verifier test_issue303_free_tree_verifier.cpp)
+
 # ─── Issue 295: layout include-shard repayment guard ────────────
 pmm_add_test(test_issue295_layout_compaction test_issue295_layout_compaction.cpp)
 target_compile_definitions(test_issue295_layout_compaction PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
