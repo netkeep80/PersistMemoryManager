@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.7] - 2026-04-19
+
+### Changed
+- Replaced the PMM layout include shard with a normal layout helper module.
+
+
 ## [0.55.6] - 2026-04-19
 
 ### Changed
