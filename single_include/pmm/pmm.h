@@ -7526,8 +7526,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( raw == nullptr )
             return pptr<T>();
         pmm::Block<address_traits>* blk = find_block_from_user_ptr( raw );
-        return ( blk == nullptr ) ? pptr<T>() : pptr<T>( detail::block_idx_t<address_traits>( _backend.base_ptr(), blk ) +
-                                                        kBlockHdrGranules );
+        return ( blk == nullptr )
+                   ? pptr<T>()
+                   : pptr<T>( detail::block_idx_t<address_traits>( _backend.base_ptr(), blk ) + kBlockHdrGranules );
     }
 
     /**
@@ -7548,8 +7549,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( raw == nullptr )
             return pptr<T>();
         pmm::Block<address_traits>* blk = find_block_from_user_ptr( raw );
-        return ( blk == nullptr ) ? pptr<T>() : pptr<T>( detail::block_idx_t<address_traits>( _backend.base_ptr(), blk ) +
-                                                        kBlockHdrGranules );
+        return ( blk == nullptr )
+                   ? pptr<T>()
+                   : pptr<T>( detail::block_idx_t<address_traits>( _backend.base_ptr(), blk ) + kBlockHdrGranules );
     }
 
     /**
@@ -7672,7 +7674,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _last_error = PmmError::InvalidPointer;
             return pptr<T>();
         }
-        pptr<T> new_p( detail::block_idx_t<address_traits>( base, new_blk ) + kBlockHdrGranules );
+        pptr<T>     new_p( detail::block_idx_t<address_traits>( base, new_blk ) + kBlockHdrGranules );
         void*       new_dst = resolve_unchecked( new_p );
         void*       old_src = resolve_unchecked( p );
         std::size_t copy_sz = ( new_count < old_count ? new_count : old_count ) * sizeof( T );
