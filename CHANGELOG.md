@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.57.2] - 2026-04-19
+
+### Changed
+- Extracted the type-aware `PersistMemoryManager` API into a normal header module while keeping the public manager calls intact.
+
+
 ## [0.57.1] - 2026-04-19
 
 ### Changed
