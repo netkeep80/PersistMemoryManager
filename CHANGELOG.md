@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.13] - 2026-04-19
+
+### Changed
+- Added build graph switches for examples and test-only Catch2 setup so CI can
+  configure compact Windows test builds without removing test coverage.
+
+
 ## [0.55.12] - 2026-04-19
 
 ### Changed
