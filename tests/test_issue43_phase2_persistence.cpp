@@ -71,8 +71,7 @@ TEST_CASE( "crc32_save_load_roundtrip", "[test_issue43_phase2_persistence]" )
     // Verify CRC32 was written to the header
     {
         std::uint8_t* base = M1::backend().base_ptr();
-        auto*         hdr  = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>(
-            base + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) );
+        auto*         hdr  = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( base );
         REQUIRE( hdr->crc32 != 0 );
     }
     M1::destroy();
@@ -145,7 +144,7 @@ TEST_CASE( "crc32_zero_rejected", "[test_issue43_phase2_persistence]" )
     {
         std::FILE* f = std::fopen( TEST_FILE, "r+b" );
         REQUIRE( f != nullptr );
-        constexpr std::size_t kHdrOffset = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
+        constexpr std::size_t kHdrOffset = pmm::detail::manager_header_offset_bytes_v<pmm::DefaultAddressTraits>;
         constexpr std::size_t kCrcOffset =
             kHdrOffset + offsetof( pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>, crc32 );
         std::fseek( f, static_cast<long>( kCrcOffset ), SEEK_SET );
@@ -328,8 +327,7 @@ TEST_CASE( "image_crc32_ignores_crc_field", "[test_issue43_phase2_persistence]" 
     std::size_t   total = M::backend().total_size();
 
     // Compute CRC with crc32 field at 0
-    constexpr std::size_t kHdrOff = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
-    auto* hdr           = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base + kHdrOff );
+    auto* hdr           = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( base );
     hdr->crc32          = 0;
     std::uint32_t crc_a = pmm::detail::compute_image_crc32<pmm::DefaultAddressTraits>( base, total );
 

@@ -303,6 +303,9 @@ pmm_add_test(test_issue312_access_modes test_issue312_access_modes.cpp)
 pmm_add_test(test_issue318_manager_header_compaction test_issue318_manager_header_compaction.cpp)
 target_compile_definitions(test_issue318_manager_header_compaction PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
+# ─── Issue 325: manager-header offset consistency for CRC/save/load ─
+pmm_add_test(test_issue325_manager_header_offset test_issue325_manager_header_offset.cpp)
+
 # ─── Issue 314: build graph compaction contract ─────────────────
 add_test(
     NAME test_issue314_build_graph_contract

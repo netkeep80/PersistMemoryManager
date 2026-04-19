@@ -24,12 +24,9 @@
 using AT  = pmm::DefaultAddressTraits;
 using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 25830>;
 
-static constexpr std::size_t kBlockHdrByteSize =
-    ( ( sizeof( pmm::Block<AT> ) + AT::granule_size - 1 ) / AT::granule_size ) * AT::granule_size;
-
 static pmm::detail::ManagerHeader<AT>* get_header( std::uint8_t* base ) noexcept
 {
-    return reinterpret_cast<pmm::detail::ManagerHeader<AT>*>( base + kBlockHdrByteSize );
+    return pmm::detail::manager_header_at<AT>( base );
 }
 
 static void setup_clean( std::size_t arena = 64 * 1024 )

@@ -40,7 +40,7 @@ static std::vector<BlockInfo> walk_blocks( std::uint8_t* base, std::size_t total
     using BlockState              = pmm::BlockStateBase<AT>;
     constexpr std::size_t kGranSz = AT::granule_size;
 
-    auto* hdr = reinterpret_cast<pmm::detail::ManagerHeader<AT>*>( base + sizeof( pmm::Block<AT> ) );
+    auto* hdr = pmm::detail::manager_header_at<AT>( base );
 
     std::vector<BlockInfo> blocks;
     AT::index_type         idx = hdr->first_block_offset;
@@ -349,8 +349,7 @@ TEST_CASE( "structural: total size equals sum of all block sizes", "[issue258][s
 
     // First block starts at first_block_offset, not at 0
     // The area before first_block_offset is Block_0 + ManagerHeader
-    auto* hdr =
-        reinterpret_cast<pmm::detail::ManagerHeader<AT>*>( Mgr::backend().base_ptr() + sizeof( pmm::Block<AT> ) );
+    auto*          hdr            = pmm::detail::manager_header_at<AT>( Mgr::backend().base_ptr() );
     AT::index_type total_granules = static_cast<AT::index_type>( Mgr::total_size() / AT::granule_size );
     AT::index_type block_area     = total_granules - hdr->first_block_offset;
     REQUIRE( sum_granules == block_area );

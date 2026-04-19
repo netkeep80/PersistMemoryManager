@@ -156,7 +156,7 @@ TEST_CASE( "legacy root API is a compatibility shim over the domain registry", "
 
     using AT           = CanonicalRootMgr::address_traits;
     std::uint8_t* base = CanonicalRootMgr::backend().base_ptr();
-    auto*         hdr  = reinterpret_cast<pmm::detail::ManagerHeader<AT>*>( base + sizeof( pmm::Block<AT> ) );
+    auto*         hdr  = pmm::detail::manager_header_at<AT>( base );
     auto*         reg  = reinterpret_cast<pmm::detail::ForestDomainRegistry<AT>*>(
         base + static_cast<std::size_t>( hdr->root_offset ) * AT::granule_size );
     REQUIRE( reg->reserved_root_offset == 0 );

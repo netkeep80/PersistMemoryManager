@@ -33,9 +33,7 @@ static void setup_fragmented_free_tree()
 
 static pmm::detail::ManagerHeader<AT>* header()
 {
-    constexpr std::size_t hdr_off =
-        ( ( sizeof( pmm::Block<AT> ) + AT::granule_size - 1 ) / AT::granule_size ) * AT::granule_size;
-    return reinterpret_cast<pmm::detail::ManagerHeader<AT>*>( Mgr::backend().base_ptr() + hdr_off );
+    return pmm::detail::manager_header_at<AT>( Mgr::backend().base_ptr() );
 }
 
 static void* block_at( AT::index_type idx )

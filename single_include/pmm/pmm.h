@@ -2250,6 +2250,34 @@ static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) == 64,
 static_assert( sizeof( ManagerHeader<DefaultAddressTraits> ) % kGranuleSize == 0,
                "ManagerHeader<DefaultAddressTraits> must be granule-aligned " );
 
+/// @brief Block header size in granules for AddressTraitsT.
+/// Computes ceil(sizeof(Block<AT>) / AT::granule_size).
+/// For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1.
+template <typename AddressTraitsT>
+inline constexpr typename AddressTraitsT::index_type kBlockHeaderGranules_t =
+    static_cast<typename AddressTraitsT::index_type>(
+        ( sizeof( pmm::Block<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
+
+/// @brief Canonical byte offset of ManagerHeader from the base pointer.
+template <typename AddressTraitsT>
+inline constexpr std::size_t manager_header_offset_bytes_v =
+    static_cast<std::size_t>( kBlockHeaderGranules_t<AddressTraitsT> ) * AddressTraitsT::granule_size;
+
+/// @brief Canonical mutable ManagerHeader pointer from the base pointer.
+template <typename AddressTraitsT>
+inline ManagerHeader<AddressTraitsT>* manager_header_at( std::uint8_t* base ) noexcept
+{
+    return reinterpret_cast<ManagerHeader<AddressTraitsT>*>( base + manager_header_offset_bytes_v<AddressTraitsT> );
+}
+
+/// @brief Canonical const ManagerHeader pointer from the base pointer.
+template <typename AddressTraitsT>
+inline const ManagerHeader<AddressTraitsT>* manager_header_at( const std::uint8_t* base ) noexcept
+{
+    return reinterpret_cast<const ManagerHeader<AddressTraitsT>*>( base +
+                                                                   manager_header_offset_bytes_v<AddressTraitsT> );
+}
+
 /// @brief Compute CRC32 of the full persisted image, treating the crc32 field as zero.
 /// @tparam AddressTraitsT Address traits type (determines ManagerHeader layout).
 /// @param data   Pointer to the start of the managed region.
@@ -2259,8 +2287,8 @@ template <typename AddressTraitsT>
 inline std::uint32_t compute_image_crc32( const std::uint8_t* data, std::size_t length ) noexcept
 {
     // Offset of the crc32 field within ManagerHeader, which itself is located
-    // after Block_0 (sizeof(Block<AT>) bytes from base).
-    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<AddressTraitsT> );
+    // at the canonical granule-aligned offset after Block_0.
+    constexpr std::size_t kHdrOffset = manager_header_offset_bytes_v<AddressTraitsT>;
     constexpr std::size_t kCrcOffset = kHdrOffset + offsetof( ManagerHeader<AddressTraitsT>, crc32 );
     constexpr std::size_t kCrcSize   = sizeof( std::uint32_t );
     constexpr std::size_t kAfterCrc  = kCrcOffset + kCrcSize;
@@ -2402,14 +2430,6 @@ inline typename AddressTraitsT::index_type block_idx_t( const std::uint8_t*     
     assert( byte_off % AddressTraitsT::granule_size == 0 );
     return static_cast<typename AddressTraitsT::index_type>( byte_off / AddressTraitsT::granule_size );
 }
-
-/// @brief Block header size in granules for AddressTraitsT.
-/// Computes ceil(sizeof(Block<AT>) / AT::granule_size).
-/// For DefaultAddressTraits: 32/16 = 2. For SmallAddressTraits: ceil(18/16) = 2. For Large: 64/64 = 1.
-template <typename AddressTraitsT>
-inline constexpr typename AddressTraitsT::index_type kBlockHeaderGranules_t =
-    static_cast<typename AddressTraitsT::index_type>(
-        ( sizeof( pmm::Block<AddressTraitsT> ) + AddressTraitsT::granule_size - 1 ) / AddressTraitsT::granule_size );
 
 /// @brief Manager header size in granules for AddressTraitsT.
 /// Uses ceiling division: ceil(sizeof(ManagerHeader<AT>) / AT::granule_size).
@@ -9518,9 +9538,7 @@ static void verify_forest_registry_unlocked( VerifyResult& result ) noexcept
 
     /// @brief Byte offset of ManagerHeader from base: rounds sizeof(Block<A>) up to granule boundary.
     /// For DefaultAddressTraits: 32 bytes. For SmallAddressTraits: roundup(18,16) = 32. For Large: 64.
-    static constexpr std::size_t kBlockHdrByteSize =
-        ( ( sizeof( Block<address_traits> ) + address_traits::granule_size - 1 ) / address_traits::granule_size ) *
-        address_traits::granule_size;
+    static constexpr std::size_t kBlockHdrByteSize = detail::manager_header_offset_bytes_v<address_traits>;
 
     static constexpr index_type kBlockHdrGranules =
         static_cast<index_type>( kBlockHdrByteSize / address_traits::granule_size );
@@ -9533,12 +9551,12 @@ static void verify_forest_registry_unlocked( VerifyResult& result ) noexcept
     static detail::ManagerHeader<address_traits>* get_header( std::uint8_t* base ) noexcept
     {
         // Place ManagerHeader at a granule-aligned offset after Block_0.
-        return reinterpret_cast<detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
+        return detail::manager_header_at<address_traits>( base );
     }
 
     static const detail::ManagerHeader<address_traits>* get_header_c( const std::uint8_t* base ) noexcept
     {
-        return reinterpret_cast<const detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
+        return detail::manager_header_at<address_traits>( base );
     }
 
     struct layout_access
@@ -9652,12 +9670,10 @@ template <typename MgrT> inline bool save_manager( const char* filename )
     if ( data == nullptr || total == 0 )
         return false;
 
-    // Compute and store CRC32 in the manager header.
-    // The header is located after Block_0 (sizeof(Block<AT>) bytes from base).
-    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
-    auto*                 hdr        = reinterpret_cast<detail::ManagerHeader<address_traits>*>( data + kHdrOffset );
-    hdr->crc32                       = 0; // zero the field before computing CRC
-    hdr->crc32                       = detail::compute_image_crc32<address_traits>( data, total );
+    // Compute and store CRC32 in the canonical manager header.
+    auto* hdr  = detail::manager_header_at<address_traits>( data );
+    hdr->crc32 = 0;
+    hdr->crc32 = detail::compute_image_crc32<address_traits>( data, total );
 
     // Atomic save — write to temp file, then rename.
     std::string tmp_path = std::string( filename ) + ".tmp";
@@ -9752,10 +9768,10 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
         return false;
 
     // Verify CRC32 before calling load().
-    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
+    constexpr std::size_t kHdrOffset = detail::manager_header_offset_bytes_v<address_traits>;
     if ( file_size >= kHdrOffset + sizeof( detail::ManagerHeader<address_traits> ) )
     {
-        auto*         hdr          = reinterpret_cast<detail::ManagerHeader<address_traits>*>( buf + kHdrOffset );
+        auto*         hdr          = detail::manager_header_at<address_traits>( buf );
         std::uint32_t stored_crc   = hdr->crc32;
         std::uint32_t computed_crc = detail::compute_image_crc32<address_traits>( buf, file_size );
         if ( stored_crc != computed_crc )
