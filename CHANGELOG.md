@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.57.1] - 2026-04-19
+
+### Changed
+- Added descriptor-driven access for low-level block and tree metadata fields.
+
+
 ## [0.57.0] - 2026-04-19
 
 ### Added
