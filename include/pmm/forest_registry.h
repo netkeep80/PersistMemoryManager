@@ -54,13 +54,13 @@ template <typename AddressTraitsT> struct ForestDomainRegistry
     std::uint32_t                      magic;
     std::uint16_t                      version;
     std::uint16_t                      domain_count;
-    index_type                         legacy_root_offset;
+    index_type                         reserved_root_offset;
     index_type                         next_binding_id;
     ForestDomainRecord<AddressTraitsT> domains[kMaxForestDomains];
 
     constexpr ForestDomainRegistry() noexcept
-        : magic( kForestRegistryMagic ), version( kForestRegistryVersion ), domain_count( 0 ), legacy_root_offset( 0 ),
-          next_binding_id( 1 ), domains{}
+        : magic( kForestRegistryMagic ), version( kForestRegistryVersion ), domain_count( 0 ),
+          reserved_root_offset( 0 ), next_binding_id( 1 ), domains{}
     {
     }
 };

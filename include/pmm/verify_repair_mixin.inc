@@ -94,7 +94,7 @@ static void verify_forest_registry_unlocked( VerifyResult& result ) noexcept
     }
 
     static constexpr const char* kRequired[] = { detail::kSystemDomainFreeTree, detail::kSystemDomainSymbols,
-                                                 detail::kSystemDomainRegistry };
+                                                 detail::kSystemDomainRegistry, detail::kServiceNameLegacyRoot };
     for ( const char* name : kRequired )
     {
         const forest_domain* rec = find_domain_by_name_unlocked( name );

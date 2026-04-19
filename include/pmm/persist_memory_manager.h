@@ -846,8 +846,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     // ─── Root object API ──────────────────────────────
 
-    /// @brief Установить корневой объект в ManagerHeader.
-    /// @tparam T Тип объекта.  @param p Персистентный указатель; пустой pptr сбрасывает корень.
+    /// @brief Compatibility shim for the legacy root object API.
+    /// Stores the root in the canonical `service/legacy_root` domain record.
     template <typename T> static void set_root( pptr<T> p ) noexcept
     {
         typename thread_policy::unique_lock_type lock( _mutex );
@@ -857,7 +857,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /**
-     * @brief Получить корневой объект из ManagerHeader.
+     * @brief Compatibility shim for the legacy root object API.
      *
      * @tparam T Тип объекта (должен совпадать с типом, переданным в set_root).
      * @return pptr<T> — корневой указатель или пустой pptr, если корень не установлен.
