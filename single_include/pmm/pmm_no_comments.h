@@ -2180,6 +2180,8 @@ using LargeDBConfig = BasicConfig<LargeAddressTraits, config::SharedMutexLock, 2
 #endif
 
 #include <cassert>
+#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -2500,24 +2502,206 @@ class AllocatorPolicy
     static void verify_free_tree( const std::uint8_t* base, const detail::ManagerHeader<AddressTraitsT>* hdr,
                                   VerifyResult& result ) noexcept
     {
-        
-        index_type free_count = 0;
-        index_type idx        = hdr->first_block_offset;
+        std::array<index_type, kMaxDiagnosticEntries> expected_free{};
+        std::array<index_type, kMaxDiagnosticEntries> visited_free{};
+        std::size_t                                   expected_count    = 0;
+        std::size_t                                   visited_count     = 0;
+        bool                                          expected_overflow = false;
+
+        index_type idx = hdr->first_block_offset;
         while ( idx != AddressTraitsT::no_block )
         {
             if ( static_cast<std::size_t>( idx ) * AddressTraitsT::granule_size + sizeof( BlockT ) > hdr->total_size )
                 break;
             const void* blk_ptr = detail::block_at<AddressTraitsT>( base, idx );
             if ( BlockState::get_weight( blk_ptr ) == 0 )
-                free_count++;
+            {
+                if ( expected_count < expected_free.size() )
+                    expected_free[expected_count] = idx;
+                else
+                    expected_overflow = true;
+                expected_count++;
+            }
             idx = BlockState::get_next_offset( blk_ptr );
         }
-        
-        bool root_present = ( hdr->free_tree_root != AddressTraitsT::no_block );
-        if ( ( free_count > 0 && !root_present ) || ( free_count == 0 && root_present ) )
+
+        const bool root_present = ( hdr->free_tree_root != AddressTraitsT::no_block );
+        if ( expected_count == 0 )
+        {
+            if ( root_present )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, 0, 0,
+                            static_cast<std::uint64_t>( hdr->free_tree_root ) );
+            }
+            return;
+        }
+        if ( !root_present )
         {
             result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, 0,
-                        static_cast<std::uint64_t>( free_count ), static_cast<std::uint64_t>( hdr->free_tree_root ) );
+                        static_cast<std::uint64_t>( expected_count ),
+                        static_cast<std::uint64_t>( hdr->free_tree_root ) );
+            return;
+        }
+        if ( !detail::validate_block_index<AddressTraitsT>( hdr->total_size, hdr->free_tree_root ) )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( hdr->free_tree_root ), 1, 0 );
+            return;
+        }
+        const void* root = detail::block_at<AddressTraitsT>( base, hdr->free_tree_root );
+        if ( BlockState::get_weight( root ) != 0 || BlockState::get_parent_offset( root ) != AddressTraitsT::no_block )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                        static_cast<std::uint64_t>( hdr->free_tree_root ), 0,
+                        static_cast<std::uint64_t>( BlockState::get_parent_offset( root ) ) );
+        }
+
+        auto block_gran = [hdr]( const std::uint8_t* b, index_type block_idx ) noexcept
+        {
+            const void* n      = detail::block_at<AddressTraitsT>( b, block_idx );
+            index_type  n_next = BlockState::get_next_offset( n );
+            index_type  total  = detail::byte_off_to_idx_t<AddressTraitsT>( hdr->total_size );
+            return ( n_next != AddressTraitsT::no_block ) ? static_cast<index_type>( n_next - block_idx )
+                                                          : static_cast<index_type>( total - block_idx );
+        };
+        auto less_key = [&]( index_type a, index_type b_idx ) noexcept
+        {
+            index_type a_gran = block_gran( base, a );
+            index_type b_gran = block_gran( base, b_idx );
+            return ( a_gran < b_gran ) || ( a_gran == b_gran && a < b_idx );
+        };
+
+        struct Frame
+        {
+            index_type node;
+            index_type parent;
+            index_type lower;
+            bool       has_lower;
+            index_type upper;
+            bool       has_upper;
+            bool       expanded;
+        };
+        std::array<Frame, kMaxDiagnosticEntries>        stack{};
+        std::array<std::int16_t, kMaxDiagnosticEntries> heights{};
+        std::size_t                                     stack_size = 0;
+        stack[stack_size++] = { hdr->free_tree_root, AddressTraitsT::no_block, {}, false, {}, false, false };
+
+        while ( stack_size > 0 )
+        {
+            Frame frame = stack[--stack_size];
+            if ( frame.node == AddressTraitsT::no_block )
+                continue;
+            if ( !detail::validate_block_index<AddressTraitsT>( hdr->total_size, frame.node ) )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( frame.parent ), 0, static_cast<std::uint64_t>( frame.node ) );
+                continue;
+            }
+
+            const void* node = detail::block_at<AddressTraitsT>( base, frame.node );
+            if ( BlockState::get_weight( node ) != 0 )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( frame.node ), 0,
+                            static_cast<std::uint64_t>( BlockState::get_weight( node ) ) );
+                continue;
+            }
+            if ( BlockState::get_parent_offset( node ) != frame.parent )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( frame.node ), static_cast<std::uint64_t>( frame.parent ),
+                            static_cast<std::uint64_t>( BlockState::get_parent_offset( node ) ) );
+            }
+            if ( frame.has_lower && !less_key( frame.lower, frame.node ) )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( frame.node ), static_cast<std::uint64_t>( frame.lower ),
+                            static_cast<std::uint64_t>( frame.node ) );
+            }
+            if ( frame.has_upper && !less_key( frame.node, frame.upper ) )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( frame.node ), static_cast<std::uint64_t>( frame.node ),
+                            static_cast<std::uint64_t>( frame.upper ) );
+            }
+
+            const auto visited_begin = visited_free.begin();
+            const auto visited_end   = visited_begin + static_cast<std::ptrdiff_t>( visited_count );
+            const bool already_seen  = std::find( visited_begin, visited_end, frame.node ) != visited_end;
+            if ( !frame.expanded && already_seen )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( frame.node ), 1, 2 );
+                continue;
+            }
+
+            if ( !frame.expanded && ( visited_count >= visited_free.size() || stack_size + 3 >= stack.size() ) )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( frame.node ), static_cast<std::uint64_t>( expected_count ),
+                            static_cast<std::uint64_t>( visited_count ) );
+                break;
+            }
+
+            if ( !frame.expanded )
+            {
+                visited_free[visited_count++] = frame.node;
+                stack[stack_size++]           = { frame.node,  frame.parent,    frame.lower, frame.has_lower,
+                                                  frame.upper, frame.has_upper, true };
+                index_type right              = BlockState::get_right_offset( node );
+                index_type left               = BlockState::get_left_offset( node );
+                if ( right != AddressTraitsT::no_block )
+                    stack[stack_size++] = { right, frame.node, frame.node, true, frame.upper, frame.has_upper, false };
+                if ( left != AddressTraitsT::no_block )
+                    stack[stack_size++] = { left, frame.node, frame.lower, frame.has_lower, frame.node, true, false };
+                continue;
+            }
+
+            std::int16_t left_h = 0, right_h = 0;
+            index_type   left  = BlockState::get_left_offset( node );
+            index_type   right = BlockState::get_right_offset( node );
+            for ( std::size_t i = 0; i < visited_count; ++i )
+            {
+                if ( visited_free[i] == left )
+                    left_h = heights[i];
+                if ( visited_free[i] == right )
+                    right_h = heights[i];
+            }
+            std::int16_t expected_h = static_cast<std::int16_t>( 1 + ( left_h > right_h ? left_h : right_h ) );
+            std::int16_t stored_h   = BlockState::get_avl_height( node );
+            if ( stored_h != expected_h || left_h - right_h > 1 || right_h - left_h > 1 )
+            {
+                result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                            static_cast<std::uint64_t>( frame.node ), static_cast<std::uint64_t>( expected_h ),
+                            static_cast<std::uint64_t>( stored_h ) );
+            }
+            for ( std::size_t i = 0; i < visited_count; ++i )
+            {
+                if ( visited_free[i] == frame.node )
+                {
+                    heights[i] = expected_h;
+                    break;
+                }
+            }
+        }
+
+        if ( !expected_overflow )
+        {
+            for ( std::size_t i = 0; i < expected_count; ++i )
+            {
+                const auto begin = visited_free.begin();
+                const auto end   = begin + static_cast<std::ptrdiff_t>( visited_count );
+                if ( std::find( begin, end, expected_free[i] ) == end )
+                {
+                    result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction,
+                                static_cast<std::uint64_t>( expected_free[i] ), 1, 0 );
+                }
+            }
+        }
+        if ( visited_count != expected_count )
+        {
+            result.add( ViolationType::FreeTreeStale, DiagnosticAction::NoAction, 0,
+                        static_cast<std::uint64_t>( expected_count ), static_cast<std::uint64_t>( visited_count ) );
         }
     }
 
