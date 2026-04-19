@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.9] - 2026-04-19
+
+### Changed
+- Stop building and running headless demo tests in the demo-only CI job.
+
+
 ## [0.55.8] - 2026-04-19
 
 ### Changed
