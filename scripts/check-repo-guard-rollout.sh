@@ -16,7 +16,7 @@ policy_path = pathlib.Path(sys.argv[2])
 workflow = workflow_path.read_text(encoding="utf-8")
 policy = json.loads(policy_path.read_text(encoding="utf-8"))
 
-expected_action = "netkeep80/repo-guard@b1d16b8eb69755898c248d6e3dde31fa03d1becc"
+expected_action = "netkeep80/repo-guard@c8491872866c33e0ecd04f809dcfd0489047d13f"
 required_governance_paths = {
     ".github/workflows/repo-guard.yml",
     ".github/workflows/docs-consistency.yml",
@@ -63,6 +63,56 @@ checks.append(
     (
         not missing_governance,
         "repo-policy.json governance_paths must include: " + ", ".join(missing_governance),
+    )
+)
+
+expected_surfaces = {"kernel", "tests", "docs", "governance", "release", "generated"}
+surfaces = set(policy.get("surfaces", {}))
+checks.append((expected_surfaces <= surfaces, "repo-policy.json surfaces must include PMM v1 surfaces"))
+
+expected_change_classes = {
+    "governance",
+    "docs-comments-cleanup",
+    "kernel-compaction",
+    "kernel-hardening",
+    "extraction-prep",
+    "generated-refresh",
+    "release",
+}
+change_classes = set(policy.get("change_classes", []))
+checks.append((expected_change_classes <= change_classes, "repo-policy.json change_classes must include PMM v1 types"))
+
+new_file_rules = policy.get("new_file_rules", {})
+checks.append((expected_change_classes <= set(new_file_rules), "new_file_rules must cover PMM v1 classes"))
+
+new_file_classes = policy.get("new_file_classes", {})
+checks.append(
+    (
+        "kernel_module" in new_file_classes,
+        "new_file_classes must distinguish legitimate kernel modules from forbidden shard files",
+    )
+)
+
+for change_type in ("kernel-compaction", "extraction-prep"):
+    rule = new_file_rules.get(change_type, {})
+    allowed_classes = set(rule.get("allow_classes", []))
+    max_per_class = rule.get("max_per_class", {})
+    checks.append(
+        (
+            "kernel_module" in allowed_classes and max_per_class.get("kernel_module") == 1,
+            f"{change_type} must allow exactly one legitimate kernel module extraction file",
+        )
+    )
+
+change_type_rules = policy.get("change_type_rules", {})
+checks.append((expected_change_classes <= set(change_type_rules), "change_type_rules must cover PMM v1 types"))
+checks.append(("surface_matrix" not in policy, "surface_matrix is intentionally deferred in this rollout"))
+
+registry_rules = policy.get("registry_rules", [])
+checks.append(
+    (
+        any(rule.get("id") == "canonical-docs-sync" for rule in registry_rules),
+        "repo-policy.json registry_rules must include canonical-docs-sync",
     )
 )
 

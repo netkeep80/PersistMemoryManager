@@ -55,6 +55,127 @@
     "max_new_files": 3,
     "max_net_added_lines": 35
   },
+  "surfaces": {
+    "kernel": ["include/**", "CMakeLists.txt"],
+    "tests": ["tests/**"],
+    "docs": ["docs/**", "README.md", "CONTRIBUTING.md"],
+    "governance": ["repo-policy.json", ".github/**", "scripts/check-*.sh"],
+    "release": ["CHANGELOG.md", "changelog.d/**", "scripts/check-version-consistency.sh"],
+    "generated": ["single_include/**"]
+  },
+  "change_classes": [
+    "governance",
+    "docs-comments-cleanup",
+    "kernel-compaction",
+    "kernel-hardening",
+    "extraction-prep",
+    "generated-refresh",
+    "release"
+  ],
+  "new_file_classes": {
+    "test": ["tests/**"],
+    "canonical_doc": ["docs/**", "README.md", "CONTRIBUTING.md"],
+    "governance": [".github/**", "scripts/check-*.sh", "repo-policy.json"],
+    "release": ["changelog.d/*.md"],
+    "generated": ["single_include/**"],
+    "kernel_module": ["include/pmm/*.h"],
+    "kernel_shard": ["include/pmm/**/*.inc", "include/pmm/**/*.inl", "include/pmm/**/*.ipp"]
+  },
+  "new_file_rules": {
+    "governance": {
+      "allow_classes": ["governance", "release"],
+      "max_new_files": 1
+    },
+    "docs-comments-cleanup": {
+      "allow_classes": [],
+      "max_new_files": 0
+    },
+    "kernel-compaction": {
+      "allow_classes": ["test", "release", "kernel_module"],
+      "max_per_class": {
+        "release": 1,
+        "kernel_module": 1
+      }
+    },
+    "kernel-hardening": {
+      "allow_classes": ["test", "release"],
+      "max_per_class": {
+        "release": 1
+      }
+    },
+    "extraction-prep": {
+      "allow_classes": ["test", "release", "kernel_module"],
+      "max_per_class": {
+        "release": 1,
+        "kernel_module": 1
+      }
+    },
+    "generated-refresh": {
+      "allow_classes": ["generated", "release"],
+      "max_per_class": {
+        "generated": 20,
+        "release": 1
+      }
+    },
+    "release": {
+      "allow_classes": ["release"],
+      "max_per_class": {
+        "release": 1
+      }
+    }
+  },
+  "change_type_rules": {
+    "governance": {
+      "forbid_surfaces": ["kernel", "generated"],
+      "max_new_docs": 0,
+      "max_new_files": 1,
+      "max_net_added_lines": 80
+    },
+    "docs-comments-cleanup": {
+      "forbid_surfaces": ["kernel", "generated", "release"],
+      "max_new_docs": 0,
+      "max_new_files": 0
+    },
+    "kernel-compaction": {
+      "forbid_surfaces": ["docs", "governance", "release"]
+    },
+    "kernel-hardening": {
+      "forbid_surfaces": ["docs", "governance", "release"],
+      "require_surfaces": ["tests"]
+    },
+    "extraction-prep": {
+      "forbid_surfaces": ["governance", "release"]
+    },
+    "generated-refresh": {
+      "allow_surfaces": ["generated", "release"]
+    },
+    "release": {
+      "allow_surfaces": ["release"],
+      "max_new_docs": 0
+    }
+  },
+  "registry_rules": [
+    {
+      "id": "canonical-docs-sync",
+      "kind": "set_equality",
+      "left": {
+        "type": "json_array",
+        "file": "repo-policy.json",
+        "json_pointer": "/paths/canonical_docs"
+      },
+      "right": {
+        "type": "markdown_section_links",
+        "file": "docs/index.md",
+        "section": "Canonical Documents",
+        "prefix": "docs/"
+      }
+    }
+  ],
+  "advisory_text_rules": {
+    "canonical_files": ["docs/index.md", "docs/*.md"],
+    "warn_on_similarity_above": 0.78,
+    "max_reported_matches": 3
+  },
   "content_rules": [
     {
       "id": "no-todo-without-issue",
