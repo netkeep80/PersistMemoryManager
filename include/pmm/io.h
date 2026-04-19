@@ -2,33 +2,11 @@
  * @file pmm/io.h
  * @brief Утилиты файлового ввода/вывода для PersistMemoryManager
  *
- * Вспомогательный заголовочный файл с функциями сохранения и загрузки
- * образа памяти в/из файла. Вынесен в отдельный файл, так как файловый
- * ввод/вывод не является основной функциональностью менеджера памяти,
- * но необходим для тестов и примеров использования персистентности.
+ * Save/load helpers for a manager image.
  *
- * CRC32 checksum — save_manager computes and stores CRC32
- * in the ManagerHeader.crc32 field; load_manager_from_file verifies it.
- *
- * Atomic save — save_manager writes to a temporary file
- * (filename + ".tmp") and atomically renames it to the target on success.
- *
- * Использование:
- * @code
- * #include "pmm/manager_configs.h"
- * #include "pmm/persist_memory_manager.h"
- * #include "pmm/io.h"
- *
- * using MyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
- * MyMgr::create(64 * 1024);
- *
- * // Сохранить образ в файл
- * bool ok = pmm::save_manager<MyMgr>("heap.dat");
- *
- * // Загрузить образ из файла (сначала нужно выделить буфер нужного размера)
- * MyMgr::create(64 * 1024);
- * bool ok2 = pmm::load_manager_from_file<MyMgr>("heap.dat");
- * @endcode
+ * save_manager stores ManagerHeader.crc32 and writes through filename + ".tmp"
+ * before an atomic rename. load_manager_from_file requires VerifyResult& and
+ * verifies CRC before loading manager state.
  *
  * @version 0.3
  */
