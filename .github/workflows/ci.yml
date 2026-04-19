@@ -295,6 +295,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache CMake FetchContent dependencies
+        uses: actions/cache@v4
+        with:
+          path: .cmake-fetchcontent
+          key: ${{ runner.os }}-demo-fetchcontent-${{ hashFiles('CMakeLists.txt', 'demo/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-demo-fetchcontent-
+
       - name: Install OpenGL dev (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -309,11 +317,12 @@ jobs:
         run: |
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DPMM_BUILD_DEMO=ON
+            -DPMM_BUILD_DEMO=ON \
+            -DFETCHCONTENT_BASE_DIR=${{ github.workspace }}/.cmake-fetchcontent
 
       - name: Configure (Windows)
         if: runner.os == 'Windows'
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DPMM_BUILD_DEMO=ON
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DPMM_BUILD_DEMO=ON -DFETCHCONTENT_BASE_DIR="${{ github.workspace }}\\.cmake-fetchcontent"
 
       - name: Build
         run: cmake --build build --config Release
