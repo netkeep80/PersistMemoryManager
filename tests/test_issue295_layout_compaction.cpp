@@ -24,8 +24,8 @@ std::string read_file( const std::filesystem::path& path )
 
 TEST_CASE( "issue295: layout helpers are not included as an inc shard", "[issue295][structural]" )
 {
-    const std::filesystem::path repo_root = PMM_SOURCE_DIR;
-    const auto manager_header = read_file( repo_root / "include/pmm/persist_memory_manager.h" );
+    const std::filesystem::path repo_root      = PMM_SOURCE_DIR;
+    const auto                  manager_header = read_file( repo_root / "include/pmm/persist_memory_manager.h" );
 
     REQUIRE( manager_header.find( "#include \"pmm/layout_mixin.inc\"" ) == std::string::npos );
     REQUIRE( manager_header.find( "#include \"pmm/layout.h\"" ) != std::string::npos );

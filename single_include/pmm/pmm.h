@@ -4546,16 +4546,14 @@ template <typename ManagerAccess> struct ManagerLayoutOps
     using storage_backend = typename ManagerAccess::storage_backend;
     using BlockState      = BlockStateBase<address_traits>;
 
-    static bool init_layout( storage_backend& backend, std::uint8_t* base,
-                             std::size_t size ) noexcept
+    static bool init_layout( storage_backend& backend, std::uint8_t* base, std::size_t size ) noexcept
     {
         static constexpr index_type  kHdrBlkIdx  = 0;
         static constexpr index_type  kFreeBlkIdx = ManagerAccess::kFreeBlkIdxLayout;
         static constexpr std::size_t kGranSz     = address_traits::granule_size;
 
         static constexpr std::size_t kMinBlockDataSize = kGranSz;
-        if ( static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz + sizeof( Block<address_traits> ) +
-                 kMinBlockDataSize >
+        if ( static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz + sizeof( Block<address_traits> ) + kMinBlockDataSize >
              size )
             return false;
 
@@ -4611,10 +4609,9 @@ template <typename ManagerAccess> struct ManagerLayoutOps
         index_type                   data_gran_need = bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran_need == 0 )
             data_gran_need = 1;
-        std::size_t min_need =
-            static_cast<std::size_t>( ManagerAccess::kBlockHdrGranules + data_gran_need +
-                                      ManagerAccess::kBlockHdrGranules ) *
-            kGranSz;
+        std::size_t min_need = static_cast<std::size_t>( ManagerAccess::kBlockHdrGranules + data_gran_need +
+                                                         ManagerAccess::kBlockHdrGranules ) *
+                               kGranSz;
         std::size_t growth = old_size / 4;
         if ( growth < min_need )
             growth = min_need;
@@ -8964,16 +8961,16 @@ static void verify_forest_registry_unlocked( VerifyResult& result ) noexcept
 
     struct layout_access
     {
-        using address_traits  = manager_type::address_traits;
-        using free_block_tree = manager_type::free_block_tree;
-        using logging_policy  = manager_type::logging_policy;
-        using storage_backend = manager_type::storage_backend;
-        using index_type      = manager_type::index_type;
-        static constexpr std::uint64_t kMagic            = pmm::kMagic;
-        static constexpr std::size_t   kBlockHdrByteSize = manager_type::kBlockHdrByteSize;
-        static constexpr index_type    kBlockHdrGranules = manager_type::kBlockHdrGranules;
-        static constexpr index_type    kMgrHdrGranules   = manager_type::kMgrHdrGranules;
-        static constexpr index_type    kFreeBlkIdxLayout = manager_type::kFreeBlkIdxLayout;
+        using address_traits                                            = manager_type::address_traits;
+        using free_block_tree                                           = manager_type::free_block_tree;
+        using logging_policy                                            = manager_type::logging_policy;
+        using storage_backend                                           = manager_type::storage_backend;
+        using index_type                                                = manager_type::index_type;
+        static constexpr std::uint64_t                kMagic            = pmm::kMagic;
+        static constexpr std::size_t                  kBlockHdrByteSize = manager_type::kBlockHdrByteSize;
+        static constexpr index_type                   kBlockHdrGranules = manager_type::kBlockHdrGranules;
+        static constexpr index_type                   kMgrHdrGranules   = manager_type::kMgrHdrGranules;
+        static constexpr index_type                   kFreeBlkIdxLayout = manager_type::kFreeBlkIdxLayout;
         static detail::ManagerHeader<address_traits>* get_header( std::uint8_t* base ) noexcept
         {
             return manager_type::get_header( base );

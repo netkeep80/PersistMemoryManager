@@ -25,16 +25,14 @@ template <typename ManagerAccess> struct ManagerLayoutOps
     using storage_backend = typename ManagerAccess::storage_backend;
     using BlockState      = BlockStateBase<address_traits>;
 
-    static bool init_layout( storage_backend& backend, std::uint8_t* base,
-                             std::size_t size ) noexcept
+    static bool init_layout( storage_backend& backend, std::uint8_t* base, std::size_t size ) noexcept
     {
         static constexpr index_type  kHdrBlkIdx  = 0;
         static constexpr index_type  kFreeBlkIdx = ManagerAccess::kFreeBlkIdxLayout;
         static constexpr std::size_t kGranSz     = address_traits::granule_size;
 
         static constexpr std::size_t kMinBlockDataSize = kGranSz;
-        if ( static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz + sizeof( Block<address_traits> ) +
-                 kMinBlockDataSize >
+        if ( static_cast<std::size_t>( kFreeBlkIdx ) * kGranSz + sizeof( Block<address_traits> ) + kMinBlockDataSize >
              size )
             return false;
 
@@ -90,10 +88,9 @@ template <typename ManagerAccess> struct ManagerLayoutOps
         index_type                   data_gran_need = bytes_to_granules_t<address_traits>( user_size );
         if ( data_gran_need == 0 )
             data_gran_need = 1;
-        std::size_t min_need =
-            static_cast<std::size_t>( ManagerAccess::kBlockHdrGranules + data_gran_need +
-                                      ManagerAccess::kBlockHdrGranules ) *
-            kGranSz;
+        std::size_t min_need = static_cast<std::size_t>( ManagerAccess::kBlockHdrGranules + data_gran_need +
+                                                         ManagerAccess::kBlockHdrGranules ) *
+                               kGranSz;
         std::size_t growth = old_size / 4;
         if ( growth < min_need )
             growth = min_need;

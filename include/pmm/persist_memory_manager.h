@@ -1467,16 +1467,16 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
     struct layout_access
     {
-        using address_traits  = manager_type::address_traits;
-        using free_block_tree = manager_type::free_block_tree;
-        using logging_policy  = manager_type::logging_policy;
-        using storage_backend = manager_type::storage_backend;
-        using index_type      = manager_type::index_type;
-        static constexpr std::uint64_t kMagic            = pmm::kMagic;
-        static constexpr std::size_t   kBlockHdrByteSize = manager_type::kBlockHdrByteSize;
-        static constexpr index_type    kBlockHdrGranules = manager_type::kBlockHdrGranules;
-        static constexpr index_type    kMgrHdrGranules   = manager_type::kMgrHdrGranules;
-        static constexpr index_type    kFreeBlkIdxLayout = manager_type::kFreeBlkIdxLayout;
+        using address_traits                                            = manager_type::address_traits;
+        using free_block_tree                                           = manager_type::free_block_tree;
+        using logging_policy                                            = manager_type::logging_policy;
+        using storage_backend                                           = manager_type::storage_backend;
+        using index_type                                                = manager_type::index_type;
+        static constexpr std::uint64_t                kMagic            = pmm::kMagic;
+        static constexpr std::size_t                  kBlockHdrByteSize = manager_type::kBlockHdrByteSize;
+        static constexpr index_type                   kBlockHdrGranules = manager_type::kBlockHdrGranules;
+        static constexpr index_type                   kMgrHdrGranules   = manager_type::kMgrHdrGranules;
+        static constexpr index_type                   kFreeBlkIdxLayout = manager_type::kFreeBlkIdxLayout;
         static detail::ManagerHeader<address_traits>* get_header( std::uint8_t* base ) noexcept
         {
             return manager_type::get_header( base );
