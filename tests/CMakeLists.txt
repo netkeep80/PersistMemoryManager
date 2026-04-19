@@ -284,3 +284,7 @@ pmm_add_test(test_issue258_structural     test_issue258_structural.cpp)
 pmm_add_test(test_issue258_corruption     test_issue258_corruption.cpp)
 pmm_add_test(test_issue258_verify_behavior test_issue258_verify_behavior.cpp)
 pmm_add_test(test_issue258_property       test_issue258_property.cpp)
+
+# ─── Issue 295: layout include-shard repayment guard ────────────
+pmm_add_test(test_issue295_layout_compaction test_issue295_layout_compaction.cpp)
+target_compile_definitions(test_issue295_layout_compaction PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")

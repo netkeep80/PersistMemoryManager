@@ -25,6 +25,7 @@
 #include "pmm/block_state.h"
 #include "pmm/diagnostics.h"
 #include "pmm/forest_registry.h"
+#include "pmm/layout.h"
 #include "pmm/logging_policy.h"
 #include "pmm/manager_configs.h"
 #include "pmm/pallocator.h"
@@ -1445,12 +1446,9 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         ( ( sizeof( Block<address_traits> ) + address_traits::granule_size - 1 ) / address_traits::granule_size ) *
         address_traits::granule_size;
 
-    /// @brief Number of granules occupied by Block_0 (includes alignment padding).
     static constexpr index_type kBlockHdrGranules =
         static_cast<index_type>( kBlockHdrByteSize / address_traits::granule_size );
 
-    /// @brief Number of granules occupied by ManagerHeader<address_traits>.
-    /// Uses ceiling division: ceil(sizeof(ManagerHeader<address_traits>) / granule_size).
     static constexpr index_type kMgrHdrGranules = detail::kManagerHeaderGranules_t<address_traits>;
 
     /// @brief Granule index of first free block (Block_1 = after Block_0 + ManagerHeader).
@@ -1467,8 +1465,34 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         return reinterpret_cast<const detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
     }
 
-    // Layout init / expand helpers — extracted to layout_mixin.inc.
-#include "pmm/layout_mixin.inc"
+    struct layout_access
+    {
+        using address_traits                                            = manager_type::address_traits;
+        using free_block_tree                                           = manager_type::free_block_tree;
+        using logging_policy                                            = manager_type::logging_policy;
+        using storage_backend                                           = manager_type::storage_backend;
+        using index_type                                                = manager_type::index_type;
+        static constexpr std::uint64_t                kMagic            = pmm::kMagic;
+        static constexpr std::size_t                  kBlockHdrByteSize = manager_type::kBlockHdrByteSize;
+        static constexpr index_type                   kBlockHdrGranules = manager_type::kBlockHdrGranules;
+        static constexpr index_type                   kMgrHdrGranules   = manager_type::kMgrHdrGranules;
+        static constexpr index_type                   kFreeBlkIdxLayout = manager_type::kFreeBlkIdxLayout;
+        static detail::ManagerHeader<address_traits>* get_header( std::uint8_t* base ) noexcept
+        {
+            return manager_type::get_header( base );
+        }
+        static void set_initialized() noexcept { manager_type::_initialized = true; }
+    };
+
+    static bool init_layout( std::uint8_t* base, std::size_t size ) noexcept
+    {
+        return detail::ManagerLayoutOps<layout_access>::init_layout( _backend, base, size );
+    }
+
+    static bool do_expand( std::size_t user_size ) noexcept
+    {
+        return detail::ManagerLayoutOps<layout_access>::do_expand( _backend, _initialized, user_size );
+    }
 };
 
 } // namespace pmm
