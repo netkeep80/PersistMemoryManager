@@ -292,3 +292,10 @@ target_compile_definitions(test_issue295_layout_compaction PRIVATE PMM_SOURCE_DI
 # ─── Issue 306: root .gitkeep repo-guard exception ──────────────
 pmm_add_test(test_issue306_repo_guard_gitkeep test_issue306_repo_guard_gitkeep.cpp)
 target_compile_definitions(test_issue306_repo_guard_gitkeep PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
+# ─── Issue 314: build graph compaction contract ─────────────────
+add_test(
+    NAME test_issue314_build_graph_contract
+    COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_SOURCE_DIR}/issue314_build_graph_contract.cmake"
+)
+set_tests_properties(test_issue314_build_graph_contract PROPERTIES TIMEOUT 180)

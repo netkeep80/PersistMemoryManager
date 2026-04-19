@@ -15,7 +15,7 @@ target_include_directories(pmm INTERFACE
 
 # Параметры компилятора
 if(MSVC)
-    target_compile_options(pmm INTERFACE /W4 /utf-8)
+    target_compile_options(pmm INTERFACE /W4 /utf-8 /MP)
 else()
     target_compile_options(pmm INTERFACE -Wall -Wextra -Wpedantic)
 endif()
@@ -23,24 +23,27 @@ endif()
 # ─── Потоки (для тестов потокобезопасности) ───────────────────────────────────
 find_package(Threads REQUIRED)
 
-# ─── Catch2 (фреймворк тестирования, Phase 5.1) ─────────────────────────────
-include(FetchContent)
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v3.7.1
-)
-FetchContent_MakeAvailable(Catch2)
-list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
-
 # ─── Тесты ────────────────────────────────────────────────────────────────────
 include(CTest)
 if(BUILD_TESTING)
+    # Test-only dependency graph stays inside BUILD_TESTING so non-test
+    # configurations do not fetch or build Catch2.
+    include(FetchContent)
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v3.7.1
+    )
+    FetchContent_MakeAvailable(Catch2)
+    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
     add_subdirectory(tests)
 endif()
 
 # ─── Примеры ──────────────────────────────────────────────────────────────────
-add_subdirectory(examples)
+option(PMM_BUILD_EXAMPLES "Build example executables" ON)
+if(PMM_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 # ─── Бенчмарки (опционально, Phase 5.3) ─────────────────────────────────────
 option(PMM_BUILD_BENCHMARKS "Build Google Benchmark performance benchmarks" OFF)
