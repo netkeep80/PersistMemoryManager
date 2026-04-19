@@ -288,3 +288,7 @@ pmm_add_test(test_issue258_property       test_issue258_property.cpp)
 # ─── Issue 295: layout include-shard repayment guard ────────────
 pmm_add_test(test_issue295_layout_compaction test_issue295_layout_compaction.cpp)
 target_compile_definitions(test_issue295_layout_compaction PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
+# ─── Issue 306: root .gitkeep repo-guard exception ──────────────
+pmm_add_test(test_issue306_repo_guard_gitkeep test_issue306_repo_guard_gitkeep.cpp)
+target_compile_definitions(test_issue306_repo_guard_gitkeep PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")

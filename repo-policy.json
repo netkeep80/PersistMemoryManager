@@ -76,6 +76,7 @@
     "test": ["tests/**"],
     "canonical_doc": ["docs/**", "README.md", "CONTRIBUTING.md"],
     "governance": [".github/**", "scripts/check-*.sh", "repo-policy.json"],
+    "operational": [".gitkeep"],
     "release": ["changelog.d/*.md"],
     "generated": ["single_include/**"],
     "kernel_module": ["include/pmm/*.h"],
@@ -83,7 +84,7 @@
   },
   "new_file_rules": {
     "governance": {
-      "allow_classes": ["governance", "release"],
+      "allow_classes": ["governance", "operational", "release"],
       "max_new_files": 1
     },
     "docs-comments-cleanup": {
