@@ -317,13 +317,14 @@ jobs:
         run: |
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=OFF \
             -DPMM_BUILD_DEMO=ON \
             -DPMM_BUILD_DEMO_TESTS=OFF \
             -DFETCHCONTENT_BASE_DIR=${{ github.workspace }}/.cmake-fetchcontent
 
       - name: Configure (Windows)
         if: runner.os == 'Windows'
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DPMM_BUILD_DEMO=ON -DPMM_BUILD_DEMO_TESTS=OFF -DFETCHCONTENT_BASE_DIR="${{ github.workspace }}\\.cmake-fetchcontent"
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DPMM_BUILD_DEMO=ON -DPMM_BUILD_DEMO_TESTS=OFF -DFETCHCONTENT_BASE_DIR="${{ github.workspace }}\\.cmake-fetchcontent"
 
       - name: Build
-        run: cmake --build build --config Release
+        run: cmake --build build --config Release --target pmm_demo
