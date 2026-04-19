@@ -239,12 +239,37 @@ template <typename ManagerT> struct pstringview
         if ( raw == nullptr )
             return psview_pptr();
 
-        // Создаём pptr вручную из raw указателя.
-        std::uint8_t* base = ManagerT::backend().base_ptr();
-        psview_pptr   new_node( detail::ptr_to_granule_idx<typename ManagerT::address_traits>( base, raw ) );
+        // Создаём canonical public pptr из физического raw указателя allocate().
+        using address_traits  = typename ManagerT::address_traits;
+        std::uint8_t* base    = ManagerT::backend().base_ptr();
+        auto*         raw_ptr = static_cast<std::uint8_t*>( raw );
+        if ( base == nullptr || raw_ptr < base + sizeof( pmm::Block<address_traits> ) )
+        {
+            ManagerT::deallocate( raw );
+            return psview_pptr();
+        }
+        std::size_t block_byte_off = static_cast<std::size_t>( raw_ptr - base ) - sizeof( pmm::Block<address_traits> );
+        if ( block_byte_off % address_traits::granule_size != 0 )
+        {
+            ManagerT::deallocate( raw );
+            return psview_pptr();
+        }
+        std::size_t public_idx =
+            block_byte_off / address_traits::granule_size + detail::kBlockHeaderGranules_t<address_traits>;
+        if ( public_idx > static_cast<std::size_t>( address_traits::no_block ) )
+        {
+            ManagerT::deallocate( raw );
+            return psview_pptr();
+        }
+        psview_pptr new_node( static_cast<index_type>( public_idx ) );
 
-        pstringview* obj = static_cast<pstringview*>( raw );
-        obj->length      = len;
+        pstringview* obj = ManagerT::template resolve_unchecked<pstringview>( new_node );
+        if ( obj == nullptr )
+        {
+            ManagerT::deallocate( raw );
+            return psview_pptr();
+        }
+        obj->length = len;
         // Копируем строку включая null-terminator.
         std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
 

@@ -486,10 +486,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
-        pmm::Block<address_traits>* blk = find_block_from_user_ptr( raw );
-        return ( blk == nullptr )
-                   ? pptr<T>()
-                   : pptr<T>( detail::block_idx_t<address_traits>( _backend.base_ptr(), blk ) + kBlockHdrGranules );
+        return make_pptr_from_raw<T>( raw );
     }
 
     /**
@@ -509,10 +506,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         void* raw = allocate( sizeof( T ) * count );
         if ( raw == nullptr )
             return pptr<T>();
-        pmm::Block<address_traits>* blk = find_block_from_user_ptr( raw );
-        return ( blk == nullptr )
-                   ? pptr<T>()
-                   : pptr<T>( detail::block_idx_t<address_traits>( _backend.base_ptr(), blk ) + kBlockHdrGranules );
+        return make_pptr_from_raw<T>( raw );
     }
 
     /**
@@ -629,13 +623,12 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _last_error = PmmError::OutOfMemory;
             return pptr<T>();
         }
-        pmm::Block<address_traits>* new_blk = find_block_from_user_ptr( new_raw );
-        if ( new_blk == nullptr )
+        pptr<T> new_p = make_pptr_from_raw<T>( new_raw );
+        if ( new_p.is_null() )
         {
             _last_error = PmmError::InvalidPointer;
             return pptr<T>();
         }
-        pptr<T>     new_p( detail::block_idx_t<address_traits>( base, new_blk ) + kBlockHdrGranules );
         void*       new_dst = resolve_unchecked( new_p );
         void*       old_src = resolve_unchecked( p );
         std::size_t copy_sz = ( new_count < old_count ? new_count : old_count ) * sizeof( T );
@@ -691,8 +684,15 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         void* raw = allocate( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
-        ::new ( raw ) T( static_cast<Args&&>( args )... );
-        return make_pptr_from_raw<T>( raw );
+        pptr<T> p   = make_pptr_from_raw<T>( raw );
+        T*      obj = resolve_unchecked( p );
+        if ( obj == nullptr )
+        {
+            deallocate( raw );
+            return pptr<T>();
+        }
+        ::new ( obj ) T( static_cast<Args&&>( args )... );
+        return p;
     }
 
     /**
@@ -714,8 +714,11 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
         if ( p.is_null() || !_initialized )
             return;
+        T*    obj = resolve_unchecked( p );
         void* raw = raw_block_user_ptr_from_pptr( p );
-        reinterpret_cast<T*>( raw )->~T();
+        if ( obj == nullptr || raw == nullptr )
+            return;
+        obj->~T();
         deallocate( raw );
     }
 
@@ -1400,8 +1403,15 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         void* raw = allocate_unlocked( sizeof( T ) );
         if ( raw == nullptr )
             return pptr<T>();
-        ::new ( raw ) T( static_cast<Args&&>( args )... );
-        return make_pptr_from_raw<T>( raw );
+        pptr<T> p   = make_pptr_from_raw<T>( raw );
+        T*      obj = resolve_unchecked( p );
+        if ( obj == nullptr )
+        {
+            deallocate_unlocked( raw );
+            return pptr<T>();
+        }
+        ::new ( obj ) T( static_cast<Args&&>( args )... );
+        return p;
     }
 
     // Forest/domain registry private methods — extracted to forest_domain_mixin.inc

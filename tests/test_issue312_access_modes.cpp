@@ -9,6 +9,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <cstddef>
+#include <string>
 
 namespace
 {
@@ -60,6 +61,48 @@ TEST_CASE( "I312: SmallAddressTraits resolves to canonical non-aligned user poin
     REQUIRE( *unchecked == 0x51312u );
 
     SmallMgr::deallocate_typed( p );
+    SmallMgr::destroy();
+}
+
+TEST_CASE( "I312: SmallAddressTraits create_typed returns canonical public pptr", "[test_issue312]" )
+{
+    static_assert( sizeof( pmm::Block<pmm::SmallAddressTraits> ) % pmm::SmallAddressTraits::granule_size != 0,
+                   "SmallAddressTraits must exercise the non-aligned block-header path" );
+
+    REQUIRE( SmallMgr::create() );
+
+    SmallMgr::pptr<std::uint32_t> p = SmallMgr::create_typed<std::uint32_t>( 0xC312u );
+    REQUIRE( !p.is_null() );
+
+    auto* checked   = SmallMgr::resolve_checked( p );
+    auto* unchecked = SmallMgr::resolve_unchecked( p );
+    REQUIRE( checked != nullptr );
+    REQUIRE( unchecked != nullptr );
+    REQUIRE( checked == unchecked );
+    REQUIRE( reinterpret_cast<std::uintptr_t>( checked ) % pmm::SmallAddressTraits::granule_size == 0 );
+    REQUIRE( *checked == 0xC312u );
+
+    SmallMgr::destroy_typed( p );
+    SmallMgr::destroy();
+}
+
+TEST_CASE( "I312: SmallAddressTraits interned symbols use canonical public pptrs", "[test_issue312]" )
+{
+    static_assert( sizeof( pmm::Block<pmm::SmallAddressTraits> ) % pmm::SmallAddressTraits::granule_size != 0,
+                   "SmallAddressTraits must exercise the non-aligned block-header path" );
+
+    REQUIRE( SmallMgr::create() );
+    REQUIRE( SmallMgr::register_domain( "app/issue312" ) );
+
+    auto domain_id = SmallMgr::find_domain_by_name( "app/issue312" );
+    REQUIRE( domain_id != 0 );
+
+    SmallMgr::pptr<SmallMgr::pstringview> symbol = SmallMgr::pstringview( "app/issue312" );
+    REQUIRE( !symbol.is_null() );
+    REQUIRE( SmallMgr::resolve_checked( symbol ) != nullptr );
+    REQUIRE( symbol->c_str() == std::string( "app/issue312" ) );
+    REQUIRE( SmallMgr::find_domain_by_symbol( symbol ) == domain_id );
+
     SmallMgr::destroy();
 }
 
