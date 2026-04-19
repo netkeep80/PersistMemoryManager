@@ -34,8 +34,10 @@ FetchContent_MakeAvailable(Catch2)
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 
 # ─── Тесты ────────────────────────────────────────────────────────────────────
-enable_testing()
-add_subdirectory(tests)
+include(CTest)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
 # ─── Примеры ──────────────────────────────────────────────────────────────────
 add_subdirectory(examples)
