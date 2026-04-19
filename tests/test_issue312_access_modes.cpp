@@ -11,8 +11,9 @@
 
 namespace
 {
-using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 312>;
-}
+using Mgr      = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 312>;
+using SmallMgr = pmm::PersistMemoryManager<pmm::SmallEmbeddedStaticConfig<4096>, 312>;
+} // namespace
 
 TEST_CASE( "I312: valid pptr resolves through checked and unchecked paths", "[test_issue312]" )
 {
@@ -32,6 +33,31 @@ TEST_CASE( "I312: valid pptr resolves through checked and unchecked paths", "[te
 
     Mgr::deallocate_typed( p );
     Mgr::destroy();
+}
+
+TEST_CASE( "I312: SmallAddressTraits resolves to canonical non-aligned user pointer", "[test_issue312]" )
+{
+    static_assert( sizeof( pmm::Block<pmm::SmallAddressTraits> ) % pmm::SmallAddressTraits::granule_size != 0,
+                   "SmallAddressTraits must exercise the non-aligned block-header path" );
+
+    REQUIRE( SmallMgr::create() );
+
+    SmallMgr::pptr<std::uint32_t> p = SmallMgr::allocate_typed<std::uint32_t>();
+    REQUIRE( !p.is_null() );
+
+    auto* checked   = SmallMgr::resolve_checked( p );
+    auto* unchecked = SmallMgr::resolve_unchecked( p );
+    REQUIRE( checked != nullptr );
+    REQUIRE( unchecked != nullptr );
+    REQUIRE( checked == unchecked );
+    REQUIRE( p.resolve() == checked );
+    REQUIRE( p.resolve_unchecked() == unchecked );
+
+    *checked = 0x51312u;
+    REQUIRE( *unchecked == 0x51312u );
+
+    SmallMgr::deallocate_typed( p );
+    SmallMgr::destroy();
 }
 
 TEST_CASE( "I312: invalid out-of-range pptr is rejected by both access modes", "[test_issue312]" )

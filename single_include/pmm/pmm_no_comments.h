@@ -4547,25 +4547,23 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return nullptr;
-        std::uint8_t* base     = _backend.base_ptr();
-        std::size_t   byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
-        
-        if ( byte_off + sizeof( T ) > _backend.total_size() )
+        void* raw = raw_user_ptr_from_pptr( p );
+        if ( raw == nullptr )
         {
             _last_error = PmmError::InvalidPointer;
             return nullptr;
         }
-        return reinterpret_cast<T*>( base + byte_off );
+        _last_error = PmmError::Ok;
+        return reinterpret_cast<T*>( raw );
     }
 
     template <typename T> static T* resolve_checked( pptr<T> p ) noexcept
     {
-        T* raw = resolve_unchecked( p );
-        if ( raw == nullptr )
+        T*          raw      = resolve_unchecked( p );
+        const void* user_raw = raw;
+        if ( user_raw == nullptr )
             return nullptr;
-
-        const void* user_raw = raw_user_ptr_from_pptr( p );
-        const void* blk_raw  = find_block_from_user_ptr( user_raw );
+        const void* blk_raw = find_block_from_user_ptr( user_raw );
         if ( blk_raw == nullptr )
         {
             _last_error = PmmError::InvalidPointer;
