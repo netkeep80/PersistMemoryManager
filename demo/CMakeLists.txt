@@ -89,6 +89,8 @@ endif()
 
 # ─── Phase 8: Headless demo tests ─────────────────────────────────────────────
 # These tests exercise demo logic without opening a window.
+option(PMM_BUILD_DEMO_TESTS "Build headless demo tests when PMM_BUILD_DEMO is enabled" ${BUILD_TESTING})
+if(PMM_BUILD_DEMO_TESTS)
 
 function(pmm_demo_test name source)
     add_executable(${name} ${source})
@@ -109,3 +111,5 @@ pmm_demo_test(test_scenario_coordinator  ${CMAKE_CURRENT_SOURCE_DIR}/../tests/te
 pmm_demo_test(test_background_validator  ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_background_validator.cpp)
 pmm_demo_test(test_avl_tree_view         ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_avl_tree_view.cpp)
 pmm_demo_test(test_manual_alloc_view     ${CMAKE_CURRENT_SOURCE_DIR}/../tests/test_manual_alloc_view.cpp)
+
+endif()
