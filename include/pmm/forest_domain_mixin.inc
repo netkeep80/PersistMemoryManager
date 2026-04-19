@@ -402,7 +402,6 @@ static bool validate_bootstrap_invariants_unlocked() noexcept
     const forest_domain* reg_rec = find_domain_by_name_unlocked( detail::kSystemDomainRegistry );
     if ( reg_rec->root_offset != hdr->root_offset )
         return false;
-    // 7. Legacy root compatibility is represented as a direct-root domain.
     const forest_domain* legacy_rec = find_domain_by_name_unlocked( detail::kServiceNameLegacyRoot );
     if ( legacy_rec->binding_kind != detail::kForestBindingDirectRoot )
         return false;

@@ -154,11 +154,10 @@ TEST_CASE( "legacy root API is a compatibility shim over the domain registry", "
     REQUIRE( CanonicalRootMgr::get_domain_root<int>( pmm::detail::kServiceNameLegacyRoot ).is_null() );
     REQUIRE( CanonicalRootMgr::get_domain_root_offset( legacy_domain_id ) == 0 );
 
-    using AT = CanonicalRootMgr::address_traits;
+    using AT           = CanonicalRootMgr::address_traits;
     std::uint8_t* base = CanonicalRootMgr::backend().base_ptr();
-    auto*         hdr =
-        reinterpret_cast<pmm::detail::ManagerHeader<AT>*>( base + sizeof( pmm::Block<AT> ) );
-    auto* reg = reinterpret_cast<pmm::detail::ForestDomainRegistry<AT>*>(
+    auto*         hdr  = reinterpret_cast<pmm::detail::ManagerHeader<AT>*>( base + sizeof( pmm::Block<AT> ) );
+    auto*         reg  = reinterpret_cast<pmm::detail::ForestDomainRegistry<AT>*>(
         base + static_cast<std::size_t>( hdr->root_offset ) * AT::granule_size );
     REQUIRE( reg->reserved_root_offset == 0 );
 
@@ -168,8 +167,7 @@ TEST_CASE( "legacy root API is a compatibility shim over the domain registry", "
     REQUIRE( !domain_value.is_null() );
 
     CanonicalRootMgr::set_root( legacy_value );
-    REQUIRE( CanonicalRootMgr::get_domain_root_offset( pmm::detail::kServiceNameLegacyRoot ) ==
-             legacy_value.offset() );
+    REQUIRE( CanonicalRootMgr::get_domain_root_offset( pmm::detail::kServiceNameLegacyRoot ) == legacy_value.offset() );
     REQUIRE( CanonicalRootMgr::get_domain_root<int>( legacy_domain_id ).offset() == legacy_value.offset() );
 
     REQUIRE( CanonicalRootMgr::set_domain_root( pmm::detail::kServiceNameLegacyRoot, domain_value ) );

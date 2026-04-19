@@ -59,8 +59,8 @@ template <typename AddressTraitsT> struct ForestDomainRegistry
     ForestDomainRecord<AddressTraitsT> domains[kMaxForestDomains];
 
     constexpr ForestDomainRegistry() noexcept
-        : magic( kForestRegistryMagic ), version( kForestRegistryVersion ), domain_count( 0 ), reserved_root_offset( 0 ),
-          next_binding_id( 1 ), domains{}
+        : magic( kForestRegistryMagic ), version( kForestRegistryVersion ), domain_count( 0 ),
+          reserved_root_offset( 0 ), next_binding_id( 1 ), domains{}
     {
     }
 };

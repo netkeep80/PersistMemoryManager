@@ -2813,13 +2813,13 @@ template <typename AddressTraitsT> struct ForestDomainRegistry
     std::uint32_t                      magic;
     std::uint16_t                      version;
     std::uint16_t                      domain_count;
-    index_type                         legacy_root_offset;
+    index_type                         reserved_root_offset;
     index_type                         next_binding_id;
     ForestDomainRecord<AddressTraitsT> domains[kMaxForestDomains];
 
     constexpr ForestDomainRegistry() noexcept
-        : magic( kForestRegistryMagic ), version( kForestRegistryVersion ), domain_count( 0 ), legacy_root_offset( 0 ),
-          next_binding_id( 1 ), domains{}
+        : magic( kForestRegistryMagic ), version( kForestRegistryVersion ), domain_count( 0 ),
+          reserved_root_offset( 0 ), next_binding_id( 1 ), domains{}
     {
     }
 };
@@ -5213,15 +5213,15 @@ static index_type domain_root_offset_unlocked( const forest_domain*             
 
 static index_type get_legacy_root_offset_unlocked() noexcept
 {
-    forest_registry* reg = forest_registry_root_unlocked();
-    return ( reg != nullptr ) ? reg->legacy_root_offset : static_cast<index_type>( 0 );
+    const forest_domain* rec = find_domain_by_name_unlocked( detail::kServiceNameLegacyRoot );
+    return domain_root_offset_unlocked( rec, get_header_c( _backend.base_ptr() ) );
 }
 
 static void set_legacy_root_offset_unlocked( index_type off ) noexcept
 {
-    forest_registry* reg = forest_registry_root_unlocked();
-    if ( reg != nullptr )
-        reg->legacy_root_offset = off;
+    forest_domain* rec = find_domain_by_name_unlocked( detail::kServiceNameLegacyRoot );
+    if ( rec != nullptr && rec->binding_kind == detail::kForestBindingDirectRoot )
+        rec->root_offset = off;
 }
 
 static forest_domain* symbol_domain_record_unlocked() noexcept
@@ -5399,11 +5399,11 @@ static bool create_forest_registry_root_unlocked( index_type legacy_root_offset 
     }
 
     std::memset( reg, 0, sizeof( forest_registry ) );
-    reg->magic              = detail::kForestRegistryMagic;
-    reg->version            = detail::kForestRegistryVersion;
-    reg->domain_count       = 0;
-    reg->legacy_root_offset = legacy_root_offset;
-    reg->next_binding_id    = 1;
+    reg->magic                = detail::kForestRegistryMagic;
+    reg->version              = detail::kForestRegistryVersion;
+    reg->domain_count         = 0;
+    reg->reserved_root_offset = 0;
+    reg->next_binding_id      = 1;
 
     if ( !lock_block_permanent_unlocked( raw ) )
     {
@@ -5428,6 +5428,12 @@ static bool create_forest_registry_root_unlocked( index_type legacy_root_offset 
     }
     if ( !register_domain_unlocked( detail::kSystemDomainRegistry, detail::kForestDomainFlagSystem,
                                     detail::kForestBindingDirectRoot, get_header( _backend.base_ptr() )->root_offset ) )
+    {
+        _last_error = PmmError::BackendError;
+        return false;
+    }
+    if ( !register_domain_unlocked( detail::kServiceNameLegacyRoot, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, legacy_root_offset ) )
     {
         _last_error = PmmError::BackendError;
         return false;
@@ -5468,11 +5474,13 @@ static bool validate_bootstrap_invariants_unlocked() noexcept
         return false;
     if ( reg->version != detail::kForestRegistryVersion )
         return false;
-    if ( reg->domain_count < 3 )
+    if ( reg->domain_count < 4 )
         return false; 
+    if ( reg->reserved_root_offset != 0 )
+        return false;
     
     static constexpr const char* kRequired[] = { detail::kSystemDomainFreeTree, detail::kSystemDomainSymbols,
-                                                 detail::kSystemDomainRegistry };
+                                                 detail::kSystemDomainRegistry, detail::kServiceNameLegacyRoot };
     for ( const char* name : kRequired )
     {
         const forest_domain* rec = find_domain_by_name_unlocked( name );
@@ -5494,6 +5502,9 @@ static bool validate_bootstrap_invariants_unlocked() noexcept
     const forest_domain* reg_rec = find_domain_by_name_unlocked( detail::kSystemDomainRegistry );
     if ( reg_rec->root_offset != hdr->root_offset )
         return false;
+    const forest_domain* legacy_rec = find_domain_by_name_unlocked( detail::kServiceNameLegacyRoot );
+    if ( legacy_rec->binding_kind != detail::kForestBindingDirectRoot )
+        return false;
     return true;
 }
 
@@ -5502,6 +5513,12 @@ static bool validate_or_bootstrap_forest_registry_unlocked() noexcept
     detail::ManagerHeader<address_traits>* hdr = get_header( _backend.base_ptr() );
     if ( forest_registry_root_unlocked() != nullptr )
     {
+        forest_registry* reg = forest_registry_root_unlocked();
+        index_type       migrated_legacy_root =
+            ( find_domain_by_name_unlocked( detail::kServiceNameLegacyRoot ) == nullptr && reg != nullptr )
+                ? reg->reserved_root_offset
+                : static_cast<index_type>( 0 );
+
         if ( !register_domain_unlocked( detail::kSystemDomainFreeTree, detail::kForestDomainFlagSystem,
                                         detail::kForestBindingFreeTree, 0 ) )
             return false;
@@ -5510,6 +5527,9 @@ static bool validate_or_bootstrap_forest_registry_unlocked() noexcept
             return false;
         if ( !register_domain_unlocked( detail::kSystemDomainRegistry, detail::kForestDomainFlagSystem,
                                         detail::kForestBindingDirectRoot, hdr->root_offset ) )
+            return false;
+        if ( !register_domain_unlocked( detail::kServiceNameLegacyRoot, detail::kForestDomainFlagSystem,
+                                        detail::kForestBindingDirectRoot, migrated_legacy_root ) )
             return false;
 
         if ( forest_domain* free_rec = find_domain_by_name_unlocked( detail::kSystemDomainFreeTree ) )
@@ -5529,6 +5549,13 @@ static bool validate_or_bootstrap_forest_registry_unlocked() noexcept
             registry_rec->binding_kind = detail::kForestBindingDirectRoot;
             registry_rec->root_offset  = hdr->root_offset;
         }
+        if ( forest_domain* legacy_rec = find_domain_by_name_unlocked( detail::kServiceNameLegacyRoot ) )
+        {
+            legacy_rec->flags |= detail::kForestDomainFlagSystem;
+            legacy_rec->binding_kind = detail::kForestBindingDirectRoot;
+        }
+        if ( reg != nullptr )
+            reg->reserved_root_offset = 0;
         return bootstrap_system_symbols_unlocked();
     }
 
@@ -5800,7 +5827,7 @@ static void verify_forest_registry_unlocked( VerifyResult& result ) noexcept
     }
 
     static constexpr const char* kRequired[] = { detail::kSystemDomainFreeTree, detail::kSystemDomainSymbols,
-                                                 detail::kSystemDomainRegistry };
+                                                 detail::kSystemDomainRegistry, detail::kServiceNameLegacyRoot };
     for ( const char* name : kRequired )
     {
         const forest_domain* rec = find_domain_by_name_unlocked( name );
