@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.10] - 2026-04-19
+
+### Changed
+- Route user-pointer-to-block validation through the canonical validation helper and cover invalid pointer/index rejection cases.
+
+
 ## [0.55.9] - 2026-04-19
 
 ### Changed
