@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 
+add_test(
+    NAME test_build_testing_off_excludes_tests
+    COMMAND ${CMAKE_COMMAND}
+            -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+            -DBINARY_DIR=${CMAKE_BINARY_DIR}/build-testing-off-check
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_testing_off_excludes_tests.cmake
+)
+
 # ─── Вспомогательная функция для добавления теста (Catch2) ─────────
 function(pmm_add_test name source)
     add_executable(${name} ${source})

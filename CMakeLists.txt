@@ -20,22 +20,25 @@ else()
     target_compile_options(pmm INTERFACE -Wall -Wextra -Wpedantic)
 endif()
 
-# ─── Потоки (для тестов потокобезопасности) ───────────────────────────────────
+# ─── Потоки ───────────────────────────────────────────────────────────────────
 find_package(Threads REQUIRED)
 
-# ─── Catch2 (фреймворк тестирования, Phase 5.1) ─────────────────────────────
-include(FetchContent)
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v3.7.1
-)
-FetchContent_MakeAvailable(Catch2)
-list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+include(CTest)
 
 # ─── Тесты ────────────────────────────────────────────────────────────────────
-enable_testing()
-add_subdirectory(tests)
+if(BUILD_TESTING)
+    # ─── Catch2 (фреймворк тестирования, Phase 5.1) ───────────────────────────
+    include(FetchContent)
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v3.7.1
+    )
+    FetchContent_MakeAvailable(Catch2)
+    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+
+    add_subdirectory(tests)
+endif()
 
 # ─── Примеры ──────────────────────────────────────────────────────────────────
 add_subdirectory(examples)
