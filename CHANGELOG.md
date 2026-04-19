@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.55.14] - 2026-04-19
+
+### Fixed
+- Hardened free-tree verification to detect structural AVL corruption before load rebuilds the tree.
+
+
 ## [0.55.13] - 2026-04-19
 
 ### Changed
