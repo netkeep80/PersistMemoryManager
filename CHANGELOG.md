@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.56.1] - 2026-04-19
+
+### Fixed
+- Made the legacy root API use the canonical domain registry root record.
+
+
 ## [0.56.0] - 2026-04-19
 
 ### Added
