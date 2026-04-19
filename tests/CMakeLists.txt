@@ -296,6 +296,9 @@ target_compile_definitions(test_issue295_layout_compaction PRIVATE PMM_SOURCE_DI
 pmm_add_test(test_issue306_repo_guard_gitkeep test_issue306_repo_guard_gitkeep.cpp)
 target_compile_definitions(test_issue306_repo_guard_gitkeep PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
+# ─── Issue 312: explicit pptr checked/unchecked access modes ────
+pmm_add_test(test_issue312_access_modes test_issue312_access_modes.cpp)
+
 # ─── Issue 314: build graph compaction contract ─────────────────
 add_test(
     NAME test_issue314_build_graph_contract

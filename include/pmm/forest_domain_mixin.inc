@@ -67,7 +67,7 @@ static forest_domain* find_domain_by_symbol_unlocked( pptr<pstringview> symbol )
 {
     if ( symbol.is_null() )
         return nullptr;
-    pstringview* sym = resolve( symbol );
+    pstringview* sym = resolve_unchecked( symbol );
     if ( sym == nullptr )
         return nullptr;
     forest_registry* reg = forest_registry_root_unlocked();
@@ -194,10 +194,10 @@ static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
         symbol_domain->root_offset,
         [&]( pptr<pstringview> cur ) -> int
         {
-            pstringview* obj = resolve( cur );
+            pstringview* obj = resolve_unchecked( cur );
             return ( obj != nullptr ) ? std::strcmp( s, obj->c_str() ) : 0;
         },
-        []( pptr<pstringview> p ) -> pstringview* { return resolve( p ); } );
+        []( pptr<pstringview> p ) -> pstringview* { return resolve_unchecked( p ); } );
     if ( !found.is_null() )
         return found;
 
@@ -207,8 +207,7 @@ static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
     if ( raw == nullptr )
         return pptr<pstringview>();
 
-    std::uint8_t*     base = _backend.base_ptr();
-    pptr<pstringview> new_node( detail::ptr_to_granule_idx<address_traits>( base, raw ) );
+    pptr<pstringview> new_node = make_pptr_from_raw<pstringview>( raw );
     // Use memcpy to avoid UB on potentially misaligned raw pointer (ASan/UBSan fix).
     std::memcpy( raw, &len, sizeof( len ) );
     char* str_dst = static_cast<char*>( raw ) + offsetof( pstringview, str );
@@ -224,10 +223,10 @@ static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
         new_node, symbol_domain->root_offset,
         [&]( pptr<pstringview> cur ) -> bool
         {
-            pstringview* cur_obj = resolve( cur );
+            pstringview* cur_obj = resolve_unchecked( cur );
             return ( cur_obj != nullptr ) && ( std::strcmp( new_str, cur_obj->c_str() ) < 0 );
         },
-        []( pptr<pstringview> p ) -> pstringview* { return resolve( p ); } );
+        []( pptr<pstringview> p ) -> pstringview* { return resolve_unchecked( p ); } );
 
     return new_node;
 }

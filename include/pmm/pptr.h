@@ -169,27 +169,27 @@ class pptr
     /**
      * @brief Разыменование указателя (статическая модель).
      *
-     * Вызывает `ManagerT::resolve<T>(*this)` без аргументов.
+     * Вызывает `ManagerT::resolve_checked<T>(*this)` без аргументов.
      * Доступно только для менеджеров со статическим API (например, PersistMemoryManager).
      *
      * @return T& — ссылка на данные.
      */
-    T& operator*() const noexcept { return *ManagerT::template resolve<T>( *this ); }
+    T& operator*() const noexcept { return *ManagerT::template resolve_checked<T>( *this ); }
 
     /**
      * @brief Доступ к членам через персистентный указатель (статическая модель).
      *
-     * Вызывает `ManagerT::resolve<T>(*this)` без аргументов.
+     * Вызывает `ManagerT::resolve_checked<T>(*this)` без аргументов.
      * Доступно только для менеджеров со статическим API.
      *
      * @return T* — указатель на данные.
      */
-    T* operator->() const noexcept { return ManagerT::template resolve<T>( *this ); }
+    T* operator->() const noexcept { return ManagerT::template resolve_checked<T>( *this ); }
 
     /**
      * @brief Получить сырой указатель (низкоуровневый доступ).
      *
-     * Вызывает `ManagerT::resolve<T>(*this)`.
+     * Вызывает `ManagerT::resolve_checked<T>(*this)`.
      * Используйте `*p` или `p->field` вместо этого метода для обычных операций.
      * Для доступа к элементам массива используйте `ManagerT::resolve_at(p, i)`.
      *
@@ -198,7 +198,16 @@ class pptr
      *
      * @return T* — указатель на данные или nullptr если is_null().
      */
-    T* resolve() const noexcept { return ManagerT::template resolve<T>( *this ); }
+    T* resolve() const noexcept { return ManagerT::template resolve_checked<T>( *this ); }
+
+    /**
+     * @brief Получить сырой указатель через unchecked manager path.
+     *
+     * Проверяет только грубую адресуемость pptr. Не проверяет, что блок сейчас
+     * выделен. Предназначено для внутреннего кода менеджера и низкоуровневой
+     * диагностики, где stale/free-block access выбран явно.
+     */
+    T* resolve_unchecked() const noexcept { return ManagerT::template resolve_unchecked<T>( *this ); }
 
     // ─── Доступ к узлу AVL-дерева ────────────────────────────────
 

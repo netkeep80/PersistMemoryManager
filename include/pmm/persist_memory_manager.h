@@ -522,8 +522,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     {
         if ( p.is_null() || !_initialized )
             return;
-        std::uint8_t* base = _backend.base_ptr();
-        void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        void* raw = resolve_unchecked( p );
         deallocate( raw );
     }
 
@@ -558,10 +557,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         }
         std::uint8_t*                          base = _backend.base_ptr();
         detail::ManagerHeader<address_traits>* hdr  = get_header( base );
-        // blk_idx = pptr.offset - floor(sizeof(Block) / granule)
-        static constexpr index_type kBlkHdrFloorGran =
-            static_cast<index_type>( sizeof( Block<address_traits> ) / address_traits::granule_size );
-        index_type blk_idx       = static_cast<index_type>( p.offset() - kBlkHdrFloorGran );
+        index_type blk_idx       = block_idx_from_pptr( p );
         void*      blk_raw       = detail::block_at<address_traits>( base, blk_idx );
         index_type old_data_gran = BlockStateBase<address_traits>::get_weight( blk_raw );
         index_type new_data_gran = detail::bytes_to_granules_t<address_traits>( new_user_size );
@@ -593,8 +589,6 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             }
         }
         // Fallback: allocate new + memmove + free old (under same lock).
-        static constexpr index_type kBlkHdrFloorGranFb =
-            static_cast<index_type>( sizeof( Block<address_traits> ) / address_traits::granule_size );
         index_type new_data_gran_alloc = detail::bytes_to_granules_t<address_traits>( new_user_size );
         if ( new_data_gran_alloc == 0 )
             new_data_gran_alloc = 1;
@@ -630,12 +624,12 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             return pptr<T>();
         }
         pptr<T>     new_p   = make_pptr_from_raw<T>( new_raw );
-        void*       new_dst = base + static_cast<std::size_t>( new_p.offset() ) * address_traits::granule_size;
-        void*       old_src = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        void*       new_dst = resolve_unchecked( new_p );
+        void*       old_src = resolve_unchecked( p );
         std::size_t copy_sz = ( new_count < old_count ? new_count : old_count ) * sizeof( T );
         std::memmove( new_dst, old_src, copy_sz );
         // Free old block
-        index_type old_blk_idx = static_cast<index_type>( p.offset() - kBlkHdrFloorGranFb );
+        index_type old_blk_idx = block_idx_from_pptr( p );
         void*      old_blk_raw = detail::block_at<address_traits>( base, old_blk_idx );
         index_type freed_w     = BlockStateBase<address_traits>::get_weight( old_blk_raw );
         if ( BlockStateBase<address_traits>::get_node_type( old_blk_raw ) != pmm::kNodeReadOnly )
@@ -708,8 +702,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
 
         if ( p.is_null() || !_initialized )
             return;
-        std::uint8_t* base = _backend.base_ptr();
-        void*         raw  = base + static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
+        void* raw = resolve_unchecked( p );
         reinterpret_cast<T*>( raw )->~T();
         deallocate( raw );
     }
@@ -723,15 +716,16 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
     }
 
     /**
-     * @brief Разыменовать pptr<T> — получить сырой указатель T*.
+     * @brief Быстро разыменовать pptr<T> без проверки состояния блока.
      *
-     * Этот статический метод вызывается из `pptr<T, PersistMemoryManager>::resolve()`.
+     * Проверяет только null, инициализацию менеджера и границы буфера. Не проверяет,
+     * что pptr указывает на текущий выделенный блок.
      *
      * @tparam T Тип данных.
      * @param p Персистентный указатель.
-     * @return T* — указатель на данные или nullptr при ошибке.
+     * @return T* — указатель на данные или nullptr при грубой ошибке адреса.
      */
-    template <typename T> static T* resolve( pptr<T> p ) noexcept
+    template <typename T> static T* resolve_unchecked( pptr<T> p ) noexcept
     {
         if ( p.is_null() || !_initialized )
             return nullptr;
@@ -743,8 +737,70 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
             _last_error = PmmError::InvalidPointer;
             return nullptr;
         }
-        return reinterpret_cast<T*>( base + byte_off );
+        if constexpr ( sizeof( Block<address_traits> ) % address_traits::granule_size == 0 )
+        {
+            return reinterpret_cast<T*>( base + byte_off );
+        }
+        else
+        {
+            constexpr std::size_t hdr_granules =
+                ( sizeof( Block<address_traits> ) + address_traits::granule_size - 1 ) / address_traits::granule_size;
+            if ( p.offset() < hdr_granules )
+            {
+                _last_error = PmmError::InvalidPointer;
+                return nullptr;
+            }
+            std::size_t blk_off = static_cast<std::size_t>( p.offset() - hdr_granules ) * address_traits::granule_size;
+            if ( blk_off + sizeof( Block<address_traits> ) > _backend.total_size() )
+            {
+                _last_error = PmmError::InvalidPointer;
+                return nullptr;
+            }
+            return reinterpret_cast<T*>( base + blk_off + sizeof( Block<address_traits> ) );
+        }
     }
+
+    /**
+     * @brief Разыменовать pptr<T> с публичной проверкой live allocated block.
+     *
+     * Этот путь проверяет не только границы буфера, но и заголовок блока:
+     * pptr должен указывать на текущий занятый блок. Stale pptr после
+     * deallocate_typed() возвращает nullptr.
+     *
+     * @tparam T Тип данных.
+     * @param p Персистентный указатель.
+     * @return T* — указатель на данные или nullptr при ошибке.
+     */
+    template <typename T> static T* resolve_checked( pptr<T> p ) noexcept
+    {
+        T* raw = resolve_unchecked( p );
+        if ( raw == nullptr )
+            return nullptr;
+
+        const void* blk_raw = find_block_from_user_ptr( raw );
+        if ( blk_raw == nullptr )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return nullptr;
+        }
+        if ( BlockStateBase<address_traits>::get_weight( blk_raw ) == 0 ||
+             BlockStateBase<address_traits>::get_root_offset( blk_raw ) == 0 )
+        {
+            _last_error = PmmError::InvalidPointer;
+            return nullptr;
+        }
+        _last_error = PmmError::Ok;
+        return raw;
+    }
+
+    /**
+     * @brief Совместимый публичный checked access.
+     *
+     * Старое имя сохранено как alias, но его семантика теперь совпадает с
+     * resolve_checked(). Внутренний код, которому нужен только offset->address,
+     * должен явно использовать resolve_unchecked().
+     */
+    template <typename T> static T* resolve( pptr<T> p ) noexcept { return resolve_checked( p ); }
 
     /**
      * @brief Разыменовать pptr<T> и получить указатель на i-й элемент массива.
@@ -756,7 +812,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      */
     template <typename T> static T* resolve_at( pptr<T> p, std::size_t i ) noexcept
     {
-        T* base_elem = resolve( p );
+        T* base_elem = resolve_checked( p );
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
     }
 
@@ -792,13 +848,7 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
      * @param p Персистентный указатель.
      * @return true если pptr валиден (в пределах кучи), false если null или вне границ.
      */
-    template <typename T> static bool is_valid_ptr( pptr<T> p ) noexcept
-    {
-        if ( p.is_null() || !_initialized )
-            return false;
-        std::size_t byte_off = static_cast<std::size_t>( p.offset() ) * address_traits::granule_size;
-        return byte_off + sizeof( T ) <= _backend.total_size();
-    }
+    template <typename T> static bool is_valid_ptr( pptr<T> p ) noexcept { return resolve_checked( p ) != nullptr; }
 
     // ─── Root object API ──────────────────────────────
 
@@ -1399,7 +1449,8 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( raw_byte < base || raw_byte >= base + _backend.total_size() )
             return pptr<T>();
         std::size_t byte_off = static_cast<std::size_t>( raw_byte - base );
-        std::size_t idx      = byte_off / address_traits::granule_size;
+        std::size_t idx =
+            ( byte_off + address_traits::granule_size - 1 ) / address_traits::granule_size;
         if ( idx > static_cast<std::size_t>( std::numeric_limits<index_type>::max() ) )
             return pptr<T>();
         return pptr<T>( static_cast<index_type>( idx ) );
@@ -1434,6 +1485,13 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0> cla
         if ( blk_off + sizeof( Block<address_traits> ) > _backend.total_size() )
             return nullptr;
         return base + blk_off;
+    }
+
+    template <typename T> static constexpr index_type block_idx_from_pptr( pptr<T> p ) noexcept
+    {
+        constexpr index_type kHdrGranules = static_cast<index_type>(
+            ( sizeof( Block<address_traits> ) + address_traits::granule_size - 1 ) / address_traits::granule_size );
+        return static_cast<index_type>( p.offset() - kHdrGranules );
     }
 
     // ─── Address-traits-specific layout constants ──────────────────
