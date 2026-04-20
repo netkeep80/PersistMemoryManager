@@ -680,6 +680,20 @@ object. The object stores only the domain identity, so separate map objects and 
 `_K`/`_V` node layouts do not share a root unless they are copied from the same facade or
 constructed with the same named domain key.
 
+The `<type>` segment is a deterministic fingerprint derived from `sizeof`, `alignof`, and
+standard `<type_traits>` categories — **not** from compiler-specific spellings such as
+`__PRETTY_FUNCTION__` or `__FUNCSIG__`. For PODs that would otherwise collide on this
+fingerprint, or any application that wants hard-pinned persistent type identity, specialize
+`pmm::pmap_type_identity<T>::tag` with a fixed ASCII string:
+
+```cpp
+namespace pmm {
+template <> struct pmap_type_identity<MyPayload> {
+    static constexpr const char* tag = "myapp/MyPayload/v1";
+};
+}
+```
+
 **Accessed via manager nested alias:**
 ```cpp
 using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;

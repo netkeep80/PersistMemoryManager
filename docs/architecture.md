@@ -303,6 +303,13 @@ allocated block in PAP containing `pmap_node<_K, _V>`. The built-in `TreeNode` f
 serve as AVL tree links. Nodes are **not** permanently locked (unlike `pstringview`), so
 they can be freed.
 
+The `<type>` segment of the domain name is a stable fingerprint derived from `sizeof`,
+`alignof`, and a small fixed set of standard `<type_traits>` categories — not from
+compiler-specific spellings such as `__PRETTY_FUNCTION__` or `__FUNCSIG__`. Applications
+that need absolute control over persistent type identity (for example to keep two
+structurally identical PODs in distinct bindings) specialize `pmm::pmap_type_identity<T>`
+with a fixed ASCII tag.
+
 ```
 forest domain: container/pmap/<type>/<binding> (persistent root in registry)
 │

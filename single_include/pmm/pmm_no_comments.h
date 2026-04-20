@@ -3292,23 +3292,71 @@ constexpr std::uint32_t pmap_fnv1a_32_append( std::uint32_t hash, std::string_vi
     return hash;
 }
 
-template <typename T> constexpr std::string_view pmap_type_signature() noexcept
+constexpr std::uint32_t pmap_fnv1a_32_append_u64( std::uint32_t hash, std::uint64_t value ) noexcept
 {
-#if defined( __clang__ ) || defined( __GNUC__ )
-    return __PRETTY_FUNCTION__;
-#elif defined( _MSC_VER )
-    return __FUNCSIG__;
-#else
-    return "pmm::detail::pmap_type_signature";
-#endif
+    for ( unsigned i = 0; i < 8; ++i )
+    {
+        hash ^= static_cast<std::uint8_t>( value & 0xffull );
+        hash *= 16777619u;
+        value >>= 8;
+    }
+    return hash;
+}
+
+}
+
+namespace pmm
+{
+
+template <typename T> struct pmap_type_identity
+{
+
+    static constexpr const char* tag = "";
+};
+
+}
+
+namespace pmm::detail
+{
+
+template <typename T> constexpr std::uint64_t pmap_type_trait_bits() noexcept
+{
+    std::uint64_t bits = 0;
+    bits |= ( std::is_integral_v<T> ? 1ull : 0ull ) << 0;
+    bits |= ( std::is_floating_point_v<T> ? 1ull : 0ull ) << 1;
+    bits |= ( std::is_signed_v<T> ? 1ull : 0ull ) << 2;
+    bits |= ( std::is_unsigned_v<T> ? 1ull : 0ull ) << 3;
+    bits |= ( std::is_pointer_v<T> ? 1ull : 0ull ) << 4;
+    bits |= ( std::is_class_v<T> ? 1ull : 0ull ) << 5;
+    bits |= ( std::is_union_v<T> ? 1ull : 0ull ) << 6;
+    bits |= ( std::is_enum_v<T> ? 1ull : 0ull ) << 7;
+    bits |= ( std::is_array_v<T> ? 1ull : 0ull ) << 8;
+    bits |= ( std::is_reference_v<T> ? 1ull : 0ull ) << 9;
+    bits |= ( std::is_const_v<T> ? 1ull : 0ull ) << 10;
+    bits |= ( std::is_volatile_v<T> ? 1ull : 0ull ) << 11;
+    bits |= ( std::is_trivially_copyable_v<T> ? 1ull : 0ull ) << 12;
+    bits |= ( std::is_standard_layout_v<T> ? 1ull : 0ull ) << 13;
+    return bits;
+}
+
+template <typename T> constexpr std::uint32_t pmap_type_fingerprint() noexcept
+{
+    std::uint32_t hash        = 2166136261u;
+    hash                      = pmap_fnv1a_32_append_u64( hash, static_cast<std::uint64_t>( sizeof( T ) ) );
+    hash                      = pmap_fnv1a_32_append_u64( hash, static_cast<std::uint64_t>( alignof( T ) ) );
+    hash                      = pmap_fnv1a_32_append_u64( hash, pmap_type_trait_bits<T>() );
+    constexpr const char* tag = pmm::pmap_type_identity<T>::tag;
+    if ( tag != nullptr && tag[0] != '\0' )
+        hash = pmap_fnv1a_32_append( hash, std::string_view( tag ) );
+    return hash;
 }
 
 template <typename _K, typename _V> constexpr std::uint32_t pmap_domain_type_hash() noexcept
 {
     std::uint32_t hash = 2166136261u;
-    hash               = pmap_fnv1a_32_append( hash, pmap_type_signature<_K>() );
+    hash               = pmap_fnv1a_32_append_u64( hash, pmap_type_fingerprint<_K>() );
     hash               = pmap_fnv1a_32_append( hash, "|" );
-    hash               = pmap_fnv1a_32_append( hash, pmap_type_signature<_V>() );
+    hash               = pmap_fnv1a_32_append_u64( hash, pmap_type_fingerprint<_V>() );
     return hash;
 }
 

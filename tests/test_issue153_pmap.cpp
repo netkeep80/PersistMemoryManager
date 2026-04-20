@@ -44,6 +44,7 @@
 #include <cstring>
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 // ─── Test macros ──────────────────────────────────────────────────────────────
@@ -203,6 +204,88 @@ TEST_CASE( "    pmap domain binding separates independent maps and node layouts"
 
     TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> named_symbols( "issue336/shared" );
     REQUIRE( std::strcmp( named_first.domain_name(), named_symbols.domain_name() ) != 0 );
+
+    TestMgr::destroy();
+}
+
+// ─── Stable type identity for persistent domain bindings ─────────────────────
+//
+// User-defined PODs with identical size / alignment / trait category can
+// collide on the default trait-derived fingerprint. The `pmap_type_identity`
+// trait lets applications pin a stable ASCII tag that survives toolchain
+// changes, refactors, and compiler upgrades.
+
+namespace
+{
+
+struct Issue336StableTagA
+{
+    std::int64_t payload;
+};
+
+struct Issue336StableTagB
+{
+    std::int64_t payload;
+};
+
+} // namespace
+
+namespace pmm
+{
+
+template <> struct pmap_type_identity<Issue336StableTagA>
+{
+    static constexpr const char* tag = "issue336/StableTagA/v1";
+};
+
+template <> struct pmap_type_identity<Issue336StableTagB>
+{
+    static constexpr const char* tag = "issue336/StableTagB/v1";
+};
+
+} // namespace pmm
+
+/// @brief pmap_type_identity override keeps persistent domain identity stable and distinct
+/// across structurally identical types, without relying on compiler-specific __PRETTY_FUNCTION__/__FUNCSIG__.
+TEST_CASE( "    pmap domain identity uses stable type tag, not compiler signature", "[test_issue153_pmap][issue336]" )
+{
+    TestMgr::destroy();
+    REQUIRE( TestMgr::create( 64 * 1024 ) );
+
+    TestMgr::pmap<int, Issue336StableTagA> map_a( "issue336/stable" );
+    TestMgr::pmap<int, Issue336StableTagB> map_b( "issue336/stable" );
+
+    // Structurally identical value types must still resolve to distinct persistent
+    // bindings when the application pins different identity tags.
+    REQUIRE( std::strcmp( map_a.domain_name(), map_b.domain_name() ) != 0 );
+
+    // Two facades that pin the same stable tag and same domain key must share one binding.
+    TestMgr::pmap<int, Issue336StableTagA> map_a_again( "issue336/stable" );
+    REQUIRE( std::strcmp( map_a.domain_name(), map_a_again.domain_name() ) == 0 );
+
+    // And the identity hash portion of the name must be stable across independent
+    // instantiations of the same template arguments within one build: the type hash
+    // segment lives between "container/pmap/" and the next '/'.
+    auto type_segment = []( const char* name )
+    {
+        std::string_view           view( name );
+        constexpr std::string_view prefix( "container/pmap/" );
+        REQUIRE( view.substr( 0, prefix.size() ) == prefix );
+        view.remove_prefix( prefix.size() );
+        const auto slash = view.find( '/' );
+        REQUIRE( slash != std::string_view::npos );
+        return std::string( view.substr( 0, slash ) );
+    };
+
+    REQUIRE( type_segment( map_a.domain_name() ) == type_segment( map_a_again.domain_name() ) );
+    REQUIRE( type_segment( map_a.domain_name() ) != type_segment( map_b.domain_name() ) );
+
+    // The default-fingerprint path (no user tag) must also be deterministic and
+    // independent of compiler-specific signatures. Two default `pmap<int,int>`
+    // facades sharing the same domain key must share a binding.
+    TestMgr::pmap<int, int> default_identity_first( "issue336/default" );
+    TestMgr::pmap<int, int> default_identity_second( "issue336/default" );
+    REQUIRE( std::strcmp( default_identity_first.domain_name(), default_identity_second.domain_name() ) == 0 );
 
     TestMgr::destroy();
 }
