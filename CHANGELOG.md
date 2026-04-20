@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.57.8] - 2026-04-20
+
+### Changed
+- Made `ForestDomainViewOps`/`ForestDomainOps` the canonical read-only/mutable protocol surfaces for
+  AVL-backed forest domains and moved `pmap` onto them.
+- Routed symbol and legacy root access through the canonical forest-domain root-index helpers.
+
+
 ## [0.57.7] - 2026-04-20
 
 ### Fixed
