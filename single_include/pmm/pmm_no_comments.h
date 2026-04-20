@@ -1483,41 +1483,12 @@ inline bool is_canonical_allocated_block_header( const std::uint8_t* base, std::
     if ( node_type != pmm::kNodeReadWrite && node_type != pmm::kNodeReadOnly )
         return false;
 
-    const IndexT prev = BlockState::get_prev_offset( cand_addr );
-    const IndexT next = BlockState::get_next_offset( cand_addr );
-    if ( !validate_link_index<AddressTraitsT>( total_size, prev ) ||
-         !validate_link_index<AddressTraitsT>( total_size, next ) )
-        return false;
-
     if ( total_size < manager_header_offset_bytes_v<AddressTraitsT> + sizeof( ManagerHeader<AddressTraitsT> ) )
         return false;
 
     const auto* hdr = manager_header_at<AddressTraitsT>( base );
     if ( hdr->total_size != total_size )
         return false;
-    if ( prev == AddressTraitsT::no_block )
-    {
-        if ( hdr->first_block_offset != cand_idx )
-            return false;
-    }
-    else
-    {
-        const auto* prev_addr = base + static_cast<std::size_t>( prev ) * AddressTraitsT::granule_size;
-        if ( BlockState::get_next_offset( prev_addr ) != cand_idx )
-            return false;
-    }
-
-    if ( next == AddressTraitsT::no_block )
-    {
-        if ( hdr->last_block_offset != cand_idx )
-            return false;
-    }
-    else
-    {
-        const auto* next_addr = base + static_cast<std::size_t>( next ) * AddressTraitsT::granule_size;
-        if ( BlockState::get_prev_offset( next_addr ) != cand_idx )
-            return false;
-    }
 
     constexpr std::size_t kBlockSize = sizeof( pmm::Block<AddressTraitsT> );
     if ( cand_off > total_size - kBlockSize )
