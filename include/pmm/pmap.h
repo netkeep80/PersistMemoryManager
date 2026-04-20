@@ -1,38 +1,12 @@
 /**
  * @file pmm/pmap.h
- * @brief pmap<_K,_V,ManagerT> — персистентный словарь на основе AVL-дерева.
+ * @brief pmap<_K,_V,ManagerT> — персистентный AVL-словарь, rooted in a forest domain.
  *
- * Реализует шаблонный ассоциативный контейнер в персистентном адресном пространстве (ПАП).
- * Каждый узел словаря — это блок в ПАП, хранящий пару ключ-значение (_K, _V).
- * Узлы используют встроенные поля TreeNode (left_offset, right_offset, parent_offset,
- * avl_height) для организации AVL-дерева, как это делает pstringview.
+ * Узлы — блоки в ПАП, пары (_K,_V); AVL-поля Block<AT> используются как у pstringview.
+ * Корень дерева хранится в forest-domain binding `container/pmap/<type>/<binding>`;
+ * в объекте pmap лежит только binding id. erase/clear освобождают узлы.
  *
- * Ключевые особенности:
- *   - Персистентный: гранульные индексы адресно-независимы при перезагрузке ПАП.
- *   - Domain-rooted: корень хранится в forest-domain binding-е `container/pmap/...`.
- *   - AVL-балансировка: O(log n) для вставки, поиска и удаления.
- *   - Встроенный AVL: узлы используют встроенные TreeNode-поля Block<AT> без
- *     дополнительных аллокаций структур дерева.
- *   - Не дублирует ключи: повторная вставка по существующему ключу обновляет значение.
- *   - Узлы НЕ блокируются навечно (в отличие от pstringview).
- *   - Тип ключа _K должен поддерживать operator< и operator==.
- *   - erase(key) — удаление узла по ключу с деаллокацией памяти.
- *   - size() — количество элементов за O(n).
- *   - begin()/end() — итератор для обхода в порядке ключей.
- *   - clear() — удаление всех элементов с деаллокацией.
- *
- * Минимальный пример:
- * @code
- *   Mgr::pmap<int, int> map;
- *   map.insert(42, 100);
- *   auto node = map.find(42);
- * @endcode
- *
- * @see pstringview.h — аналогичный тип с AVL-деревом
- * @see avl_tree_mixin.h — общие AVL-операции
- * @see pptr.h — pptr<T, ManagerT> (персистентный указатель)
- * @see tree_node.h — TreeNode<AT> (встроенные AVL-поля каждого блока)
- * @version 0.4
+ * @see pstringview.h, avl_tree_mixin.h, tree_node.h
  */
 
 #pragma once
@@ -47,50 +21,115 @@
 namespace pmm
 {
 
-// Forward declaration
 template <typename _K, typename _V, typename ManagerT> struct pmap;
 
-// ─── pmap_node ────────────────────────────────────────────────────────────────
-
 /**
- * @brief Узел pmap — хранит пару ключ-значение в ПАП.
+ * @brief Stable persistent type identity for `pmap` domain bindings.
  *
- * Каждый узел является отдельным блоком в ПАП. Встроенные поля TreeNode
- * (left_offset, right_offset, parent_offset, avl_height) используются для
- * организации AVL-дерева словаря.
- *
- * @tparam _K  Тип ключа. Должен поддерживать operator< и operator==.
- * @tparam _V  Тип значения.
+ * Default identity mixes `sizeof`, `alignof`, and a small set of
+ * `<type_traits>` category bits — ABI-stable values the persisted payload
+ * already depends on. Applications specialize `tag` with a fixed ASCII
+ * string to pin identity across toolchains or disambiguate structurally
+ * identical PODs.
  */
-template <typename _K, typename _V> struct pmap_node
+template <typename T> struct pmap_type_identity
 {
-    _K key;   ///< Ключ узла
-    _V value; ///< Значение узла
+    static constexpr const char* tag = "";
 };
 
-// ─── pmap ─────────────────────────────────────────────────────────────────────
+template <typename _K, typename _V> struct pmap_node
+{
+    _K key;
+    _V value;
+};
+
+namespace detail
+{
+
+// ─── compact pmap domain-name builder ─────────────────────────────────────────
+//
+// Name format: "container/pmap/<TTTTTTTT>/<k><HH..>"
+//   <T...> is an 8-hex-digit type fingerprint for (_K,_V),
+//   <k>    is the binding-kind marker: 'g' (generated) or 'n' (named),
+//   <HH..> is the 8- or 16-hex-digit value (sequence for 'g', key hash for 'n').
+//
+// Identity is ABI-stable: sizeof + alignof + a fixed subset of <type_traits>
+// bits, plus pmap_type_identity<T>::tag when the application pins one.
+
+constexpr std::uint32_t pmap_fnv1a( std::uint32_t h, std::uint64_t v, unsigned bytes ) noexcept
+{
+    for ( unsigned i = 0; i < bytes; ++i, v >>= 8 )
+    {
+        h ^= static_cast<std::uint8_t>( v & 0xffull );
+        h *= 16777619u;
+    }
+    return h;
+}
+
+template <typename T> constexpr std::uint32_t pmap_type_fp() noexcept
+{
+    const std::uint64_t traits =
+        ( std::uint64_t{ std::is_integral_v<T> } << 0 ) | ( std::uint64_t{ std::is_floating_point_v<T> } << 1 ) |
+        ( std::uint64_t{ std::is_signed_v<T> } << 2 ) | ( std::uint64_t{ std::is_unsigned_v<T> } << 3 ) |
+        ( std::uint64_t{ std::is_pointer_v<T> } << 4 ) | ( std::uint64_t{ std::is_class_v<T> } << 5 ) |
+        ( std::uint64_t{ std::is_enum_v<T> } << 6 ) | ( std::uint64_t{ std::is_trivially_copyable_v<T> } << 7 ) |
+        ( std::uint64_t{ std::is_standard_layout_v<T> } << 8 );
+    std::uint32_t h = 2166136261u;
+    h               = pmap_fnv1a( h, sizeof( T ), 8 );
+    h               = pmap_fnv1a( h, alignof( T ), 8 );
+    h               = pmap_fnv1a( h, traits, 8 );
+    for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\0'; ++t )
+        h = pmap_fnv1a( h, static_cast<std::uint8_t>( *t ), 1 );
+    return h;
+}
+
+inline std::uint64_t pmap_key_hash( const char* key ) noexcept
+{
+    std::uint64_t h = 14695981039346656037ull;
+    for ( ; key != nullptr && *key != '\0'; ++key )
+    {
+        h ^= static_cast<std::uint8_t>( *key );
+        h *= 1099511628211ull;
+    }
+    return h;
+}
+
+// Write "container/pmap/<type_fp>/<kind><value>" into a fixed-size buffer.
+inline bool pmap_write_name( char ( &out )[kForestDomainNameCapacity], std::uint32_t type_fp, char kind,
+                             std::uint64_t value, unsigned value_hex_digits ) noexcept
+{
+    constexpr const char* kPrefix = "container/pmap/";
+    const unsigned        needed  = 15 + 8 + 1 + 1 + value_hex_digits + 1; // prefix + fp + '/' + kind + value + NUL
+    if ( needed > kForestDomainNameCapacity )
+        return false;
+    std::size_t p = 0;
+    for ( const char* s = kPrefix; *s != '\0'; ++s )
+        out[p++] = *s;
+    auto put_hex = [&]( std::uint64_t v, unsigned digits )
+    {
+        for ( unsigned i = digits; i-- > 0; )
+        {
+            const std::uint8_t nib = static_cast<std::uint8_t>( ( v >> ( i * 4 ) ) & 0x0full );
+            out[p++]               = static_cast<char>( nib < 10 ? ( '0' + nib ) : ( 'a' + ( nib - 10 ) ) );
+        }
+    };
+    put_hex( type_fp, 8 );
+    out[p++] = '/';
+    out[p++] = kind;
+    put_hex( value, value_hex_digits );
+    out[p] = '\0';
+    return true;
+}
+
+} // namespace detail
 
 /**
- * @brief Персистентный ассоциативный контейнер (словарь) на основе AVL-дерева.
+ * @brief Персистентный ассоциативный контейнер на основе AVL-дерева.
  *
- * Объект pmap является тонким фасадом над type-scoped forest-domain binding-ом
- * `container/pmap/...`. В объекте хранится только binding id; корень
- * AVL-дерева хранится в registry domain binding менеджера, а узлы словаря
- * (pmap_node) хранятся в ПАП и используют встроенные TreeNode-поля.
- *
- * Особенности:
- *   - Вставка/поиск/удаление за O(log n).
- *   - Повторная вставка по существующему ключу обновляет значение.
- *   - erase(key) удаляет узел и освобождает память в ПАП.
- *   - size() возвращает количество элементов за O(n).
- *   - begin()/end() — итератор для обхода в порядке ключей.
- *   - clear() — удаление всех элементов с деаллокацией.
- *   - Узлы НЕ блокируются навечно: в отличие от pstringview, узлы
- *     pmap могут быть освобождены после удаления из дерева.
- *
- * @tparam _K       Тип ключа. Должен поддерживать operator< и operator==.
- * @tparam _V       Тип значения.
- * @tparam ManagerT Тип менеджера памяти (PersistMemoryManager<ConfigT, InstanceId>).
+ * `pmap` — это тонкий фасад над forest-domain binding-ом, имя которого
+ * зависит от (_K, _V) и либо от пользовательского domain key, либо от
+ * сгенерированной последовательности. В объекте хранится только binding id;
+ * корень AVL-дерева живёт в registry менеджера.
  */
 template <typename _K, typename _V, typename ManagerT> struct pmap
 {
@@ -99,7 +138,8 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     using node_type    = pmap_node<_K, _V>;
     using node_pptr    = typename ManagerT::template pptr<node_type>;
 
-    static constexpr std::uint32_t domain_type_hash = detail::pmap_domain_type_hash<_K, _V>();
+    static constexpr std::uint32_t domain_type_hash = detail::pmap_fnv1a(
+        detail::pmap_fnv1a( 2166136261u, detail::pmap_type_fp<_K>(), 4 ), detail::pmap_type_fp<_V>(), 4 );
 
     struct forest_domain_descriptor
     {
@@ -113,24 +153,21 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
 
         const char* name() const noexcept
         {
-            const auto* domain = ManagerT::find_domain_by_binding_unlocked( binding_id );
-            return domain != nullptr ? domain->name : "";
+            const auto* d = ManagerT::find_domain_by_binding_unlocked( binding_id );
+            return d != nullptr ? d->name : "";
         }
 
         index_type root_index() const noexcept
         {
-            if ( binding_id == 0 )
-                return 0;
-            auto* domain = ManagerT::find_domain_by_binding_unlocked( binding_id );
-            return ManagerT::forest_domain_root_index_unlocked( domain );
+            return ManagerT::forest_domain_root_index_unlocked(
+                ManagerT::find_domain_by_binding_unlocked( binding_id ) );
         }
 
         index_type* root_index_ptr() noexcept
         {
-            if ( binding_id == 0 )
-                return nullptr;
-            auto* domain = ManagerT::find_domain_by_binding_unlocked( binding_id );
-            return ManagerT::forest_domain_root_index_ptr_unlocked( domain );
+            return binding_id == 0 ? nullptr
+                                   : ManagerT::forest_domain_root_index_ptr_unlocked(
+                                         ManagerT::find_domain_by_binding_unlocked( binding_id ) );
         }
 
         static node_type* resolve_node( node_pptr p ) noexcept { return ManagerT::template resolve<node_type>( p ); }
@@ -138,16 +175,14 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         static int compare_key( const _K& key, node_pptr cur ) noexcept
         {
             node_type* obj = resolve_node( cur );
-            if ( obj == nullptr )
-                return 0;
-            return ( key == obj->key ) ? 0 : ( ( key < obj->key ) ? -1 : 1 );
+            return obj == nullptr ? 0 : ( ( key == obj->key ) ? 0 : ( ( key < obj->key ) ? -1 : 1 ) );
         }
 
         static bool less_node( node_pptr lhs, node_pptr rhs ) noexcept
         {
-            node_type* lhs_obj = resolve_node( lhs );
-            node_type* rhs_obj = resolve_node( rhs );
-            return lhs_obj != nullptr && rhs_obj != nullptr && lhs_obj->key < rhs_obj->key;
+            node_type* l = resolve_node( lhs );
+            node_type* r = resolve_node( rhs );
+            return l != nullptr && r != nullptr && l->key < r->key;
         }
 
         static bool validate_node( node_pptr p ) noexcept { return resolve_node( p ) != nullptr; }
@@ -156,209 +191,117 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     using forest_domain_view_policy = detail::ForestDomainViewOps<forest_domain_descriptor>;
     using forest_domain_policy      = detail::ForestDomainOps<forest_domain_descriptor>;
 
-    /// @brief Sentinel value for "no node" in TreeNode fields.
     static constexpr index_type no_block = ManagerT::address_traits::no_block;
 
   private:
     index_type _binding_id;
 
-    static std::uint64_t next_generated_domain_sequence() noexcept
+    // Bind (or rebind) to a domain. When domain_key == nullptr, allocate a fresh
+    // generated binding; otherwise hash the key into a stable named binding.
+    bool bind( const char* domain_key ) noexcept
     {
-        static std::uint64_t next_sequence = 1;
-        return next_sequence++;
-    }
-
-    forest_domain_descriptor domain_descriptor() const noexcept { return forest_domain_descriptor( _binding_id ); }
-
-    bool bind_named_domain( const char* domain_key ) noexcept
-    {
-        if ( !ManagerT::is_initialized() || domain_key == nullptr || domain_key[0] == '\0' )
+        if ( !ManagerT::is_initialized() )
             return false;
-
-        char candidate[detail::kForestDomainNameCapacity]{};
-        if ( !detail::pmap_write_domain_name( candidate, domain_type_hash, detail::kPmapNamedDomainKind,
-                                              detail::pmap_hash_domain_key( domain_key ), 16 ) )
+        char buf[detail::kForestDomainNameCapacity]{};
+        if ( domain_key != nullptr && domain_key[0] != '\0' )
+        {
+            if ( !detail::pmap_write_name( buf, domain_type_hash, 'n', detail::pmap_key_hash( domain_key ), 16 ) )
+                return false;
+        }
+        else
+        {
+            static std::uint64_t seq = 1;
+            do
+            {
+                if ( !detail::pmap_write_name( buf, domain_type_hash, 'g', seq++, 8 ) )
+                    return false;
+            } while ( ManagerT::has_domain( buf ) );
+        }
+        if ( !ManagerT::has_domain( buf ) && !ManagerT::register_domain( buf ) )
             return false;
-        if ( !ManagerT::register_domain( candidate ) )
-            return false;
-        _binding_id = ManagerT::find_domain_by_name( candidate );
+        _binding_id = ManagerT::find_domain_by_name( buf );
         return _binding_id != 0;
     }
 
-    bool bind_generated_domain() noexcept
-    {
-        if ( !ManagerT::is_initialized() )
-            return false;
-
-        for ( std::size_t attempt = 0; attempt < detail::kMaxForestDomains; ++attempt )
-        {
-            char candidate[detail::kForestDomainNameCapacity]{};
-            if ( !detail::pmap_write_domain_name( candidate, domain_type_hash, detail::kPmapGeneratedDomainKind,
-                                                  next_generated_domain_sequence(), 8 ) )
-                return false;
-            if ( ManagerT::has_domain( candidate ) )
-                continue;
-            if ( !ManagerT::register_domain( candidate ) )
-                return false;
-            _binding_id = ManagerT::find_domain_by_name( candidate );
-            return _binding_id != 0;
-        }
-        return false;
-    }
-
-    bool ensure_domain_registered() noexcept
-    {
-        if ( !ManagerT::is_initialized() )
-            return false;
-        if ( _binding_id != 0 )
-        {
-            if ( ManagerT::find_domain_by_binding_unlocked( _binding_id ) != nullptr )
-                return true;
-            _binding_id = 0;
-        }
-        return bind_generated_domain();
-    }
+    forest_domain_descriptor descriptor() const noexcept { return forest_domain_descriptor( _binding_id ); }
 
   public:
-    // ─── Конструктор ──────────────────────────────────────────────────────────
-
-    /// @brief Создать пустой словарь.
+    /// @brief Пустой словарь с уникальным generated binding (создаётся лениво).
     pmap() noexcept : _binding_id( 0 ) {}
 
-    /// @brief Создать фасад, привязанный к стабильному пользовательскому ключу domain-а.
-    explicit pmap( const char* domain_key ) noexcept : _binding_id( 0 ) { bind_named_domain( domain_key ); }
+    /// @brief Словарь, привязанный к стабильному пользовательскому ключу domain-а.
+    explicit pmap( const char* domain_key ) noexcept : _binding_id( 0 ) { bind( domain_key ); }
 
-    // ─── Методы доступа ───────────────────────────────────────────────────────
-
-    /// @brief Имя forest-domain binding-а этого фасада; пустая строка, если binding ещё не создан.
-    const char* domain_name() const noexcept { return domain_descriptor().name(); }
+    /// @brief Имя forest-domain binding-а этого фасада; пустая строка до первого bind.
+    const char* domain_name() const noexcept { return descriptor().name(); }
 
     /// @brief Текущий root binding forest-domain-а; 0 = пустое дерево.
-    index_type root_index() const noexcept { return forest_domain_view_ops().root_index(); }
+    index_type root_index() const noexcept { return descriptor().root_index(); }
 
     forest_domain_policy forest_domain_ops() noexcept
     {
-        ensure_domain_registered();
-        return forest_domain_policy( domain_descriptor() );
+        if ( _binding_id == 0 || ManagerT::find_domain_by_binding_unlocked( _binding_id ) == nullptr )
+            bind( nullptr );
+        return forest_domain_policy( descriptor() );
     }
 
     forest_domain_view_policy forest_domain_view_ops() const noexcept
     {
-        return forest_domain_view_policy( domain_descriptor() );
+        return forest_domain_view_policy( descriptor() );
     }
 
-    /// @brief Проверить, пуст ли словарь.
-    bool empty() const noexcept { return forest_domain_view_ops().root_index() == static_cast<index_type>( 0 ); }
+    bool empty() const noexcept { return root_index() == static_cast<index_type>( 0 ); }
 
-    /// @brief Получить количество элементов в словаре за O(n).
-    /// @return Количество элементов (подсчитывается обходом дерева).
     std::size_t size() const noexcept
     {
-        const index_type root = forest_domain_view_ops().root_index();
-        if ( root == static_cast<index_type>( 0 ) )
-            return 0;
-        return detail::avl_subtree_count( node_pptr( root ) );
+        const index_type root = root_index();
+        return root == static_cast<index_type>( 0 ) ? 0 : detail::avl_subtree_count( node_pptr( root ) );
     }
 
-    // ─── Операции со словарём ─────────────────────────────────────────────────
-
-    /**
-     * @brief Вставить или обновить пару ключ-значение.
-     *
-     * Если ключ уже существует в словаре — обновляет значение.
-     * Если ключ новый — создаёт новый узел в ПАП и вставляет в AVL-дерево.
-     *
-     * @param key   Ключ для вставки.
-     * @param val   Значение для вставки.
-     * @return pptr на узел с данным ключом. Нулевой pptr при ошибке аллокации.
-     */
+    /// @brief Вставить или обновить пару ключ-значение. Возвращает pptr на узел; null при OOM.
     node_pptr insert( const _K& key, const _V& val ) noexcept
     {
         auto ops = forest_domain_ops();
         if ( ops.root_index_ptr() == nullptr )
             return node_pptr();
-
-        // Ищем существующий узел.
         node_pptr existing = ops.find( key );
         if ( !existing.is_null() )
         {
-            // Ключ найден — обновляем значение.
-            node_type* obj = ManagerT::template resolve<node_type>( existing );
-            if ( obj != nullptr )
+            if ( node_type* obj = ManagerT::template resolve<node_type>( existing ); obj != nullptr )
                 obj->value = val;
             return existing;
         }
-
-        // Создаём новый узел в ПАП.
-        node_pptr new_node = ManagerT::template allocate_typed<node_type>();
-        if ( new_node.is_null() )
-            return node_pptr();
-
-        node_type* obj = ManagerT::template resolve<node_type>( new_node );
+        node_pptr  new_node = ManagerT::template allocate_typed<node_type>();
+        node_type* obj      = new_node.is_null() ? nullptr : ManagerT::template resolve<node_type>( new_node );
         if ( obj == nullptr )
             return node_pptr();
-
         obj->key   = key;
         obj->value = val;
-
-        // Инициализируем AVL-поля нового узла.
         detail::avl_init_node( new_node );
-
-        // Вставляем в AVL-дерево.
         ops.insert( new_node );
-
         return new_node;
     }
 
-    /**
-     * @brief Найти узел по ключу.
-     *
-     * @param key Ключ для поиска.
-     * @return pptr на найденный узел, или нулевой pptr если не найден.
-     */
     node_pptr find( const _K& key ) const noexcept { return forest_domain_view_ops().find( key ); }
+    bool      contains( const _K& key ) const noexcept { return !find( key ).is_null(); }
 
-    /**
-     * @brief Проверить, содержит ли словарь заданный ключ.
-     *
-     * @param key Ключ для проверки.
-     * @return true если ключ найден.
-     */
-    bool contains( const _K& key ) const noexcept { return !forest_domain_view_ops().find( key ).is_null(); }
-
-    /**
-     * @brief Удалить узел по ключу.
-     *
-     * Находит узел с заданным ключом, удаляет его из AVL-дерева и
-     * освобождает память блока в ПАП.
-     *
-     * @param key Ключ для удаления.
-     * @return true если ключ был найден и удалён, false если ключ не найден.
-     */
+    /// @brief Удалить узел по ключу; true — если найден и удалён.
     bool erase( const _K& key ) noexcept
     {
-        auto        ops  = forest_domain_policy( domain_descriptor() );
+        auto        ops  = forest_domain_policy( descriptor() );
         index_type* root = ops.root_index_ptr();
-        if ( root == nullptr )
+        node_pptr   t    = root == nullptr ? node_pptr() : ops.find( key );
+        if ( t.is_null() )
             return false;
-
-        node_pptr target = ops.find( key );
-        if ( target.is_null() )
-            return false;
-
-        detail::avl_remove( target, *root );
-        ManagerT::template deallocate_typed<node_type>( target );
+        detail::avl_remove( t, *root );
+        ManagerT::template deallocate_typed<node_type>( t );
         return true;
     }
 
-    /**
-     * @brief Очистить словарь (удалить все элементы).
-     *
-     * Освобождает память всех узлов в ПАП.
-     */
+    /// @brief Удалить все элементы, освободив их блоки в ПАП.
     void clear() noexcept
     {
-        auto        ops  = forest_domain_policy( domain_descriptor() );
+        auto        ops  = forest_domain_policy( descriptor() );
         index_type* root = ops.root_index_ptr();
         if ( root == nullptr )
             return;
@@ -368,30 +311,19 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         *root = static_cast<index_type>( 0 );
     }
 
-    /**
-     * @brief Сбросить словарь (для тестов).
-     *
-     * Сбрасывает root binding domain-а, но не освобождает данные в ПАП.
-     */
-    void reset() noexcept { forest_domain_policy( domain_descriptor() ).reset_root(); }
+    /// @brief Обнулить root binding (данные в ПАП не освобождаются). Для тестов.
+    void reset() noexcept { forest_domain_policy( descriptor() ).reset_root(); }
 
-    // ─── Итератор ───────────────────────────────────────────────
-
-    /// @brief Итератор для обхода словаря в порядке ключей (in-order).
-    /// Uses shared AvlInorderIterator template to eliminate duplication.
     using iterator = detail::AvlInorderIterator<node_pptr>;
 
-    /// @brief Начало итерации (самый левый узел = наименьший ключ).
     iterator begin() const noexcept
     {
-        const index_type root = forest_domain_view_ops().root_index();
+        const index_type root = root_index();
         if ( root == static_cast<index_type>( 0 ) )
             return iterator();
-        node_pptr min = detail::avl_min_node( node_pptr( root ) );
-        return iterator( min.offset() );
+        return iterator( detail::avl_min_node( node_pptr( root ) ).offset() );
     }
 
-    /// @brief Конец итерации (sentinel = 0).
     iterator end() const noexcept { return iterator( static_cast<index_type>( 0 ) ); }
 };
 

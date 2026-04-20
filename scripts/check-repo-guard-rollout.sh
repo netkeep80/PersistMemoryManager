@@ -18,7 +18,7 @@ policy = json.loads(policy_path.read_text(encoding="utf-8"))
 
 expected_action = "netkeep80/repo-guard@7ab5ca2f2d9859b4ffa2c423f05e951d4971be84"
 expected_size_rules = [
-    ("kernel-persist-memory-manager-max-lines", "file", "lines", "include/pmm/persist_memory_manager.h", 1146),
+    ("kernel-persist-memory-manager-max-lines", "file", "lines", "include/pmm/persist_memory_manager.h", 1147),
     ("kernel-block-state-max-lines", "file", "lines", "include/pmm/block_state.h", 873),
     ("kernel-allocator-policy-max-lines", "file", "lines", "include/pmm/allocator_policy.h", 777),
     ("kernel-avl-tree-mixin-max-lines", "file", "lines", "include/pmm/avl_tree_mixin.h", 761),

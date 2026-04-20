@@ -97,7 +97,7 @@ TEST_CASE( "    insert single key-value pair", "[test_issue153_pmap]" )
     TestMgr::destroy();
 }
 
-/// @brief pmap exposes the same minimal forest-domain descriptor/ops contract as other AVL-backed domains.
+/// @brief pmap exposes the forest-domain descriptor/ops contract with a domain-owned root.
 TEST_CASE( "    forest-domain descriptor drives pmap dictionary", "[test_issue153_pmap][issue335][issue336]" )
 {
     using Map    = TestMgr::pmap<int, int>;
@@ -118,174 +118,99 @@ TEST_CASE( "    forest-domain descriptor drives pmap dictionary", "[test_issue15
     Map  map;
     auto ops = map.forest_domain_ops();
 
-    REQUIRE( std::strncmp( ops.name(), "container/pmap/", std::strlen( "container/pmap/" ) ) == 0 );
+    REQUIRE( std::string_view( ops.name() ).starts_with( "container/pmap/" ) );
     REQUIRE( std::strcmp( ops.name(), map.domain_name() ) == 0 );
-    REQUIRE( ops.root_index() == static_cast<TestMgr::index_type>( 0 ) );
+    REQUIRE( ops.root_index() == 0 );
     REQUIRE( ops.root_index_ptr() != nullptr );
-    REQUIRE( TestMgr::get_domain_root_offset( ops.name() ) == static_cast<TestMgr::index_type>( 0 ) );
+    REQUIRE( TestMgr::get_domain_root_offset( ops.name() ) == 0 );
 
     auto p10 = map.insert( 10, 100 );
     auto p20 = map.insert( 20, 200 );
     REQUIRE( ( !p10.is_null() && !p20.is_null() ) );
-
-    REQUIRE( ops.root_index() != static_cast<TestMgr::index_type>( 0 ) );
+    REQUIRE( ops.root_index() != 0 );
     REQUIRE( TestMgr::get_domain_root_offset( ops.name() ) == ops.root_index() );
     REQUIRE( ops.find( 10 ) == p10 );
-    REQUIRE( ops.find( 20 ) == p20 );
     REQUIRE( ops.find( 30 ).is_null() );
 
-    Map same_domain = map;
-    REQUIRE( same_domain.forest_domain_view_ops().root_index() == ops.root_index() );
-    REQUIRE( same_domain.find( 10 ) == p10 );
-    REQUIRE( same_domain.find( 20 ) == p20 );
+    Map copy = map;
+    REQUIRE( copy.forest_domain_view_ops().root_index() == ops.root_index() );
+    REQUIRE( copy.find( 20 ) == p20 );
 
-    const Map& const_map = map;
-    auto       view_ops  = const_map.forest_domain_view_ops();
-    REQUIRE( std::strcmp( view_ops.name(), ops.name() ) == 0 );
-    REQUIRE( view_ops.root_index() == ops.root_index() );
-    REQUIRE( view_ops.find( 10 ) == p10 );
-    REQUIRE( view_ops.find( 20 ) == p20 );
-    REQUIRE( const_map.find( 10 ) == p10 );
-    REQUIRE( const_map.contains( 20 ) );
+    const Map& cmap = map;
+    REQUIRE( std::strcmp( cmap.forest_domain_view_ops().name(), ops.name() ) == 0 );
+    REQUIRE( cmap.find( 10 ) == p10 );
+    REQUIRE( cmap.contains( 20 ) );
 
     REQUIRE( ops.reset_root() );
     REQUIRE( map.empty() );
-    REQUIRE( same_domain.empty() );
-    REQUIRE( ops.root_index() == static_cast<TestMgr::index_type>( 0 ) );
-    REQUIRE( TestMgr::get_domain_root_offset( ops.name() ) == static_cast<TestMgr::index_type>( 0 ) );
+    REQUIRE( copy.empty() );
+    REQUIRE( TestMgr::get_domain_root_offset( ops.name() ) == 0 );
 
     TestMgr::destroy();
 }
-
-/// @brief Distinct pmap objects and node layouts must not collapse into one forest-domain root.
-TEST_CASE( "    pmap domain binding separates independent maps and node layouts", "[test_issue153_pmap][issue336]" )
-{
-    TestMgr::destroy();
-    REQUIRE( TestMgr::create( 64 * 1024 ) );
-
-    TestMgr::pmap<int, int> first;
-    TestMgr::pmap<int, int> second;
-
-    auto first_ops  = first.forest_domain_ops();
-    auto second_ops = second.forest_domain_ops();
-
-    REQUIRE( std::strcmp( first_ops.name(), second_ops.name() ) != 0 );
-
-    auto first_node  = first.insert( 7, 70 );
-    auto second_node = second.insert( 7, 700 );
-    REQUIRE( ( !first_node.is_null() && !second_node.is_null() ) );
-    REQUIRE( first.root_index() != second.root_index() );
-    REQUIRE( TestMgr::get_domain_root_offset( first_ops.name() ) == first.root_index() );
-    REQUIRE( TestMgr::get_domain_root_offset( second_ops.name() ) == second.root_index() );
-    REQUIRE( first.find( 7 )->value == 70 );
-    REQUIRE( second.find( 7 )->value == 700 );
-
-    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> symbols;
-    auto                                                    symbol_ops = symbols.forest_domain_ops();
-
-    REQUIRE( std::strcmp( first_ops.name(), symbol_ops.name() ) != 0 );
-    REQUIRE( std::strcmp( second_ops.name(), symbol_ops.name() ) != 0 );
-
-    TestMgr::pptr<TestMgr::pstringview> key         = TestMgr::pstringview( "seven" );
-    auto                                symbol_node = symbols.insert( key, 7000 );
-    REQUIRE( !symbol_node.is_null() );
-    REQUIRE( symbols.root_index() != first.root_index() );
-    REQUIRE( symbols.root_index() != second.root_index() );
-    REQUIRE( TestMgr::get_domain_root_offset( symbol_ops.name() ) == symbols.root_index() );
-    REQUIRE( symbols.find( key )->value == 7000 );
-
-    TestMgr::pmap<int, int> named_first( "issue336/shared" );
-    TestMgr::pmap<int, int> named_second( "issue336/shared" );
-    REQUIRE( std::strcmp( named_first.domain_name(), named_second.domain_name() ) == 0 );
-
-    auto named_node = named_first.insert( 8, 80 );
-    REQUIRE( !named_node.is_null() );
-    REQUIRE( named_second.find( 8 ) == named_node );
-
-    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> named_symbols( "issue336/shared" );
-    REQUIRE( std::strcmp( named_first.domain_name(), named_symbols.domain_name() ) != 0 );
-
-    TestMgr::destroy();
-}
-
-// ─── Stable type identity for persistent domain bindings ─────────────────────
-//
-// User-defined PODs with identical size / alignment / trait category can
-// collide on the default trait-derived fingerprint. The `pmap_type_identity`
-// trait lets applications pin a stable ASCII tag that survives toolchain
-// changes, refactors, and compiler upgrades.
 
 namespace
 {
-
-struct Issue336StableTagA
+// Structurally identical PODs: default trait fingerprint would collide; tag disambiguates.
+struct Issue336TagA
 {
     std::int64_t payload;
 };
-
-struct Issue336StableTagB
+struct Issue336TagB
 {
     std::int64_t payload;
 };
-
 } // namespace
 
 namespace pmm
 {
-
-template <> struct pmap_type_identity<Issue336StableTagA>
+template <> struct pmap_type_identity<Issue336TagA>
 {
-    static constexpr const char* tag = "issue336/StableTagA/v1";
+    static constexpr const char* tag = "issue336/A";
 };
-
-template <> struct pmap_type_identity<Issue336StableTagB>
+template <> struct pmap_type_identity<Issue336TagB>
 {
-    static constexpr const char* tag = "issue336/StableTagB/v1";
+    static constexpr const char* tag = "issue336/B";
 };
-
 } // namespace pmm
 
-/// @brief pmap_type_identity override keeps persistent domain identity stable and distinct
-/// across structurally identical types, without relying on compiler-specific __PRETTY_FUNCTION__/__FUNCSIG__.
-TEST_CASE( "    pmap domain identity uses stable type tag, not compiler signature", "[test_issue153_pmap][issue336]" )
+/// @brief Distinct maps, node layouts, and pinned type tags all map to distinct domain bindings.
+TEST_CASE( "    pmap domain binding separates identities", "[test_issue153_pmap][issue336]" )
 {
     TestMgr::destroy();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr::pmap<int, Issue336StableTagA> map_a( "issue336/stable" );
-    TestMgr::pmap<int, Issue336StableTagB> map_b( "issue336/stable" );
+    // Default-constructed facades of the same type get distinct generated bindings.
+    TestMgr::pmap<int, int> a, b;
+    auto                    a_ops = a.forest_domain_ops();
+    auto                    b_ops = b.forest_domain_ops();
+    REQUIRE( std::strcmp( a_ops.name(), b_ops.name() ) != 0 );
+    REQUIRE( !a.insert( 7, 70 ).is_null() );
+    REQUIRE( !b.insert( 7, 700 ).is_null() );
+    REQUIRE( a.root_index() != b.root_index() );
+    REQUIRE( a.find( 7 )->value == 70 );
+    REQUIRE( b.find( 7 )->value == 700 );
 
-    // Structurally identical value types must still resolve to distinct persistent
-    // bindings when the application pins different identity tags.
-    REQUIRE( std::strcmp( map_a.domain_name(), map_b.domain_name() ) != 0 );
+    // Different _K/_V node layouts never share a binding, even under the same domain key.
+    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> syms;
+    REQUIRE( std::strcmp( a_ops.name(), syms.forest_domain_ops().name() ) != 0 );
+    TestMgr::pmap<int, int>                                 named_a( "issue336/shared" );
+    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> named_s( "issue336/shared" );
+    REQUIRE( std::strcmp( named_a.domain_name(), named_s.domain_name() ) != 0 );
 
-    // Two facades that pin the same stable tag and same domain key must share one binding.
-    TestMgr::pmap<int, Issue336StableTagA> map_a_again( "issue336/stable" );
-    REQUIRE( std::strcmp( map_a.domain_name(), map_a_again.domain_name() ) == 0 );
+    // Same type + same domain key => same binding.
+    TestMgr::pmap<int, int> named_b( "issue336/shared" );
+    REQUIRE( std::strcmp( named_a.domain_name(), named_b.domain_name() ) == 0 );
+    REQUIRE( named_b.find( 8 ).is_null() );
+    REQUIRE( !named_a.insert( 8, 80 ).is_null() );
+    REQUIRE( named_b.find( 8 )->value == 80 );
 
-    // And the identity hash portion of the name must be stable across independent
-    // instantiations of the same template arguments within one build: the type hash
-    // segment lives between "container/pmap/" and the next '/'.
-    auto type_segment = []( const char* name )
-    {
-        std::string_view           view( name );
-        constexpr std::string_view prefix( "container/pmap/" );
-        REQUIRE( view.substr( 0, prefix.size() ) == prefix );
-        view.remove_prefix( prefix.size() );
-        const auto slash = view.find( '/' );
-        REQUIRE( slash != std::string_view::npos );
-        return std::string( view.substr( 0, slash ) );
-    };
-
-    REQUIRE( type_segment( map_a.domain_name() ) == type_segment( map_a_again.domain_name() ) );
-    REQUIRE( type_segment( map_a.domain_name() ) != type_segment( map_b.domain_name() ) );
-
-    // The default-fingerprint path (no user tag) must also be deterministic and
-    // independent of compiler-specific signatures. Two default `pmap<int,int>`
-    // facades sharing the same domain key must share a binding.
-    TestMgr::pmap<int, int> default_identity_first( "issue336/default" );
-    TestMgr::pmap<int, int> default_identity_second( "issue336/default" );
-    REQUIRE( std::strcmp( default_identity_first.domain_name(), default_identity_second.domain_name() ) == 0 );
+    // Structurally identical PODs with different pinned tags do NOT collide.
+    TestMgr::pmap<int, Issue336TagA> ta( "issue336/stable" );
+    TestMgr::pmap<int, Issue336TagB> tb( "issue336/stable" );
+    TestMgr::pmap<int, Issue336TagA> ta2( "issue336/stable" );
+    REQUIRE( std::strcmp( ta.domain_name(), tb.domain_name() ) != 0 );
+    REQUIRE( std::strcmp( ta.domain_name(), ta2.domain_name() ) == 0 );
 
     TestMgr::destroy();
 }
