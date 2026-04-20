@@ -22,7 +22,7 @@ TEST_CASE( "bootstrap invariants hold after create(size)", "[issue241]" )
 
     // Detailed checks that the issue requires:
 
-    // 1. Manager header is valid (magic, granule_size)
+    // 1. Manager header is valid (magic, image_version, granule_size)
     REQUIRE( BootstrapMgr::is_initialized() );
 
     // 2. Free-tree exists (system/free_tree domain has non-zero root)

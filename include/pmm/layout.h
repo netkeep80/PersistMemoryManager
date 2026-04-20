@@ -52,6 +52,7 @@ template <typename ManagerAccess> struct ManagerLayoutOps
         hdr->first_block_offset = kHdrBlkIdx;
         hdr->last_block_offset  = address_traits::no_block;
         hdr->free_tree_root     = address_traits::no_block;
+        hdr->image_version      = kCurrentImageVersion;
         hdr->granule_size       = static_cast<std::uint16_t>( kGranSz );
         hdr->root_offset        = address_traits::no_block;
 
@@ -91,7 +92,7 @@ template <typename ManagerAccess> struct ManagerLayoutOps
         std::size_t min_need = static_cast<std::size_t>( ManagerAccess::kBlockHdrGranules + data_gran_need +
                                                          ManagerAccess::kBlockHdrGranules ) *
                                kGranSz;
-        std::size_t growth = old_size / 4;
+        std::size_t growth   = old_size / 4;
         if ( growth < min_need )
             growth = min_need;
 

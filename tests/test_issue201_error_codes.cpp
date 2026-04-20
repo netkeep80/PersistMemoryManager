@@ -13,6 +13,7 @@
  *  8. last_error() returns InvalidMagic on load() with bad magic.
  *  9. last_error() returns SizeMismatch on load() with wrong total_size.
  * 10. last_error() returns GranuleMismatch on load() with wrong granule_size.
+ * 10a. last_error() returns UnsupportedImageVersion on load() with unknown image_version.
  * 11. clear_error() resets to Ok.
  * 12. set_last_error() works (used by io.h).
  * 13. last_error() returns CrcMismatch when loading corrupted file.
@@ -64,6 +65,7 @@ TEST_CASE( "enum_values", "[test_issue201_error_codes]" )
     REQUIRE( static_cast<int>( pmm::PmmError::BackendError ) == 10 );
     REQUIRE( static_cast<int>( pmm::PmmError::InvalidPointer ) == 11 );
     REQUIRE( static_cast<int>( pmm::PmmError::BlockLocked ) == 12 );
+    REQUIRE( static_cast<int>( pmm::PmmError::UnsupportedImageVersion ) == 13 );
 }
 
 /// 2. last_error() returns Ok after successful create().

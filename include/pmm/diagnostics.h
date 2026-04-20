@@ -43,7 +43,7 @@ enum class ViolationType : std::uint8_t
     ForestRegistryMissing,    ///< Forest registry not found or invalid.
     ForestDomainMissing,      ///< Required system domain not found.
     ForestDomainFlagsMissing, ///< System domain lacks required flags.
-    HeaderCorruption,         ///< Magic, granule_size, or total_size mismatch.
+    HeaderCorruption,         ///< Magic, image_version, granule_size, or total_size mismatch.
 };
 
 /// @brief Action taken (or that would be taken) for a violation.

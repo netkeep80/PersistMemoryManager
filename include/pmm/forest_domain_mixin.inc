@@ -339,6 +339,8 @@ static bool validate_bootstrap_invariants_unlocked() noexcept
     // 1. Manager header valid
     if ( hdr->magic != kMagic )
         return false;
+    if ( hdr->image_version != detail::kCurrentImageVersion )
+        return false;
     if ( hdr->total_size != _backend.total_size() )
         return false;
     if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )

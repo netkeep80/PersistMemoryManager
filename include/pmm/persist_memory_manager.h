@@ -299,7 +299,7 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
      *
      * Performs verify-then-repair: first detects all violations, then applies
      * documented fixes. The VerifyResult records every repair action taken.
-     * Header corruption (magic, size, granule) is non-recoverable and aborts load.
+     * Header corruption (magic, image version, size, granule) is non-recoverable and aborts load.
      *
      * @param result  VerifyResult populated with detected violations and repair actions.
      * @return true on successful load (repairs applied), false on non-recoverable corruption.
@@ -323,6 +323,14 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
             logging_policy::on_corruption_detected( PmmError::InvalidMagic );
             result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0,
                         static_cast<std::uint64_t>( kMagic ), static_cast<std::uint64_t>( hdr->magic ) );
+            return false;
+        }
+        if ( !detail::is_supported_image_version( hdr->image_version ) )
+        {
+            _last_error = PmmError::UnsupportedImageVersion;
+            logging_policy::on_corruption_detected( PmmError::UnsupportedImageVersion );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, detail::kCurrentImageVersion,
+                        static_cast<std::uint64_t>( hdr->image_version ) );
             return false;
         }
         if ( hdr->total_size != _backend.total_size() )
@@ -360,6 +368,8 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
         allocator::verify_free_tree( base, hdr, result ); // Phase 4: Rebuilt
         mark_entries( result, pre, DiagnosticAction::Rebuilt );
         // Repair phase: apply all fixes.
+        if ( detail::image_version_requires_migration( hdr->image_version ) )
+            hdr->image_version = detail::kCurrentImageVersion;
         hdr->owns_memory     = false;
         hdr->prev_total_size = 0;
         allocator::repair_linked_list( base, hdr );

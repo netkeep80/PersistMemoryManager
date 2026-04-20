@@ -87,7 +87,8 @@ def collapse_blank_lines(source: str) -> str:
     out: list[str] = []
     prev_blank = False
     for line in lines:
-        is_blank = not line.strip()
+        line = line.rstrip()
+        is_blank = not line
         if is_blank and prev_blank:
             continue
         out.append(line)

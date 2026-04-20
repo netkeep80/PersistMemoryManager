@@ -108,7 +108,7 @@ standalone operation — it always runs as part of `load(VerifyResult&)`.
 ### What repair does NOT do
 
 - **Never repairs** corrupted `next_offset` chain — this is the trust anchor.
-- **Never repairs** corrupted magic, granule_size, or total_size — these are
+- **Never repairs** corrupted magic, unsupported image_version, granule_size, or total_size — these are
   non-recoverable and cause `Aborted`.
 - **Never repairs** user data inside allocated blocks.
 - **Never repairs** user-level AVL trees (`pmap`, `pstringview`).

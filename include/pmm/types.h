@@ -40,19 +40,20 @@ namespace pmm
  */
 enum class PmmError : std::uint8_t
 {
-    Ok              = 0,  ///< Operation succeeded
-    NotInitialized  = 1,  ///< Manager is not initialized
-    InvalidSize     = 2,  ///< Invalid size argument (zero, too small, etc.)
-    Overflow        = 3,  ///< Arithmetic overflow in size/granule computation
-    OutOfMemory     = 4,  ///< Allocation failed — not enough free space
-    ExpandFailed    = 5,  ///< Backend expand() failed
-    InvalidMagic    = 6,  ///< Magic number mismatch on load()
-    CrcMismatch     = 7,  ///< CRC32 mismatch on load (corrupted image)
-    SizeMismatch    = 8,  ///< Stored total_size does not match backend
-    GranuleMismatch = 9,  ///< Stored granule_size does not match address_traits
-    BackendError    = 10, ///< Backend returned null or invalid state
-    InvalidPointer  = 11, ///< Pointer is null or out of bounds
-    BlockLocked     = 12, ///< Block is permanently locked (cannot deallocate)
+    Ok                      = 0,  ///< Operation succeeded
+    NotInitialized          = 1,  ///< Manager is not initialized
+    InvalidSize             = 2,  ///< Invalid size argument (zero, too small, etc.)
+    Overflow                = 3,  ///< Arithmetic overflow in size/granule computation
+    OutOfMemory             = 4,  ///< Allocation failed — not enough free space
+    ExpandFailed            = 5,  ///< Backend expand() failed
+    InvalidMagic            = 6,  ///< Magic number mismatch on load()
+    CrcMismatch             = 7,  ///< CRC32 mismatch on load (corrupted image)
+    SizeMismatch            = 8,  ///< Stored total_size does not match backend
+    GranuleMismatch         = 9,  ///< Stored granule_size does not match address_traits
+    BackendError            = 10, ///< Backend returned null or invalid state
+    InvalidPointer          = 11, ///< Pointer is null or out of bounds
+    BlockLocked             = 12, ///< Block is permanently locked (cannot deallocate)
+    UnsupportedImageVersion = 13, ///< Stored image_version is not supported by this build
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -121,6 +122,24 @@ struct FreeBlockView
 namespace detail
 {
 
+/// @brief Legacy value found in images created before ManagerHeader had an explicit version byte.
+inline constexpr std::uint8_t kLegacyUnversionedImageVersion = 0;
+
+/// @brief Current persistent image layout version written by create().
+inline constexpr std::uint8_t kCurrentImageVersion = 1;
+
+/// @brief True when this build can read the image version directly or through an in-place migration.
+inline constexpr bool is_supported_image_version( std::uint8_t image_version ) noexcept
+{
+    return image_version == kLegacyUnversionedImageVersion || image_version == kCurrentImageVersion;
+}
+
+/// @brief True when load() should upgrade the header after accepting the image.
+inline constexpr bool image_version_requires_migration( std::uint8_t image_version ) noexcept
+{
+    return image_version == kLegacyUnversionedImageVersion;
+}
+
 // ─── CRC32 utility ────────────────────────────────────
 //
 // Software CRC32 (ISO 3309 / ITU-T V.42 polynomial 0xEDB88320).
@@ -187,8 +206,8 @@ inline constexpr typename AddressTraitsT::index_type kNullIdx_v = static_cast<ty
 /// Removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).
 ///
 /// Layout for DefaultAddressTraits (uint32_t):
-///   magic (8) + total_size (8) + 7×uint32_t + owns_memory(1) + _pad(1) +
-///   granule_size(2) + prev_total_size(8) + _reserved[8] = 64 bytes
+///   magic (8) + total_size (8) + 7×uint32_t + owns_memory(1) +
+///   image_version(1) + granule_size(2) + prev_total_size(8) + crc32(4) + root_offset(4) = 64 bytes
 /// For LargeAddressTraits (uint64_t): sizeof = 16 + 56 + 4*(+4 padding) + 16 = 96 bytes
 ///   → occupies ceil(96/64) = 2 granules = 128 bytes via kManagerHeaderGranules_t<AT>
 template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
@@ -205,7 +224,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
     index_type    last_block_offset;  ///< Last block (granule index)
     index_type    free_tree_root;     ///< Root of AVL tree of free blocks (granule index)
     bool          owns_memory;        ///< Manager owns buffer (runtime-only)
-    std::uint8_t  _pad;               ///< Reserved padding byte
+    std::uint8_t  image_version;      ///< Persistent image layout version
     std::uint16_t granule_size;       ///< kGranuleSize at creation time; validated on load
     std::uint64_t prev_total_size;    ///< Previous buffer size in bytes (runtime-only)
     std::uint32_t crc32;              ///< CRC32 checksum of the persisted image

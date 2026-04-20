@@ -76,7 +76,7 @@ buffer start. Contains:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `magic` | `uint64_t` | Magic number `"PMM_V083"` for validation |
+| `magic` | `uint64_t` | Magic number `"PMM_V098"` for validation |
 | `total_size` | `uint64_t` | Total managed region size in bytes |
 | `used_size` | `uint32_t` | Used size in granules |
 | `block_count` | `uint32_t` | Total block count |
@@ -86,10 +86,17 @@ buffer start. Contains:
 | `last_block_offset` | `uint32_t` | Granule index of the last block |
 | `free_tree_root` | `uint32_t` | Root of the AVL free block tree (granule index) |
 | `owns_memory` | `bool` | Runtime-only: true if manager owns the buffer |
-| `_pad` | `uint8_t` | Reserved padding byte |
+| `image_version` | `uint8_t` | Persistent image layout version |
 | `granule_size` | `uint16_t` | Granule size at creation time; checked on `load()` |
 | `prev_total_size` | `uint64_t` | Runtime-only: previous buffer size after `expand()` |
-| `_reserved[8]` | `uint8_t[8]` | Reserved bytes |
+| `crc32` | `uint32_t` | CRC32 checksum used by file save/load helpers |
+| `root_offset` | `uint32_t` | Forest registry root granule index |
+
+Version policy:
+
+- `image_version == 0`: legacy unversioned image; `load()` accepts it and migrates the header to version `1`.
+- `image_version == 1`: current layout; `load()` accepts it directly.
+- Any other value: unsupported format; `load()` returns `false` with `PmmError::UnsupportedImageVersion` and records `HeaderCorruption` / `Aborted`.
 
 ---
 
@@ -199,9 +206,9 @@ start, not absolute pointers. This enables:
 2. Loading it at a different base address (`mmap` or `malloc`).
 3. Using in shared memory segments.
 
-On `load()`, the library validates the magic number, total size, and granule size, then
-calls `repair_linked_list()`, `recompute_counters()`, and `rebuild_free_tree()` to
-restore a consistent state.
+On `load()`, the library validates the magic number, image version, total size, and granule
+size, then calls `repair_linked_list()`, `recompute_counters()`, and `rebuild_free_tree()`
+to restore a consistent state.
 
 `pptr<T>` stores a granule index (2, 4, or 8 bytes depending on `address_traits`),
 making it persistent: after loading the image at a different address, the same index

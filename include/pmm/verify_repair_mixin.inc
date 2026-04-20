@@ -29,6 +29,12 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
                     static_cast<std::uint64_t>( hdr->magic ) );
         return; // Cannot proceed
     }
+    if ( !detail::is_supported_image_version( hdr->image_version ) )
+    {
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, detail::kCurrentImageVersion,
+                    static_cast<std::uint64_t>( hdr->image_version ) );
+        return; // Cannot proceed
+    }
     if ( hdr->total_size != _backend.total_size() )
     {
         result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, _backend.total_size(),
@@ -52,7 +58,7 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
                 break;
             detail::validate_block_header_full<address_traits>( base, hdr->total_size, idx, result );
             const void* blk_ptr = base + static_cast<std::size_t>( idx ) * address_traits::granule_size;
-            idx                  = BlockState::get_next_offset( blk_ptr );
+            idx                 = BlockState::get_next_offset( blk_ptr );
         }
     }
 

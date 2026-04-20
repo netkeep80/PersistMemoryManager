@@ -979,6 +979,7 @@ struct FreeBlockView {
 | `create(size < 4096)` | Returns `false` |
 | `create()` with no backend buffer | Returns `false` |
 | `load()` with invalid magic | Returns `false` |
+| `load()` with unsupported image version | Returns `false` |
 | `load()` with mismatched total size | Returns `false` |
 | `load()` with mismatched granule size | Returns `false` |
 | `allocate_typed<T>()` when out of memory | Auto-expands by growth ratio |

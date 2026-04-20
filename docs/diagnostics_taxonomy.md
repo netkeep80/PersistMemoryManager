@@ -21,11 +21,11 @@ addressing. Non-recoverable — the image cannot be trusted.
 | ViolationType | Trigger | Severity | Verify action | Repair action |
 |---------------|---------|----------|---------------|---------------|
 | `HeaderCorruption` | `magic != kMagic` | **Fatal** | `Aborted` | `Aborted` (load returns false) |
+| `HeaderCorruption` | unsupported `image_version` | **Fatal** | `Aborted` | `Aborted` (load returns false) |
 | `HeaderCorruption` | `total_size != backend.total_size()` | **Fatal** | `Aborted` | `Aborted` (load returns false) |
 | `HeaderCorruption` | `granule_size != address_traits::granule_size` | **Fatal** | `Aborted` | `Aborted` (load returns false) |
 
-**Detection:** `verify_image_unlocked()` (`verify_repair_mixin.inc:25–41`),
-`load()` header validation (`persist_memory_manager.h:316–339`).
+**Detection:** `verify_image_unlocked()` (`verify_repair_mixin.inc`) and `load()` header validation.
 
 **Why non-recoverable:** these fields define the image format and addressing
 scheme. If any is wrong, all block offsets and sizes become meaningless.

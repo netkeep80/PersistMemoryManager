@@ -69,7 +69,7 @@ struct NoLogging
     static void on_expand( std::size_t /*old_size*/, std::size_t /*new_size*/ ) noexcept {}
 
     /// @brief Вызывается при обнаружении повреждения данных.
-    /// @param err Код ошибки (InvalidMagic, CrcMismatch, SizeMismatch, GranuleMismatch).
+    /// @param err Код ошибки (InvalidMagic, CrcMismatch, SizeMismatch, GranuleMismatch, UnsupportedImageVersion).
     static void on_corruption_detected( PmmError /*err*/ ) noexcept {}
 
     /// @brief Вызывается после успешного создания менеджера.

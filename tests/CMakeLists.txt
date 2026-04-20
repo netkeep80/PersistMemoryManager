@@ -312,6 +312,9 @@ pmm_add_test(test_issue326_user_ptr_validation test_issue326_user_ptr_validation
 # ─── Issue 328: destroy() lifecycle contract ───────────────────────
 pmm_add_test(test_issue328_destroy_lifecycle test_issue328_destroy_lifecycle.cpp)
 
+# ─── Issue 329: explicit ManagerHeader image version ───────────────
+pmm_add_test(test_issue329_image_version test_issue329_image_version.cpp)
+
 # ─── Issue 314: build graph compaction contract ─────────────────
 add_test(
     NAME test_issue314_build_graph_contract

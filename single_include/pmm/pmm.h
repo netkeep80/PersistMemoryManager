@@ -950,7 +950,7 @@ enum class ViolationType : std::uint8_t
     ForestRegistryMissing,    ///< Forest registry not found or invalid.
     ForestDomainMissing,      ///< Required system domain not found.
     ForestDomainFlagsMissing, ///< System domain lacks required flags.
-    HeaderCorruption,         ///< Magic, granule_size, or total_size mismatch.
+    HeaderCorruption,         ///< Magic, image_version, granule_size, or total_size mismatch.
 };
 
 /// @brief Action taken (or that would be taken) for a violation.
@@ -2073,19 +2073,20 @@ namespace pmm
  */
 enum class PmmError : std::uint8_t
 {
-    Ok              = 0,  ///< Operation succeeded
-    NotInitialized  = 1,  ///< Manager is not initialized
-    InvalidSize     = 2,  ///< Invalid size argument (zero, too small, etc.)
-    Overflow        = 3,  ///< Arithmetic overflow in size/granule computation
-    OutOfMemory     = 4,  ///< Allocation failed — not enough free space
-    ExpandFailed    = 5,  ///< Backend expand() failed
-    InvalidMagic    = 6,  ///< Magic number mismatch on load()
-    CrcMismatch     = 7,  ///< CRC32 mismatch on load (corrupted image)
-    SizeMismatch    = 8,  ///< Stored total_size does not match backend
-    GranuleMismatch = 9,  ///< Stored granule_size does not match address_traits
-    BackendError    = 10, ///< Backend returned null or invalid state
-    InvalidPointer  = 11, ///< Pointer is null or out of bounds
-    BlockLocked     = 12, ///< Block is permanently locked (cannot deallocate)
+    Ok                      = 0,  ///< Operation succeeded
+    NotInitialized          = 1,  ///< Manager is not initialized
+    InvalidSize             = 2,  ///< Invalid size argument (zero, too small, etc.)
+    Overflow                = 3,  ///< Arithmetic overflow in size/granule computation
+    OutOfMemory             = 4,  ///< Allocation failed — not enough free space
+    ExpandFailed            = 5,  ///< Backend expand() failed
+    InvalidMagic            = 6,  ///< Magic number mismatch on load()
+    CrcMismatch             = 7,  ///< CRC32 mismatch on load (corrupted image)
+    SizeMismatch            = 8,  ///< Stored total_size does not match backend
+    GranuleMismatch         = 9,  ///< Stored granule_size does not match address_traits
+    BackendError            = 10, ///< Backend returned null or invalid state
+    InvalidPointer          = 11, ///< Pointer is null or out of bounds
+    BlockLocked             = 12, ///< Block is permanently locked (cannot deallocate)
+    UnsupportedImageVersion = 13, ///< Stored image_version is not supported by this build
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -2154,6 +2155,24 @@ struct FreeBlockView
 namespace detail
 {
 
+/// @brief Legacy value found in images created before ManagerHeader had an explicit version byte.
+inline constexpr std::uint8_t kLegacyUnversionedImageVersion = 0;
+
+/// @brief Current persistent image layout version written by create().
+inline constexpr std::uint8_t kCurrentImageVersion = 1;
+
+/// @brief True when this build can read the image version directly or through an in-place migration.
+inline constexpr bool is_supported_image_version( std::uint8_t image_version ) noexcept
+{
+    return image_version == kLegacyUnversionedImageVersion || image_version == kCurrentImageVersion;
+}
+
+/// @brief True when load() should upgrade the header after accepting the image.
+inline constexpr bool image_version_requires_migration( std::uint8_t image_version ) noexcept
+{
+    return image_version == kLegacyUnversionedImageVersion;
+}
+
 // ─── CRC32 utility ────────────────────────────────────
 //
 // Software CRC32 (ISO 3309 / ITU-T V.42 polynomial 0xEDB88320).
@@ -2220,8 +2239,8 @@ inline constexpr typename AddressTraitsT::index_type kNullIdx_v = static_cast<ty
 /// Removed prev_owns_memory and prev_base_ptr (obsolete runtime-only fields).
 ///
 /// Layout for DefaultAddressTraits (uint32_t):
-///   magic (8) + total_size (8) + 7×uint32_t + owns_memory(1) + _pad(1) +
-///   granule_size(2) + prev_total_size(8) + _reserved[8] = 64 bytes
+///   magic (8) + total_size (8) + 7×uint32_t + owns_memory(1) +
+///   image_version(1) + granule_size(2) + prev_total_size(8) + crc32(4) + root_offset(4) = 64 bytes
 /// For LargeAddressTraits (uint64_t): sizeof = 16 + 56 + 4*(+4 padding) + 16 = 96 bytes
 ///   → occupies ceil(96/64) = 2 granules = 128 bytes via kManagerHeaderGranules_t<AT>
 template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
@@ -2238,7 +2257,7 @@ template <typename AddressTraitsT = DefaultAddressTraits> struct ManagerHeader
     index_type    last_block_offset;  ///< Last block (granule index)
     index_type    free_tree_root;     ///< Root of AVL tree of free blocks (granule index)
     bool          owns_memory;        ///< Manager owns buffer (runtime-only)
-    std::uint8_t  _pad;               ///< Reserved padding byte
+    std::uint8_t  image_version;      ///< Persistent image layout version
     std::uint16_t granule_size;       ///< kGranuleSize at creation time; validated on load
     std::uint64_t prev_total_size;    ///< Previous buffer size in bytes (runtime-only)
     std::uint32_t crc32;              ///< CRC32 checksum of the persisted image
@@ -3870,7 +3889,7 @@ struct NoLogging
     static void on_expand( std::size_t /*old_size*/, std::size_t /*new_size*/ ) noexcept {}
 
     /// @brief Вызывается при обнаружении повреждения данных.
-    /// @param err Код ошибки (InvalidMagic, CrcMismatch, SizeMismatch, GranuleMismatch).
+    /// @param err Код ошибки (InvalidMagic, CrcMismatch, SizeMismatch, GranuleMismatch, UnsupportedImageVersion).
     static void on_corruption_detected( PmmError /*err*/ ) noexcept {}
 
     /// @brief Вызывается после успешного создания менеджера.
@@ -5179,6 +5198,7 @@ template <typename ManagerAccess> struct ManagerLayoutOps
         hdr->first_block_offset = kHdrBlkIdx;
         hdr->last_block_offset  = address_traits::no_block;
         hdr->free_tree_root     = address_traits::no_block;
+        hdr->image_version      = kCurrentImageVersion;
         hdr->granule_size       = static_cast<std::uint16_t>( kGranSz );
         hdr->root_offset        = address_traits::no_block;
 
@@ -5218,7 +5238,7 @@ template <typename ManagerAccess> struct ManagerLayoutOps
         std::size_t min_need = static_cast<std::size_t>( ManagerAccess::kBlockHdrGranules + data_gran_need +
                                                          ManagerAccess::kBlockHdrGranules ) *
                                kGranSz;
-        std::size_t growth = old_size / 4;
+        std::size_t growth   = old_size / 4;
         if ( growth < min_need )
             growth = min_need;
 
@@ -8144,7 +8164,7 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
      *
      * Performs verify-then-repair: first detects all violations, then applies
      * documented fixes. The VerifyResult records every repair action taken.
-     * Header corruption (magic, size, granule) is non-recoverable and aborts load.
+     * Header corruption (magic, image version, size, granule) is non-recoverable and aborts load.
      *
      * @param result  VerifyResult populated with detected violations and repair actions.
      * @return true on successful load (repairs applied), false on non-recoverable corruption.
@@ -8168,6 +8188,14 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
             logging_policy::on_corruption_detected( PmmError::InvalidMagic );
             result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0,
                         static_cast<std::uint64_t>( kMagic ), static_cast<std::uint64_t>( hdr->magic ) );
+            return false;
+        }
+        if ( !detail::is_supported_image_version( hdr->image_version ) )
+        {
+            _last_error = PmmError::UnsupportedImageVersion;
+            logging_policy::on_corruption_detected( PmmError::UnsupportedImageVersion );
+            result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, detail::kCurrentImageVersion,
+                        static_cast<std::uint64_t>( hdr->image_version ) );
             return false;
         }
         if ( hdr->total_size != _backend.total_size() )
@@ -8205,6 +8233,8 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
         allocator::verify_free_tree( base, hdr, result ); // Phase 4: Rebuilt
         mark_entries( result, pre, DiagnosticAction::Rebuilt );
         // Repair phase: apply all fixes.
+        if ( detail::image_version_requires_migration( hdr->image_version ) )
+            hdr->image_version = detail::kCurrentImageVersion;
         hdr->owns_memory     = false;
         hdr->prev_total_size = 0;
         allocator::repair_linked_list( base, hdr );
@@ -9258,6 +9288,8 @@ static bool validate_bootstrap_invariants_unlocked() noexcept
     // 1. Manager header valid
     if ( hdr->magic != kMagic )
         return false;
+    if ( hdr->image_version != detail::kCurrentImageVersion )
+        return false;
     if ( hdr->total_size != _backend.total_size() )
         return false;
     if ( hdr->granule_size != static_cast<std::uint16_t>( address_traits::granule_size ) )
@@ -9637,6 +9669,12 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
                     static_cast<std::uint64_t>( hdr->magic ) );
         return; // Cannot proceed
     }
+    if ( !detail::is_supported_image_version( hdr->image_version ) )
+    {
+        result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, detail::kCurrentImageVersion,
+                    static_cast<std::uint64_t>( hdr->image_version ) );
+        return; // Cannot proceed
+    }
     if ( hdr->total_size != _backend.total_size() )
     {
         result.add( ViolationType::HeaderCorruption, DiagnosticAction::Aborted, 0, _backend.total_size(),
@@ -9660,7 +9698,7 @@ static void verify_image_unlocked( VerifyResult& result ) noexcept
                 break;
             detail::validate_block_header_full<address_traits>( base, hdr->total_size, idx, result );
             const void* blk_ptr = base + static_cast<std::size_t>( idx ) * address_traits::granule_size;
-            idx                  = BlockState::get_next_offset( blk_ptr );
+            idx                 = BlockState::get_next_offset( blk_ptr );
         }
     }
 

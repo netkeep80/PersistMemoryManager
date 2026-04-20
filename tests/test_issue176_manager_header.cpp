@@ -5,7 +5,7 @@
  * Verifies:
  *  - #176-R1: prev_owns_memory and prev_base_ptr are no longer members of ManagerHeader.
  *  - #176-R2: ManagerHeader still compiles and has the correct 64-byte size.
- *  - #176-R3: _pad and _reserved[8] occupy the bytes previously held by removed fields.
+ *  - #176-R3: image_version and root_offset occupy bytes previously held by removed/reserved fields.
  *  - #176-R4: load() correctly resets runtime-only fields (owns_memory, prev_total_size).
  *
  * @see include/pmm/types.h
@@ -53,12 +53,13 @@ static_assert( !has_prev_base_ptr<pmm::detail::ManagerHeader<>>::value,
 static_assert( sizeof( pmm::detail::ManagerHeader<> ) == 64,
                "#176-R2: ManagerHeader must still be exactly 64 bytes after field removal" );
 
-// ─── #176-R3: _pad and _reserved[8] presence ─────────────────────────────────
+// ─── #176-R3: image_version and root_offset presence ──────────────────────────
 
-template <typename T, typename = void> struct has_pad : std::false_type
+template <typename T, typename = void> struct has_image_version : std::false_type
 {
 };
-template <typename T> struct has_pad<T, std::void_t<decltype( std::declval<T>()._pad )>> : std::true_type
+template <typename T>
+struct has_image_version<T, std::void_t<decltype( std::declval<T>().image_version )>> : std::true_type
 {
 };
 
@@ -69,7 +70,8 @@ template <typename T> struct has_root_offset<T, std::void_t<decltype( std::declv
 {
 };
 
-static_assert( has_pad<pmm::detail::ManagerHeader<>>::value, "#176-R3: _pad field must be present in ManagerHeader" );
+static_assert( has_image_version<pmm::detail::ManagerHeader<>>::value,
+               "#329: image_version field must be present in ManagerHeader" );
 static_assert( has_root_offset<pmm::detail::ManagerHeader<>>::value,
                "#200: root_offset field must be present in ManagerHeader (replaced _reserved)" );
 
@@ -117,8 +119,8 @@ TEST_CASE( "#176-R3: ManagerHeader field types are correct", "[test_issue176_man
 {
     static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::owns_memory ), bool>,
                    "owns_memory must be bool" );
-    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::_pad ), std::uint8_t>,
-                   "_pad must be uint8_t" );
+    static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::image_version ), std::uint8_t>,
+                   "image_version must be uint8_t" );
     static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::granule_size ), std::uint16_t>,
                    "granule_size must be uint16_t" );
     static_assert( std::is_same_v<decltype( pmm::detail::ManagerHeader<>::prev_total_size ), std::uint64_t>,
