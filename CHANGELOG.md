@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.57.6] - 2026-04-20
+
+### Fixed
+- Preserve persisted backend images during `destroy()` and add explicit `destroy_image()` invalidation.
+
+
 ## [0.57.5] - 2026-04-20
 
 ### Fixed
