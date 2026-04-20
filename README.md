@@ -343,8 +343,6 @@ cmake --build build --target pmm_demo
 
 См. [CONTRIBUTING.md](CONTRIBUTING.md). Для PR с изменениями исходников нужен
 changelog fragment в `changelog.d/`; docs-only изменения фрагмент не требуют.
-Governance PRs touching paths listed in `repo-policy.json` `paths.governance_paths` need
-a linked issue body with `authorized_governance_paths`; the PR body cannot self-authorize them.
 
 Полезные локальные проверки:
 

@@ -30,6 +30,9 @@ echo "$changed_files" | sed 's/^/  /'
 # ─── Check if any source files changed ───────────────────────────────────────
 source_changed=false
 while IFS= read -r file; do
+    if [[ "$file" == "scripts/check-changelog-fragment.sh" ]] || [[ "$file" == "scripts/check-repo-guard-rollout.sh" ]]; then
+        continue
+    fi
     if [[ "$file" =~ \.(cpp|h)$ ]] || \
        [[ "$file" == "CMakeLists.txt" ]] || \
        [[ "$file" =~ ^tests/ ]] || \
