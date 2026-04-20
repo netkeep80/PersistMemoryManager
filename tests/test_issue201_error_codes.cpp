@@ -144,9 +144,8 @@ TEST_CASE( "load_invalid_magic", "[test_issue201_error_codes]" )
     MgrLoad::create( 64 * 1024 );
     MgrLoad::destroy();
     // After destroy, magic is zeroed. Set a deliberately wrong magic.
-    auto& be  = MgrLoad::backend();
-    auto* hdr = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>(
-        be.base_ptr() + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) );
+    auto& be   = MgrLoad::backend();
+    auto* hdr  = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( be.base_ptr() );
     hdr->magic = 0xDEADBEEF;
     MgrLoad::clear_error();
     pmm::VerifyResult result;
@@ -162,9 +161,8 @@ TEST_CASE( "load_size_mismatch", "[test_issue201_error_codes]" )
     MgrSz::create( 64 * 1024 );
     MgrSz::destroy();
     // After destroy, magic is zeroed. Restore magic but set wrong total_size.
-    auto& be  = MgrSz::backend();
-    auto* hdr = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>(
-        be.base_ptr() + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) );
+    auto& be        = MgrSz::backend();
+    auto* hdr       = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( be.base_ptr() );
     hdr->magic      = pmm::kMagic;
     hdr->total_size = 12345; // wrong — doesn't match backend
     MgrSz::clear_error();
@@ -181,9 +179,8 @@ TEST_CASE( "load_granule_mismatch", "[test_issue201_error_codes]" )
     MgrGr::create( 64 * 1024 );
     MgrGr::destroy();
     // After destroy, magic is zeroed. Restore magic and total_size, but set wrong granule_size.
-    auto& be  = MgrGr::backend();
-    auto* hdr = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>(
-        be.base_ptr() + sizeof( pmm::Block<pmm::DefaultAddressTraits> ) );
+    auto& be          = MgrGr::backend();
+    auto* hdr         = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( be.base_ptr() );
     hdr->magic        = pmm::kMagic;
     hdr->total_size   = be.total_size(); // correct
     hdr->granule_size = 99;              // wrong

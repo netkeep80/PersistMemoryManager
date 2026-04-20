@@ -1057,9 +1057,7 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
 
     /// @brief Byte offset of ManagerHeader from base: rounds sizeof(Block<A>) up to granule boundary.
     /// For DefaultAddressTraits: 32 bytes. For SmallAddressTraits: roundup(18,16) = 32. For Large: 64.
-    static constexpr std::size_t kBlockHdrByteSize =
-        ( ( sizeof( Block<address_traits> ) + address_traits::granule_size - 1 ) / address_traits::granule_size ) *
-        address_traits::granule_size;
+    static constexpr std::size_t kBlockHdrByteSize = detail::manager_header_offset_bytes_v<address_traits>;
 
     static constexpr index_type kBlockHdrGranules =
         static_cast<index_type>( kBlockHdrByteSize / address_traits::granule_size );
@@ -1072,12 +1070,12 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
     static detail::ManagerHeader<address_traits>* get_header( std::uint8_t* base ) noexcept
     {
         // Place ManagerHeader at a granule-aligned offset after Block_0.
-        return reinterpret_cast<detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
+        return detail::manager_header_at<address_traits>( base );
     }
 
     static const detail::ManagerHeader<address_traits>* get_header_c( const std::uint8_t* base ) noexcept
     {
-        return reinterpret_cast<const detail::ManagerHeader<address_traits>*>( base + kBlockHdrByteSize );
+        return detail::manager_header_at<address_traits>( base );
     }
 
     struct layout_access

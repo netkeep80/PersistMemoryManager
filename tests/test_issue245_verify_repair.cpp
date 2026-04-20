@@ -30,16 +30,10 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/// @brief Byte offset of ManagerHeader from base (mirrors the private constant in PersistMemoryManager).
-static constexpr std::size_t kBlockHdrByteSize =
-    ( ( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::DefaultAddressTraits::granule_size - 1 ) /
-      pmm::DefaultAddressTraits::granule_size ) *
-    pmm::DefaultAddressTraits::granule_size;
-
-/// @brief Get ManagerHeader from base pointer (mirrors PersistMemoryManager::get_header).
+/// @brief Get ManagerHeader from base pointer.
 static pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>* test_get_header( std::uint8_t* base ) noexcept
 {
-    return reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base + kBlockHdrByteSize );
+    return pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( base );
 }
 
 /// @brief Create a manager, do some allocations, save to buffer, reload.

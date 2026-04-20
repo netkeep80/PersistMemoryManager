@@ -244,8 +244,7 @@ TEST_CASE( "on_corruption (bad magic)", "[test_issue202_logging_hooks]" )
     std::fclose( f );
 
     // Corrupt the magic number, keep total_size correct.
-    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
-    auto* hdr  = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base + kHdrOffset );
+    auto* hdr  = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( base );
     hdr->magic = 0xDEADBEEFULL;
 
     TestHookCounters::reset();
@@ -279,8 +278,7 @@ TEST_CASE( "on_corruption (size mismatch)", "[test_issue202_logging_hooks]" )
     std::fclose( f );
 
     // Corrupt total_size in header. Magic is correct from the saved image.
-    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
-    auto* hdr       = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base + kHdrOffset );
+    auto* hdr       = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( base );
     hdr->total_size = buf_size + 999;
 
     TestHookCounters::reset();
@@ -314,8 +312,7 @@ TEST_CASE( "on_corruption (granule mismatch)", "[test_issue202_logging_hooks]" )
     std::fclose( f );
 
     // Corrupt granule_size in header. Magic and total_size are correct from saved image.
-    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<pmm::DefaultAddressTraits> );
-    auto* hdr         = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base + kHdrOffset );
+    auto* hdr         = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( base );
     hdr->granule_size = 99;
 
     TestHookCounters::reset();

@@ -82,12 +82,10 @@ template <typename MgrT> inline bool save_manager( const char* filename )
     if ( data == nullptr || total == 0 )
         return false;
 
-    // Compute and store CRC32 in the manager header.
-    // The header is located after Block_0 (sizeof(Block<AT>) bytes from base).
-    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
-    auto*                 hdr        = reinterpret_cast<detail::ManagerHeader<address_traits>*>( data + kHdrOffset );
-    hdr->crc32                       = 0; // zero the field before computing CRC
-    hdr->crc32                       = detail::compute_image_crc32<address_traits>( data, total );
+    // Compute and store CRC32 in the canonical manager header.
+    auto* hdr  = detail::manager_header_at<address_traits>( data );
+    hdr->crc32 = 0;
+    hdr->crc32 = detail::compute_image_crc32<address_traits>( data, total );
 
     // Atomic save — write to temp file, then rename.
     std::string tmp_path = std::string( filename ) + ".tmp";
@@ -182,10 +180,10 @@ template <typename MgrT> inline bool load_manager_from_file( const char* filenam
         return false;
 
     // Verify CRC32 before calling load().
-    constexpr std::size_t kHdrOffset = sizeof( pmm::Block<address_traits> );
+    constexpr std::size_t kHdrOffset = detail::manager_header_offset_bytes_v<address_traits>;
     if ( file_size >= kHdrOffset + sizeof( detail::ManagerHeader<address_traits> ) )
     {
-        auto*         hdr          = reinterpret_cast<detail::ManagerHeader<address_traits>*>( buf + kHdrOffset );
+        auto*         hdr          = detail::manager_header_at<address_traits>( buf );
         std::uint32_t stored_crc   = hdr->crc32;
         std::uint32_t computed_crc = detail::compute_image_crc32<address_traits>( buf, file_size );
         if ( stored_crc != computed_crc )

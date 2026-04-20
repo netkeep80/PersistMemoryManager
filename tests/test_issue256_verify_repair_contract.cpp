@@ -31,14 +31,9 @@ using Mgr = pmm::presets::SingleThreadedHeap;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-static constexpr std::size_t kBlockHdrByteSize =
-    ( ( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) + pmm::DefaultAddressTraits::granule_size - 1 ) /
-      pmm::DefaultAddressTraits::granule_size ) *
-    pmm::DefaultAddressTraits::granule_size;
-
 static pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>* test_get_header( std::uint8_t* base ) noexcept
 {
-    return reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base + kBlockHdrByteSize );
+    return pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( base );
 }
 
 static void setup_clean_image( std::size_t arena_size = 64 * 1024 )
