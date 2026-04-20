@@ -10506,3 +10506,4 @@ template <typename T> struct is_persist_memory_manager : std::bool_constant<Pers
 template <typename T> inline constexpr bool is_persist_memory_manager_v = PersistMemoryManagerConcept<T>;
 
 } // namespace pmm
+
