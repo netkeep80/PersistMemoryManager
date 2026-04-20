@@ -4501,7 +4501,6 @@ template <typename ManagerT> struct pstring
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <type_traits>
 
 namespace pmm
 {
@@ -4621,63 +4620,10 @@ template <typename ManagerT> struct pstringview
 
     static psview_pptr _intern( const char* s ) noexcept
     {
-        if ( s == nullptr )
-            s = "";
-
-        auto ops = forest_domain_ops();
-
-        psview_pptr found = ops.find( s );
-        if ( !found.is_null() )
-            return found;
-
-        auto len = static_cast<std::uint32_t>( std::strlen( s ) );
-
-        std::size_t alloc_size = offsetof( pstringview, str ) + static_cast<std::size_t>( len ) + 1;
-
-        void* raw = ManagerT::allocate( alloc_size );
-        if ( raw == nullptr )
+        if ( !ManagerT::is_initialized() )
             return psview_pptr();
-
-        using address_traits  = typename ManagerT::address_traits;
-        std::uint8_t* base    = ManagerT::backend().base_ptr();
-        auto*         raw_ptr = static_cast<std::uint8_t*>( raw );
-        if ( base == nullptr || raw_ptr < base + sizeof( pmm::Block<address_traits> ) )
-        {
-            ManagerT::deallocate( raw );
-            return psview_pptr();
-        }
-        std::size_t block_byte_off = static_cast<std::size_t>( raw_ptr - base ) - sizeof( pmm::Block<address_traits> );
-        if ( block_byte_off % address_traits::granule_size != 0 )
-        {
-            ManagerT::deallocate( raw );
-            return psview_pptr();
-        }
-        std::size_t public_idx =
-            block_byte_off / address_traits::granule_size + detail::kBlockHeaderGranules_t<address_traits>;
-        if ( public_idx > static_cast<std::size_t>( address_traits::no_block ) )
-        {
-            ManagerT::deallocate( raw );
-            return psview_pptr();
-        }
-        psview_pptr new_node( static_cast<index_type>( public_idx ) );
-
-        pstringview* obj = ManagerT::template resolve_unchecked<pstringview>( new_node );
-        if ( obj == nullptr )
-        {
-            ManagerT::deallocate( raw );
-            return psview_pptr();
-        }
-        obj->length = len;
-
-        std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
-
-        detail::avl_init_node( new_node );
-
-        ManagerT::lock_block_permanent( obj );
-
-        ops.insert( new_node );
-
-        return new_node;
+        typename ManagerT::thread_policy::unique_lock_type lock( ManagerT::_mutex );
+        return ManagerT::intern_symbol_unlocked( s );
     }
 };
 

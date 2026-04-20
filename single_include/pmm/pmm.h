@@ -3095,7 +3095,8 @@ template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
 
 /// @brief Initialize AVL tree node fields to empty state.
 /// Sets left, right, parent to sentinel and height to 1.
-/// Shared between pmap::insert, pstringview::_intern.
+/// Shared between pmap::insert and the canonical symbol-interning helper
+/// (`PersistMemoryManager::intern_symbol_unlocked`).
 template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
 {
     auto& tn = p.tree_node();
@@ -7226,7 +7227,6 @@ template <typename ManagerT> struct pstring
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <type_traits>
 
 namespace pmm
 {
@@ -7431,75 +7431,15 @@ template <typename ManagerT> struct pstringview
 
     // ─── Реализация интернирования ────────────────────────────────────────────
 
+    /// Канонический путь интернирования: один helper в менеджере выделяет блок,
+    /// инициализирует payload, lock'ит навечно и вставляет в symbol-domain AVL.
+    /// Здесь только однократный захват writer-lock'а и делегирование.
     static psview_pptr _intern( const char* s ) noexcept
     {
-        if ( s == nullptr )
-            s = "";
-
-        auto ops = forest_domain_ops();
-
-        // Ищем в AVL-дереве.
-        psview_pptr found = ops.find( s );
-        if ( !found.is_null() )
-            return found;
-
-        // Не найдено — создаём новый объект pstringview.
-        auto len = static_cast<std::uint32_t>( std::strlen( s ) );
-
-        // Выделяем один блок для pstringview + строковых данных.
-        // Размер = offsetof(pstringview, str) + len + 1 (null-terminator).
-        // Используем offsetof для корректного вычисления без учёта str[1].
-        std::size_t alloc_size = offsetof( pstringview, str ) + static_cast<std::size_t>( len ) + 1;
-
-        // Выделяем память через allocate() напрямую, т.к. размер переменный.
-        void* raw = ManagerT::allocate( alloc_size );
-        if ( raw == nullptr )
+        if ( !ManagerT::is_initialized() )
             return psview_pptr();
-
-        // Создаём canonical public pptr из физического raw указателя allocate().
-        using address_traits  = typename ManagerT::address_traits;
-        std::uint8_t* base    = ManagerT::backend().base_ptr();
-        auto*         raw_ptr = static_cast<std::uint8_t*>( raw );
-        if ( base == nullptr || raw_ptr < base + sizeof( pmm::Block<address_traits> ) )
-        {
-            ManagerT::deallocate( raw );
-            return psview_pptr();
-        }
-        std::size_t block_byte_off = static_cast<std::size_t>( raw_ptr - base ) - sizeof( pmm::Block<address_traits> );
-        if ( block_byte_off % address_traits::granule_size != 0 )
-        {
-            ManagerT::deallocate( raw );
-            return psview_pptr();
-        }
-        std::size_t public_idx =
-            block_byte_off / address_traits::granule_size + detail::kBlockHeaderGranules_t<address_traits>;
-        if ( public_idx > static_cast<std::size_t>( address_traits::no_block ) )
-        {
-            ManagerT::deallocate( raw );
-            return psview_pptr();
-        }
-        psview_pptr new_node( static_cast<index_type>( public_idx ) );
-
-        pstringview* obj = ManagerT::template resolve_unchecked<pstringview>( new_node );
-        if ( obj == nullptr )
-        {
-            ManagerT::deallocate( raw );
-            return psview_pptr();
-        }
-        obj->length = len;
-        // Копируем строку включая null-terminator.
-        std::memcpy( obj->str, s, static_cast<std::size_t>( len ) + 1 );
-
-        // Инициализируем AVL-поля нового узла.
-        detail::avl_init_node( new_node );
-
-        // Блокируем блок pstringview навечно.
-        ManagerT::lock_block_permanent( obj );
-
-        // Вставляем в AVL-дерево.
-        ops.insert( new_node );
-
-        return new_node;
+        typename ManagerT::thread_policy::unique_lock_type lock( ManagerT::_mutex );
+        return ManagerT::intern_symbol_unlocked( s );
     }
 };
 

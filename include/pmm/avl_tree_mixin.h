@@ -426,7 +426,8 @@ template <typename PPtr> static PPtr avl_inorder_successor( PPtr cur ) noexcept
 
 /// @brief Initialize AVL tree node fields to empty state.
 /// Sets left, right, parent to sentinel and height to 1.
-/// Shared between pmap::insert, pstringview::_intern.
+/// Shared between pmap::insert and the canonical symbol-interning helper
+/// (`PersistMemoryManager::intern_symbol_unlocked`).
 template <typename PPtr> static void avl_init_node( PPtr p ) noexcept
 {
     auto& tn = p.tree_node();
