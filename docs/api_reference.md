@@ -674,6 +674,9 @@ allocated block in PAP containing a key-value pair. The built-in `TreeNode` fiel
 each block serve as AVL tree links (no separate node allocations). Inserting a duplicate
 key updates the existing value.
 
+`pmap` is a typed facade over the canonical forest-domain protocol. Its AVL root is stored
+in the manager domain binding named `container/pmap`, not in the `pmap` object.
+
 **Accessed via manager nested alias:**
 ```cpp
 using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
@@ -683,16 +686,16 @@ map.insert(42, 100);
 
 **Key type requirements:** `_K` must support `operator<` and `operator==`.
 
-### Data fields
+### Root binding
 
 ```cpp
-index_type _root_idx;  // granule index of AVL tree root; 0 = empty map
+static index_type root_index() noexcept;  // current container/pmap domain root; 0 = empty map
 ```
 
 ### Constructors
 
 ```cpp
-pmap() noexcept;  // creates an empty map (_root_idx = 0)
+pmap() noexcept;  // creates a facade bound to the container/pmap forest domain
 ```
 
 ### Methods

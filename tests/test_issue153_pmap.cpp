@@ -67,6 +67,9 @@ concept HasConstForestDomainResetRoot = requires( const OpsT& ops ) { ops.reset_
 template <typename OpsT>
 concept HasConstForestDomainRootIndexPtr = requires( const OpsT& ops ) { ops.root_index_ptr(); };
 
+template <typename MapT>
+concept HasLocalRootIndex = requires( MapT& map ) { map._root_idx; };
+
 // =============================================================================
 // I153-A: Basic insert and find with int keys
 // =============================================================================
@@ -94,13 +97,14 @@ TEST_CASE( "    insert single key-value pair", "[test_issue153_pmap]" )
 }
 
 /// @brief pmap exposes the same minimal forest-domain descriptor/ops contract as other AVL-backed domains.
-TEST_CASE( "    forest-domain descriptor drives pmap dictionary", "[test_issue153_pmap][issue335]" )
+TEST_CASE( "    forest-domain descriptor drives pmap dictionary", "[test_issue153_pmap][issue335][issue336]" )
 {
     using Map    = TestMgr::pmap<int, int>;
     using Domain = Map::forest_domain_descriptor;
     static_assert( pmm::detail::ForestDomainDescriptor<Domain> );
     static_assert( pmm::detail::ForestDomainViewDescriptor<Domain> );
     static_assert( pmm::detail::ForestDomainDescriptorForKey<Domain, int> );
+    static_assert( !HasLocalRootIndex<Map> );
     static_assert( !HasConstForestDomainOps<Map> );
     static_assert( HasConstForestDomainViewOps<Map> );
     static_assert( !HasConstForestDomainInsert<Map::forest_domain_policy, Map::node_pptr> );
@@ -115,16 +119,23 @@ TEST_CASE( "    forest-domain descriptor drives pmap dictionary", "[test_issue15
 
     REQUIRE( std::strcmp( ops.name(), "container/pmap" ) == 0 );
     REQUIRE( ops.root_index() == static_cast<TestMgr::index_type>( 0 ) );
-    REQUIRE( ops.root_index_ptr() == &map._root_idx );
+    REQUIRE( ops.root_index_ptr() != nullptr );
+    REQUIRE( TestMgr::get_domain_root_offset( "container/pmap" ) == static_cast<TestMgr::index_type>( 0 ) );
 
     auto p10 = map.insert( 10, 100 );
     auto p20 = map.insert( 20, 200 );
     REQUIRE( ( !p10.is_null() && !p20.is_null() ) );
 
     REQUIRE( ops.root_index() != static_cast<TestMgr::index_type>( 0 ) );
+    REQUIRE( TestMgr::get_domain_root_offset( "container/pmap" ) == ops.root_index() );
     REQUIRE( ops.find( 10 ) == p10 );
     REQUIRE( ops.find( 20 ) == p20 );
     REQUIRE( ops.find( 30 ).is_null() );
+
+    Map same_domain;
+    REQUIRE( same_domain.forest_domain_view_ops().root_index() == ops.root_index() );
+    REQUIRE( same_domain.find( 10 ) == p10 );
+    REQUIRE( same_domain.find( 20 ) == p20 );
 
     const Map& const_map = map;
     auto       view_ops  = const_map.forest_domain_view_ops();
@@ -137,7 +148,9 @@ TEST_CASE( "    forest-domain descriptor drives pmap dictionary", "[test_issue15
 
     REQUIRE( ops.reset_root() );
     REQUIRE( map.empty() );
+    REQUIRE( same_domain.empty() );
     REQUIRE( ops.root_index() == static_cast<TestMgr::index_type>( 0 ) );
+    REQUIRE( TestMgr::get_domain_root_offset( "container/pmap" ) == static_cast<TestMgr::index_type>( 0 ) );
 
     TestMgr::destroy();
 }
@@ -280,8 +293,8 @@ TEST_CASE( "    AVL tree via built-in TreeNode fields", "[test_issue153_pmap]" )
 
     REQUIRE( ( !p1.is_null() && !p2.is_null() && !p3.is_null() ) );
 
-    // AVL root must be non-null
-    REQUIRE( map._root_idx != static_cast<TestMgr::index_type>( 0 ) );
+    // AVL root must be held by the pmap forest-domain binding.
+    REQUIRE( TestMgr::get_domain_root_offset( "container/pmap" ) != static_cast<TestMgr::index_type>( 0 ) );
 
     // All nodes accessible via AVL search
     REQUIRE( map.find( 1 ) == p1 );
@@ -365,7 +378,7 @@ TEST_CASE( "    empty() returns correct state", "[test_issue153_pmap]" )
 // I153-G: reset() for test isolation
 // =============================================================================
 
-/// @brief reset() clears _root_idx; subsequent inserts create fresh tree.
+/// @brief reset() clears the pmap domain root; subsequent inserts create a fresh tree.
 TEST_CASE( "    reset() clears root for test isolation", "[test_issue153_pmap]" )
 {
     TestMgr::destroy();

@@ -131,7 +131,8 @@ AVL-forest нужен для:
 - free-tree свободных блоков;
 - generic AVL-примитивы в `avl_tree_mixin.h`;
 - forest-использование встроенных tree-полей в `pstringview`;
-- forest-использование встроенных tree-полей в `pmap`.
+- forest-использование встроенных tree-полей в `pmap`, чей root хранится в domain binding
+  `container/pmap`.
 
 Та же модель должна использоваться и для других доменов, если они строятся на PMM:
 

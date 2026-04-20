@@ -22,6 +22,7 @@ inline constexpr const char*   kSystemTypePstringview        = "type/pstringview
 inline constexpr const char*   kServiceNameLegacyRoot        = "service/legacy_root";
 inline constexpr const char*   kServiceNameDomainRoot        = "service/domain_root";
 inline constexpr const char*   kServiceNameDomainSymbol      = "service/domain_symbol";
+inline constexpr const char*   kContainerDomainPmap          = "container/pmap";
 inline constexpr std::uint32_t kForestRegistryMagic          = 0x50465247U; // "PFRG"
 inline constexpr std::uint16_t kForestRegistryVersion        = 1;
 inline constexpr std::uint8_t  kForestBindingDirectRoot      = 0;

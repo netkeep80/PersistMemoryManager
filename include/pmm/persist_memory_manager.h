@@ -105,6 +105,7 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
     using manager_type = PersistMemoryManager<ConfigT, InstanceId>;
 
     template <typename> friend struct pstringview;
+    template <typename, typename, typename> friend struct pmap;
     friend class detail::PersistMemoryTypedApi<manager_type>;
     template <typename> friend bool save_manager( const char* );
 

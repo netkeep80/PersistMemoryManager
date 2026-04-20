@@ -81,7 +81,7 @@ TEST_CASE( "I162-A2: pstringview::intern() returns non-null for new string", "[t
 TEST_CASE( "I162-A3: pstringview::intern() on empty tree creates new node", "[test_issue162_deduplication]" )
 {
     TestMgr::create( 64 * 1024 );
-    TestPsv::reset(); // root_idx = 0
+    TestPsv::reset();
 
     // With empty tree, intern() creates a new node.
     auto p = TestPsv::intern( "hello" );
@@ -181,7 +181,7 @@ TEST_CASE( "I162-B3: pmap::find() returns null on empty map", "[test_issue162_de
 {
     TestMgr::create( 64 * 1024 );
 
-    TestMgr::pmap<int, int> map; // root_idx = 0
+    TestMgr::pmap<int, int> map;
     REQUIRE( map.empty() );
 
     auto p = map.find( 1 );

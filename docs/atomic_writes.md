@@ -508,19 +508,16 @@ organize their own AVL trees. This is entirely separate from the free-block AVL 
 
 ### Persistence of user-data trees
 
-`load()` only rebuilds the **free-block** AVL tree. User-data AVL trees (`pstringview`
-interning dictionary, `pmap` root) are **not** automatically restored.
-
-To persist and restore user-data trees across process restarts:
+`load()` rebuilds the **free-block** AVL tree and validates the forest-domain registry.
+User-data AVL roots are restored through their domain bindings:
 
 1. **`pstringview` interning dictionary**: The `pstringview` blocks themselves are
-   preserved in the image (they are permanently locked). To restore the dictionary root,
-   store `pstringview::_root_idx` in a known location in PAP (e.g., in a root header
-   block), and restore it after `load()` by calling `pstringview::_root_idx = saved_idx`.
+   preserved in the image (they are permanently locked), and the dictionary root lives in
+   the `system/symbols` domain record.
 
-2. **`pmap` dictionary**: The `pmap` struct contains only `_root_idx`. Store the `pmap`
-   object itself in PAP (as a persistent root), and after `load()`, retrieve it via its
-   saved `pptr`.
+2. **`pmap` dictionary**: `pmap` is a typed facade over the `container/pmap` forest domain.
+   Store application ownership through named domain roots rather than by persisting a local
+   `pmap` root field.
 
 ### Crash consistency of user-data AVL operations
 

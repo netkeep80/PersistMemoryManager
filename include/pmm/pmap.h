@@ -9,6 +9,7 @@
  *
  * Ключевые особенности:
  *   - Персистентный: гранульные индексы адресно-независимы при перезагрузке ПАП.
+ *   - Domain-rooted: корень хранится в forest-domain `container/pmap`.
  *   - AVL-балансировка: O(log n) для вставки, поиска и удаления.
  *   - Встроенный AVL: узлы используют встроенные TreeNode-поля Block<AT> без
  *     дополнительных аллокаций структур дерева.
@@ -20,53 +21,11 @@
  *   - begin()/end() — итератор для обхода в порядке ключей.
  *   - clear() — удаление всех элементов с деаллокацией.
  *
- * Пример использования:
+ * Минимальный пример:
  * @code
- *   using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
- *   Mgr::create(64 * 1024);
- *
- *   // Создать словарь
- *   using MyMap = Mgr::pmap<int, int>;
- *
- *   MyMap map;
+ *   Mgr::pmap<int, int> map;
  *   map.insert(42, 100);
- *   map.insert(10, 200);
- *
- *   auto p = map.find(42);
- *   if (!p.is_null()) {
- *       int val = p->value;  // 100
- *   }
- *
- *   map.insert(42, 300);  // обновит значение
- *
- *   // Удаление по ключу
- *   bool removed = map.erase(42);  // true
- *
- *   // Итерация в порядке ключей
- *   for (auto it = map.begin(); it != map.end(); ++it) {
- *       auto node = *it;
- *       // node->key, node->value
- *   }
- *
- *   // Количество элементов
- *   std::size_t n = map.size();  // 1
- *
- *   map.clear();  // удалить все элементы
- *
- *   Mgr::destroy();
- * @endcode
- *
- * Пример с pstringview:
- * @code
- *   using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
- *   Mgr::create(64 * 1024);
- *
- *   using StrIntMap = Mgr::pmap<Mgr::pstringview, int>;
- *   StrIntMap dict;
- *   auto key = static_cast<Mgr::pptr<Mgr::pstringview>>(Mgr::pstringview("hello"));
- *   dict.insert(*key.resolve(), 42);
- *
- *   Mgr::destroy();
+ *   auto node = map.find(42);
  * @endcode
  *
  * @see pstringview.h — аналогичный тип с AVL-деревом
@@ -79,6 +38,7 @@
 #pragma once
 
 #include "pmm/avl_tree_mixin.h"
+#include "pmm/forest_registry.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -113,9 +73,9 @@ template <typename _K, typename _V> struct pmap_node
 /**
  * @brief Персистентный ассоциативный контейнер (словарь) на основе AVL-дерева.
  *
- * Объект pmap сам по себе не хранится в ПАП — он является хелпером на стеке,
- * содержащим гранульный индекс корня AVL-дерева. Узлы словаря (pmap_node) хранятся
- * в ПАП и используют встроенные TreeNode-поля для организации AVL-дерева.
+ * Объект pmap является тонким фасадом над forest-domain `container/pmap`.
+ * Корень AVL-дерева хранится в domain binding менеджера, а узлы словаря
+ * (pmap_node) хранятся в ПАП и используют встроенные TreeNode-поля.
  *
  * Особенности:
  *   - Вставка/поиск/удаление за O(log n).
@@ -144,24 +104,19 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         using node_type  = pmap_node<_K, _V>;
         using node_pptr  = typename ManagerT::template pptr<node_type>;
 
-        const index_type* root_index_slot;
-        index_type*       mutable_root_index_slot;
+        static constexpr const char* name() noexcept { return detail::kContainerDomainPmap; }
 
-        constexpr explicit forest_domain_descriptor( index_type* root = nullptr ) noexcept
-            : root_index_slot( root ), mutable_root_index_slot( root )
+        static index_type root_index() noexcept
         {
+            auto* domain = ManagerT::find_domain_by_name_unlocked( name() );
+            return ManagerT::forest_domain_root_index_unlocked( domain );
         }
 
-        constexpr explicit forest_domain_descriptor( const index_type* root ) noexcept
-            : root_index_slot( root ), mutable_root_index_slot( nullptr )
+        static index_type* root_index_ptr() noexcept
         {
+            auto* domain = ManagerT::find_domain_by_name_unlocked( name() );
+            return ManagerT::forest_domain_root_index_ptr_unlocked( domain );
         }
-
-        static constexpr const char* name() noexcept { return "container/pmap"; }
-
-        index_type root_index() const noexcept { return root_index_slot != nullptr ? *root_index_slot : 0; }
-
-        index_type* root_index_ptr() noexcept { return mutable_root_index_slot; }
 
         static node_type* resolve_node( node_pptr p ) noexcept { return ManagerT::template resolve<node_type>( p ); }
 
@@ -189,36 +144,42 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     /// @brief Sentinel value for "no node" in TreeNode fields.
     static constexpr index_type no_block = ManagerT::address_traits::no_block;
 
-    /// @brief Гранульный индекс корня AVL-дерева; 0 = пустое дерево.
-    index_type _root_idx;
+    /// @brief Текущий root binding forest-domain-а; 0 = пустое дерево.
+    static index_type root_index() noexcept { return forest_domain_view_policy{}.root_index(); }
 
+  private:
+    static bool ensure_domain_registered() noexcept
+    {
+        return ManagerT::is_initialized() && ManagerT::register_domain( forest_domain_descriptor::name() );
+    }
+
+  public:
     // ─── Конструктор ──────────────────────────────────────────────────────────
 
     /// @brief Создать пустой словарь.
-    pmap() noexcept : _root_idx( static_cast<index_type>( 0 ) ) {}
+    pmap() noexcept = default;
 
     // ─── Методы доступа ───────────────────────────────────────────────────────
 
     forest_domain_policy forest_domain_ops() noexcept
     {
-        return forest_domain_policy( forest_domain_descriptor( &_root_idx ) );
+        ensure_domain_registered();
+        return forest_domain_policy{};
     }
 
-    forest_domain_view_policy forest_domain_view_ops() const noexcept
-    {
-        return forest_domain_view_policy( forest_domain_descriptor( &_root_idx ) );
-    }
+    forest_domain_view_policy forest_domain_view_ops() const noexcept { return forest_domain_view_policy{}; }
 
     /// @brief Проверить, пуст ли словарь.
-    bool empty() const noexcept { return _root_idx == static_cast<index_type>( 0 ); }
+    bool empty() const noexcept { return forest_domain_view_ops().root_index() == static_cast<index_type>( 0 ); }
 
     /// @brief Получить количество элементов в словаре за O(n).
     /// @return Количество элементов (подсчитывается обходом дерева).
     std::size_t size() const noexcept
     {
-        if ( _root_idx == static_cast<index_type>( 0 ) )
+        const index_type root = forest_domain_view_ops().root_index();
+        if ( root == static_cast<index_type>( 0 ) )
             return 0;
-        return detail::avl_subtree_count( node_pptr( _root_idx ) );
+        return detail::avl_subtree_count( node_pptr( root ) );
     }
 
     // ─── Операции со словарём ─────────────────────────────────────────────────
@@ -236,6 +197,8 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     node_pptr insert( const _K& key, const _V& val ) noexcept
     {
         auto ops = forest_domain_ops();
+        if ( ops.root_index_ptr() == nullptr )
+            return node_pptr();
 
         // Ищем существующий узел.
         node_pptr existing = ops.find( key );
@@ -296,11 +259,16 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
      */
     bool erase( const _K& key ) noexcept
     {
-        node_pptr target = forest_domain_ops().find( key );
+        auto        ops  = forest_domain_policy{};
+        index_type* root = ops.root_index_ptr();
+        if ( root == nullptr )
+            return false;
+
+        node_pptr target = ops.find( key );
         if ( target.is_null() )
             return false;
 
-        detail::avl_remove( target, _root_idx );
+        detail::avl_remove( target, *root );
         ManagerT::template deallocate_typed<node_type>( target );
         return true;
     }
@@ -312,18 +280,22 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
      */
     void clear() noexcept
     {
-        if ( _root_idx != static_cast<index_type>( 0 ) )
-            detail::avl_clear_subtree( node_pptr( _root_idx ),
+        auto        ops  = forest_domain_policy{};
+        index_type* root = ops.root_index_ptr();
+        if ( root == nullptr )
+            return;
+        if ( *root != static_cast<index_type>( 0 ) )
+            detail::avl_clear_subtree( node_pptr( *root ),
                                        []( node_pptr p ) { ManagerT::template deallocate_typed<node_type>( p ); } );
-        _root_idx = static_cast<index_type>( 0 );
+        *root = static_cast<index_type>( 0 );
     }
 
     /**
      * @brief Сбросить словарь (для тестов).
      *
-     * Сбрасывает _root_idx, но не освобождает данные в ПАП.
+     * Сбрасывает root binding domain-а, но не освобождает данные в ПАП.
      */
-    void reset() noexcept { forest_domain_ops().reset_root(); }
+    void reset() noexcept { forest_domain_policy{}.reset_root(); }
 
     // ─── Итератор ───────────────────────────────────────────────
 
@@ -334,9 +306,10 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
     /// @brief Начало итерации (самый левый узел = наименьший ключ).
     iterator begin() const noexcept
     {
-        if ( _root_idx == static_cast<index_type>( 0 ) )
+        const index_type root = forest_domain_view_ops().root_index();
+        if ( root == static_cast<index_type>( 0 ) )
             return iterator();
-        node_pptr min = detail::avl_min_node( node_pptr( _root_idx ) );
+        node_pptr min = detail::avl_min_node( node_pptr( root ) );
         return iterator( min.offset() );
     }
 
