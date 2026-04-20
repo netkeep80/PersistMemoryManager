@@ -337,8 +337,9 @@ guaranteed by the bootstrap sequence (Block_0 is the first block).
 
 ### M5c. `magic`
 
-Written once during `init_layout()` (`layout_mixin.inc:30`). Zeroed on
-`destroy()` (`persist_memory_manager.h:410`).
+Written during `init_layout()` (`layout_mixin.inc:30`). It is not changed by
+normal `destroy()`, because shutdown must not invalidate a persisted image.
+Only the explicit destructive `destroy_image()` helper clears it.
 
 `magic` is an **identity / format check**, not a bootstrap-completion
 marker. In the current implementation `init_layout()` writes `magic`
@@ -349,10 +350,9 @@ or the full bootstrap sequence completes would leave an image that
 passes the magic check yet is only partially initialized.
 
 **Current ordering rule:** `magic` is the first header field written
-during `init_layout()` and the first field zeroed during `destroy()`.
-On `load()`, `magic` is checked in Phase 1 to reject images that were
-never initialized or that have already been destroyed — it does **not**
-guarantee that bootstrap ran to completion.
+during `init_layout()`. On `load()`, `magic` is checked in Phase 1 to reject
+images that were never initialized or that were explicitly invalidated with
+`destroy_image()` — it does **not** guarantee that bootstrap ran to completion.
 
 ### M5d. `total_size` and `granule_size`
 
@@ -473,5 +473,5 @@ Phase 7: validate_bootstrap_invariants_unlocked()
 | **O5** | `recompute_counters()` before `rebuild_free_tree()` | Free-tree rebuild depends on correct block states |
 | **O6** | `rebuild_free_tree()` before forest registry bootstrap | Bootstrap allocates blocks via the free-tree |
 | **O7** | Trust anchors must be written before dependent data | `first_block_offset` before blocks; `total_size` before expansion |
-| **O8** | `magic` is the first header write during `init_layout()` and first zeroed on `destroy()` | Identity / format check — does not signal bootstrap completion |
+| **O8** | `magic` is the first header write during `init_layout()` and is cleared only by explicit image invalidation | Identity / format check — does not signal bootstrap completion |
 | **O9** | Atomic rename is the last step in `save_manager()` | File integrity — old file is never partially overwritten |

@@ -116,22 +116,24 @@ storage backend has been set up externally (e.g., `MMapStorage` or `StaticStorag
 
 ---
 
-#### `load()`
+#### `load(result)`
 
 ```cpp
-static bool load() noexcept;
+static bool load(VerifyResult& result) noexcept;
 ```
 
 Loads an existing manager state from the backend buffer. Validates the magic number,
 total size, and granule size. Rebuilds the free block AVL tree, repairs the linked list,
-and recomputes counters.
+and recomputes counters. Detected violations and repair actions are reported through
+`result`.
 
 **Returns:** `true` on success, `false` if the image is invalid.
 
 **Example:**
 ```cpp
 // After filling the backend buffer with a saved image:
-bool ok = MyMgr::load();
+pmm::VerifyResult diagnostics;
+bool ok = MyMgr::load(diagnostics);
 ```
 
 ---
@@ -142,12 +144,31 @@ bool ok = MyMgr::load();
 static void destroy() noexcept;
 ```
 
-Resets the manager state. Clears the initialization flag. Does **not** free the backend
-buffer. Required for test isolation and before re-initialization.
+Resets the runtime manager state. Clears the initialization flag. Does **not** free the
+backend buffer and does **not** modify the persisted image, so a valid backend image
+remains loadable with `load(result)`. Required for test isolation, normal shutdown, and
+before re-initialization.
 
 **Example:**
 ```cpp
 MyMgr::destroy();
+```
+
+---
+
+#### `destroy_image()`
+
+```cpp
+static void destroy_image() noexcept;
+```
+
+Explicitly invalidates the current backend image by clearing the header magic, then
+resets the runtime manager state. This is a destructive helper for tests and corruption
+simulation. Use `destroy()` for normal shutdown.
+
+**Example:**
+```cpp
+MyMgr::destroy_image(); // subsequent load(result) fails with InvalidMagic
 ```
 
 ---

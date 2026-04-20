@@ -94,7 +94,8 @@ using MyMgr = PersistMemoryManager<MyConfig>;
 | `create(size)` | Инициализация менеджера с заданным размером |
 | `create()` | Инициализация поверх готового бэкенда |
 | `load()` | Загрузка существующего состояния |
-| `destroy()` | Сброс состояния менеджера |
+| `destroy()` | Сброс runtime-состояния менеджера без изменения persisted image |
+| `destroy_image()` | Явная инвалидация persisted image и сброс runtime-состояния |
 | `allocate(size)` | Выделение блока памяти |
 | `deallocate(ptr)` | Освобождение блока |
 | `allocate_typed<T>()` | Типизированное выделение (вызывает `allocate`) |

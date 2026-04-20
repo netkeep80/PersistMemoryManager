@@ -581,12 +581,12 @@ TEST_CASE( "verify_repair: Aborted action on header corruption", "[test_issue245
 
     // Corrupt the magic number to simulate non-recoverable corruption.
     std::uint8_t* base           = Mgr9::backend().base_ptr();
-    auto*         hdr            = reinterpret_cast<pmm::detail::ManagerHeader<pmm::DefaultAddressTraits>*>( base );
+    auto*         hdr            = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( base );
     auto          original_magic = hdr->magic;
     hdr->magic                   = 0xBADBAD00;
 
     // load() should fail with Aborted action.
-    Mgr9::destroy(); // need to re-initialize to trigger load path
+    Mgr9::destroy(); // shut down runtime state before exercising load path
     pmm::VerifyResult result;
     bool              ok = Mgr9::load( result );
     REQUIRE_FALSE( ok );

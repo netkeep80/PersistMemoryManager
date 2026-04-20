@@ -5107,10 +5107,16 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( !_initialized )
             return;
-        std::uint8_t*                          base = _backend.base_ptr();
-        detail::ManagerHeader<address_traits>* hdr  = ( base != nullptr ) ? get_header( base ) : nullptr;
-        if ( hdr != nullptr )
-            hdr->magic = 0;
+        _initialized = false;
+        logging_policy::on_destroy();
+    }
+
+    static void destroy_image() noexcept
+    {
+        typename thread_policy::unique_lock_type lock( _mutex );
+        std::uint8_t*                            base = _backend.base_ptr();
+        if ( base != nullptr && _backend.total_size() >= detail::kMinMemorySize )
+            get_header( base )->magic = 0;
         _initialized = false;
         logging_policy::on_destroy();
     }

@@ -399,19 +399,33 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
     }
 
     /**
-     * @brief Сбросить состояние менеджера (не освобождает бэкенд).
+     * @brief Сбросить runtime-состояние менеджера (не освобождает бэкенд).
      *
-     * Обнуляет флаг инициализации. Необходим для изоляции тестов.
+     * Обнуляет флаг инициализации. Необходим для изоляции тестов и нормального
+     * shutdown. Не изменяет persisted image: корректный backend-образ можно
+     * снова загрузить через load().
      */
     static void destroy() noexcept
     {
         typename thread_policy::unique_lock_type lock( _mutex );
         if ( !_initialized )
             return;
-        std::uint8_t*                          base = _backend.base_ptr();
-        detail::ManagerHeader<address_traits>* hdr  = ( base != nullptr ) ? get_header( base ) : nullptr;
-        if ( hdr != nullptr )
-            hdr->magic = 0;
+        _initialized = false;
+        logging_policy::on_destroy();
+    }
+
+    /**
+     * @brief Явно инвалидировать persisted image и сбросить runtime-состояние.
+     *
+     * Destructive helper for tests and corruption simulation. Normal shutdown
+     * must use destroy(), which leaves the backend image loadable.
+     */
+    static void destroy_image() noexcept
+    {
+        typename thread_policy::unique_lock_type lock( _mutex );
+        std::uint8_t*                            base = _backend.base_ptr();
+        if ( base != nullptr && _backend.total_size() >= detail::kMinMemorySize )
+            get_header( base )->magic = 0;
         _initialized = false;
         logging_policy::on_destroy();
     }
