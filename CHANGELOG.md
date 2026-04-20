@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.57.3] - 2026-04-20
+
+### Fixed
+- Use the canonical granule-aligned `ManagerHeader` offset in CRC, save, and load paths.
+
+
 ## [0.57.2] - 2026-04-19
 
 ### Changed
