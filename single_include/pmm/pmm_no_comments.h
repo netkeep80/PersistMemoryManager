@@ -3395,7 +3395,7 @@ template <typename ManagerAccess> struct ManagerLayoutOps
         std::size_t min_need = static_cast<std::size_t>( ManagerAccess::kBlockHdrGranules + data_gran_need +
                                                          ManagerAccess::kBlockHdrGranules ) *
                                kGranSz;
-        std::size_t growth   = old_size / 4;
+        std::size_t growth = old_size / 4;
         if ( growth < min_need )
             growth = min_need;
 
