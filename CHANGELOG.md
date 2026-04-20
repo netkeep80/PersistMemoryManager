@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.57.4] - 2026-04-20
+
+### Fixed
+- Hardened user-pointer to block-header reconstruction so forged aligned payload pointers are rejected before
+  mutation paths can treat them as allocated blocks.
+
+
 ## [0.57.3] - 2026-04-20
 
 ### Fixed
