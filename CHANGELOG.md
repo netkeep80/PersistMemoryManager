@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.57.7] - 2026-04-20
+
+### Fixed
+- Added explicit persistent image version validation to `ManagerHeader`, including legacy version migration and hard rejection of unsupported versions.
+- Trimmed trailing whitespace when generating the no-comments single-header artifact.
+
+
 ## [0.57.6] - 2026-04-20
 
 ### Fixed

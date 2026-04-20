@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(PersistMemoryManager VERSION 0.57.6 LANGUAGES CXX)
+project(PersistMemoryManager VERSION 0.57.7 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
