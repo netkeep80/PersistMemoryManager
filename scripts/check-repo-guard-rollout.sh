@@ -16,7 +16,15 @@ policy_path = pathlib.Path(sys.argv[2])
 workflow = workflow_path.read_text(encoding="utf-8")
 policy = json.loads(policy_path.read_text(encoding="utf-8"))
 
-expected_action = "netkeep80/repo-guard@c8491872866c33e0ecd04f809dcfd0489047d13f"
+expected_action = "netkeep80/repo-guard@7ab5ca2f2d9859b4ffa2c423f05e951d4971be84"
+expected_size_rules = [
+    ("kernel-persist-memory-manager-max-lines", "file", "lines", "include/pmm/persist_memory_manager.h", 1146),
+    ("kernel-block-state-max-lines", "file", "lines", "include/pmm/block_state.h", 873),
+    ("kernel-allocator-policy-max-lines", "file", "lines", "include/pmm/allocator_policy.h", 777),
+    ("kernel-avl-tree-mixin-max-lines", "file", "lines", "include/pmm/avl_tree_mixin.h", 761),
+    ("kernel-types-max-lines", "file", "lines", "include/pmm/types.h", 674),
+    ("kernel-subtree-max-lines", "directory", "lines", "include/pmm/**", 10768),
+]
 required_governance_paths = {
     ".github/workflows/repo-guard.yml",
     ".github/workflows/docs-consistency.yml",
@@ -56,6 +64,52 @@ checks = [
 
 policy_mode = policy.get("enforcement", {}).get("mode")
 checks.append((policy_mode == "advisory", "repo-policy.json must default to advisory enforcement"))
+
+size_rules = policy.get("size_rules", [])
+checks.append((isinstance(size_rules, list) and size_rules, "repo-policy.json must define size_rules"))
+
+rules_by_id = {
+    rule.get("id"): rule
+    for rule in size_rules
+    if isinstance(rule, dict) and isinstance(rule.get("id"), str)
+}
+
+for rule_id, scope, metric, glob, max_size in expected_size_rules:
+    rule = rules_by_id.get(rule_id)
+    checks.append((rule is not None, f"size_rules must include {rule_id}"))
+    if not rule:
+        continue
+    for field, expected_value in {
+        "scope": scope,
+        "metric": metric,
+        "glob": glob,
+        "max": max_size,
+    }.items():
+        checks.append(
+            (
+                rule.get(field) == expected_value,
+                f"{rule_id} must set {field}={expected_value!r}",
+            )
+        )
+    checks.append(
+        (
+            rule.get("count", "all_tracked") == "all_tracked",
+            f"{rule_id} must measure all tracked files, not only changed files",
+        )
+    )
+    checks.append(
+        (
+            rule.get("level", "blocking") == "blocking",
+            f"{rule_id} must remain blocking-ready for the later enforcement switch",
+        )
+    )
+
+checks.append(
+    (
+        not any("single_include/" in str(rule.get("glob", "")) for rule in size_rules if isinstance(rule, dict)),
+        "size_rules must target canonical include/pmm/**, not generated single_include/**",
+    )
+)
 
 governance_paths = set(policy.get("paths", {}).get("governance_paths", []))
 missing_governance = sorted(required_governance_paths - governance_paths)
