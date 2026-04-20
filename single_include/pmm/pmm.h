@@ -872,38 +872,14 @@ static_assert( sizeof( pmm::Block<pmm::DefaultAddressTraits> ) == 32, "Block<Def
 
 /**
  * @file pmm/block_state.h
- * @brief Allocator/free-tree block FSM — physical mutation protocol for the allocator domain.
+ * @brief FSM allocator/free-tree domain: FreeBlock ↔ AllocatedBlock.
  *
- * Scope is deliberately narrow: this header describes the states and transitions of a
- * single `Block<A>` inside the allocator / free-tree domain. It is the protocol of
- * material block mutation (allocate / deallocate / split / coalesce), not a general
- * forest-node lifecycle. Forest-domain containers such as `pmap` and `pstringview`
- * do NOT traverse these states — they operate on already-allocated blocks and manage
- * their own tree links without participating in the FSM defined here.
+ * Scope: автомат физической мутации блока (allocate/deallocate/split/coalesce).
+ * `pmap`/`pstringview` работают с уже выделенными блоками и через FSM не проходят.
+ * `BlockStateBase<AT>::*` — low-level helper layer для allocator/repair, не public API.
  *
- * Correct states (visible in a saved image):
- *   - FreeBlock        — free block (weight=0, root_offset=0, in the free-tree AVL)
- *   - AllocatedBlock   — allocated block (weight>0, root_offset=own_idx, not in AVL)
+ * Полный граф состояний и анализ восстановления — docs/atomic_writes.md.
  *
- * Transient states (only during an in-flight allocator operation):
- *   - FreeBlockRemovedAVL    — free, removed from AVL (before allocate completes)
- *   - FreeBlockNotInAVL      — free, not yet in AVL (after deallocate, before coalesce)
- *   - SplittingBlock         — block being split during allocate
- *   - CoalescingBlock        — block being merged with a neighbour during deallocate
- *
- * Guarantees within this scope:
- *   1. Type safety: the compiler forbids calling methods invalid for the current state.
- *   2. Recoverability: transient states are detected during `load()`.
- *   3. Atomicity: each method performs exactly one physical write step.
- *   4. Termination: the chain of calls always ends in a correct state.
- *
- * `BlockStateBase<AT>` also exposes raw field accessors (`get_weight`, `get_next_offset`,
- * `reset_avl_fields_of`, ...) that are used by allocator repair paths during `load()`
- * and by read-only validators. They are low-level helpers for allocator/free-tree code —
- * not a public protocol for other forest domains.
- *
- * @see docs/atomic_writes.md — state graph and crash-recovery analysis
- * @see include/pmm/free_block_tree.h — forest-policy that consumes this FSM
  * @version 0.5
  */
 

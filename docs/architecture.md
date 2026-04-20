@@ -412,11 +412,6 @@ buffer_start (= Block<A>_0)
 
 ## Block state machine
 
-The block state machine is a **narrow allocator / free-tree FSM**: it describes the
-physical mutation of a single `Block<A>` during allocate / deallocate / split / coalesce.
-It is not a general forest-node lifecycle — `pmap` and `pstringview` operate on
-already-allocated blocks and do not traverse `FreeBlock ↔ AllocatedBlock` transitions.
-
 Blocks transition between two correct states and several transient states. See
 [`docs/atomic_writes.md`](atomic_writes.md) for the full state diagram and crash
 recovery analysis.

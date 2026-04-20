@@ -10,15 +10,13 @@ and the algorithms for verifying and recovering the image after an interrupted o
 at any stage of a write, the image can be verified, the interruption point identified, and
 the operation completed (or rolled back).
 
-**Scope:** covers the core block allocator operations — the allocator / free-tree
-domain. The block state machine described here is the physical mutation protocol for
-allocate / deallocate / split / coalesce; it is not a general forest-node lifecycle.
-Persistent data structures (`pstringview`, `pmap`) build their own AVL trees using the
-same block headers but do **not** participate in this FSM: their blocks stay in the
-`AllocatedBlock` state from the allocator's point of view, and their tree rotations are
-orthogonal to `FreeBlock ↔ AllocatedBlock` transitions. On `load()`, only the free-block
-AVL tree is rebuilt; user-data AVL trees (pstringview interning, pmap) are not affected
-by `rebuild_free_tree()` and must be managed by the user across process restarts.
+**Scope:** the block FSM described here is the allocator / free-tree physical mutation
+protocol (allocate / deallocate / split / coalesce), not a general forest-node lifecycle.
+Persistent data structures (`pstringview`, `pmap`) build their own AVL trees over the
+same block headers but do **not** traverse `FreeBlock ↔ AllocatedBlock`: their blocks
+remain `AllocatedBlock` from the allocator's point of view. On `load()`, only the
+free-block AVL tree is rebuilt; user-data AVL trees must be managed by the user across
+process restarts.
 
 ---
 
