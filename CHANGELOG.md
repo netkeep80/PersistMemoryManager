@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [0.57.9] - 2026-04-20
+
+### Changed
+- Rolled repo-guard forward to the size-rules baseline and added canonical kernel anti-bloat policy caps.
+
+
 ## [0.57.8] - 2026-04-20
 
 ### Changed
