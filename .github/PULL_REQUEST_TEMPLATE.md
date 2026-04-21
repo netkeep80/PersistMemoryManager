@@ -5,6 +5,9 @@ Describe the change and the user-visible effect.
 ## Change Contract
 
 Keep this YAML block aligned with the intended diff so repo-guard can validate the PR.
+The PR body carries change intent. Governance files listed in `policy.paths.governance_paths`
+must be authorized from the linked issue body with `authorized_governance_paths`;
+PR-body governance authorization is ignored.
 
 ```repo-guard-yaml
 change_type: chore

@@ -24,6 +24,10 @@ body:
         scope:
           - include/
         budgets: {}
+        # Governance changes only: the issue body is the trusted source.
+        # Include this field only when the issue sanctions governance edits.
+        # authorized_governance_paths:
+        #   - repo-policy.json
         must_touch: []
         must_not_touch:
           - LICENSE

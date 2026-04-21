@@ -71,15 +71,6 @@
     "release": ["CHANGELOG.md", "changelog.d/**", "scripts/check-version-consistency.sh"],
     "generated": ["single_include/**"]
   },
-  "change_classes": [
-    "governance",
-    "docs-comments-cleanup",
-    "kernel-compaction",
-    "kernel-hardening",
-    "extraction-prep",
-    "generated-refresh",
-    "release"
-  ],
   "new_file_classes": {
     "test": ["tests/**"],
     "canonical_doc": ["docs/**", "README.md", "CONTRIBUTING.md"],
@@ -90,77 +81,76 @@
     "kernel_module": ["include/pmm/*.h"],
     "kernel_shard": ["include/pmm/**/*.inc", "include/pmm/**/*.inl", "include/pmm/**/*.ipp"]
   },
-  "new_file_rules": {
-    "governance": {
-      "allow_classes": ["governance", "operational", "release"],
-      "max_new_files": 1
-    },
-    "docs-comments-cleanup": {
-      "allow_classes": [],
-      "max_new_files": 0
-    },
-    "kernel-compaction": {
-      "allow_classes": ["test", "release", "kernel_module"],
-      "max_per_class": {
-        "release": 1,
-        "kernel_module": 1
-      }
-    },
-    "kernel-hardening": {
-      "allow_classes": ["test", "release"],
-      "max_per_class": {
-        "release": 1
-      }
-    },
-    "extraction-prep": {
-      "allow_classes": ["test", "release", "kernel_module"],
-      "max_per_class": {
-        "release": 1,
-        "kernel_module": 1
-      }
-    },
-    "generated-refresh": {
-      "allow_classes": ["generated", "release"],
-      "max_per_class": {
-        "generated": 20,
-        "release": 1
-      }
-    },
-    "release": {
-      "allow_classes": ["release"],
-      "max_per_class": {
-        "release": 1
-      }
-    }
-  },
-  "change_type_rules": {
+  "change_profiles": {
     "governance": {
       "forbid_surfaces": ["kernel", "generated"],
-      "max_new_docs": 1,
-      "max_new_files": 1,
-      "max_net_added_lines": 80
+      "new_files": {
+        "allow_classes": ["governance", "operational", "release"],
+        "max_new_files": 1
+      },
+      "budgets": {
+        "max_new_docs": 1,
+        "max_new_files": 1,
+        "max_net_added_lines": 80
+      }
     },
     "docs-comments-cleanup": {
-      "forbid_surfaces": ["kernel", "generated", "release"],
-      "max_new_docs": 0,
-      "max_new_files": 0
+      "allow_surfaces": ["docs"],
+      "new_files": {
+        "allow_classes": [],
+        "max_new_files": 0
+      },
+      "budgets": {
+        "max_new_docs": 0,
+        "max_new_files": 0
+      }
     },
     "kernel-compaction": {
-      "forbid_surfaces": ["docs", "governance", "release"]
+      "forbid_surfaces": ["docs", "governance", "release"],
+      "new_files": {
+        "allow_classes": ["test", "kernel_module"],
+        "max_per_class": {
+          "kernel_module": 1
+        }
+      }
     },
     "kernel-hardening": {
       "forbid_surfaces": ["docs", "governance", "release"],
-      "require_surfaces": ["tests"]
+      "require_surfaces": ["tests"],
+      "new_files": {
+        "allow_classes": ["test"]
+      }
     },
     "extraction-prep": {
-      "forbid_surfaces": ["governance", "release"]
+      "forbid_surfaces": ["governance", "release"],
+      "new_files": {
+        "allow_classes": ["test", "kernel_module"],
+        "max_per_class": {
+          "kernel_module": 1
+        }
+      }
     },
     "generated-refresh": {
-      "allow_surfaces": ["generated", "release"]
+      "allow_surfaces": ["generated", "release"],
+      "new_files": {
+        "allow_classes": ["generated", "release"],
+        "max_per_class": {
+          "generated": 20,
+          "release": 1
+        }
+      }
     },
     "release": {
       "allow_surfaces": ["release"],
-      "max_new_docs": 0
+      "new_files": {
+        "allow_classes": ["release"],
+        "max_per_class": {
+          "release": 1
+        }
+      },
+      "budgets": {
+        "max_new_docs": 0
+      }
     }
   },
   "registry_rules": [
