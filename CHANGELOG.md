@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [3.0.0] - 2026-04-21
+
+### Removed
+- Removed the `ppool` persistent object pool public API, implementation, tests, benchmarks, and generated single-header output because PMM no longer needs a pool abstraction for the `pjson` integration path.
+
+
 ## [2.0.1] - 2026-04-20
 
 ### Changed
