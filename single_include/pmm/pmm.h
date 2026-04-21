@@ -4703,6 +4703,13 @@ template <typename ManagerAccess> struct ManagerLayoutOps
 namespace pmm
 {
 
+/**
+ * STL-compatible allocator backed by ManagerT.
+ *
+ * Returned raw pointers are transient mapped addresses, not persistent handles.
+ * Store cross-run object identity as pptr<T>; do not persist allocate() results
+ * across manager destroy/load/remap cycles.
+ */
 template <typename T, typename ManagerT> struct pallocator
 {
 
@@ -4736,6 +4743,7 @@ template <typename T, typename ManagerT> struct pallocator
         return static_cast<T*>( raw );
     }
 
+    // PMM records block sizes internally; the STL count is not trusted here.
     void deallocate( T* p, std::size_t ) noexcept { ManagerT::deallocate( static_cast<void*>( p ) ); }
 
     std::size_t max_size() const noexcept { return ( std::numeric_limits<std::size_t>::max )() / sizeof( T ); }
