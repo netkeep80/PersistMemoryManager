@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [3.0.1] - 2026-04-21
+
+### Changed
+- Compact `include/pmm/**` below the 9000-line kernel subtree budget, align the rollout checker with that rule,
+  and add a regression guard for the limit.
+
+
 ## [3.0.0] - 2026-04-21
 
 ### Removed
