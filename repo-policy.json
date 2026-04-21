@@ -56,12 +56,7 @@
     "max_net_added_lines": 35
   },
   "size_rules": [
-    {"id": "kernel-persist-memory-manager-max-lines", "scope": "file", "metric": "lines", "glob": "include/pmm/persist_memory_manager.h", "max": 1147, "count": "all_tracked"},
-    {"id": "kernel-block-state-max-lines", "scope": "file", "metric": "lines", "glob": "include/pmm/block_state.h", "max": 873, "count": "all_tracked"},
-    {"id": "kernel-allocator-policy-max-lines", "scope": "file", "metric": "lines", "glob": "include/pmm/allocator_policy.h", "max": 777, "count": "all_tracked"},
-    {"id": "kernel-avl-tree-mixin-max-lines", "scope": "file", "metric": "lines", "glob": "include/pmm/avl_tree_mixin.h", "max": 761, "count": "all_tracked"},
-    {"id": "kernel-types-max-lines", "scope": "file", "metric": "lines", "glob": "include/pmm/types.h", "max": 674, "count": "all_tracked"},
-    {"id": "kernel-subtree-max-lines", "scope": "directory", "metric": "lines", "glob": "include/pmm/**", "max": 10768, "count": "all_tracked"}
+    {"id": "kernel-subtree-max-lines", "scope": "directory", "metric": "lines", "glob": "include/pmm/**", "max": 8000, "count": "all_tracked"}
   ],
   "surfaces": {
     "kernel": ["include/**", "CMakeLists.txt"],
