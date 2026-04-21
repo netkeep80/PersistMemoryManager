@@ -316,6 +316,10 @@ pmm_add_test(test_issue329_image_version test_issue329_image_version.cpp)
 pmm_add_test(test_issue349_remove_ppool test_issue349_remove_ppool.cpp)
 target_compile_definitions(test_issue349_remove_ppool PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
+# ─── Issue 352: kernel subtree size budget ─────────────────────────
+pmm_add_test(test_issue352_kernel_subtree_size test_issue352_kernel_subtree_size.cpp)
+target_compile_definitions(test_issue352_kernel_subtree_size PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
 # ─── Issue 314: build graph compaction contract ─────────────────
 add_test(
     NAME test_issue314_build_graph_contract

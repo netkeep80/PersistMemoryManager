@@ -3537,7 +3537,7 @@ template <typename T, typename ManagerT> struct pallocator
         return static_cast<T*>( raw );
     }
 
-    void deallocate( T* p, std::size_t  ) noexcept { ManagerT::deallocate( static_cast<void*>( p ) ); }
+    void deallocate( T* p, std::size_t ) noexcept { ManagerT::deallocate( static_cast<void*>( p ) ); }
 
     std::size_t max_size() const noexcept { return ( std::numeric_limits<std::size_t>::max )() / sizeof( T ); }
 
@@ -3733,7 +3733,6 @@ template <typename T, typename ManagerT> struct parray
     bool operator!=( const parray& other ) const noexcept { return !( *this == other ); }
 
   private:
-
     T* resolve_data() const noexcept
     {
         return reinterpret_cast<T*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
@@ -4172,7 +4171,7 @@ template <typename ManagerT> struct pstring
 
     std::uint32_t _length;
     std::uint32_t _capacity;
-    index_type _data_idx;
+    index_type    _data_idx;
 
     pstring() noexcept
         : _length( 0 ), _capacity( 0 ), _data_idx( detail::kNullIdx_v<typename ManagerT::address_traits> )
@@ -4282,7 +4281,6 @@ template <typename ManagerT> struct pstring
     bool operator<( const pstring& other ) const noexcept { return std::strcmp( c_str(), other.c_str() ) < 0; }
 
   private:
-
     char* resolve_data() const noexcept
     {
         return reinterpret_cast<char*>( detail::resolve_granule_ptr<typename ManagerT::address_traits>(
@@ -4871,7 +4869,6 @@ template <typename ConfigT = CacheManagerConfig, std::size_t InstanceId = 0>
 class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryManager<ConfigT, InstanceId>>
 {
   public:
-
     using address_traits  = typename ConfigT::address_traits;
     using storage_backend = typename ConfigT::storage_backend;
     using free_block_tree = typename ConfigT::free_block_tree;
@@ -5246,7 +5243,6 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
     }
 
   private:
-
     template <typename T>
     static index_type get_tree_idx_field( pptr<T> p, index_type ( *getter )( const void* ) ) noexcept
     {
@@ -5277,7 +5273,6 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
     }
 
   public:
-
     template <typename T> static index_type get_tree_left_offset( pptr<T> p ) noexcept
     {
         return get_tree_idx_field( p, &BlockStateBase<address_traits>::get_left_offset );
@@ -5371,7 +5366,6 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
     }
 
   private:
-
     template <typename Fn> static std::size_t read_stat( Fn fn ) noexcept
     {
         if ( !_initialized.load( std::memory_order_acquire ) )
@@ -5383,7 +5377,6 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
     }
 
   public:
-
     static std::size_t total_size() noexcept
     {
         if ( !_initialized.load( std::memory_order_acquire ) )
@@ -5481,7 +5474,6 @@ class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryM
     static storage_backend& backend() noexcept { return _backend; }
 
   private:
-
     static inline storage_backend _backend{};
 
     static inline std::atomic<bool> _initialized{ false };
