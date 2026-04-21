@@ -115,6 +115,8 @@ A PR is first assessed on **contract conformance**, not on local code quality:
 A technically correct PR that violates its issue contract is rejected.
 A minimal PR that respects its contract is preferred over a broader one that
 "also fixes a few other things".
+Governance-path edits require `authorized_governance_paths` in the linked issue
+body; PR-body governance authorization is not trusted.
 For generated closure, reviewers check that the generated diff is mechanically
 explained by the allowed source diff and is not a disguised mixed change.
 

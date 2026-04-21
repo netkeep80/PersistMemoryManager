@@ -22,9 +22,12 @@ workflow = workflow_path.read_text(encoding="utf-8")
 policy = json.loads(policy_path.read_text(encoding="utf-8"))
 issue_template = issue_template_path.read_text(encoding="utf-8")
 pr_template = pr_template_path.read_text(encoding="utf-8")
-expected_action_ref = "99bf716da62c5d01070aa0d7e4d4f8031b43a351"
+expected_action_ref = "6c81bb1050c7dca93de1a13108e0a024fe095298"
 expected_action = f"netkeep80/repo-guard@{expected_action_ref}"
-old_action_ref = "7ab5ca2f2d9859b4ffa2c423f05e951d4971be84"
+old_action_refs = {
+    "7ab5ca2f2d9859b4ffa2c423f05e951d4971be84",
+    "99bf716da62c5d01070aa0d7e4d4f8031b43a351",
+}
 expected_profiles = {
     "governance",
     "docs-comments-cleanup",
@@ -77,7 +80,8 @@ if action_refs:
         re.fullmatch(r"[0-9a-f]{40}", action_ref) or re.fullmatch(r"v\d+\.\d+\.\d+", action_ref),
         "repo-guard workflow must use a pinned commit SHA or pinned release tag",
     )
-require(old_action_ref not in workflow, "repo-guard workflow must not use the old Action pin")
+for old_action_ref in old_action_refs:
+    require(old_action_ref not in workflow, f"repo-guard workflow must not use old Action pin {old_action_ref}")
 require("mode: check-pr" in workflow, "repo-guard workflow must run check-pr mode")
 require("enforcement: advisory" in workflow, "repo-guard workflow must remain advisory in this stage")
 require("fetch-depth: 0" in workflow, "repo-guard workflow must use full checkout history")
