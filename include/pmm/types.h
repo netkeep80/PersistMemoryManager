@@ -195,7 +195,7 @@ template <typename AddressTraitsT>
 inline constexpr typename AddressTraitsT::index_type kNoBlock_v = AddressTraitsT::no_block;
 
 /// @brief Null granule index sentinel: index_type(0) means "no data" in persistent containers.
-/// Use this instead of `static_cast<index_type>(0)` in parray, pstring, ppool, pmap.
+/// Use this instead of `static_cast<index_type>(0)` in persistent containers.
 template <typename AddressTraitsT>
 inline constexpr typename AddressTraitsT::index_type kNullIdx_v = static_cast<typename AddressTraitsT::index_type>( 0 );
 
@@ -450,7 +450,7 @@ inline typename AddressTraitsT::index_type block_total_granules( const std::uint
 }
 
 /// @brief Resolve a granule index to a raw pointer.
-/// Eliminates repeated `base + idx * granule_size` patterns across parray, pstring, ppool, pstringview.
+/// Eliminates repeated `base + idx * granule_size` patterns across persistent containers.
 /// @return nullptr if idx is zero (null sentinel).
 template <typename AddressTraitsT>
 inline void* resolve_granule_ptr( std::uint8_t* base, typename AddressTraitsT::index_type idx ) noexcept
@@ -475,7 +475,7 @@ inline void* resolve_granule_ptr_checked( std::uint8_t* base, std::size_t total_
 }
 
 /// @brief Convert a raw pointer to a granule index.
-/// Eliminates repeated `(ptr - base) / granule_size` patterns across parray, pstring, ppool, pstringview.
+/// Eliminates repeated `(ptr - base) / granule_size` patterns across persistent containers.
 template <typename AddressTraitsT>
 inline typename AddressTraitsT::index_type ptr_to_granule_idx( const std::uint8_t* base, const void* ptr ) noexcept
 {

@@ -160,9 +160,6 @@ pmm_add_test(test_issue196_pmap_erase test_issue196_pmap_erase.cpp)
 # ─── Тесты STL-совместимого аллокатора pallocator ───
 pmm_add_test(test_issue198_pallocator test_issue198_pallocator.cpp)
 
-# ─── Тесты персистентного пула объектов ppool ──────
-pmm_add_test(test_issue199_ppool test_issue199_ppool.cpp)
-
 # ─── Тесты корневого объекта в ManagerHeader ───────
 pmm_add_test(test_issue200_root_object test_issue200_root_object.cpp)
 
@@ -314,6 +311,10 @@ pmm_add_test(test_issue328_destroy_lifecycle test_issue328_destroy_lifecycle.cpp
 
 # ─── Issue 329: explicit ManagerHeader image version ───────────────
 pmm_add_test(test_issue329_image_version test_issue329_image_version.cpp)
+
+# ─── Issue 349: remove ppool from public PMM surface ───────────────
+pmm_add_test(test_issue349_remove_ppool test_issue349_remove_ppool.cpp)
+target_compile_definitions(test_issue349_remove_ppool PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 # ─── Issue 314: build graph compaction contract ─────────────────
 add_test(

@@ -3,7 +3,7 @@
  * @brief Tests: code review improvements.
  *
  * Covers:
- *   - typed_guard RAII scope-guard for pstring, parray, ppool
+ *   - typed_guard RAII scope-guard for persistent objects with cleanup methods
  *   - HeapStorage minimum initial allocation size
  *   - [[deprecated]] attribute presence on legacy functions
  *
@@ -21,6 +21,21 @@
 #include <type_traits>
 
 using Mgr = pmm::presets::SingleThreadedHeap;
+
+namespace
+{
+
+struct Issue235FreeAllProbe
+{
+    Issue235FreeAllProbe() noexcept  = default;
+    ~Issue235FreeAllProbe() noexcept = default;
+
+    void free_all() noexcept { ++cleanup_calls; }
+
+    static inline int cleanup_calls = 0;
+};
+
+} // namespace
 
 // =============================================================================
 // PART A: typed_guard RAII scope-guard
@@ -52,17 +67,15 @@ TEST_CASE( "I235-A2: typed_guard auto-cleans parray on scope exit", "[test_issue
     Mgr::destroy();
 }
 
-TEST_CASE( "I235-A3: typed_guard auto-cleans ppool on scope exit", "[test_issue235]" )
+TEST_CASE( "I235-A3: typed_guard supports free_all cleanup on scope exit", "[test_issue235]" )
 {
-    Mgr::create( 256 * 1024 );
+    Issue235FreeAllProbe::cleanup_calls = 0;
+    Mgr::create( 64 * 1024 );
     {
-        auto guard = Mgr::make_guard<Mgr::ppool<int>>();
+        auto guard = Mgr::make_guard<Issue235FreeAllProbe>();
         REQUIRE( guard );
-        int* a = guard->allocate();
-        REQUIRE( a != nullptr );
-        *a = 42;
-        guard->deallocate( a );
     }
+    REQUIRE( Issue235FreeAllProbe::cleanup_calls == 1 );
     Mgr::destroy();
 }
 
@@ -141,10 +154,10 @@ TEST_CASE( "I235-C1: HasFreeData concept detects pstring", "[test_issue235]" )
     static_assert( (!pmm::HasFreeAll<Mgr::pstring>));
 }
 
-TEST_CASE( "I235-C2: HasFreeAll concept detects ppool", "[test_issue235]" )
+TEST_CASE( "I235-C2: HasFreeAll concept detects free_all cleanup", "[test_issue235]" )
 {
-    static_assert( (!pmm::HasFreeData<Mgr::ppool<int>>));
-    static_assert( pmm::HasFreeAll<Mgr::ppool<int>> );
+    static_assert( (!pmm::HasFreeData<Issue235FreeAllProbe>));
+    static_assert( pmm::HasFreeAll<Issue235FreeAllProbe> );
 }
 
 TEST_CASE( "I235-C3: HasFreeData concept detects parray", "[test_issue235]" )

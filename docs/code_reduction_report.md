@@ -17,7 +17,6 @@ per capability.
 | `types.h` | 459 | 464 | +5 | Added `detail::kNullIdx_v<AT>` constant for the null granule index sentinel. |
 | `parray.h` | 452 | 452 | 0 | Replaced `static_cast<index_type>(0)` with `kNullIdx_v` (no line count change). |
 | `pstring.h` | 319 | 319 | 0 | Replaced `static_cast<index_type>(0)` with `kNullIdx_v`. |
-| `ppool.h` | 337 | 337 | 0 | Replaced `static_cast<index_type>(0)` with `kNullIdx_v`. |
 
 ## Structural Duplication Eliminated
 
@@ -79,9 +78,9 @@ if ( !_initialized.load( std::memory_order_relaxed ) ) return 0;
 template <typename Fn> static std::size_t read_stat( Fn fn ) noexcept;
 ```
 
-### 4. Null index sentinel (types.h → parray/pstring/ppool)
+### 4. Null index sentinel (types.h → parray/pstring)
 
-**Before:** Verbose `static_cast<index_type>(0)` scattered across 3 files (~20 occurrences).
+**Before:** Verbose `static_cast<index_type>(0)` scattered across container code.
 
 **After:** Named constant `detail::kNullIdx_v<AT>` with clear semantic intent.
 

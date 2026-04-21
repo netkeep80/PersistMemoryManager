@@ -6,7 +6,6 @@
  *   - Allocator: allocate, deallocate, reallocate_typed, mixed alloc/dealloc
  *   - pmap<K,V>: insert, find, erase
  *   - parray<T>: push_back, random access
- *   - ppool<T>: allocate, deallocate
  *   - pstring: assign, append
  *   - pstringview: intern (AVL lookup)
  *   - Multi-threaded allocator scaling
@@ -25,7 +24,6 @@
 #include "pmm/persist_memory_manager.h"
 #include "pmm/pmap.h"
 #include "pmm/pmm_presets.h"
-#include "pmm/ppool.h"
 #include "pmm/pstring.h"
 #include "pmm/pstringview.h"
 
@@ -43,7 +41,6 @@ using MgrRealloc = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 103>;
 using MgrBatch   = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 104>;
 using MgrPmap    = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 105>;
 using MgrParray  = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 107>;
-using MgrPpool   = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 108>;
 using MgrPstring = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 109>;
 using MgrMT      = pmm::PersistMemoryManager<pmm::PersistentDataConfig, 112>;
 
@@ -346,69 +343,6 @@ static void BM_ParrayRandomAccess( benchmark::State& state )
     MgrParray::destroy();
 }
 BENCHMARK( BM_ParrayRandomAccess )->Arg( 100 )->Arg( 1000 )->Arg( 10000 );
-
-// ═════════════════════════════════════════════════════════════════════════════
-//  ppool benchmarks (O(1) pool allocator)
-// ═════════════════════════════════════════════════════════════════════════════
-
-struct PoolNode
-{
-    int    key;
-    int    value;
-    double data;
-};
-
-static void BM_PpoolAllocate( benchmark::State& state )
-{
-    MgrPpool::create( HEAP_64MB );
-
-    auto pool = MgrPpool::create_typed<pmm::ppool<PoolNode, MgrPpool>>();
-    pool->set_objects_per_chunk( 256 );
-
-    for ( auto _ : state )
-    {
-        PoolNode* p = pool->allocate();
-        benchmark::DoNotOptimize( p );
-        if ( p )
-            pool->deallocate( p );
-    }
-
-    pool->free_all();
-    MgrPpool::destroy_typed( pool );
-    MgrPpool::destroy();
-}
-BENCHMARK( BM_PpoolAllocate );
-
-static void BM_PpoolBatch( benchmark::State& state )
-{
-    const auto N = static_cast<int>( state.range( 0 ) );
-    MgrPpool::create( HEAP_64MB );
-
-    auto pool = MgrPpool::create_typed<pmm::ppool<PoolNode, MgrPpool>>();
-    pool->set_objects_per_chunk( 256 );
-
-    std::vector<PoolNode*> ptrs( N );
-
-    for ( auto _ : state )
-    {
-        for ( int i = 0; i < N; i++ )
-            ptrs[i] = pool->allocate();
-
-        state.PauseTiming();
-        for ( int i = 0; i < N; i++ )
-        {
-            if ( ptrs[i] )
-                pool->deallocate( ptrs[i] );
-        }
-        state.ResumeTiming();
-    }
-
-    state.SetItemsProcessed( state.iterations() * N );
-    pool->free_all();
-    MgrPpool::destroy_typed( pool );
-    MgrPpool::destroy();
-}
-BENCHMARK( BM_PpoolBatch )->Arg( 100 )->Arg( 1000 )->Arg( 10000 );
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  pstring benchmarks (mutable persistent string)

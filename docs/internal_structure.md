@@ -53,7 +53,6 @@ Canonical map of internal modules, their responsibilities, and authoritative fil
 | `pstringview.h` | 300 | `pstringview<ManagerT>` — interned read-only string (deduplication via AVL) |
 | `pmap.h` | 398 | `pmap<K, V, ManagerT>` — persistent AVL-tree dictionary |
 | `parray.h` | 452 | `parray<T, ManagerT>` — persistent dynamic array with O(1) indexed access |
-| `ppool.h` | 337 | `ppool<T, ManagerT>` — persistent object pool (O(1) alloc/dealloc, chunked) |
 | `pallocator.h` | 155 | `pallocator<T, ManagerT>` — STL-compatible allocator adapter |
 
 **Shared patterns:** All containers use `detail::resolve_granule_ptr()` for data access and `detail::kNullIdx_v<AT>` for null sentinel.
@@ -98,7 +97,6 @@ pmm::                           Public API surface
 ├── pstringview<ManagerT>       Interned string
 ├── pmap<K, V, ManagerT>        Dictionary
 ├── parray<T, ManagerT>         Dynamic array
-├── ppool<T, ManagerT>          Object pool
 ├── pallocator<T, ManagerT>     STL allocator
 ├── Block<AT>                   Block layout
 ├── TreeNode<AT>                AVL node

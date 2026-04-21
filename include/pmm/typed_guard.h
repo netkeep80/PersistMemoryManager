@@ -23,7 +23,7 @@
  *   Mgr::destroy();
  * @endcode
  *
- * @see pstring.h, parray.h, ppool.h — containers requiring explicit cleanup
+ * @see pstring.h, parray.h — containers requiring explicit cleanup
  * @version 0.1
  */
 
@@ -43,7 +43,7 @@ concept HasFreeData = requires( T& t ) {
     { t.free_data() } noexcept;
 };
 
-/// @brief Detects types with a free_all() method (ppool).
+/// @brief Detects types with a free_all() method.
 template <typename T>
 concept HasFreeAll = requires( T& t ) {
     { t.free_all() } noexcept;
@@ -59,7 +59,7 @@ concept HasPersistentCleanup = HasFreeData<T> || HasFreeAll<T>;
  * Calls the appropriate cleanup method (free_data() or free_all()) and then
  * ManagerT::destroy_typed() when the guard goes out of scope.
  *
- * @tparam T        The persistent container type (e.g., pstring, parray, ppool).
+ * @tparam T        The persistent object type (e.g., pstring, parray).
  * @tparam ManagerT The PersistMemoryManager type.
  */
 template <typename T, typename ManagerT> class typed_guard
