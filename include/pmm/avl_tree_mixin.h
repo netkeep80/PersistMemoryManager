@@ -90,6 +90,7 @@ static void avl_set_child( PPtr parent, PPtr old_child, PPtr new_child, IndexTyp
 }
 /*
 ### pmm-detail-avlupdateheightonly
+req: dr-009, qa-maint-002, sys-004
 */
 struct AvlUpdateHeightOnly
 {

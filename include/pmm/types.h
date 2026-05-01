@@ -13,7 +13,7 @@ namespace pmm
 {
 /*
 ## pmm-pmmerror
-req: feat-004, fr-014, fr-024, qa-rec-001, qa-compat-001
+req: feat-004, fr-014, fr-024, qa-rec-001, qa-compat-001, dr-020, feat-010
 */
 enum class PmmError : uint8_t
 {

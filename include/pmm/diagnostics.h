@@ -59,7 +59,7 @@ struct DiagnosticEntry
 inline constexpr size_t kMaxDiagnosticEntries = 64;
 /*
 ## pmm-verifyresult
-req: feat-004, fr-014, fr-024, qa-rec-001
+req: feat-004, fr-014, fr-024, qa-rec-001, feat-010, fr-015, if-010, qa-diag-001
 */
 struct VerifyResult
 {

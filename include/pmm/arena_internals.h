@@ -87,6 +87,7 @@ template <typename AT> constexpr std::optional<GranuleCount<AT>> bytes_to_granul
 }
 /*
 ### pmm-detail-arenaview
+req: dr-001, fr-013, fr-020, fr-023, fr-024, fr-025, fr-027, fr-030, fr-033, qa-port-001, qa-rel-001, rule-001
 */
 template <typename AT, bool IsConst> class BasicArenaView
 {

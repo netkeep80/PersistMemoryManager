@@ -1,3 +1,8 @@
+/*
+## test-forest-registry
+req: fr-012
+*/
+
 #include "pmm/io.h"
 #include "pmm/persist_memory_manager.h"
 

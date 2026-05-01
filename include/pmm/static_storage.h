@@ -7,7 +7,7 @@ namespace pmm
 {
 /*
 ## pmm-staticstorage
-req: feat-001, fr-001, ur-006, con-005
+req: feat-001, fr-001, ur-006, con-005, con-008, feat-006, if-005, sys-003, ur-010
 */
 template <size_t Size, typename AT = DefaultAddressTraits> class StaticStorage
 {

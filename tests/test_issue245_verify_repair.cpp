@@ -1,3 +1,8 @@
+/*
+## test-issue245-verify-repair
+req: ac-005
+*/
+
 /**
  * @file test_issue245_verify_repair.cpp
  * @brief Tests for verify vs repair mode separation.

@@ -4,6 +4,15 @@
 
 Идентификаторы ниже являются ссылками на якоря (заголовки уровня `##`) в соответствующих md-файлах. Каждый якорь — отдельное требование с собственным набором ссылок.
 
+> Состав связей дублирует поля `Реализует` / `Реализуется в` / `Проверяется в`
+> внутри отдельных требований. Согласованность матрицы и отдельных
+> требований проверяется скриптами
+> [scripts/check-requirements-traceability.py](../scripts/check-requirements-traceability.py)
+> и [scripts/check-requirements-catalog.py](../scripts/check-requirements-catalog.py)
+> в workflow `Docs Consistency`. Список допустимых исключений (orphan-узлы и
+> якоря, у которых сознательно нет `req:`-аннотации) лежит в
+> [req/.catalog-allowlist.json](.catalog-allowlist.json).
+
 ## Бизнес-цели → реализация
 
 ### br-001

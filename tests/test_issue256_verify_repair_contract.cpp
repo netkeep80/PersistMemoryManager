@@ -1,3 +1,8 @@
+/*
+## test-issue256-verify-repair-contract
+req: ac-006
+*/
+
 /**
  * @file test_issue256_verify_repair_contract.cpp
  * @brief Tests for the verify/repair/load operational contract.

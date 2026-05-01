@@ -1,3 +1,8 @@
+/*
+## test-allocate
+req: ac-001, ac-002
+*/
+
 /**
  * @file test_allocate.cpp
  * @brief Тесты выделения памяти

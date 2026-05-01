@@ -163,7 +163,7 @@ template <typename AT> using BlockHeaderStorage = BlockHeaderStorageImpl<AT, blo
 }
 /*
 ## pmm-blockheader
-req: dr-001, dr-002, dr-003, dr-004, dr-006, qa-mem-001
+req: dr-001, dr-002, dr-003, dr-004, dr-006, qa-mem-001, dr-005, dr-014, dr-015, dr-016, dr-018, dr-019
 */
 template <typename AT> struct BlockHeader : detail::BlockHeaderStorage<AT>
 {

@@ -48,7 +48,7 @@ inline void aligned_free_for_arena( void* p ) noexcept
 }
 /*
 ## pmm-heapstorage
-req: feat-001, fr-001, fr-026, ur-001, if-008, qa-mem-001
+req: feat-001, fr-001, fr-026, ur-001, if-008, qa-mem-001, feat-006, fr-013, fr-028, if-005, sys-003
 */
 template <typename AT = DefaultAddressTraits> class HeapStorage
 {

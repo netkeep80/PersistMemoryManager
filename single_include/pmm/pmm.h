@@ -99,6 +99,7 @@ struct SharedMutexLock
 };
 /*
 ### pmm-config-nolock
+req: if-006
 */
 struct NoLock
 {
@@ -288,7 +289,7 @@ template <typename AT> using BlockHeaderStorage = BlockHeaderStorageImpl<AT, blo
 }
 /*
 ## pmm-blockheader
-req: dr-001, dr-002, dr-003, dr-004, dr-006, qa-mem-001
+req: dr-001, dr-002, dr-003, dr-004, dr-006, qa-mem-001, dr-005, dr-014, dr-015, dr-016, dr-018, dr-019
 */
 template <typename AT> struct BlockHeader : detail::BlockHeaderStorage<AT>
 {
@@ -418,7 +419,7 @@ struct DiagnosticEntry
 inline constexpr size_t kMaxDiagnosticEntries = 64;
 /*
 ## pmm-verifyresult
-req: feat-004, fr-014, fr-024, qa-rec-001
+req: feat-004, fr-014, fr-024, qa-rec-001, feat-010, fr-015, if-010, qa-diag-001
 */
 struct VerifyResult
 {
@@ -460,7 +461,7 @@ template <typename AT> class SplittingBlock;
 template <typename AT> class CoalescingBlock;
 /*
 ## pmm-blockstatebase
-req: feat-007, fr-009, fr-010, fr-018, dr-006, rule-002
+req: feat-007, fr-009, fr-010, fr-018, dr-006, rule-002, dr-005, dr-014
 */
 template <typename AT> class BlockStateBase
 {
@@ -1006,7 +1007,7 @@ namespace pmm
 {
 /*
 ## pmm-pmmerror
-req: feat-004, fr-014, fr-024, qa-rec-001, qa-compat-001
+req: feat-004, fr-014, fr-024, qa-rec-001, qa-compat-001, dr-020, feat-010
 */
 enum class PmmError : uint8_t
 {
@@ -1466,6 +1467,7 @@ static void avl_set_child( PPtr parent, PPtr old_child, PPtr new_child, IndexTyp
 }
 /*
 ### pmm-detail-avlupdateheightonly
+req: dr-009, qa-maint-002, sys-004
 */
 struct AvlUpdateHeightOnly
 {
@@ -1870,7 +1872,7 @@ concept FreeBlockTreePolicyForTraitsConcept =
     };
 /*
 ## pmm-avlfreetree
-req: feat-002, fr-004, fr-013, dr-005, dr-013, qa-perf-001
+req: feat-002, fr-004, fr-013, dr-005, dr-013, qa-perf-001, dr-009, dr-017, qa-maint-002
 */
 template <typename AT = DefaultAddressTraits> struct AvlFreeTree
 {
@@ -2093,6 +2095,7 @@ template <typename AT> constexpr std::optional<GranuleCount<AT>> bytes_to_granul
 }
 /*
 ### pmm-detail-arenaview
+req: dr-001, fr-013, fr-020, fr-023, fr-024, fr-025, fr-027, fr-030, fr-033, qa-port-001, qa-rel-001, rule-001
 */
 template <typename AT, bool IsConst> class BasicArenaView
 {
@@ -2385,7 +2388,7 @@ inline void aligned_free_for_arena( void* p ) noexcept
 }
 /*
 ## pmm-heapstorage
-req: feat-001, fr-001, fr-026, ur-001, if-008, qa-mem-001
+req: feat-001, fr-001, fr-026, ur-001, if-008, qa-mem-001, feat-006, fr-013, fr-028, if-005, sys-003
 */
 template <typename AT = DefaultAddressTraits> class HeapStorage
 {
@@ -2529,7 +2532,7 @@ namespace pmm
 {
 /*
 ## pmm-staticstorage
-req: feat-001, fr-001, ur-006, con-005
+req: feat-001, fr-001, ur-006, con-005, con-008, feat-006, if-005, sys-003, ur-010
 */
 template <size_t Size, typename AT = DefaultAddressTraits> class StaticStorage
 {
@@ -2574,7 +2577,7 @@ template <typename AT = DefaultAddressTraits, typename LockPolicyT = config::NoL
           size_t MaxMemoryGB = 64, typename LoggingPolicyT = logging::NoLogging>
 /*
 ## pmm-basicconfig
-req: feat-001, fr-001, ur-001, ur-006, if-008, con-005
+req: feat-001, fr-001, ur-001, ur-006, if-008, con-005, if-006
 */
 struct BasicConfig
 {
@@ -3189,6 +3192,7 @@ template <typename AT> struct ForestDomainRecord
 };
 /*
 ### pmm-detail-forestdomainregistry
+req: feat-005, fr-012, fr-018, rule-008, sys-004
 */
 template <typename AT> struct ForestDomainRegistry
 {
@@ -3371,7 +3375,7 @@ namespace pmm
 {
 /*
 ## pmm-pallocator
-req: feat-006, fr-027, ur-003, if-001
+req: feat-006, fr-027, ur-003, if-001, feat-008, ur-008
 */
 template <typename T, typename ManagerT> struct pallocator
 {
@@ -3426,7 +3430,7 @@ template <class T, class ManagerT>
     requires( !std::is_void_v<ManagerT> )
 /*
 ## pmm-pptr
-req: feat-003, fr-007, fr-008, fr-030, fr-033, dr-007, qa-port-001, con-007, rule-001
+req: feat-003, fr-007, fr-008, fr-030, fr-033, dr-007, qa-port-001, con-007, rule-001, fr-032, qa-mem-001, ur-003
 */
 class pptr
 {
@@ -3494,7 +3498,7 @@ namespace pmm
 {
 /*
 ## pmm-parray
-req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007
+req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, feat-008, fr-031, ur-008
 */
 template <typename T, typename ManagerT> struct parray
 {
@@ -3749,7 +3753,7 @@ inline bool pmap_write_name( char ( &out )[kForestDomainNameCapacity], uint32_t 
 }
 /*
 ## pmm-pmap
-req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007
+req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, dr-010, dr-011, feat-008, fr-018, ur-008
 */
 template <typename _K, typename _V, typename ManagerT> struct pmap
 {
@@ -3935,7 +3939,7 @@ namespace pmm
 {
 /*
 ## pmm-pstring
-req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007
+req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, feat-008, fr-031, ur-008
 */
 template <typename ManagerT> struct pstring
 {
@@ -4077,7 +4081,7 @@ namespace pmm
 template <typename ManagerT> struct pstringview;
 /*
 ## pmm-pstringview
-req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007
+req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, con-012, feat-008, fr-017, ur-008
 */
 template <typename ManagerT> struct pstringview
 {
@@ -4312,6 +4316,7 @@ template <typename ManagerT> class PersistMemoryTypedApi
     }
 /*
 #### pmm-detail-persistmemorytypedapi-reallocate_typed
+req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
 */
     template <typename T>
     static pmm::pptr<T, ManagerT> reallocate_typed( pmm::pptr<T, ManagerT> p, size_t old_count,
@@ -4585,7 +4590,7 @@ template <typename C> struct config_logging_policy<C, std::void_t<typename C::lo
 template <typename ConfigT = CacheManagerConfig, size_t InstanceId = 0>
 /*
 ## pmm-persistmemorymanager
-req: feat-001, if-008, con-004, con-005, if-009
+req: feat-001, if-008, con-004, con-005, if-009, con-009, dr-002, dr-008, dr-018, fr-004, fr-007, fr-008, fr-009, fr-010, fr-011, fr-015, fr-021, fr-022, fr-032, qa-compat-001, qa-perf-002, qa-rec-001, qa-rel-002, qa-thread-001, qa-thread-002, rule-006, sys-001, sys-005
 */
 class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryManager<ConfigT, InstanceId>>
 {
@@ -4702,7 +4707,7 @@ req: fr-001, fr-026, ur-001, feat-001
     }
 /*
 ### pmm-persistmemorymanager-load
-req: fr-002, fr-014, ur-005, feat-001, feat-004, qa-rec-001, qa-compat-001
+req: fr-002, fr-014, ur-005, feat-001, feat-004, qa-rec-001, qa-compat-001, ur-001
 */
     static bool load( VerifyResult& result ) noexcept
     {
@@ -6059,7 +6064,7 @@ namespace pmm
 {
 /*
 ## pmm-mmapstorage
-req: feat-001, feat-008, fr-001, fr-014, ur-005, ur-007, qa-rec-001, qa-port-001
+req: feat-001, feat-008, fr-001, fr-014, ur-005, ur-007, qa-rec-001, qa-port-001, feat-006, if-005, sys-003, ur-011
 */
 template <typename AT = DefaultAddressTraits> class MMapStorage
 {

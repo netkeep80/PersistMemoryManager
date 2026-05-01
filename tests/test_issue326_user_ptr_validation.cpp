@@ -1,3 +1,8 @@
+/*
+## test-issue326-user-ptr-validation
+req: ac-010
+*/
+
 /**
  * @file test_issue326_user_ptr_validation.cpp
  * @brief Regression tests for forged user pointer rejection.

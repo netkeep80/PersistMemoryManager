@@ -1,3 +1,8 @@
+/*
+## test-issue123-sh-single-threaded
+req: ac-008, ac-009
+*/
+
 /**
  * @file test_issue123_sh_single_threaded.cpp
  * @brief Тест самодостаточности pmm_single_threaded_heap.h.

@@ -1,3 +1,8 @@
+/*
+## test-persistence
+req: ac-004, ac-006
+*/
+
 /**
  * @file test_persistence.cpp
  * @brief Тесты персистентности (save_manager/load_manager_from_file)

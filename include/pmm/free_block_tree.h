@@ -17,7 +17,7 @@ concept FreeBlockTreePolicyForTraitsConcept =
     };
 /*
 ## pmm-avlfreetree
-req: feat-002, fr-004, fr-013, dr-005, dr-013, qa-perf-001
+req: feat-002, fr-004, fr-013, dr-005, dr-013, qa-perf-001, dr-009, dr-017, qa-maint-002
 */
 template <typename AT = DefaultAddressTraits> struct AvlFreeTree
 {

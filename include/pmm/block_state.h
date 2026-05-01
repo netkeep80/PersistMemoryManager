@@ -18,7 +18,7 @@ template <typename AT> class SplittingBlock;
 template <typename AT> class CoalescingBlock;
 /*
 ## pmm-blockstatebase
-req: feat-007, fr-009, fr-010, fr-018, dr-006, rule-002
+req: feat-007, fr-009, fr-010, fr-018, dr-006, rule-002, dr-005, dr-014
 */
 template <typename AT> class BlockStateBase
 {

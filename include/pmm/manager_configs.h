@@ -22,7 +22,7 @@ template <typename AT = DefaultAddressTraits, typename LockPolicyT = config::NoL
           size_t MaxMemoryGB = 64, typename LoggingPolicyT = logging::NoLogging>
 /*
 ## pmm-basicconfig
-req: feat-001, fr-001, ur-001, ur-006, if-008, con-005
+req: feat-001, fr-001, ur-001, ur-006, if-008, con-005, if-006
 */
 struct BasicConfig
 {

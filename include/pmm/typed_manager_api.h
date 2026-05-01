@@ -71,6 +71,7 @@ template <typename ManagerT> class PersistMemoryTypedApi
     }
 /*
 #### pmm-detail-persistmemorytypedapi-reallocate_typed
+req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
 */
     template <typename T>
     static pmm::pptr<T, ManagerT> reallocate_typed( pmm::pptr<T, ManagerT> p, size_t old_count,

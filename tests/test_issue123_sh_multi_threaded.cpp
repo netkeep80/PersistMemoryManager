@@ -1,3 +1,8 @@
+/*
+## test-issue123-sh-multi-threaded
+req: ac-008, ac-009
+*/
+
 /**
  * @file test_issue123_sh_multi_threaded.cpp
  * @brief Тест самодостаточности pmm_multi_threaded_heap.h.

@@ -22,7 +22,7 @@ template <class T, class ManagerT>
     requires( !std::is_void_v<ManagerT> )
 /*
 ## pmm-pptr
-req: feat-003, fr-007, fr-008, fr-030, fr-033, dr-007, qa-port-001, con-007, rule-001
+req: feat-003, fr-007, fr-008, fr-030, fr-033, dr-007, qa-port-001, con-007, rule-001, fr-032, qa-mem-001, ur-003
 */
 class pptr
 {

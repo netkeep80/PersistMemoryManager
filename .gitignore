@@ -19,6 +19,8 @@ build_release/
 build_log.txt
 test_results.txt
 experiments/
+__pycache__/
+*.pyc
 Testing
 build
 Release

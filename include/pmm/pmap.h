@@ -81,7 +81,7 @@ inline bool pmap_write_name( char ( &out )[kForestDomainNameCapacity], uint32_t 
 }
 /*
 ## pmm-pmap
-req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007
+req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, dr-010, dr-011, feat-008, fr-018, ur-008
 */
 template <typename _K, typename _V, typename ManagerT> struct pmap
 {

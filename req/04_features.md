@@ -14,7 +14,7 @@
   - [ur-001](03_user_requirements.md#ur-001)
   - [fr-001](05_functional_requirements.md#fr-001), [fr-002](05_functional_requirements.md#fr-002), [fr-003](05_functional_requirements.md#fr-003)
   - [con-004](09_constraints.md#con-004)
-  - `include/pmm/persist_memory_manager.h` — анкер `pmm-persistmemorymanager`
+  - [pmm-persistmemorymanager](../include/pmm/persist_memory_manager.h#pmm-persistmemorymanager)
 
 ## feat-002
 
@@ -27,7 +27,8 @@
   - [fr-004](05_functional_requirements.md#fr-004), [fr-013](05_functional_requirements.md#fr-013)
   - [dr-005](06_data_requirements.md#dr-005), [dr-006](06_data_requirements.md#dr-006)
   - [qa-perf-001](08_quality_attributes.md#qa-perf-001)
-  - `include/pmm/allocator_policy.h`, `include/pmm/free_block_tree.h`
+  - [pmm-allocatorpolicy](../include/pmm/allocator_policy.h#pmm-allocatorpolicy)
+  - [pmm-avlfreetree](../include/pmm/free_block_tree.h#pmm-avlfreetree)
 
 ## feat-003
 
@@ -41,7 +42,7 @@
   - [dr-007](06_data_requirements.md#dr-007)
   - [qa-port-001](08_quality_attributes.md#qa-port-001)
   - [con-007](09_constraints.md#con-007)
-  - `include/pmm/pptr.h`
+  - [pmm-pptr](../include/pmm/pptr.h#pmm-pptr)
 
 ## feat-004
 
@@ -66,7 +67,7 @@
   - [fr-011](05_functional_requirements.md#fr-011), [fr-012](05_functional_requirements.md#fr-012)
   - [dr-009](06_data_requirements.md#dr-009)
   - [rule-008](02_business_rules.md#rule-008)
-  - `include/pmm/forest_registry.h`
+  - [pmm-detail-forestdomainregistry](../include/pmm/forest_registry.h#pmm-detail-forestdomainregistry)
 
 ## feat-006
 
@@ -78,7 +79,9 @@
   - [if-005](07_external_interfaces.md#if-005)
   - [sys-003](10_system_requirements.md#sys-003)
   - [con-008](09_constraints.md#con-008)
-  - `include/pmm/heap_storage.h`, `include/pmm/static_storage.h`, `include/pmm/mmap_storage.h`
+  - [pmm-heapstorage](../include/pmm/heap_storage.h#pmm-heapstorage)
+  - [pmm-staticstorage](../include/pmm/static_storage.h#pmm-staticstorage)
+  - [pmm-mmapstorage](../include/pmm/mmap_storage.h#pmm-mmapstorage)
 
 ## feat-007
 
@@ -103,7 +106,11 @@
   - [dr-009](06_data_requirements.md#dr-009)
   - [fr-017](05_functional_requirements.md#fr-017), [fr-018](05_functional_requirements.md#fr-018), [fr-031](05_functional_requirements.md#fr-031)
   - [con-012](09_constraints.md#con-012)
-  - `include/pmm/pstring.h`, `include/pmm/pstringview.h`, `include/pmm/pmap.h`, `include/pmm/parray.h`, `include/pmm/pallocator.h`
+  - [pmm-pstring](../include/pmm/pstring.h#pmm-pstring)
+  - [pmm-pstringview](../include/pmm/pstringview.h#pmm-pstringview)
+  - [pmm-pmap](../include/pmm/pmap.h#pmm-pmap)
+  - [pmm-parray](../include/pmm/parray.h#pmm-parray)
+  - [pmm-pallocator](../include/pmm/pallocator.h#pmm-pallocator)
 
 ## feat-009
 
@@ -115,7 +122,8 @@
   - [if-002](07_external_interfaces.md#if-002)
   - [con-010](09_constraints.md#con-010)
   - [rule-005](02_business_rules.md#rule-005)
-  - `single_include/pmm/pmm.h`, `scripts/generate-single-headers.sh`
+  - [single_include/pmm/pmm.h](../single_include/pmm/pmm.h)
+  - [scripts/generate-single-headers.sh](../scripts/generate-single-headers.sh)
 - **Проверяется в:** [ac-011](12_acceptance_criteria.md#ac-011)
 
 ## feat-010
@@ -128,4 +136,5 @@
   - [fr-015](05_functional_requirements.md#fr-015)
   - [if-010](07_external_interfaces.md#if-010)
   - [qa-diag-001](08_quality_attributes.md#qa-diag-001)
-  - `include/pmm/diagnostics.h`
+  - [pmm-verifyresult](../include/pmm/diagnostics.h#pmm-verifyresult)
+  - [pmm-pmmerror](../include/pmm/types.h#pmm-pmmerror)

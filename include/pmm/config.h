@@ -16,6 +16,7 @@ struct SharedMutexLock
 };
 /*
 ### pmm-config-nolock
+req: if-006
 */
 struct NoLock
 {

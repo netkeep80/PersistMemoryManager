@@ -38,7 +38,7 @@ expected_profiles = {
     "release",
 }
 expected_size_rules = [
-    ("kernel-subtree-max-bytes", "directory", "bytes", "include/**", 260000),
+    ("kernel-subtree-max-bytes", "directory", "bytes", "include/**", 270000),
 ]
 required_governance_paths = {
     ".github/workflows/repo-guard.yml",

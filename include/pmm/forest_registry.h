@@ -42,6 +42,7 @@ template <typename AT> struct ForestDomainRecord
 };
 /*
 ### pmm-detail-forestdomainregistry
+req: feat-005, fr-012, fr-018, rule-008, sys-004
 */
 template <typename AT> struct ForestDomainRegistry
 {

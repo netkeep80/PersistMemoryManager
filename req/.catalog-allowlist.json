@@ -1,0 +1,19 @@
+{
+  "_comment": "Allow-list for the requirements catalog validator. Entries here suppress specific errors/warnings produced by scripts/check-requirements-catalog.py. Each list documents an intentional gap that the team has decided to live with rather than back-fill, and serves as a TODO surface — when an entry can be removed, please remove it.",
+  "anchors_without_req_trace": [],
+  "test_traceability_exceptions": [
+    "if-004:tests/CMakeLists.txt",
+    "qa-test-001:tests/CMakeLists.txt",
+    "ac-012:tests/CMakeLists.txt"
+  ],
+  "verbose_template_exceptions": [],
+  "requirements_without_incoming": [
+    "asm-001",
+    "dep-003",
+    "sys-006"
+  ],
+  "requirements_without_outgoing": [
+    "dep-003",
+    "fr-019"
+  ]
+}

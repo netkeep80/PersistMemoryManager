@@ -23,6 +23,7 @@ on:
       - "scripts/check-version-consistency.sh"
       - "scripts/check-repo-guard-rollout.sh"
       - "scripts/check-requirements-traceability.py"
+      - "scripts/check-requirements-catalog.py"
       - ".github/workflows/docs-consistency.yml"
       - ".github/workflows/repo-guard.yml"
       - ".github/PULL_REQUEST_TEMPLATE.md"
@@ -44,6 +45,7 @@ on:
       - "scripts/check-version-consistency.sh"
       - "scripts/check-repo-guard-rollout.sh"
       - "scripts/check-requirements-traceability.py"
+      - "scripts/check-requirements-catalog.py"
       - ".github/workflows/docs-consistency.yml"
       - ".github/workflows/repo-guard.yml"
       - ".github/PULL_REQUEST_TEMPLATE.md"
@@ -69,6 +71,9 @@ jobs:
 
       - name: Check requirements traceability
         run: python3 scripts/check-requirements-traceability.py
+
+      - name: Check requirements catalog
+        run: python3 scripts/check-requirements-catalog.py
 
   version-consistency:
     name: Version consistency check (release-owned)

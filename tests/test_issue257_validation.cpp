@@ -1,3 +1,8 @@
+/*
+## test-issue257-validation
+req: ac-007, ac-010
+*/
+
 /**
  * @file test_issue257_validation.cpp
  * @brief Negative tests for pointer and block validation layer.

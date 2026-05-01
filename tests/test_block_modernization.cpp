@@ -1,3 +1,8 @@
+/*
+## test-block-modernization
+req: ac-001, dr-004, fr-001
+*/
+
 /**
  * @file test_block_modernization.cpp
  * @brief Tests for block modernization

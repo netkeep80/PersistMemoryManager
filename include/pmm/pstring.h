@@ -9,7 +9,7 @@ namespace pmm
 {
 /*
 ## pmm-pstring
-req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007
+req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, feat-008, fr-031, ur-008
 */
 template <typename ManagerT> struct pstring
 {

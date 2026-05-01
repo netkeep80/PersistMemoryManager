@@ -47,7 +47,7 @@ template <typename C> struct config_logging_policy<C, std::void_t<typename C::lo
 template <typename ConfigT = CacheManagerConfig, size_t InstanceId = 0>
 /*
 ## pmm-persistmemorymanager
-req: feat-001, if-008, con-004, con-005, if-009
+req: feat-001, if-008, con-004, con-005, if-009, con-009, dr-002, dr-008, dr-018, fr-004, fr-007, fr-008, fr-009, fr-010, fr-011, fr-015, fr-021, fr-022, fr-032, qa-compat-001, qa-perf-002, qa-rec-001, qa-rel-002, qa-thread-001, qa-thread-002, rule-006, sys-001, sys-005
 */
 class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryManager<ConfigT, InstanceId>>
 {
@@ -164,7 +164,7 @@ req: fr-001, fr-026, ur-001, feat-001
     }
 /*
 ### pmm-persistmemorymanager-load
-req: fr-002, fr-014, ur-005, feat-001, feat-004, qa-rec-001, qa-compat-001
+req: fr-002, fr-014, ur-005, feat-001, feat-004, qa-rec-001, qa-compat-001, ur-001
 */
     static bool load( VerifyResult& result ) noexcept
     {

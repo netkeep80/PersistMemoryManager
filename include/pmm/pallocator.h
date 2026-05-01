@@ -6,7 +6,7 @@ namespace pmm
 {
 /*
 ## pmm-pallocator
-req: feat-006, fr-027, ur-003, if-001
+req: feat-006, fr-027, ur-003, if-001, feat-008, ur-008
 */
 template <typename T, typename ManagerT> struct pallocator
 {
