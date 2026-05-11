@@ -11,7 +11,7 @@ AVL-based allocator, проверкой структуры и восстанов
 [![CI](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml/badge.svg)](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/std/the-standard)
-[![Version](https://img.shields.io/badge/version-5.0.1-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-6.2.1-green.svg)](CHANGELOG.md)
 
 ## Что это
 
