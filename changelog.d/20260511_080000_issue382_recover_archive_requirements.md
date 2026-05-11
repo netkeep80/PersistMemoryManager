@@ -16,6 +16,24 @@ bump: patch
 - `req:` traceability block on `tests/test_issue211_byte_offset.cpp` and
   `@see req/...` lines on six other tests to back-link verification to
   the catalog.
+- Explicit `Won't`/`Deprecated` entry `feat-015` recording that the
+  detailed visual demo specification from `docs/archive/demo.md`
+  (memory-map view, metrics view, structure tree, scenario manager,
+  FPS/memory constraints) is intentionally out of PMM scope; the
+  optional demo-target and its build dependency remain represented via
+  `if-011` and `dep-002`.
+- Feature-level trace entries for `feat-011…feat-015` and a recovered
+  byte-offset API block in `req/13_traceability_matrix.md` so the new
+  requirements are surfaced in the matrix.
+
+### Fixed
+- Strengthen the per-block encryption policy in `fr-036` / `qa-sec-001`:
+  require a unique nonce per encryption via `block_generation_counter`
+  (recovered from the original `docs/archive/phase7_4_encryption_compression.md`
+  proposal) and require authenticated encryption (AEAD AES-256-GCM, or
+  AES-256-CTR with HMAC) so wrong-key / tampered-ciphertext / replayed-nonce
+  load attempts are rejected through `PmmError::AuthenticationFailed`.
+  Closes the CTR-mode IV-reuse gap raised in PR review.
 
 ### Changed
 - Bump `scripts/source-loc-baseline.txt` 6352 → 6356 to absorb the new

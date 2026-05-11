@@ -119,6 +119,7 @@
 - **Основание:** README
 - **Реализуется в:**
   - [demo/](../demo/), [dep-002](11_assumptions_dependencies.md#dep-002)
+- **Примечания:** Детальная визуальная спецификация (memory map view, metrics view, structure tree, scenario manager, многопоточные сценарии, persistence-cycle сценарий, FPS/memory constraints) из `docs/archive/demo.md` намеренно **не** перенесена в PMM `req/` каталог — см. [feat-015](04_features.md#feat-015) (`Won't`).
 
 ## if-012
 

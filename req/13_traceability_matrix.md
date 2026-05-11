@@ -102,3 +102,38 @@
 - **Feature:** [feat-010](04_features.md#feat-010)
 - **Functional/data/interface:** [fr-015](05_functional_requirements.md#fr-015), [if-010](07_external_interfaces.md#if-010)
 - **Quality/constraints:** [qa-diag-001](08_quality_attributes.md#qa-diag-001)
+
+### feat-011
+- **Feature:** [feat-011](04_features.md#feat-011) (Draft / Could, tracking #239)
+- **Functional/data/interface:** [fr-036](05_functional_requirements.md#fr-036), [fr-037](05_functional_requirements.md#fr-037)
+- **Quality/constraints:** [qa-sec-001](08_quality_attributes.md#qa-sec-001), [asm-007](11_assumptions_dependencies.md#asm-007)
+
+### feat-012
+- **Feature:** [feat-012](04_features.md#feat-012) (Draft / Could, Phase 7.1 backlog)
+- **Functional/data/interface:** [fr-038](05_functional_requirements.md#fr-038)
+- **Quality/constraints:** [qa-rec-001](08_quality_attributes.md#qa-rec-001)
+
+### feat-013
+- **Feature:** [feat-013](04_features.md#feat-013) (Draft / Could, Phase 7.2 backlog)
+- **Functional/data/interface:** [fr-039](05_functional_requirements.md#fr-039)
+- **Quality/constraints:** [qa-mem-001](08_quality_attributes.md#qa-mem-001)
+
+### feat-014
+- **Feature:** [feat-014](04_features.md#feat-014) (Draft / Could, Phase 7.3 backlog)
+- **Functional/data/interface:** [fr-040](05_functional_requirements.md#fr-040), [if-013](07_external_interfaces.md#if-013)
+- **Quality/constraints:** [qa-thread-001](08_quality_attributes.md#qa-thread-001)
+
+### feat-015
+- **Feature:** [feat-015](04_features.md#feat-015) (Won't / Deprecated — detailed visual demo spec intentionally out of PMM scope)
+- **Functional/data/interface:** (none; only [if-011](07_external_interfaces.md#if-011) retains the optional-demo-target fact)
+- **Quality/constraints:** [dep-002](11_assumptions_dependencies.md#dep-002)
+
+## Recovered byte-offset API trace
+
+### fr-035 / if-012 / ac-013
+- **Functional:** [fr-035](05_functional_requirements.md#fr-035) (Should / Recovered, Issue #211)
+- **Interface:** [if-012](07_external_interfaces.md#if-012)
+- **Feature:** [feat-003](04_features.md#feat-003)
+- **Implementation anchors:** [pmm-pptr-byte_offset](../include/pmm/pptr.h#pmm-pptr-byte_offset), [pmm-detail-persistmemorytypedapi-pptr_from_byte_offset](../include/pmm/typed_manager_api.h#pmm-detail-persistmemorytypedapi-pptr_from_byte_offset)
+- **Acceptance:** [ac-013](12_acceptance_criteria.md#ac-013)
+- **Tests:** [tests/test_issue211_byte_offset.cpp](../tests/test_issue211_byte_offset.cpp)
