@@ -119,3 +119,25 @@
 - **Основание:** README
 - **Реализуется в:**
   - [demo/](../demo/), [dep-002](11_assumptions_dependencies.md#dep-002)
+- **Примечания:** Детальная визуальная спецификация (memory map view, metrics view, structure tree, scenario manager, многопоточные сценарии, persistence-cycle сценарий, FPS/memory constraints) из `docs/archive/demo.md` намеренно **не** перенесена в PMM `req/` каталог — см. [feat-015](04_features.md#feat-015) (`Won't`).
+
+## if-012
+
+- **Требование:** Public API должен экспонировать `pptr<T>::byte_offset()` и `PersistMemoryManager::pptr_from_byte_offset<T>(byte_off)` как documented round-trip для интеграции с external storage layers; ошибки сигнализируются через `PmmError::InvalidPointer` (misalignment) и `PmmError::Overflow` (overflow).
+- **Приоритет:** Should
+- **Статус:** Recovered
+- **Основание:** Issue #211, README API
+- **Реализует:** [fr-035](05_functional_requirements.md#fr-035), [feat-003](04_features.md#feat-003)
+- **Реализуется в:**
+  - [pmm-pptr-byte_offset](../include/pmm/pptr.h#pmm-pptr-byte_offset)
+  - [pmm-detail-persistmemorytypedapi-pptr_from_byte_offset](../include/pmm/typed_manager_api.h#pmm-detail-persistmemorytypedapi-pptr_from_byte_offset)
+- **Проверяется в:** [ac-013](12_acceptance_criteria.md#ac-013), [test_issue211_byte_offset.cpp](../tests/test_issue211_byte_offset.cpp)
+
+## if-013
+
+- **Требование:** Опциональный shared memory storage backend должен удовлетворять тому же storage backend concept, что и `HeapStorage`/`StaticStorage`/`MMapStorage`, и предоставлять межпроцессный доступ к persistent image через POSIX `shm_open` (Linux/macOS) или `CreateFileMapping` (Windows).
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Основание:** Дорожная карта PMM, Phase 7.3 (recovered в рамках Issue #382)
+- **Реализует:** [feat-014](04_features.md#feat-014), [fr-040](05_functional_requirements.md#fr-040)
+- **Связано с:** [qa-thread-001](08_quality_attributes.md#qa-thread-001)

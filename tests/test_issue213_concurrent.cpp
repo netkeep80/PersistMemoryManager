@@ -9,7 +9,7 @@
  *  - High contention with many threads
  *  - Concurrent operations on typed containers (pstring, parray, pmap)
  *
- * @see docs/phase5_testing.md §5.2
+ * @see Issue #213 (extended test coverage), req/qa-thread-001, req/qa-test-001
  * @version 0.1
  */
 

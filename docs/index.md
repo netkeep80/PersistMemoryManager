@@ -37,11 +37,6 @@ Single entry point for PMM documentation. The canonical set below must match
 | [Internal Structure](internal_structure.md) | Supporting implementation structure notes |
 | [Test Matrix](test_matrix.md) | Supporting test coverage matrix |
 
-## Archive
-
-Historical, phase, and planning documents are preserved in [`archive/`](archive/) for reference.
-They do not participate in the official reading path.
-
 ## Reading Order
 
 For newcomers, the recommended path is:

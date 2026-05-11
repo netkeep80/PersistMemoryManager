@@ -111,3 +111,12 @@
 - **Основание:** README
 - **Проверяет:** [con-002](09_constraints.md#con-002), [qa-test-001](08_quality_attributes.md#qa-test-001)
 - **Тесты:** [tests/CMakeLists.txt](../tests/CMakeLists.txt), [CMakeLists.txt](../CMakeLists.txt)
+
+## ac-013
+
+- **Критерий:** Round-trip конверсия `pptr<T> → byte_offset() → pptr_from_byte_offset<T>` возвращает исходный pptr для валидных значений; misaligned byte offsets возвращают null + `PmmError::InvalidPointer`; overflowing offsets возвращают null + `PmmError::Overflow`.
+- **Приоритет:** Should
+- **Статус:** Recovered
+- **Основание:** Issue #211
+- **Проверяет:** [fr-035](05_functional_requirements.md#fr-035), [if-012](07_external_interfaces.md#if-012)
+- **Тесты:** [test_issue211_byte_offset.cpp](../tests/test_issue211_byte_offset.cpp)

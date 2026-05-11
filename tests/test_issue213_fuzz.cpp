@@ -13,7 +13,7 @@
  *       For true coverage-guided fuzzing, a libFuzzer harness is provided
  *       in tests/fuzz_allocator.cpp (built separately with -fsanitize=fuzzer).
  *
- * @see docs/phase5_testing.md §5.2
+ * @see Issue #213 (extended test coverage), req/qa-test-001
  * @version 0.1
  */
 

@@ -11,7 +11,7 @@ AVL-based allocator, проверкой структуры и восстанов
 [![CI](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml/badge.svg)](https://github.com/netkeep80/PersistMemoryManager/actions/workflows/ci.yml)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://isocpp.org/std/the-standard)
-[![Version](https://img.shields.io/badge/version-5.0.1-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-6.2.1-green.svg)](CHANGELOG.md)
 
 ## Что это
 
@@ -338,8 +338,10 @@ cmake --build build --target pmm_demo
 - [Thread Safety](docs/thread_safety.md) - lock policies и concurrent usage;
 - [Block Header Semantics](docs/block_and_treenode_semantics.md) - семантика block header.
 
-Исторические документы находятся в `docs/archive/` и не входят в основной
-маршрут чтения.
+Исторические phase-планы и проработка опциональных надстроек (compression /
+encryption, transactions, GC, shared memory IPC) переосмыслены и зафиксированы
+в каталоге требований [`req/`](req/) — соответствующие черновые `feat-*`/`fr-*`
+имеют статус `Draft` или `Could` (Issue #382).
 
 ## Контрибьюция
 

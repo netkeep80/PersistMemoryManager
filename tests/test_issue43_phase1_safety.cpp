@@ -8,7 +8,7 @@
  *  - 1.3 Overflow protection in allocator_policy and allocate()
  *  - 1.4 Runtime checks in cast_from_raw (FreeBlock, AllocatedBlock)
  *
- * @see docs/phase1_safety.md
+ * @see Issue #43 (Phase 1 safety), req/fr-006, req/qa-rel-001
  * @version 0.1
  */
 

@@ -3457,7 +3457,7 @@ class pptr
     constexpr index_type offset() const noexcept { return _idx; }
 /*
 ### pmm-pptr-byte_offset
-req: dr-007, qa-port-001
+req: dr-007, qa-port-001, fr-035, if-012
 */
     constexpr size_t byte_offset() const noexcept
     {
@@ -4540,6 +4540,10 @@ req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
         T* base_elem = resolve_checked<T>( p );
         return ( base_elem == nullptr ) ? nullptr : base_elem + i;
     }
+/*
+#### pmm-detail-persistmemorytypedapi-pptr_from_byte_offset
+req: fr-035, if-012
+*/
     template <typename T> static pmm::pptr<T, ManagerT> pptr_from_byte_offset( size_t byte_off ) noexcept
     {
         using address_traits = typename ManagerT::address_traits;
