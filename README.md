@@ -338,8 +338,10 @@ cmake --build build --target pmm_demo
 - [Thread Safety](docs/thread_safety.md) - lock policies и concurrent usage;
 - [Block Header Semantics](docs/block_and_treenode_semantics.md) - семантика block header.
 
-Исторические документы находятся в `docs/archive/` и не входят в основной
-маршрут чтения.
+Исторические phase-планы и проработка опциональных надстроек (compression /
+encryption, transactions, GC, shared memory IPC) переосмыслены и зафиксированы
+в каталоге требований [`req/`](req/) — соответствующие черновые `feat-*`/`fr-*`
+имеют статус `Draft` или `Could` (Issue #382).
 
 ## Контрибьюция
 

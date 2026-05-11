@@ -6,7 +6,7 @@
  * in granule computations, allocation size calculations, and edge cases
  * across all AddressTraits variants (16-bit, 32-bit, 64-bit indexes).
  *
- * @see docs/phase5_testing.md §5.2
+ * @see Issue #213 (extended test coverage), req/fr-021, req/fr-023
  * @version 0.1
  */
 

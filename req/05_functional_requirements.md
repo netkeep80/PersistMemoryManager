@@ -363,3 +363,67 @@
 - **Реализует:** [rule-005](02_business_rules.md#rule-005), [con-010](09_constraints.md#con-010)
 - **Реализуется в:**
   - [scripts/check-source-loc-budget.sh](../scripts/check-source-loc-budget.sh), [scripts/source-loc-baseline.txt](../scripts/source-loc-baseline.txt)
+
+## fr-035
+
+- **Требование:** `pptr<T>::byte_offset()` и `PersistMemoryManager::pptr_from_byte_offset<T>(byte_off)` должны давать round-trip конверсию между persistent index и байтовым смещением: `byte_offset()` возвращает `offset() * granule_size` (0 для null), а `pptr_from_byte_offset` возвращает null на 0, выставляет `PmmError::InvalidPointer` при несовпадении granule alignment и `PmmError::Overflow` при превышении `index_type`.
+- **Приоритет:** Should
+- **Статус:** Recovered
+- **Основание:** Issue #211, публичные API в `include/pmm/pptr.h` и `include/pmm/typed_manager_api.h`
+- **Реализует:** [feat-003](04_features.md#feat-003), [if-012](07_external_interfaces.md#if-012)
+- **Реализуется в:**
+  - [pmm-pptr-byte_offset](../include/pmm/pptr.h#pmm-pptr-byte_offset)
+  - [pmm-detail-persistmemorytypedapi-pptr_from_byte_offset](../include/pmm/typed_manager_api.h#pmm-detail-persistmemorytypedapi-pptr_from_byte_offset)
+- **Проверяется в:** [ac-013](12_acceptance_criteria.md#ac-013), [test_issue211_byte_offset.cpp](../tests/test_issue211_byte_offset.cpp)
+
+## fr-036
+
+- **Требование:** PMM должен поддерживать опциональную политику шифрования (`EncryptionPolicyT`) уровня содержимого блоков (per-block AES-256-CTR с IV, производным от master key и granule index блока); политика-по-умолчанию `NoEncryption` обеспечивает zero overhead. `ManagerHeader` хранит идентификатор алгоритма (`encryption_algo`) для проверки совместимости при загрузке; загрузка несовместимого алгоритма отвергается через `PmmError`.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Tracking issue:** #239
+- **Основание:** Issue #239 (проработка вариантов сжатия и шифрования образов ПАП)
+- **Реализует:** [feat-011](04_features.md#feat-011), [qa-sec-001](08_quality_attributes.md#qa-sec-001)
+- **Связано с:** [asm-007](11_assumptions_dependencies.md#asm-007)
+- **Примечания:** Headers блоков и `ManagerHeader` остаются открытыми (вариант B из проработки #239), что сохраняет совместимость с частичным обновлением, `MMapStorage` и binary-diff потребителями. Меры митигации утечек метаданных (padding, dummy-блоки) обсуждаются отдельно.
+
+## fr-037
+
+- **Требование:** PMM должен поддерживать опциональную compression-политику для image save/load (LZ4 по умолчанию, zstd опционально). Сжатие применяется до шифрования; для online-сценариев применяется per-block сжатие, для offline-бэкапов — сжатие целого образа.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Tracking issue:** #239
+- **Основание:** Issue #239 (проработка вариантов сжатия и шифрования образов ПАП)
+- **Реализует:** [feat-011](04_features.md#feat-011)
+- **Связано с:** [fr-036](#fr-036)
+
+## fr-038
+
+- **Требование:** PMM может предоставлять транзакционный API (`begin_transaction()`, `commit()`, `rollback()`) с redo- или undo-журналом, обеспечивающий атомарность группы операций над persistent storage.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Основание:** Дорожная карта PMM, Phase 7.1 (recovered в рамках Issue #382)
+- **Реализует:** [feat-012](04_features.md#feat-012)
+- **Связано с:** [qa-rec-001](08_quality_attributes.md#qa-rec-001)
+- **Примечания:** Конкретная модель журнала (redo vs undo, фиксированный vs ring buffer) не выбрана; текущий API остаётся не-транзакционным.
+
+## fr-039
+
+- **Требование:** PMM может предоставлять Mark & Sweep сборщик мусора с пользовательскими корневыми указателями и опциональным `shared_pptr<T>` для reference counting; недостижимые блоки освобождаются через `collect()`.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Основание:** Дорожная карта PMM, Phase 7.2 (recovered в рамках Issue #382)
+- **Реализует:** [feat-013](04_features.md#feat-013)
+- **Связано с:** [qa-mem-001](08_quality_attributes.md#qa-mem-001)
+- **Примечания:** Альтернатива — оставить управление временем жизни ручным/RAII (`make_guard`, явный `deallocate_typed`).
+
+## fr-040
+
+- **Требование:** PMM может предоставлять storage backend для shared memory (POSIX `shm_open` + `mmap`, Windows `CreateFileMapping`), реализующий тот же storage backend concept, что и `HeapStorage`/`StaticStorage`/`MMapStorage`, с межпроцессной синхронизацией.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Основание:** Дорожная карта PMM, Phase 7.3 (recovered в рамках Issue #382)
+- **Реализует:** [feat-014](04_features.md#feat-014)
+- **Реализуется в:**
+  - [if-013](07_external_interfaces.md#if-013)
+- **Примечания:** Адресная независимость уже обеспечена гранульными индексами; для IPC требуется только новая реализация backend и межпроцессный lock policy.

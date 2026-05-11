@@ -138,3 +138,47 @@
   - [qa-diag-001](08_quality_attributes.md#qa-diag-001)
   - [pmm-verifyresult](../include/pmm/diagnostics.h#pmm-verifyresult)
   - [pmm-pmmerror](../include/pmm/types.h#pmm-pmmerror)
+
+## feat-011
+
+- **Характеристика:** Optional per-block encryption и image compression как самостоятельные политики (`EncryptionPolicyT`, compression-уровня политика) без обязательной зависимости ядра.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Tracking issue:** #239
+- **Реализует:** [br-003](01_business_requirements.md#br-003)
+- **Реализуется в:**
+  - [fr-036](05_functional_requirements.md#fr-036), [fr-037](05_functional_requirements.md#fr-037)
+  - [qa-sec-001](08_quality_attributes.md#qa-sec-001)
+  - [asm-007](11_assumptions_dependencies.md#asm-007)
+- **Примечания:** Рекомендованный вариант — per-block AES-256-CTR (вариант B из проработки #239). Полное шифрование/сжатие образа возможно как опциональная надстройка для offline-бэкапов. Компрессия применяется до шифрования.
+
+## feat-012
+
+- **Характеристика:** Транзакционная семантика над persistent storage: redo/undo log, `begin_transaction()` / `commit()` / `rollback()`.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Реализует:** [br-003](01_business_requirements.md#br-003)
+- **Реализуется в:**
+  - [fr-038](05_functional_requirements.md#fr-038)
+- **Примечания:** Phase 7.1 из дорожной карты PMM. Точная модель журнала ещё не зафиксирована.
+
+## feat-013
+
+- **Характеристика:** Сборщик мусора (Mark & Sweep) с регистрируемыми пользователем корневыми указателями; опционально `shared_pptr<T>` через reference counting.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Реализует:** [br-004](01_business_requirements.md#br-004)
+- **Реализуется в:**
+  - [fr-039](05_functional_requirements.md#fr-039)
+- **Примечания:** Phase 7.2 из дорожной карты PMM. Альтернативы (manual deallocate, RAII через `make_guard`) остаются основным способом управления временем жизни.
+
+## feat-014
+
+- **Характеристика:** Storage backend для shared memory IPC (POSIX `shm_open` / Windows `CreateFileMapping`) с межпроцессной синхронизацией.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Реализует:** [br-002](01_business_requirements.md#br-002)
+- **Реализуется в:**
+  - [fr-040](05_functional_requirements.md#fr-040)
+  - [if-013](07_external_interfaces.md#if-013)
+- **Примечания:** Phase 7.3 из дорожной карты PMM. Адресная независимость уже обеспечена через гранульные индексы, нужна только новая реализация storage backend concept.

@@ -16,7 +16,7 @@
  *   byte 0: command (0=alloc, 1=dealloc, 2=reallocate)
  *   byte 1-2: size parameter (little-endian uint16_t)
  *
- * @see docs/phase5_testing.md §5.2
+ * @see Issue #213 (extended test coverage), req/qa-test-001
  * @version 0.1
  */
 

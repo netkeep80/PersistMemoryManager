@@ -7,7 +7,7 @@
  *  - 2.2 Atomic save (write-then-rename via temporary file)
  *  - 2.3 MMapStorage expand() support
  *
- * @see docs/phase2_persistence.md
+ * @see Issue #43 (Phase 2 persistence), req/fr-014, req/fr-016, req/qa-rec-001
  * @version 0.1
  */
 

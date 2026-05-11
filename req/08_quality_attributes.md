@@ -172,3 +172,16 @@
 - **Реализуется в:**
   - [tests/CMakeLists.txt](../tests/CMakeLists.txt), [CMakeLists.txt](../CMakeLists.txt)
 - **Проверяется в:** [ac-012](12_acceptance_criteria.md#ac-012)
+
+## qa-sec-001
+
+- **Атрибут:** При активной политике per-block encryption содержимое блоков данных в persistent image должно быть зашифровано (read-back через `save_manager` без ключа не должен давать plaintext). Headers блоков и `ManagerHeader` остаются открытыми для совместимости с частичным обновлением и diff-потребителями.
+- **Категория:** Security / Confidentiality
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Tracking issue:** #239
+- **Основание:** Issue #239 (проработка вариантов сжатия и шифрования образов ПАП)
+- **Реализует:** [feat-011](04_features.md#feat-011)
+- **Реализуется в:**
+  - [fr-036](05_functional_requirements.md#fr-036)
+- **Примечания:** Уровень конфиденциальности соответствует варианту B из проработки #239: данные блоков защищены, метаданные структуры — нет. Полное шифрование образа возможно как опциональная offline-надстройка (`save_manager_full_encrypted` / `load_manager_full_encrypted`).

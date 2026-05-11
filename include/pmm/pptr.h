@@ -49,7 +49,7 @@ class pptr
     constexpr index_type offset() const noexcept { return _idx; }
 /*
 ### pmm-pptr-byte_offset
-req: dr-007, qa-port-001
+req: dr-007, qa-port-001, fr-035, if-012
 */
     constexpr size_t byte_offset() const noexcept
     {

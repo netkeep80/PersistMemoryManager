@@ -186,20 +186,13 @@ registry.
 - `comment_policy.md` — дисциплина текстовой поверхности
 - `index.md` — единая точка входа в документацию
 
-#### Archive (`docs/archive/`)
-
-- `PMM_AVL_Forest_Concept.md` — пересекается с `pmm_avl_forest.md`
-- `avl_forest_analysis_ru.md` — исторический анализ
-- `demo.md` — ТЗ на визуальное демо
-- `phase1_safety.md` — фазовый документ
-- `phase2_persistence.md` — фазовый документ
-- `phase3_types.md` — фазовый документ
-- `phase4_api.md` — фазовый документ
-- `phase5_testing.md` — фазовый документ
-- `phase6_documentation.md` — фазовый документ
-- `phase7_4_encryption_compression.md` — фазовый документ
-- `plan.md` — исторический план
-- `plan4BinDiffSynchronizer.md` — план внешнего проекта
+Каталог `docs/archive/` удалён в Issue #382. Содержимое расформировано:
+ценные phase-планы и проработки опциональных надстроек переосмыслены в каталог
+требований [`req/`](../req/) (черновые `feat-*`/`fr-*` со статусами `Draft`/`Could`,
+например encryption — [feat-011](../req/04_features.md#feat-011), transactions —
+[feat-012](../req/04_features.md#feat-012), GC — [feat-013](../req/04_features.md#feat-013),
+shared memory IPC — [feat-014](../req/04_features.md#feat-014)); материалы, уже
+покрытые активными документами или реализованным кодом, удалены без переноса.
 
 ## Out of scope
 

@@ -54,6 +54,15 @@
 - **Основание:** [docs/pmm_target_model.md](../docs/pmm_target_model.md), [docs/validation_model.md](../docs/validation_model.md)
 - **Связано с:** [rule-002](02_business_rules.md#rule-002), [sys-002](10_system_requirements.md#sys-002)
 
+## asm-007
+
+- **Предположение:** Если активируется политика шифрования образов ПАП, управление мастер-ключом (генерация, ротация, secure storage, доставка) выполняется клиентским кодом — PMM не управляет ключевым материалом и не предоставляет key derivation/storage.
+- **Приоритет:** Could
+- **Статус:** Draft
+- **Tracking issue:** #239
+- **Основание:** Issue #239 (проработка вариантов сжатия и шифрования образов ПАП)
+- **Связано с:** [feat-011](04_features.md#feat-011), [fr-036](05_functional_requirements.md#fr-036), [qa-sec-001](08_quality_attributes.md#qa-sec-001)
+
 ### Зависимости
 
 ## dep-001

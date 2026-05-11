@@ -1,3 +1,8 @@
+/*
+## test-issue211-byte-offset
+req: fr-035, if-012, ac-013
+*/
+
 /**
  * @file test_issue211_byte_offset.cpp
  * @brief Tests for pptr ↔ byte offset conversion.
