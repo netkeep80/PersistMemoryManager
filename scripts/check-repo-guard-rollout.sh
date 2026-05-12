@@ -22,11 +22,12 @@ workflow = workflow_path.read_text(encoding="utf-8")
 policy = json.loads(policy_path.read_text(encoding="utf-8"))
 issue_template = issue_template_path.read_text(encoding="utf-8")
 pr_template = pr_template_path.read_text(encoding="utf-8")
-expected_action_ref = "6c81bb1050c7dca93de1a13108e0a024fe095298"
+expected_action_ref = "b1b6756639092bbd4ff6a473aeaa637a63475a86"
 expected_action = f"netkeep80/repo-guard@{expected_action_ref}"
 old_action_refs = {
     "7ab5ca2f2d9859b4ffa2c423f05e951d4971be84",
     "99bf716da62c5d01070aa0d7e4d4f8031b43a351",
+    "6c81bb1050c7dca93de1a13108e0a024fe095298",
 }
 expected_profiles = {
     "governance",
@@ -78,7 +79,8 @@ if action_refs:
 for old_action_ref in old_action_refs:
     require(old_action_ref not in workflow, f"repo-guard workflow must not use old Action pin {old_action_ref}")
 require("mode: check-pr" in workflow, "repo-guard workflow must run check-pr mode")
-require("enforcement: advisory" in workflow, "repo-guard workflow must remain advisory in this stage")
+require("enforcement: blocking" in workflow, "repo-guard workflow must enforce policy in blocking mode")
+require("enforcement: advisory" not in workflow, "repo-guard workflow must not run in advisory mode")
 require("fetch-depth: 0" in workflow, "repo-guard workflow must use full checkout history")
 require("contents: read" in workflow, "repo-guard workflow must keep contents read-only permission")
 require("issues: read" in workflow, "repo-guard workflow must keep issues read-only permission")
@@ -94,7 +96,7 @@ for forbidden in (
     require(forbidden not in workflow, f"repo-guard workflow must not use legacy manual integration pattern: {forbidden}")
 
 policy_mode = policy.get("enforcement", {}).get("mode")
-require(policy_mode == "advisory", "repo-policy.json must default to advisory enforcement")
+require(policy_mode == "blocking", "repo-policy.json must enforce policy in blocking mode")
 
 for removed in ("change_classes", "new_file_rules", "change_type_rules"):
     require(removed not in policy, f"repo-policy.json must not use legacy {removed}")

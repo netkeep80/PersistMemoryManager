@@ -1,0 +1,6 @@
+# Governance ownership for the library-size and policy-delta gate.
+# Edits to these paths require maintainer review and are tracked by
+# repo-guard's trusted policy boundary.
+/repo-policy.json @netkeep80
+/.github/workflows/repo-guard.yml @netkeep80
+/.github/CODEOWNERS @netkeep80

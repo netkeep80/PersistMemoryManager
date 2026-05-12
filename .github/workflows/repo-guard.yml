@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   policy-check:
-    name: repo-guard advisory check
+    name: repo-guard blocking check
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     steps:
@@ -25,10 +25,10 @@ jobs:
 
       - name: Run repo-guard
         id: repo_guard
-        uses: netkeep80/repo-guard@6c81bb1050c7dca93de1a13108e0a024fe095298
+        uses: netkeep80/repo-guard@b1b6756639092bbd4ff6a473aeaa637a63475a86
         with:
           mode: check-pr
-          enforcement: advisory
+          enforcement: blocking
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
