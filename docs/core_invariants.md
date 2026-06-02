@@ -105,21 +105,21 @@ are non-owning typed views over `BlockHeader<A>&`.
 
 | ID | Invariant | Code checkpoint | Test |
 |----|-----------|-----------------|------|
-| C1a | After `create()`, three system domains must exist: `system/free_tree`, `system/symbols`, `system/domain_registry`. | `validate_bootstrap_invariants_unlocked()` in `forest_domain_mixin.inc:343–393` — checks at least 3 domains with `kForestDomainFlagSystem`. | `test_issue241_bootstrap.cpp` — "bootstrap invariants hold after create(size)". `test_forest_registry.cpp` — "forest registry bootstraps system domains". |
-| C1b | All system domains must have the `kForestDomainFlagSystem` flag set. | `validate_bootstrap_invariants_unlocked()` — flag check. `verify_forest_registry_unlocked()` in `verify_repair_mixin.inc:64–95`. | `test_issue245_verify_repair.cpp` — "verify detects missing system domain flags". |
+| C1a | After `create()`, three system domains must exist: `system/free_tree`, `system/symbols`, `system/domain_registry`. | `validate_bootstrap_invariants_unlocked()` checks required system domains and `kForestDomainFlagSystem`. | `test_issue241_bootstrap.cpp` — "bootstrap invariants hold after create(size)". `test_forest_registry.cpp` — "forest registry bootstraps system domains". |
+| C1b | All system domains must have the `kForestDomainFlagSystem` flag set. | `validate_bootstrap_invariants_unlocked()` and `verify_forest_registry_unlocked()` check system-domain flags. | `test_issue245_verify_repair.cpp` — "verify detects missing system domain flags". |
 
 ### C2. Named roots and persistent registry
 
 | ID | Invariant | Code checkpoint | Test |
 |----|-----------|-----------------|------|
 | C2a | The [ForestDomainRegistry](../include/pmm/forest_registry.h#pmm-detail-forestdomainregistry) is a persistent locked block containing up to 32 domain slots. Its granule index is stored in `ManagerHeader::root_offset`. | `bootstrap_forest_registry_unlocked()` allocates and locks the registry. `validate_bootstrap_invariants_unlocked()` checks `hdr->root_offset` matches the registry domain root. | `test_issue241_bootstrap.cpp` — "bootstrap invariants hold after save/load". `test_forest_registry.cpp` — "forest registry persists user domains and root". |
-| C2b | [ForestDomainRegistry](../include/pmm/forest_registry.h#pmm-detail-forestdomainregistry) has magic `0x50465247` ("PFRG") and version 1. | `validate_or_bootstrap_forest_registry_unlocked()` in `forest_domain_mixin.inc:397–451` validates magic and version. `verify_forest_registry_unlocked()` in `verify_repair_mixin.inc:64–95`. | `test_issue245_verify_repair.cpp` — "verify detects forest registry corruption". |
+| C2b | [ForestDomainRegistry](../include/pmm/forest_registry.h#pmm-detail-forestdomainregistry) has magic `0x50465247` ("PFRG") and version 1. | `validate_or_bootstrap_forest_registry_unlocked()` validates magic/version; `verify_forest_registry_unlocked()` reports registry corruption. | `test_issue245_verify_repair.cpp` — "verify detects forest registry corruption". |
 
 ### C3. Symbol dictionary
 
 | ID | Invariant | Code checkpoint | Test |
 |----|-----------|-----------------|------|
-| C3a | The symbol dictionary is a [pstringview](../include/pmm/pstringview.h#pmm-pstringview) AVL tree registered as the `system/symbols` domain. All system domain names are interned as permanently locked blocks (`kNodeReadOnly`). | `bootstrap_system_symbols_unlocked()` in `forest_domain_mixin.inc`. `validate_bootstrap_invariants_unlocked()` checks non-zero symbol dictionary root and non-zero `symbol_offset` for each system domain. | `test_issue241_bootstrap.cpp` — checks system symbol names are discoverable. `test_forest_registry.cpp` — symbols survive save/load. |
+| C3a | The symbol dictionary is a [pstringview](../include/pmm/pstringview.h#pmm-pstringview) AVL tree registered as the `system/symbols` domain. All system domain names are interned as permanently locked blocks (`kNodeReadOnly`). | `bootstrap_system_symbols_unlocked()` interns system names. `validate_bootstrap_invariants_unlocked()` checks non-zero symbol dictionary root and non-zero `symbol_offset` for each system domain. | `test_issue241_bootstrap.cpp` — checks system symbol names are discoverable. `test_forest_registry.cpp` — symbols survive save/load. |
 
 ---
 
@@ -129,7 +129,7 @@ are non-owning typed views over `BlockHeader<A>&`.
 
 | ID | Invariant | Code checkpoint | Test |
 |----|-----------|-----------------|------|
-| D1a | [ManagerHeader](../include/pmm/types.h#pmm-detail-managerheader) (Block_0) with valid magic, `total_size`, `granule_size`, and `root_offset` pointing to the forest registry. | `init_layout()` in `layout_mixin.inc`. `validate_bootstrap_invariants_unlocked()` verifies all header fields. | `test_issue241_bootstrap.cpp` — "bootstrap invariants hold after create(size)". |
+| D1a | [ManagerHeader](../include/pmm/types.h#pmm-detail-managerheader) (Block_0) with valid magic, `total_size`, `granule_size`, and `root_offset` pointing to the forest registry. | `init_layout()` writes header fields; `validate_bootstrap_invariants_unlocked()` verifies them. | `test_issue241_bootstrap.cpp` — "bootstrap invariants hold after create(size)". |
 | D1b | At least one free block (Block_1) spanning remaining space, inserted into the free-tree. | After `init_layout()`, Block_1 is the free-tree root. | `test_allocate.cpp` — "create_basic". |
 | D1c | Forest domain registry, three system domains, and symbol dictionary — all as permanently locked blocks. | `bootstrap_forest_registry_unlocked()` + `bootstrap_system_symbols_unlocked()` + `validate_bootstrap_invariants_unlocked()`. | `test_issue241_bootstrap.cpp`, `test_forest_registry.cpp`. |
 | D1d | Bootstrap is deterministic: identical `create(N)` calls produce identical block layouts, binding IDs, and symbol offsets. | Enforced by sequential bootstrap order. | `test_issue241_bootstrap.cpp` — "bootstrap is deterministic". |
@@ -138,8 +138,8 @@ are non-owning typed views over `BlockHeader<A>&`.
 
 | ID | Invariant | Code checkpoint | Test |
 |----|-----------|-----------------|------|
-| D2a | `load()` performs a 5-phase recovery: (1) validate header, (2) reset runtime fields, (3) repair linked list, (4) recompute counters, (5) rebuild free-tree. | `verify_repair_mixin.inc:26–41` (header), `allocator_policy.h:340–399` (phases 3–4), `allocator_policy.h:303–329` (phase 5). | `test_issue245_verify_repair.cpp` — "free-tree stale detected after save/load round-trip". `test_block_modernization.cpp` — "save_load_new_format". |
-| D2b | After `load()`, `validate_or_bootstrap_forest_registry_unlocked()` restores or creates the forest registry and re-registers system domains. | `forest_domain_mixin.inc:397–451`. | `test_issue241_bootstrap.cpp` — "bootstrap invariants hold after save/load". |
+| D2a | `load()` performs a 5-phase recovery: (1) validate header, (2) reset runtime fields, (3) repair linked list, (4) recompute counters, (5) rebuild free-tree. | `load(VerifyResult&)` validates the header; `repair_linked_list()`, `recompute_counters()`, and `rebuild_free_tree()` run phases 3-5. | `test_issue245_verify_repair.cpp` — "free-tree stale detected after save/load round-trip". `test_block_modernization.cpp` — "save_load_new_format". |
+| D2b | After `load()`, `validate_or_bootstrap_forest_registry_unlocked()` restores or creates the forest registry and re-registers system domains. | `validate_or_bootstrap_forest_registry_unlocked()`. | `test_issue241_bootstrap.cpp` — "bootstrap invariants hold after save/load". |
 
 ---
 
@@ -178,21 +178,21 @@ are non-owning typed views over `BlockHeader<A>&`.
 
 | ID | Invariant | Code checkpoint | Test |
 |----|-----------|-----------------|------|
-| F1a | `verify()` is a read-only diagnostic pass. It reports violations via [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult) but never modifies the image. | `verify()` in `verify_repair_mixin.inc` calls `verify_linked_list()`, `verify_counters()`, `verify_block_states()`, `verify_free_tree()`, `verify_forest_registry_unlocked()` — all read-only. | `test_issue245_verify_repair.cpp` — "verify does not modify the image". |
+| F1a | `verify()` is a read-only diagnostic pass. It reports violations via [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult) but never modifies the image. | `verify()` calls `verify_image_unlocked()`, including linked-list, counter, block-state, free-tree, and forest-registry checks — all read-only. | `test_issue245_verify_repair.cpp` — "verify does not modify the image". |
 | F1b | [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult) reports up to 64 diagnostic entries with [ViolationType](../include/pmm/diagnostics.h#pmm-violationtype), affected block index, expected/actual values, and [DiagnosticAction](../include/pmm/diagnostics.h#pmm-diagnosticaction). | `diagnostics.h:74–105` — [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult) struct. | `test_issue245_verify_repair.cpp` — "DiagnosticEntry fields populated". |
 
 ### F2. Repair does not masquerade as verify/load
 
 | ID | Invariant | Code checkpoint | Test |
 |----|-----------|-----------------|------|
-| F2a | Repair is performed only during `load()` and is explicitly documented in [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult) with `DiagnosticAction::Repaired` or `DiagnosticAction::Rebuilt`. | `load(VerifyResult&)` in `verify_repair_mixin.inc` runs repair phases and records each action. | `test_issue245_verify_repair.cpp` — "load(VerifyResult&) reports repairs directly", "Repaired vs Rebuilt distinction". |
-| F2b | Unrecoverable corruption (invalid magic, wrong granule size) is reported as `DiagnosticAction::Aborted`. Load returns failure. | `verify_repair_mixin.inc:26–41` — header validation. | `test_issue245_verify_repair.cpp` — "Aborted action on header corruption". |
+| F2a | Repair is performed only during `load()` and is explicitly documented in [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult) with `DiagnosticAction::Repaired` or `DiagnosticAction::Rebuilt`. | `load(VerifyResult&)` runs repair phases and records each action. | `test_issue245_verify_repair.cpp` — "load(VerifyResult&) reports repairs directly", "Repaired vs Rebuilt distinction". |
+| F2b | Unrecoverable corruption (invalid magic, wrong granule size) is reported as `DiagnosticAction::Aborted`. Load returns failure. | `load(VerifyResult&)` header validation records `DiagnosticAction::Aborted`. | `test_issue245_verify_repair.cpp` — "Aborted action on header corruption". |
 
 ### F3. Corruption is diagnosed, not masked
 
 | ID | Invariant | Code checkpoint | Test |
 |----|-----------|-----------------|------|
-| F3a | Every repair action is recorded in [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult). No silent fixes. | All repair methods in `allocator_policy.h` and `verify_repair_mixin.inc` add entries to [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult). | `test_issue245_verify_repair.cpp` — all repair tests check [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult) entries. |
+| F3a | Every repair action is recorded in [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult). No silent fixes. | Repair methods (`repair_linked_list()`, `recompute_counters()`, `rebuild_free_tree()`, forest-registry validation) add entries to [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult). | `test_issue245_verify_repair.cpp` — all repair tests check [VerifyResult](../include/pmm/diagnostics.h#pmm-verifyresult) entries. |
 | F3b | [ViolationType](../include/pmm/diagnostics.h#pmm-violationtype) enum exhaustively covers: `BlockStateInconsistent`, `PrevOffsetMismatch`, `CounterMismatch`, `FreeTreeStale`, `ForestRegistryMissing`, `ForestDomainMissing`, `ForestDomainFlagsMissing`, `HeaderCorruption`. | `diagnostics.h:35–47`. | `test_issue245_verify_repair.cpp` — tests for each violation type. |
 
 ---

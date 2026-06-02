@@ -52,7 +52,7 @@ Their responsibilities do not overlap.
 verify() → shared_lock → verify_image_unlocked(result) → return result
 ```
 
-Code: `persist_memory_manager.h:1084–1095`, `verify_repair_mixin.inc:17–57`.
+Code: `verify()` -> `verify_image_unlocked()`.
 
 ### Test coverage
 
