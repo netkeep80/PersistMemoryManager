@@ -25,7 +25,7 @@ addressing. Non-recoverable — the image cannot be trusted.
 | `HeaderCorruption` | `total_size != backend.total_size()` | **Fatal** | `Aborted` | `Aborted` (load returns false) |
 | `HeaderCorruption` | `granule_size != address_traits::granule_size` | **Fatal** | `Aborted` | `Aborted` (load returns false) |
 
-**Detection:** `verify_image_unlocked()` (`verify_repair_mixin.inc`) and `load()` header validation.
+**Detection:** `verify_image_unlocked()` and `load()` header validation.
 
 **Why non-recoverable:** these fields define the image format and addressing
 scheme. If any is wrong, all block offsets and sizes become meaningless.
@@ -137,11 +137,11 @@ or lacks required system domains or their flags.
 | `ForestDomainMissing` | required system domain not found | **Conditional** | `NoAction` | `Repaired` or `Aborted` |
 | `ForestDomainFlagsMissing` | system domain lacks `kForestDomainFlagSystem` | **Recoverable** | `NoAction` | `Repaired` |
 
-**Detection:** `verify_forest_registry_unlocked()` (`verify_repair_mixin.inc:64–95`).
+**Detection:** `verify_forest_registry_unlocked()`.
 
 **Repair:** `validate_or_bootstrap_forest_registry_unlocked()`
-(`forest_domain_mixin.inc:397–451`) — attempts to bootstrap missing registry
-or domains. If bootstrap fails, entries are marked `Aborted` and load fails.
+attempts to bootstrap missing registry or domains. If bootstrap fails, entries
+are marked `Aborted` and load fails.
 
 **Required system domains:**
 - `system/free_tree` — free block AVL tree domain.

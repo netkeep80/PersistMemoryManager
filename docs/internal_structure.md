@@ -71,10 +71,7 @@ Canonical map of internal modules, their responsibilities, and authoritative fil
 
 | File | Lines | Responsibility |
 |------|-------|----------------|
-| `persist_memory_manager.h` | 1388 | `PersistMemoryManager<ConfigT, InstanceId>` — unified static API |
-| `layout_mixin.inc` | 144 | `init_layout()`, `do_expand()` — extracted for file-size limit |
-| `forest_domain_mixin.inc` | 498 | Forest domain registry methods — extracted for file-size limit |
-| `verify_repair_mixin.inc` | 95 | `verify_image_unlocked()` — extracted for file-size limit |
+| `persist_memory_manager.h` | 1388 | `PersistMemoryManager<ConfigT, InstanceId>` — unified static API; lifecycle, layout, forest registry, and verify/repair orchestration |
 
 **Authoritative path:** All public API goes through [PersistMemoryManager](../include/pmm/persist_memory_manager.h#pmm-persistmemorymanager). Internal helpers use `read_stat()` for statistics, `get_tree_idx_field()`/`set_tree_idx_field()` for tree accessors.
 

@@ -50,11 +50,11 @@ block. It is written in two contexts:
 
 | Step | Write | Critical? | Code |
 |------|-------|-----------|------|
-| 1 | Allocate registry block (modifies free-tree, counters, linked list) | See M4 (allocation) | `forest_domain_mixin.inc:275` |
-| 2 | Initialize registry (magic, version, domain_count) | NON-CRITICAL | `forest_domain_mixin.inc:293–296` |
-| 3 | Lock block permanently (`node_type = kNodeReadOnly`) | NON-CRITICAL | `forest_domain_mixin.inc:300` |
-| 4 | `W(hdr->root_offset, registry_granule_idx)` | **CRITICAL** | `forest_domain_mixin.inc:306` |
-| 5 | Register system domains in registry | See M2 | `forest_domain_mixin.inc:309–326` |
+| 1 | Allocate registry block (modifies free-tree, counters, linked list) | See M4 (allocation) | `bootstrap_forest_registry_unlocked()` |
+| 2 | Initialize registry (magic, version, domain_count) | NON-CRITICAL | `bootstrap_forest_registry_unlocked()` |
+| 3 | Lock block permanently (`node_type = kNodeReadOnly`) | NON-CRITICAL | `bootstrap_forest_registry_unlocked()` |
+| 4 | `W(hdr->root_offset, registry_granule_idx)` | **CRITICAL** | `bootstrap_forest_registry_unlocked()` |
+| 5 | Register system domains in registry | See M2 | `bootstrap_forest_registry_unlocked()` |
 
 **Interruption between steps 3 and 4:**
 - Registry block is allocated and locked but `hdr->root_offset` is still
@@ -114,12 +114,12 @@ Adding a new domain to the [ForestDomainRegistry](../include/pmm/forest_registry
 
 | Step | Write | Critical? | Code |
 |------|-------|-----------|------|
-| 1 | `W(rec->binding_id, id)` | **CRITICAL** | `forest_domain_mixin.inc:163` |
-| 2 | `W(rec->binding_kind, kind)` | **CRITICAL** | `forest_domain_mixin.inc:164` |
-| 3 | `W(rec->root_offset, root)` | **CRITICAL** | `forest_domain_mixin.inc:165` |
-| 4 | `W(rec->flags, flags)` | **CRITICAL** | `forest_domain_mixin.inc:166` |
-| 5 | `W(rec->symbol_offset, 0)` | NON-CRITICAL | `forest_domain_mixin.inc:167` |
-| 6 | `W(reg->domain_count, count + 1)` | **CRITICAL** | `forest_domain_mixin.inc:178` |
+| 1 | `W(rec->binding_id, id)` | **CRITICAL** | `register_domain_unlocked()` |
+| 2 | `W(rec->binding_kind, kind)` | **CRITICAL** | `register_domain_unlocked()` |
+| 3 | `W(rec->root_offset, root)` | **CRITICAL** | `register_domain_unlocked()` |
+| 4 | `W(rec->flags, flags)` | **CRITICAL** | `register_domain_unlocked()` |
+| 5 | `W(rec->symbol_offset, 0)` | NON-CRITICAL | `register_domain_unlocked()` |
+| 6 | `W(reg->domain_count, count + 1)` | **CRITICAL** | `register_domain_unlocked()` |
 
 **Interruption between steps 1–5 and step 6:**
 - Domain record is partially or fully written, but `domain_count` has
@@ -139,9 +139,9 @@ Updating an existing domain's fields (e.g., changing root, flags).
 
 | Step | Write | Critical? | Code |
 |------|-------|-----------|------|
-| 1 | `W(rec->flags, new_flags)` | **CRITICAL** | `forest_domain_mixin.inc:147` |
-| 2 | `W(rec->binding_kind, new_kind)` | **CRITICAL** | `forest_domain_mixin.inc:148` |
-| 3 | `W(rec->root_offset, new_root)` | **CRITICAL** | `forest_domain_mixin.inc:149` |
+| 1 | `W(rec->flags, new_flags)` | **CRITICAL** | `register_domain_unlocked()` |
+| 2 | `W(rec->binding_kind, new_kind)` | **CRITICAL** | `register_domain_unlocked()` |
+| 3 | `W(rec->root_offset, new_root)` | **CRITICAL** | `register_domain_unlocked()` |
 
 Each field update is independent. Partial update leaves a mix of old
 and new values.
@@ -161,12 +161,12 @@ Interning a new symbol in the `system/symbols` pstringview dictionary.
 
 | Step | Write | Critical? | Code |
 |------|-------|-----------|------|
-| 1 | Allocate block for pstringview | See M4 | `forest_domain_mixin.inc:206` |
-| 2 | Initialize pstringview header (length) | **CRITICAL** | `forest_domain_mixin.inc:213` |
-| 3 | Copy string content into block | **CRITICAL** | `forest_domain_mixin.inc:214–215` |
-| 4 | Initialize AVL node fields | NON-CRITICAL | `forest_domain_mixin.inc:217` |
-| 5 | Lock block permanently (`kNodeReadOnly`) | NON-CRITICAL | `forest_domain_mixin.inc:218` |
-| 6 | AVL insert into symbol tree (updates tree links and `symbol_domain->root_offset`) | NON-CRITICAL (tree) / **CRITICAL** (root) | `forest_domain_mixin.inc:223–230` |
+| 1 | Allocate block for pstringview | See M4 | `intern_symbol_unlocked()` |
+| 2 | Initialize pstringview header (length) | **CRITICAL** | `intern_symbol_unlocked()` |
+| 3 | Copy string content into block | **CRITICAL** | `intern_symbol_unlocked()` |
+| 4 | Initialize AVL node fields | NON-CRITICAL | `intern_symbol_unlocked()` |
+| 5 | Lock block permanently (`kNodeReadOnly`) | NON-CRITICAL | `intern_symbol_unlocked()` |
+| 6 | AVL insert into symbol tree (updates tree links and `symbol_domain->root_offset`) | NON-CRITICAL (tree) / **CRITICAL** (root) | `intern_symbol_unlocked()` |
 
 Note: the AVL tree itself is NON-CRITICAL (rebuilt on `load()`), but the
 `symbol_domain->root_offset` update embedded in the `avl_insert()` call
@@ -204,8 +204,8 @@ is **CRITICAL** — it is the only persistent pointer to the symbol tree root.
 
 ### M3b. Bootstrap symbol sequence
 
-During bootstrap, symbols are interned in a fixed order
-(`forest_domain_mixin.inc:245–249`):
+During bootstrap, `bootstrap_system_symbols_unlocked()` interns symbols in a
+fixed order:
 
 1. `system/free_tree`
 2. `system/symbols`
@@ -326,8 +326,7 @@ any interruption.
 
 ### M5b. `first_block_offset`
 
-Set during `init_layout()` (`layout_mixin.inc:32`) and during `expand()`
-(`layout_mixin.inc:135`). This is a trust anchor — it is the starting
+Set during `init_layout()` and during `expand()`. This is a trust anchor — it is the starting
 point of the linked-list traversal.
 
 **Ordering rule:** `first_block_offset` must be written before any block
@@ -336,8 +335,8 @@ guaranteed by the bootstrap sequence (Block_0 is the first block).
 
 ### M5c. `magic`
 
-Written during `init_layout()` (`layout_mixin.inc:30`). It is not changed by
-normal `destroy()`, because shutdown must not invalidate a persisted image.
+Written during `init_layout()`. It is not changed by normal `destroy()`,
+because shutdown must not invalidate a persisted image.
 Only the explicit destructive `destroy_image()` helper clears it.
 
 `magic` is an **identity / format check**, not a bootstrap-completion

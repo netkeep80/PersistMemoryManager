@@ -98,8 +98,7 @@ req: id1, id2, id3
 | Файл | Anchors | Назначение |
 |------|---------|-----------|
 | [diagnostics.h](../include/pmm/diagnostics.h) | [pmm-recoverymode](../include/pmm/diagnostics.h#pmm-recoverymode), [pmm-violationtype](../include/pmm/diagnostics.h#pmm-violationtype), [pmm-diagnosticaction](../include/pmm/diagnostics.h#pmm-diagnosticaction), [pmm-diagnosticentry](../include/pmm/diagnostics.h#pmm-diagnosticentry), [pmm-verifyresult](../include/pmm/diagnostics.h#pmm-verifyresult) | `RecoveryMode`, `ViolationType`, `DiagnosticAction`, `DiagnosticEntry`, `VerifyResult`. |
-| [validation.h](../include/pmm/validation.h) | — | Validation/verification API, опирается на `verify_repair_mixin.inc`. |
-| [verify_repair_mixin.inc](../include/pmm/verify_repair_mixin.inc) | — | Циклы валидации/repair, восстановление linked-list/free-tree. |
+| [validation.h](../include/pmm/validation.h) | — | Validation/verification API; verify/repair cycles restore linked-list/free-tree state. |
 | [types.h](../include/pmm/types.h) | [pmm-pmmerror](../include/pmm/types.h#pmm-pmmerror), [pmm-memorystats](../include/pmm/types.h#pmm-memorystats), [pmm-blockview](../include/pmm/types.h#pmm-blockview), [pmm-freeblockview](../include/pmm/types.h#pmm-freeblockview), [pmm-detail-managerheader](../include/pmm/types.h#pmm-detail-managerheader) | `PmmError`, `MemoryStats`, `BlockView`, `FreeBlockView`, `detail::ManagerHeader`. |
 
 Связанные требования: [feat-004](../req/04_features.md#feat-004),
@@ -146,8 +145,7 @@ req: id1, id2, id3
 
 | Файл | Anchors | Назначение |
 |------|---------|-----------|
-| [forest_registry.h](../include/pmm/forest_registry.h) | [pmm-detail-forestdomainrecord](../include/pmm/forest_registry.h#pmm-detail-forestdomainrecord), [pmm-detail-forestdomainregistry](../include/pmm/forest_registry.h#pmm-detail-forestdomainregistry) | Регистрация именованных persistent forest domains. |
-| [forest_domain_mixin.inc](../include/pmm/forest_domain_mixin.inc) | — | API менеджера для domains: `register_domain`, `register_system_domain`, `has_domain`, `get_domain_root`, `set_domain_root`. |
+| [forest_registry.h](../include/pmm/forest_registry.h) | [pmm-detail-forestdomainrecord](../include/pmm/forest_registry.h#pmm-detail-forestdomainrecord), [pmm-detail-forestdomainregistry](../include/pmm/forest_registry.h#pmm-detail-forestdomainregistry) | Регистрация именованных persistent forest domains; manager API includes `register_domain`, `register_system_domain`, `has_domain`, `get_domain_root`, `set_domain_root`. |
 
 Связанные требования: [feat-005](../req/04_features.md#feat-005),
 [fr-011](../req/05_functional_requirements.md#fr-011),
