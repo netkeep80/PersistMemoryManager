@@ -32,7 +32,6 @@ Single entry point for PMM documentation. The canonical set below must match
 | [Mutation Ordering](mutation_ordering.md) | Write ordering rules and crash-consistency analysis |
 | [Repository Shape](repository_shape.md) | Target directory structure and file placement rules |
 | [Deletion Policy](deletion_policy.md) | Rules for file lifecycle: keep, move, archive, delete |
-| [Code Reduction Report](code_reduction_report.md) | Supporting report on code-volume reduction |
 | [Compatibility Audit](compatibility_audit.md) | Supporting compatibility inventory |
 | [Internal Structure](internal_structure.md) | Supporting implementation structure notes |
 | [Test Matrix](test_matrix.md) | Supporting test coverage matrix |
