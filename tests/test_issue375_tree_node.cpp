@@ -177,7 +177,7 @@ TEST_CASE( "I375-T: get_tree_* / set_tree_* reject stale pptr after deallocate",
     Mgr::destroy();
 }
 
-TEST_CASE( "I392: application NodeType remains a valid allocated block", "[issue392][node_type]" )
+TEST_CASE( "I392: application NodeType remains valid across lifecycle", "[issue392][node_type]" )
 {
     static_assert( !pmm::is_known_node_type( 31 ) );
     static_assert( pmm::is_known_node_type( 32 ) );
@@ -199,7 +199,18 @@ TEST_CASE( "I392: application NodeType remains a valid allocated block", "[issue
     REQUIRE_FALSE( Mgr::set_application_node_type( null, t ) );
     REQUIRE_FALSE( Mgr::set_application_node_type( p, pmm::NodeType::PMap ) );
 
-    Mgr::destroy_typed( p );
-    REQUIRE_FALSE( Mgr::set_application_node_type( p, t ) );
+    // Occupy the following allocation so a large grow exercises the move path
+    // on normal heap layouts. The semantic NodeType must survive either path.
+    auto blocker = Mgr::create_typed<int>( 9 );
+    REQUIRE( !blocker.is_null() );
+    auto grown = Mgr::reallocate_typed<int>( p, 1, 128 );
+    REQUIRE( !grown.is_null() );
+    REQUIRE( Mgr::get_node_type( grown ) == t );
+    REQUIRE( *grown == 7 );
+    REQUIRE( Mgr::verify().ok );
+
+    Mgr::destroy_typed( blocker );
+    Mgr::destroy_typed( grown );
+    REQUIRE_FALSE( Mgr::set_application_node_type( grown, t ) );
     Mgr::destroy();
 }
