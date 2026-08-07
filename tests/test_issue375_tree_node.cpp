@@ -180,8 +180,8 @@ TEST_CASE( "I375-T: get_tree_* / set_tree_* reject stale pptr after deallocate",
 TEST_CASE( "I392: application NodeType remains a valid allocated block", "[issue392][node_type]" )
 {
     setup_clean_image();
-    auto p = Mgr::create_typed<int>( 7 );
-    auto t = static_cast<pmm::NodeType>( pmm::kApplicationNodeTypeFirst + 1 );
+    auto       p = Mgr::create_typed<int>( 7 );
+    const auto t = static_cast<pmm::NodeType>( pmm::kApplicationNodeTypeFirst + 1 );
     REQUIRE( pmm::set_application_node_type<Mgr>( p, t ) );
     REQUIRE( pmm::get_node_type<Mgr>( p ) == t );
     REQUIRE( Mgr::resolve( p ) != nullptr );
