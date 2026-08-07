@@ -68,21 +68,6 @@ template <typename T> struct node_type_for
     static constexpr NodeType value = NodeType::Generic;
 };
 template <typename T> inline constexpr NodeType node_type_for_v = node_type_for<T>::value;
-template <typename Manager, typename Pptr> NodeType get_node_type( Pptr p ) noexcept
-{
-    auto* h = Manager::try_tree_node( p );
-    return h == nullptr ? NodeType::Free : h->node_type;
-}
-template <typename Manager, typename Pptr> bool set_application_node_type( Pptr p, NodeType type ) noexcept
-{
-    if ( !is_application_node_type( type ) )
-        return false;
-    auto* h = Manager::try_tree_node( p );
-    if ( h == nullptr || ( h->node_type != NodeType::Generic && !is_application_node_type( h->node_type ) ) )
-        return false;
-    h->node_type = type;
-    return true;
-}
 namespace detail
 {
 template <typename AT> struct BlockHeaderCoreFields
