@@ -22,6 +22,11 @@ enum class NodeType : std::uint8_t
     PMap           = 7,
     PPtr           = 8,
 };
+inline constexpr std::uint8_t kApplicationNodeTypeFirst = 32;
+constexpr bool is_application_node_type( NodeType t ) noexcept
+{
+    return static_cast<std::uint8_t>( t ) >= kApplicationNodeTypeFirst;
+}
 /*
 ### pmm-nodetype-helpers
 */
@@ -31,6 +36,8 @@ constexpr bool is_free( NodeType t ) noexcept
 }
 constexpr bool is_allocated( NodeType t ) noexcept
 {
+    if ( is_application_node_type( t ) )
+        return true;
     switch ( t )
     {
     case NodeType::ManagerHeader:
@@ -49,6 +56,8 @@ constexpr bool is_allocated( NodeType t ) noexcept
 }
 constexpr bool is_mutable( NodeType t ) noexcept
 {
+    if ( is_application_node_type( t ) )
+        return true;
     switch ( t )
     {
     case NodeType::Free:
@@ -67,6 +76,8 @@ constexpr bool is_mutable( NodeType t ) noexcept
 }
 constexpr bool can_be_deleted_from_pap( NodeType t ) noexcept
 {
+    if ( is_application_node_type( t ) )
+        return true;
     switch ( t )
     {
     case NodeType::Generic:
@@ -97,6 +108,8 @@ template <typename T> struct node_type_for
 template <typename T> inline constexpr NodeType node_type_for_v = node_type_for<T>::value;
 constexpr bool                                  is_known_node_type( std::uint8_t v ) noexcept
 {
+    if ( v >= kApplicationNodeTypeFirst )
+        return true;
     switch ( static_cast<NodeType>( v ) )
     {
     case NodeType::Free:
@@ -111,6 +124,23 @@ constexpr bool                                  is_known_node_type( std::uint8_t
         return true;
     }
     return false;
+}
+template <typename Manager, typename T>
+NodeType get_node_type( typename Manager::template pptr<T> p ) noexcept
+{
+    auto* h = Manager::try_tree_node( p );
+    return h == nullptr ? NodeType::Free : h->node_type;
+}
+template <typename Manager, typename T>
+bool set_application_node_type( typename Manager::template pptr<T> p, NodeType type ) noexcept
+{
+    if ( !is_application_node_type( type ) )
+        return false;
+    auto* h = Manager::try_tree_node( p );
+    if ( h == nullptr || ( h->node_type != NodeType::Generic && !is_application_node_type( h->node_type ) ) )
+        return false;
+    h->node_type = type;
+    return true;
 }
 namespace detail
 {
