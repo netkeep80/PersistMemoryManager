@@ -10,7 +10,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "pmm_single_threaded_heap.h"
+#include "pmm/pmm_presets.h"
 
 namespace
 {
