@@ -1,9 +1,11 @@
 #pragma once
 #include "pmm/pptr.h"
 #include "pmm/types.h"
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <type_traits>
 namespace pmm
 {
@@ -25,49 +27,78 @@ template <typename ManagerT> struct pstring
     ~pstring() noexcept = default;
     const char* c_str() const noexcept
     {
+        const char* ptr = data();
+        return ( ptr != nullptr ) ? ptr : "";
+    }
+    char* data() noexcept
+    {
         if ( _data_idx == detail::kNullIdx_v<typename ManagerT::address_traits> )
-            return "";
-        char* data = resolve_data();
-        return ( data != nullptr ) ? data : "";
+            return nullptr;
+        return resolve_data();
+    }
+    const char* data() const noexcept
+    {
+        if ( _data_idx == detail::kNullIdx_v<typename ManagerT::address_traits> )
+            return nullptr;
+        return resolve_data();
     }
     size_t size() const noexcept { return static_cast<size_t>( _length ); }
     bool   empty() const noexcept { return _length == 0; }
     char   operator[]( size_t i ) const noexcept
     {
-        char* data = resolve_data();
-        return ( data != nullptr ) ? data[i] : '\0';
+        const char* ptr = data();
+        return ( ptr != nullptr ) ? ptr[i] : '\0';
     }
     bool assign( const char* s ) noexcept
     {
         if ( s == nullptr )
-            s = "";
-        auto len = static_cast<uint32_t>( std::strlen( s ) );
-        if ( !ensure_capacity( len ) )
+            return assign( nullptr, 0 );
+        return assign( s, std::strlen( s ) );
+    }
+    bool assign( const char* s, size_t len ) noexcept
+    {
+        if ( len > static_cast<size_t>( std::numeric_limits<uint32_t>::max() ) )
             return false;
-        char* data = resolve_data();
-        if ( data == nullptr )
+        if ( len == 0 )
+        {
+            clear();
+            return true;
+        }
+        if ( s == nullptr )
             return false;
-        std::memcpy( data, s, static_cast<size_t>( len ) + 1 );
-        _length = len;
+        const auto length = static_cast<uint32_t>( len );
+        if ( !ensure_capacity( length ) )
+            return false;
+        char* ptr = data();
+        if ( ptr == nullptr )
+            return false;
+        std::memmove( ptr, s, len );
+        ptr[len] = '\0';
+        _length  = length;
         return true;
     }
     bool append( const char* s ) noexcept
     {
         if ( s == nullptr )
-            s = "";
-        auto add_len = static_cast<uint32_t>( std::strlen( s ) );
-        if ( add_len == 0 )
             return true;
-        uint32_t new_len = _length + add_len;
-        if ( new_len < _length )
+        return append( s, std::strlen( s ) );
+    }
+    bool append( const char* s, size_t len ) noexcept
+    {
+        if ( len == 0 )
+            return true;
+        if ( s == nullptr || len > static_cast<size_t>( std::numeric_limits<uint32_t>::max() - _length ) )
             return false;
+        const uint32_t add_len = static_cast<uint32_t>( len );
+        const uint32_t new_len = _length + add_len;
         if ( !ensure_capacity( new_len ) )
             return false;
-        char* data = resolve_data();
-        if ( data == nullptr )
+        char* ptr = data();
+        if ( ptr == nullptr )
             return false;
-        std::memcpy( data + _length, s, static_cast<size_t>( add_len ) + 1 );
-        _length = new_len;
+        std::memmove( ptr + _length, s, len );
+        ptr[new_len] = '\0';
+        _length      = new_len;
         return true;
     }
     void clear() noexcept
@@ -75,9 +106,9 @@ template <typename ManagerT> struct pstring
         _length = 0;
         if ( _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
         {
-            char* data = resolve_data();
-            if ( data != nullptr )
-                data[0] = '\0';
+            char* ptr = data();
+            if ( ptr != nullptr )
+                ptr[0] = '\0';
         }
     }
     void free_data() noexcept
@@ -94,7 +125,11 @@ template <typename ManagerT> struct pstring
     {
         if ( s == nullptr )
             return _length == 0;
-        return std::strcmp( c_str(), s ) == 0;
+        const size_t len = std::strlen( s );
+        if ( len != static_cast<size_t>( _length ) )
+            return false;
+        const char* ptr = data();
+        return len == 0 || ( ptr != nullptr && std::memcmp( ptr, s, len ) == 0 );
     }
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
     bool operator==( const pstring& other ) const noexcept
@@ -105,10 +140,26 @@ template <typename ManagerT> struct pstring
             return false;
         if ( _length == 0 )
             return true;
-        return std::strcmp( c_str(), other.c_str() ) == 0;
+        const char* lhs = data();
+        const char* rhs = other.data();
+        return lhs != nullptr && rhs != nullptr && std::memcmp( lhs, rhs, static_cast<size_t>( _length ) ) == 0;
     }
     bool operator!=( const pstring& other ) const noexcept { return !( *this == other ); }
-    bool operator<( const pstring& other ) const noexcept { return std::strcmp( c_str(), other.c_str() ) < 0; }
+    bool operator<( const pstring& other ) const noexcept
+    {
+        const size_t common = ( std::min )( static_cast<size_t>( _length ), static_cast<size_t>( other._length ) );
+        const char*  lhs    = data();
+        const char*  rhs    = other.data();
+        if ( common > 0 )
+        {
+            if ( lhs == nullptr || rhs == nullptr )
+                return lhs == nullptr && rhs != nullptr;
+            const int cmp = std::memcmp( lhs, rhs, common );
+            if ( cmp != 0 )
+                return cmp < 0;
+        }
+        return _length < other._length;
+    }
 
   private:
     char* resolve_data() const noexcept { return pmm::pptr<char, ManagerT>( _data_idx ).resolve_unchecked(); }
@@ -130,10 +181,10 @@ template <typename ManagerT> struct pstring
             return false;
         _data_idx  = new_p.offset();
         _capacity  = new_cap;
-        char* data = resolve_data();
-        if ( data == nullptr )
+        char* ptr = data();
+        if ( ptr == nullptr )
             return false;
-        data[_length] = '\0';
+        ptr[_length] = '\0';
         return true;
     }
 };
