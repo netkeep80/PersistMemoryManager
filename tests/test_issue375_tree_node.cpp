@@ -179,6 +179,7 @@ TEST_CASE( "I375-T: get_tree_* / set_tree_* reject stale pptr after deallocate",
 
 TEST_CASE( "I392: application NodeType remains valid across lifecycle", "[issue392][node_type]" )
 {
+    static_assert( pmm::kApplicationNodeTypeFirst == 32 );
     static_assert( !pmm::is_known_node_type( 31 ) );
     static_assert( pmm::is_known_node_type( 32 ) );
     static_assert( pmm::is_known_node_type( 255 ) );
