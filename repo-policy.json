@@ -110,27 +110,32 @@
       }
     },
     "kernel-compaction": {
-      "forbid_surfaces": ["docs", "governance", "release"],
+      "forbid_surfaces": ["docs", "governance"],
       "new_files": {
-        "allow_classes": ["test", "kernel_module"],
+        "allow_classes": ["test", "kernel_module", "release"],
         "max_per_class": {
-          "kernel_module": 1
+          "kernel_module": 1,
+          "release": 1
         }
       }
     },
     "kernel-hardening": {
-      "forbid_surfaces": ["docs", "governance", "release"],
+      "forbid_surfaces": ["docs", "governance"],
       "require_surfaces": ["tests"],
       "new_files": {
-        "allow_classes": ["test"]
+        "allow_classes": ["test", "release"],
+        "max_per_class": {
+          "release": 1
+        }
       }
     },
     "extraction-prep": {
-      "forbid_surfaces": ["governance", "release"],
+      "forbid_surfaces": ["governance"],
       "new_files": {
-        "allow_classes": ["test", "kernel_module"],
+        "allow_classes": ["test", "kernel_module", "release"],
         "max_per_class": {
-          "kernel_module": 1
+          "kernel_module": 1,
+          "release": 1
         }
       }
     },
