@@ -4352,10 +4352,12 @@ req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
         void* blk_raw = ManagerT::template try_checked_block_from_pptr<T>( p );
         if ( blk_raw == nullptr )
             return pmm::pptr<T, ManagerT>();
+        using BlockState = BlockStateBase<address_traits>;
+        const NodeType old_node_type = BlockState::get_node_type( blk_raw );
         uint8_t*                               base          = ManagerT::_backend.base_ptr();
         detail::ManagerHeader<address_traits>* hdr           = ManagerT::get_header( base );
         index_type                             blk_idx       = ManagerT::template block_idx_from_pptr<T>( p );
-        index_type                             old_data_gran = BlockStateBase<address_traits>::get_weight( blk_raw );
+        index_type                             old_data_gran = BlockState::get_weight( blk_raw );
         if ( new_data_gran == old_data_gran )
         {
             ManagerT::_last_error = PmmError::Ok;
@@ -4408,6 +4410,8 @@ req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
             return pmm::pptr<T, ManagerT>();
         }
         assign_node_type_for<T>( new_raw );
+        if ( pmm::is_application_node_type( old_node_type ) )
+            BlockState::set_node_type_of( new_raw, old_node_type );
         pmm::pptr<T, ManagerT> new_p = ManagerT::template make_pptr_from_raw<T>( new_raw );
         if ( new_p.is_null() )
         {
@@ -4418,10 +4422,9 @@ req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
         void*  old_src = resolve_unchecked<T>( p );
         size_t copy_sz = ( new_count < old_count ? new_count : old_count ) * sizeof( T );
         std::memmove( new_dst, old_src, copy_sz );
-        void*               old_blk_raw = detail::block_at<address_traits>( base, blk_idx );
-        index_type          freed_w     = BlockStateBase<address_traits>::get_weight( old_blk_raw );
-        const pmm::NodeType nt_old      = BlockStateBase<address_traits>::get_node_type( old_blk_raw );
-        if ( pmm::is_allocated( nt_old ) && pmm::can_be_deleted_from_pap( nt_old ) )
+        void*      old_blk_raw = detail::block_at<address_traits>( base, blk_idx );
+        index_type freed_w     = BlockState::get_weight( old_blk_raw );
+        if ( pmm::is_allocated( old_node_type ) && pmm::can_be_deleted_from_pap( old_node_type ) )
         {
             auto       old_alloc  = AllocatedBlock<address_traits>::cast_from_raw( old_blk_raw );
             index_type total_gran = detail::physical_block_total_granules<address_traits>(
