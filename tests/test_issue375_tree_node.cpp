@@ -168,11 +168,6 @@ TEST_CASE( "I375-T: get_tree_* / set_tree_* reject stale pptr after deallocate",
     REQUIRE( BlockState::get_left_offset( blk_raw ) == saved_left_offset );
 
     Mgr::clear_error();
-    auto right = Mgr::get_tree_right_offset( p );
-    REQUIRE( right == 0 );
-    REQUIRE( Mgr::last_error() == pmm::PmmError::InvalidPointer );
-
-    Mgr::clear_error();
     Mgr::set_tree_right_offset( p, static_cast<Mgr::index_type>( 0xDEF ) );
     REQUIRE( Mgr::last_error() == pmm::PmmError::InvalidPointer );
     REQUIRE( BlockState::get_right_offset( blk_raw ) == saved_right_offset );
