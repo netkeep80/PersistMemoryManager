@@ -168,11 +168,30 @@ TEST_CASE( "I375-T: get_tree_* / set_tree_* reject stale pptr after deallocate",
     REQUIRE( BlockState::get_left_offset( blk_raw ) == saved_left_offset );
 
     Mgr::clear_error();
+    auto right = Mgr::get_tree_right_offset( p );
+    REQUIRE( right == 0 );
+    REQUIRE( Mgr::last_error() == pmm::PmmError::InvalidPointer );
+
+    Mgr::clear_error();
     Mgr::set_tree_right_offset( p, static_cast<Mgr::index_type>( 0xDEF ) );
     REQUIRE( Mgr::last_error() == pmm::PmmError::InvalidPointer );
     REQUIRE( BlockState::get_right_offset( blk_raw ) == saved_right_offset );
 
     REQUIRE( BlockState::get_node_type( blk_raw ) == saved_node_type );
 
+    Mgr::destroy();
+}
+
+TEST_CASE( "I392: application NodeType remains a valid allocated block", "[issue392][node_type]" )
+{
+    setup_clean_image();
+    auto p = Mgr::create_typed<int>( 7 );
+    auto t = static_cast<pmm::NodeType>( pmm::kApplicationNodeTypeFirst + 1 );
+    REQUIRE( pmm::set_application_node_type<Mgr>( p, t ) );
+    REQUIRE( pmm::get_node_type<Mgr>( p ) == t );
+    REQUIRE( Mgr::resolve( p ) != nullptr );
+    REQUIRE( Mgr::verify().ok );
+    REQUIRE_FALSE( pmm::set_application_node_type<Mgr>( p, pmm::NodeType::PMap ) );
+    Mgr::destroy_typed( p );
     Mgr::destroy();
 }
