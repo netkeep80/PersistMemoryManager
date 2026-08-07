@@ -26,3 +26,5 @@ jobs:
           git rm .github/workflows/agent-generate-single-headers.yml
           git commit -m "build: regenerate single headers for application NodeType"
           git push origin HEAD:agent/issue-392-application-node-types
+
+# Final one-shot generation trigger.
