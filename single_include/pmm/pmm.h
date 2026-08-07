@@ -194,21 +194,6 @@ template <typename T> struct node_type_for
     static constexpr NodeType value = NodeType::Generic;
 };
 template <typename T> inline constexpr NodeType node_type_for_v = node_type_for<T>::value;
-template <typename Manager, typename Pptr> NodeType get_node_type( Pptr p ) noexcept
-{
-    auto* h = Manager::try_tree_node( p );
-    return h == nullptr ? NodeType::Free : h->node_type;
-}
-template <typename Manager, typename Pptr> bool set_application_node_type( Pptr p, NodeType type ) noexcept
-{
-    if ( !is_application_node_type( type ) )
-        return false;
-    auto* h = Manager::try_tree_node( p );
-    if ( h == nullptr || ( h->node_type != NodeType::Generic && !is_application_node_type( h->node_type ) ) )
-        return false;
-    h->node_type = type;
-    return true;
-}
 namespace detail
 {
 template <typename AT> struct BlockHeaderCoreFields
@@ -4284,6 +4269,34 @@ template <typename ManagerT> class PersistMemoryTypedApi
             return;
         void* raw = ManagerT::template raw_block_user_ptr_from_pptr<T>( p );
         ManagerT::deallocate( raw );
+    }
+    template <typename T> static NodeType get_node_type( pmm::pptr<T, ManagerT> p ) noexcept
+    {
+        using thread_policy = typename ManagerT::thread_policy;
+        typename thread_policy::shared_lock_type lock( ManagerT::_mutex );
+        void* blk = ManagerT::template try_checked_block_from_pptr<T>( p );
+        if ( blk == nullptr )
+            return NodeType::Free;
+        ManagerT::_last_error = PmmError::Ok;
+        return BlockStateBase<typename ManagerT::address_traits>::get_node_type( blk );
+    }
+    template <typename T>
+    static bool set_application_node_type( pmm::pptr<T, ManagerT> p, NodeType type ) noexcept
+    {
+        if ( !pmm::is_application_node_type( type ) )
+            return false;
+        using thread_policy = typename ManagerT::thread_policy;
+        typename thread_policy::unique_lock_type lock( ManagerT::_mutex );
+        void* blk = ManagerT::template try_checked_block_from_pptr<T>( p );
+        if ( blk == nullptr )
+            return false;
+        using BlockState = BlockStateBase<typename ManagerT::address_traits>;
+        const auto current = BlockState::get_node_type( blk );
+        if ( current != NodeType::Generic && !pmm::is_application_node_type( current ) )
+            return false;
+        BlockState::set_node_type_of( blk, type );
+        ManagerT::_last_error = PmmError::Ok;
+        return true;
     }
 /*
 #### pmm-detail-persistmemorytypedapi-reallocate_typed
