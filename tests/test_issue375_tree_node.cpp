@@ -179,14 +179,27 @@ TEST_CASE( "I375-T: get_tree_* / set_tree_* reject stale pptr after deallocate",
 
 TEST_CASE( "I392: application NodeType remains a valid allocated block", "[issue392][node_type]" )
 {
+    static_assert( !pmm::is_known_node_type( 31 ) );
+    static_assert( pmm::is_known_node_type( 32 ) );
+    static_assert( pmm::is_known_node_type( 255 ) );
+
     setup_clean_image();
     auto       p = Mgr::create_typed<int>( 7 );
     const auto t = static_cast<pmm::NodeType>( pmm::kApplicationNodeTypeFirst + 1 );
-    REQUIRE( pmm::set_application_node_type<Mgr>( p, t ) );
-    REQUIRE( pmm::get_node_type<Mgr>( p ) == t );
+
+    REQUIRE( Mgr::set_application_node_type( p, t ) );
+    REQUIRE( Mgr::get_node_type( p ) == t );
+    REQUIRE( pmm::is_allocated( t ) );
+    REQUIRE( pmm::is_mutable( t ) );
+    REQUIRE( pmm::can_be_deleted_from_pap( t ) );
     REQUIRE( Mgr::resolve( p ) != nullptr );
     REQUIRE( Mgr::verify().ok );
-    REQUIRE_FALSE( pmm::set_application_node_type<Mgr>( p, pmm::NodeType::PMap ) );
+
+    Mgr::pptr<int> null;
+    REQUIRE_FALSE( Mgr::set_application_node_type( null, t ) );
+    REQUIRE_FALSE( Mgr::set_application_node_type( p, pmm::NodeType::PMap ) );
+
     Mgr::destroy_typed( p );
+    REQUIRE_FALSE( Mgr::set_application_node_type( p, t ) );
     Mgr::destroy();
 }
