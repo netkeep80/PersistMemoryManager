@@ -17,6 +17,16 @@ struct manager_index_type<ManagerT>
 {
     using type = typename ManagerT::address_traits::index_type;
 };
+inline constexpr size_t kExternalArenaOffset = static_cast<size_t>( -1 );
+template <class ManagerT> size_t arena_offset( const void* raw ) noexcept
+{
+    const auto* base = ManagerT::backend().base_ptr();
+    if ( raw == nullptr || base == nullptr )
+        return kExternalArenaOffset;
+    const auto begin = reinterpret_cast<std::uintptr_t>( base ), addr = reinterpret_cast<std::uintptr_t>( raw );
+    return addr >= begin && addr - begin < ManagerT::backend().total_size() ? static_cast<size_t>( addr - begin )
+                                                                         : kExternalArenaOffset;
+}
 }
 template <class T, class ManagerT>
     requires( !std::is_void_v<ManagerT> )
@@ -63,12 +73,8 @@ req: dr-007, qa-port-001, fr-035, if-012
             requires( const T& a, const T& b ) {
                 { a < b } -> std::convertible_to<bool>;
             }, "" );
-        if ( is_null() && !other.is_null() )
-            return true;
-        if ( !is_null() && other.is_null() )
-            return false;
-        if ( is_null() && other.is_null() )
-            return false;
+        if ( is_null() || other.is_null() )
+            return is_null() && !other.is_null();
         return **this < *other;
     }
     T&   operator*() const noexcept { return *ManagerT::template resolve_checked<T>( *this ); }
@@ -78,4 +84,25 @@ req: dr-007, qa-port-001, fr-035, if-012
     auto try_tree_node() const noexcept { return ManagerT::try_tree_node( *this ); }
     auto& tree_node_unchecked() const noexcept { return ManagerT::tree_node_unchecked( *this ); }
 };
+template <class T, class ManagerT> pptr<T, ManagerT> pptr_from_raw( T* raw ) noexcept
+{
+    const size_t off = detail::arena_offset<ManagerT>( raw );
+    if ( off == detail::kExternalArenaOffset )
+        return {};
+    auto p = ManagerT::template pptr_from_byte_offset<T>( off );
+    return p.resolve() == raw ? p : pptr<T, ManagerT>{};
+}
+namespace detail
+{
+template <class T, class ManagerT> struct relocation_owner
+{
+    T* raw; size_t arena_off;
+    explicit relocation_owner( T* p ) noexcept : raw( p ), arena_off( arena_offset<ManagerT>( p ) ) {}
+    T* get() const noexcept
+    {
+        return arena_off == kExternalArenaOffset ? raw
+                                                : reinterpret_cast<T*>( ManagerT::backend().base_ptr() + arena_off );
+    }
+};
+}
 }

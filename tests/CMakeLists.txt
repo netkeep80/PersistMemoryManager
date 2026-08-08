@@ -335,3 +335,6 @@ add_test(
     COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_SOURCE_DIR}/issue314_build_graph_contract.cmake"
 )
 set_tests_properties(test_issue314_build_graph_contract PROPERTIES TIMEOUT 180)
+
+# Issue 403: embedded pstring/parray owners survive arena relocation
+pmm_add_test(test_issue403_embedded_containers test_issue403_embedded_containers.cpp)
