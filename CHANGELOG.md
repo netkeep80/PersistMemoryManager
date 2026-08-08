@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [6.4.1] - 2026-08-08
+
+### Fixed
+- Count the newly appended physical block header in `used_size` when arena growth follows an allocated tail.
+
+
 ## [6.4.0] - 2026-08-08
 
 ### Added
