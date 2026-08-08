@@ -151,6 +151,100 @@ shard = replace_one(
     "bootstrap stable registry root",
 )
 
+shard = replace_one(
+    shard,
+    """    if ( !register_domain_unlocked( detail::kSystemDomainFreeTree, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingFreeTree, 0 ) )
+    {
+        _last_error = PmmError::BackendError;
+        return false;
+    }
+    if ( !register_domain_unlocked( detail::kSystemDomainSymbols, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, 0 ) )
+    {
+        _last_error = PmmError::BackendError;
+        return false;
+    }
+    if ( !register_domain_unlocked( detail::kSystemDomainRegistry, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, get_header( _backend.base_ptr() )->root_offset ) )
+    {
+        _last_error = PmmError::BackendError;
+        return false;
+    }
+    if ( !register_domain_unlocked( detail::kServiceNameDomainRoot, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, 0 ) )
+    {
+        _last_error = PmmError::BackendError;
+        return false;
+    }
+    if ( !bootstrap_system_symbols_unlocked() )
+    {
+        _last_error = PmmError::BackendError;
+        return false;
+    }""",
+    """    if ( !register_domain_unlocked( detail::kSystemDomainFreeTree, detail::kForestDomainFlagSystem,
+                                     detail::kForestBindingFreeTree, 0 ) ||
+         !register_domain_unlocked( detail::kSystemDomainSymbols, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, 0 ) ||
+         !register_domain_unlocked( detail::kSystemDomainRegistry, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, get_header( _backend.base_ptr() )->root_offset ) ||
+         !register_domain_unlocked( detail::kServiceNameDomainRoot, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, 0 ) ||
+         !bootstrap_system_symbols_unlocked() )
+    {
+        _last_error = PmmError::BackendError;
+        return false;
+    }""",
+    "bootstrap registration boilerplate compaction",
+)
+
+shard = replace_one(
+    shard,
+    """    const auto* hdr = get_header_c( base );
+    if ( hdr->magic != kMagic )
+        return false;
+    if ( hdr->image_version != detail::kCurrentImageVersion )
+        return false;
+    if ( hdr->total_size != _backend.total_size() )
+        return false;
+    if ( hdr->granule_size != static_cast<uint16_t>( address_traits::granule_size ) )
+        return false;
+    const forest_registry* reg = forest_registry_root_unlocked();
+    if ( reg == nullptr )
+        return false;
+    if ( reg->magic != detail::kForestRegistryMagic )
+        return false;
+    if ( reg->version != detail::kForestRegistryVersion )
+        return false;
+    if ( reg->domain_count < 4 )
+        return false;""",
+    """    const auto* hdr = get_header_c( base );
+    if ( hdr->magic != kMagic || hdr->image_version != detail::kCurrentImageVersion ||
+         hdr->total_size != _backend.total_size() ||
+         hdr->granule_size != static_cast<uint16_t>( address_traits::granule_size ) )
+        return false;
+    const forest_registry* reg = forest_registry_root_unlocked();
+    if ( reg == nullptr || reg->magic != detail::kForestRegistryMagic ||
+         reg->version != detail::kForestRegistryVersion || reg->domain_count < 4 )
+        return false;""",
+    "bootstrap invariant predicate compaction",
+)
+
+shard = replace_one(
+    shard,
+    """        const forest_domain* rec = find_domain_by_name_unlocked( name );
+        if ( rec == nullptr )
+            return false;
+        if ( ( rec->flags & detail::kForestDomainFlagSystem ) == 0 )
+            return false;
+        if ( rec->symbol_offset == 0 )
+            return false;""",
+    """        const forest_domain* rec = find_domain_by_name_unlocked( name );
+        if ( rec == nullptr || ( rec->flags & detail::kForestDomainFlagSystem ) == 0 || rec->symbol_offset == 0 )
+            return false;""",
+    "required domain invariant compaction",
+)
+
 # The legacy shard carried visual blank lines that become pure physical LOC debt once
 # inlined into the already-large canonical manager. Remove only empty lines; code,
 # comments, braces and source anchors are otherwise byte-preserved.
