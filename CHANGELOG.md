@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [6.4.2] - 2026-08-08
+
+### Fixed
+- Make the `ensure_capacity` production-LOC guard independent of helper return type while preserving the required `reallocate_typed` path and manual-relocation rejection.
+
+
 ## [6.4.1] - 2026-08-08
 
 ### Fixed
