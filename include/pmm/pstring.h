@@ -120,13 +120,16 @@ template <typename ManagerT> struct pstring
     {
         if ( required <= _capacity )
             return true;
-        if ( static_cast<uint64_t>( required ) + 1 > std::numeric_limits<size_t>::max() )
+        const uint64_t max_cap = std::numeric_limits<size_t>::max() < std::numeric_limits<uint32_t>::max()
+                                     ? static_cast<uint64_t>( std::numeric_limits<size_t>::max() ) - 1
+                                     : static_cast<uint64_t>( std::numeric_limits<uint32_t>::max() );
+        if ( required > max_cap )
             return false;
         uint64_t cap = _capacity ? static_cast<uint64_t>( _capacity ) * 2 : 16;
         if ( cap < required )
             cap = required;
-        if ( cap > std::numeric_limits<uint32_t>::max() )
-            cap = std::numeric_limits<uint32_t>::max();
+        if ( cap > max_cap )
+            cap = max_cap;
         const uint32_t new_cap = static_cast<uint32_t>( cap );
         const std::size_t old_count = has_data() ? size() + 1 : 0;
         pmm::pptr<char, ManagerT> p = ManagerT::template reallocate_typed<char>(
