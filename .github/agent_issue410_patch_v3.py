@@ -152,6 +152,10 @@ shard = replace_one(
 )
 
 manager = manager.replace(include, shard)
+old_manager_req = "req: feat-001, if-008, con-004, con-005, if-009, con-009, dr-002, dr-008, dr-018, fr-004, fr-007, fr-008, fr-009, fr-010, fr-011, fr-015, fr-021, fr-022, fr-032, qa-compat-001, qa-perf-002, qa-rec-001, qa-rel-002, qa-thread-001, qa-thread-002, rule-006, sys-001, sys-005"
+new_manager_req = "req: feat-001, if-008, con-004, con-005, if-009, con-009, dr-002, dr-008, dr-018, fr-004, fr-007, fr-008, fr-009, fr-010, fr-011, fr-012, fr-015, fr-021, fr-022, fr-032, qa-compat-001, qa-perf-002, qa-rec-001, qa-rel-002, qa-thread-001, qa-thread-002, rule-006, rule-008, sys-001, sys-005"
+manager = replace_one(manager, old_manager_req, new_manager_req, "manager forest-domain requirement back-links")
+
 # Do not clang-format the canonical PMM header: source anchors intentionally stay at column zero.
 for anchor in (
     "\n/*\n## pmm-persistmemorymanager\n",
