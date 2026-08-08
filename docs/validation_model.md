@@ -116,9 +116,14 @@ buffer, copies the image and releases the previous buffer.
 Therefore code that crosses a potentially relocating operation must retain a
 `pptr`/persistent offset and resolve again afterwards. Persistent container
 member functions that may grow backing storage follow the same rule internally:
-they capture owner identity before growth and must not dereference their old
-`this` after allocator mutation. External/stack container owners are not arena
-views and remain at their ordinary C++ address, although their persistent
+they capture owner location before growth and must not dereference their old
+`this` after allocator mutation. A root container can be represented by its
+persistent identity; an embedded container is an interior address, so the
+container implementation retains only a transient image-relative byte offset
+for the duration of that member call and rebases it against the new arena base.
+That transient offset is not stored in persistent data and is not a second
+public address representation. External/stack container owners are outside the
+arena and remain at their ordinary C++ address, although their persistent
 backing data must still be resolved again after growth.
 
 Raw inputs also obey this rule. If an input may refer into the arena and an
