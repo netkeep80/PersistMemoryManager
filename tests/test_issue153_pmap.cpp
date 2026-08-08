@@ -194,7 +194,7 @@ TEST_CASE( "    pmap domain binding separates identities", "[test_issue153_pmap]
     // Different _K/_V node layouts never share a binding, even under the same domain key.
     TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> syms;
     REQUIRE( std::strcmp( a_ops.name(), syms.forest_domain_ops().name() ) != 0 );
-    TestMgr::pmap<int, int>                                 named_a;
+    TestMgr::pmap<int, int> named_a;
     REQUIRE( named_a.bind_domain( "issue336/shared" ) );
     TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> named_s;
     REQUIRE( named_s.bind_domain( "issue336/shared" ) );
