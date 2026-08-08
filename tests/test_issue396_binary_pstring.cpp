@@ -97,40 +97,29 @@ TEST_CASE( "I396: self-append survives forced backing-buffer relocation", "[issu
     const char* before = s->data();
     REQUIRE( before != nullptr );
 
-    // Prevent allocator::realloc_grow from consuming the backing buffer's
-    // physical next free block. Consume that exact free block completely so
-    // append must use the relocation path (expanding the arena if necessary).
-    using BlockState = pmm::BlockStateBase<Mgr::address_traits>;
-    constexpr auto kHdrGranules = static_cast<Mgr::index_type>(
-        ( sizeof( pmm::Block<Mgr::address_traits> ) + Mgr::address_traits::granule_size - 1 ) /
-        Mgr::address_traits::granule_size );
-    const auto data_idx = static_cast<Mgr::index_type>( s->_data_idx );
-    REQUIRE( data_idx > kHdrGranules );
-    auto* data_blk = pmm::detail::resolve_granule_ptr<Mgr::address_traits>(
-        Mgr::backend().base_ptr(), static_cast<Mgr::index_type>( data_idx - kHdrGranules ) );
-    REQUIRE( data_blk != nullptr );
-    const auto next_idx = BlockState::get_next_offset( data_blk );
-    REQUIRE( next_idx != Mgr::address_traits::no_block );
-    auto* next_blk = pmm::detail::resolve_granule_ptr<Mgr::address_traits>( Mgr::backend().base_ptr(), next_idx );
-    REQUIRE( next_blk != nullptr );
-    REQUIRE( pmm::is_free( BlockState::get_node_type( next_blk ) ) );
-    const auto next_total = BlockState::get_weight( next_blk );
-    REQUIRE( next_total > kHdrGranules );
-    const auto blocker_bytes = static_cast<std::size_t>( next_total - kHdrGranules ) *
-                               Mgr::address_traits::granule_size;
-    auto blocker = Mgr::allocate_typed<std::byte>( blocker_bytes );
+    // Keep the pstring object itself at a stable address while forcing only
+    // its backing char block to move: block in-place growth, create an exact-fit
+    // destination hole, and pin both sides of that hole against coalescing.
+    auto blocker = Mgr::allocate_typed<std::byte>();
     REQUIRE( !blocker.is_null() );
-    REQUIRE( BlockState::get_next_offset( data_blk ) == next_idx );
-    REQUIRE_FALSE( pmm::is_free( BlockState::get_node_type( next_blk ) ) );
+    auto destination = Mgr::allocate_typed<char>( 33 );
+    REQUIRE( !destination.is_null() );
+    auto tail_guard = Mgr::allocate_typed<std::byte>();
+    REQUIRE( !tail_guard.is_null() );
+    const auto destination_idx = destination.offset();
+    Mgr::deallocate_typed( destination );
 
     REQUIRE( s->append( s->data() + 1, 15 ) );
     REQUIRE( s->size() == 31 );
+    REQUIRE( s->_data_idx == destination_idx );
     REQUIRE( s->data() != before );
     const char expected[] = "0123456789ABCDEF123456789ABCDEF";
     REQUIRE( std::memcmp( s->data(), expected, sizeof( expected ) - 1 ) == 0 );
     REQUIRE( s->c_str()[s->size()] == '\0' );
+    REQUIRE( Mgr::verify().ok );
 
     Mgr::deallocate_typed( blocker );
+    Mgr::deallocate_typed( tail_guard );
     destroy_string( p );
 }
 
