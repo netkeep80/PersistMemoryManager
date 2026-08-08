@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [6.4.0] - 2026-08-08
+
+### Added
+- Add length-aware `pstring` assign/append and comparison semantics so embedded NUL bytes are preserved without changing the persistent string layout.
+
+
 ## [6.3.0] - 2026-08-08
 
 ### Added
