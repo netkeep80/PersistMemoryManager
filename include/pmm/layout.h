@@ -130,6 +130,7 @@ template <typename ManagerAccess> struct ManagerLayoutOps
             hdr->last_block_offset = extra_idx;
             hdr->block_count++;
             hdr->free_count++;
+            hdr->used_size += ManagerAccess::kBlockHdrGranules;
             hdr->total_size = new_size;
             free_block_tree::insert( new_base, hdr, extra_idx );
         }
