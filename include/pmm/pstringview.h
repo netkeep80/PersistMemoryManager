@@ -40,10 +40,7 @@ template <typename ManagerT> struct pstringview
             node_type* obj = resolve_node( cur );
             return obj != nullptr ? compare_views( key, obj->view() ) : 0;
         }
-        static int compare_key( const char* key, node_pptr cur ) noexcept
-        {
-            return compare_key( key != nullptr ? std::string_view( key ) : std::string_view{}, cur );
-        }
+        static int compare_key( const char* key, node_pptr cur ) noexcept { return compare_key( key != nullptr ? std::string_view( key ) : std::string_view{}, cur ); }
         static bool less_node( node_pptr lhs, node_pptr rhs ) noexcept
         {
             node_type* lhs_obj = resolve_node( lhs );
@@ -62,14 +59,8 @@ template <typename ManagerT> struct pstringview
     bool             empty() const noexcept { return length == 0; }
     std::string_view view() const noexcept { return std::string_view( str, size() ); }
     bool             operator==( std::string_view s ) const noexcept { return view() == s; }
-    bool operator==( const char* s ) const noexcept
-    {
-        return view() == ( s != nullptr ? std::string_view( s ) : std::string_view{} );
-    }
-    bool operator==( const pstringview& other ) const noexcept
-    {
-        return this == &other || ( length == other.length && view() == other.view() );
-    }
+    bool operator==( const char* s ) const noexcept { return view() == ( s != nullptr ? std::string_view( s ) : std::string_view{} ); }
+    bool operator==( const pstringview& other ) const noexcept { return this == &other || ( length == other.length && view() == other.view() ); }
     bool operator!=( std::string_view s ) const noexcept { return !( *this == s ); }
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
     bool operator!=( const pstringview& other ) const noexcept { return !( *this == other ); }
@@ -78,10 +69,7 @@ template <typename ManagerT> struct pstringview
 ### pmm-pstringview-intern
 */
     static psview_pptr intern( std::string_view s ) noexcept { return _intern( s ); }
-    static psview_pptr intern( const char* s ) noexcept
-    {
-        return _intern( s != nullptr ? std::string_view( s ) : std::string_view{} );
-    }
+    static psview_pptr intern( const char* s ) noexcept { return _intern( s != nullptr ? std::string_view( s ) : std::string_view{} ); }
     static void reset() noexcept
     {
         if ( !ManagerT::is_initialized() )
