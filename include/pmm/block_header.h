@@ -22,66 +22,39 @@ enum class NodeType : std::uint8_t
     PMap           = 7,
     PPtr           = 8,
 };
+inline constexpr std::uint8_t kKernelNodeTypeLast       = static_cast<std::uint8_t>( NodeType::PPtr );
+inline constexpr std::uint8_t kApplicationNodeTypeFirst = 32;
 /*
 ### pmm-nodetype-helpers
 */
+constexpr bool is_application_node_type( NodeType t ) noexcept
+{
+    return static_cast<std::uint8_t>( t ) >= kApplicationNodeTypeFirst;
+}
+constexpr bool is_known_node_type( std::uint8_t v ) noexcept
+{
+    return v <= kKernelNodeTypeLast || v >= kApplicationNodeTypeFirst;
+}
 constexpr bool is_free( NodeType t ) noexcept
 {
     return t == NodeType::Free;
 }
 constexpr bool is_allocated( NodeType t ) noexcept
 {
-    switch ( t )
-    {
-    case NodeType::ManagerHeader:
-    case NodeType::Generic:
-    case NodeType::ReadOnlyLocked:
-    case NodeType::PStringView:
-    case NodeType::PString:
-    case NodeType::PArray:
-    case NodeType::PMap:
-    case NodeType::PPtr:
-        return true;
-    case NodeType::Free:
-        return false;
-    }
-    return false;
+    return t != NodeType::Free && is_known_node_type( static_cast<std::uint8_t>( t ) );
 }
 constexpr bool is_mutable( NodeType t ) noexcept
 {
-    switch ( t )
-    {
-    case NodeType::Free:
-    case NodeType::ManagerHeader:
-    case NodeType::Generic:
-    case NodeType::PString:
-    case NodeType::PArray:
-    case NodeType::PMap:
-    case NodeType::PPtr:
-        return true;
-    case NodeType::ReadOnlyLocked:
-    case NodeType::PStringView:
-        return false;
-    }
-    return false;
+    const auto v = static_cast<std::uint8_t>( t );
+    return is_application_node_type( t ) ||
+           ( v <= kKernelNodeTypeLast && t != NodeType::ReadOnlyLocked && t != NodeType::PStringView );
 }
 constexpr bool can_be_deleted_from_pap( NodeType t ) noexcept
 {
-    switch ( t )
-    {
-    case NodeType::Generic:
-    case NodeType::PStringView:
-    case NodeType::PString:
-    case NodeType::PArray:
-    case NodeType::PMap:
-    case NodeType::PPtr:
-        return true;
-    case NodeType::Free:
-    case NodeType::ManagerHeader:
-    case NodeType::ReadOnlyLocked:
-        return false;
-    }
-    return false;
+    const auto v = static_cast<std::uint8_t>( t );
+    return is_application_node_type( t ) ||
+           ( v >= static_cast<std::uint8_t>( NodeType::Generic ) && v <= kKernelNodeTypeLast &&
+             t != NodeType::ReadOnlyLocked );
 }
 constexpr bool participates_in_free_tree( NodeType t ) noexcept
 {
@@ -95,23 +68,6 @@ template <typename T> struct node_type_for
     static constexpr NodeType value = NodeType::Generic;
 };
 template <typename T> inline constexpr NodeType node_type_for_v = node_type_for<T>::value;
-constexpr bool                                  is_known_node_type( std::uint8_t v ) noexcept
-{
-    switch ( static_cast<NodeType>( v ) )
-    {
-    case NodeType::Free:
-    case NodeType::ManagerHeader:
-    case NodeType::Generic:
-    case NodeType::ReadOnlyLocked:
-    case NodeType::PStringView:
-    case NodeType::PString:
-    case NodeType::PArray:
-    case NodeType::PMap:
-    case NodeType::PPtr:
-        return true;
-    }
-    return false;
-}
 namespace detail
 {
 template <typename AT> struct BlockHeaderCoreFields
