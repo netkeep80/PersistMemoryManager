@@ -1,0 +1,46 @@
+name: Agent issue404 pmap closure
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  format-generate-and-check:
+    if: github.event.pull_request.head.ref == 'agent/issue-404-pmap-relocation' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/issue-404-pmap-relocation
+          fetch-depth: 0
+
+      - name: Format touched tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+          clang-format -i tests/test_issue404_pmap_relocation.cpp
+          clang-format -i --lines=190:230 tests/test_issue153_pmap.cpp
+
+      - name: Regenerate canonical single headers
+        run: |
+          python -m pip install 'quom>=4,<5'
+          ./scripts/generate-single-headers.sh
+
+      - name: Enforce production LOC and forbidden relocation patterns
+        run: ./scripts/check-source-loc-budget.sh
+
+      - name: Remove one-shot workflow and push closure
+        shell: bash
+        run: |
+          rm .github/workflows/agent-issue404-pmap-migration.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'test: format pmap relocation regressions and refresh header'
+          git push origin HEAD:agent/issue-404-pmap-relocation
