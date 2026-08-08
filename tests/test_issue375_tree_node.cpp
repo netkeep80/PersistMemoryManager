@@ -200,38 +200,27 @@ TEST_CASE( "I392: application NodeType remains valid across lifecycle", "[issue3
     REQUIRE_FALSE( Mgr::set_application_node_type( null, t ) );
     REQUIRE_FALSE( Mgr::set_application_node_type( p, pmm::NodeType::PMap ) );
 
-    // realloc_grow can stay in place only by consuming the physical next free
-    // block. Occupy that exact block completely, rather than relying on a
-    // subsequent best-fit allocation happening to be adjacent.
-    using BlockState = pmm::BlockStateBase<Mgr::address_traits>;
-    constexpr auto kHdrGranules = static_cast<Mgr::index_type>(
-        ( sizeof( pmm::Block<Mgr::address_traits> ) + Mgr::address_traits::granule_size - 1 ) /
-        Mgr::address_traits::granule_size );
-    auto* p_blk = pmm::detail::resolve_granule_ptr<Mgr::address_traits>(
-        Mgr::backend().base_ptr(), static_cast<Mgr::index_type>( p.offset() - kHdrGranules ) );
-    REQUIRE( p_blk != nullptr );
-    const auto next_idx = BlockState::get_next_offset( p_blk );
-    REQUIRE( next_idx != Mgr::address_traits::no_block );
-    auto* next_blk = pmm::detail::resolve_granule_ptr<Mgr::address_traits>( Mgr::backend().base_ptr(), next_idx );
-    REQUIRE( next_blk != nullptr );
-    REQUIRE( pmm::is_free( BlockState::get_node_type( next_blk ) ) );
-    const auto next_total = BlockState::get_weight( next_blk );
-    REQUIRE( next_total > kHdrGranules );
-    const auto blocker_bytes = static_cast<std::size_t>( next_total - kHdrGranules ) *
-                               Mgr::address_traits::granule_size;
-    auto blocker = Mgr::allocate_typed<std::byte>( blocker_bytes );
+    // Force relocation without forcing arena expansion: keep p's immediate
+    // successor allocated, create an exact-fit destination later, pin its
+    // right neighbour, then turn that destination into a free hole.
+    auto blocker = Mgr::allocate_typed<std::byte>();
     REQUIRE( !blocker.is_null() );
-    REQUIRE( BlockState::get_next_offset( p_blk ) == next_idx );
-    REQUIRE_FALSE( pmm::is_free( BlockState::get_node_type( next_blk ) ) );
+    auto destination = Mgr::allocate_typed<int>( 128 );
+    REQUIRE( !destination.is_null() );
+    auto tail_guard = Mgr::allocate_typed<std::byte>();
+    REQUIRE( !tail_guard.is_null() );
+    Mgr::deallocate_typed( destination );
 
     auto grown = Mgr::reallocate_typed<int>( p, 1, 128 );
     REQUIRE( !grown.is_null() );
     REQUIRE( grown != p );
+    REQUIRE( grown == destination );
     REQUIRE( Mgr::get_node_type( grown ) == t );
     REQUIRE( *grown == 7 );
     REQUIRE( Mgr::verify().ok );
 
     Mgr::deallocate_typed( blocker );
+    Mgr::deallocate_typed( tail_guard );
     Mgr::destroy_typed( grown );
     REQUIRE_FALSE( Mgr::set_application_node_type( grown, t ) );
     Mgr::destroy();
