@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 
 // --- Manager type alias for tests --------------------------------------------
 
@@ -66,7 +67,6 @@ TEST_CASE( "I233-A2: insert at beginning shifts elements", "[test_issue233_parra
     REQUIRE( arr->push_back( 30 ) );
     REQUIRE( arr->push_back( 40 ) );
 
-    // Insert at the beginning
     REQUIRE( arr->insert( 0, 10 ) );
 
     REQUIRE( arr->size() == 4 );
@@ -92,7 +92,6 @@ TEST_CASE( "I233-A3: insert in the middle", "[test_issue233_parray_insert_erase]
     REQUIRE( arr->push_back( 30 ) );
     REQUIRE( arr->push_back( 40 ) );
 
-    // Insert in the middle
     REQUIRE( arr->insert( 1, 20 ) );
 
     REQUIRE( arr->size() == 4 );
@@ -117,7 +116,6 @@ TEST_CASE( "I233-A4: insert out of range returns false", "[test_issue233_parray_
     REQUIRE( arr->push_back( 10 ) );
     REQUIRE( arr->push_back( 20 ) );
 
-    // Index 3 is out of range (size == 2, valid indices are 0..2)
     REQUIRE_FALSE( arr->insert( 3, 99 ) );
     REQUIRE( arr->size() == 2 );
 
@@ -137,8 +135,6 @@ TEST_CASE( "I233-A5: insert into empty array", "[test_issue233_parray_insert_era
     REQUIRE( arr->insert( 0, 42 ) );
     REQUIRE( arr->size() == 1 );
     REQUIRE( ( *arr )[0] == 42 );
-
-    // Out of range on empty-after-erase
     REQUIRE_FALSE( arr->insert( 2, 99 ) );
 
     arr->free_data();
@@ -163,7 +159,6 @@ TEST_CASE( "I233-B1: erase last element", "[test_issue233_parray_insert_erase]" 
     REQUIRE( arr->push_back( 30 ) );
 
     REQUIRE( arr->erase( 2 ) );
-
     REQUIRE( arr->size() == 2 );
     REQUIRE( ( *arr )[0] == 10 );
     REQUIRE( ( *arr )[1] == 20 );
@@ -186,7 +181,6 @@ TEST_CASE( "I233-B2: erase first element shifts others left", "[test_issue233_pa
     REQUIRE( arr->push_back( 30 ) );
 
     REQUIRE( arr->erase( 0 ) );
-
     REQUIRE( arr->size() == 2 );
     REQUIRE( ( *arr )[0] == 20 );
     REQUIRE( ( *arr )[1] == 30 );
@@ -209,7 +203,6 @@ TEST_CASE( "I233-B3: erase middle element", "[test_issue233_parray_insert_erase]
     REQUIRE( arr->push_back( 30 ) );
 
     REQUIRE( arr->erase( 1 ) );
-
     REQUIRE( arr->size() == 2 );
     REQUIRE( ( *arr )[0] == 10 );
     REQUIRE( ( *arr )[1] == 30 );
@@ -285,8 +278,6 @@ TEST_CASE( "I233-C1: sorted array insert pattern", "[test_issue233_parray_insert
     TestMgr::pptr<TestArr> p   = TestMgr::create_typed<TestArr>();
     TestArr*               arr = p.resolve();
 
-    // Build sorted array by inserting at correct position
-    // Insert 30, then 10 before it, then 20 between them
     REQUIRE( arr->insert( 0, 30 ) );
     REQUIRE( arr->insert( 0, 10 ) );
     REQUIRE( arr->insert( 1, 20 ) );
@@ -296,13 +287,11 @@ TEST_CASE( "I233-C1: sorted array insert pattern", "[test_issue233_parray_insert
     REQUIRE( ( *arr )[1] == 20 );
     REQUIRE( ( *arr )[2] == 30 );
 
-    // Erase the middle element
     REQUIRE( arr->erase( 1 ) );
     REQUIRE( arr->size() == 2 );
     REQUIRE( ( *arr )[0] == 10 );
     REQUIRE( ( *arr )[1] == 30 );
 
-    // Insert 25 between 10 and 30
     REQUIRE( arr->insert( 1, 25 ) );
     REQUIRE( arr->size() == 3 );
     REQUIRE( ( *arr )[0] == 10 );
@@ -322,29 +311,74 @@ TEST_CASE( "I233-C2: many inserts and erases maintain consistency", "[test_issue
     TestMgr::pptr<TestArr> p   = TestMgr::create_typed<TestArr>();
     TestArr*               arr = p.resolve();
 
-    // Insert 100 elements at various positions
     for ( int i = 0; i < 100; ++i )
     {
-        std::size_t pos = static_cast<std::size_t>( i ) / 2; // insert in the middle
+        std::size_t pos = static_cast<std::size_t>( i ) / 2;
         REQUIRE( arr->insert( pos, i ) );
     }
     REQUIRE( arr->size() == 100 );
 
-    // Erase all odd-position elements (from the end to avoid index shifting issues)
     for ( int i = 49; i >= 0; --i )
-    {
         REQUIRE( arr->erase( static_cast<std::size_t>( i ) * 2 + 1 ) );
-    }
     REQUIRE( arr->size() == 50 );
 
-    // Erase remaining elements one by one from the front
     while ( !arr->empty() )
-    {
         REQUIRE( arr->erase( 0 ) );
-    }
     REQUIRE( arr->size() == 0 );
 
     arr->free_data();
     TestMgr::destroy_typed( p );
     TestMgr::destroy();
+}
+
+TEST_CASE( "I403: parray push snapshots value and re-resolves owner across arena relocation",
+           "[issue403][parray][relocation]" )
+{
+    struct BigValue
+    {
+        std::uint64_t marker;
+        std::byte     bytes[2040];
+    };
+    static_assert( sizeof( BigValue ) == 2048 );
+    static_assert( std::is_trivially_copyable_v<BigValue> );
+
+    using RelocMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 405>;
+    using RelocArr = RelocMgr::parray<BigValue>;
+
+    RelocMgr::destroy();
+    REQUIRE( RelocMgr::create( 8 * 1024 ) );
+
+    auto source = RelocMgr::create_typed<BigValue>();
+    auto array  = RelocMgr::create_typed<RelocArr>();
+    REQUIRE( !source.is_null() );
+    REQUIRE( !array.is_null() );
+
+    auto* source_before = source.resolve();
+    auto* array_before  = array.resolve();
+    REQUIRE( source_before != nullptr );
+    REQUIRE( array_before != nullptr );
+    source_before->marker = 0x0123456789abcdefULL;
+    std::memset( source_before->bytes, 0xa5, sizeof( source_before->bytes ) );
+
+    const auto* base_before = RelocMgr::backend().base_ptr();
+    REQUIRE( array_before->push_back( *source_before ) );
+    REQUIRE( RelocMgr::backend().base_ptr() != base_before );
+
+    auto* source_after = source.resolve();
+    auto* array_after  = array.resolve();
+    REQUIRE( source_after != nullptr );
+    REQUIRE( array_after != nullptr );
+    REQUIRE( source_after != source_before );
+    REQUIRE( array_after != array_before );
+    REQUIRE( array_after->size() == 1 );
+    REQUIRE( array_after->at( 0 ) != nullptr );
+    REQUIRE( array_after->at( 0 )->marker == 0x0123456789abcdefULL );
+    for ( std::byte b : array_after->at( 0 )->bytes )
+        REQUIRE( b == std::byte{ 0xa5 } );
+    REQUIRE( RelocMgr::verify().ok );
+
+    array_after->free_data();
+    RelocMgr::destroy_typed( array );
+    RelocMgr::destroy_typed( source );
+    RelocMgr::destroy();
 }
