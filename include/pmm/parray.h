@@ -19,6 +19,7 @@ template <typename T, typename ManagerT> struct parray
     using manager_type = ManagerT;
     using index_type   = typename ManagerT::index_type;
     using value_type   = T;
+    using owner_pptr   = pmm::pptr<parray, ManagerT>;
     uint32_t   _size;
     uint32_t   _capacity;
     index_type _data_idx;
@@ -56,13 +57,22 @@ template <typename T, typename ManagerT> struct parray
     const T* data() const noexcept { return resolve_data(); }
     bool     push_back( const T& value ) noexcept
     {
-        if ( !ensure_capacity( _size + 1 ) )
+        if ( _size == std::numeric_limits<uint32_t>::max() )
             return false;
-        T* d = resolve_data();
+        const T value_copy = value;
+        parray* const external_owner = this;
+        const owner_pptr owner = pmm::pptr_from_raw<parray, ManagerT>( this );
+        const uint32_t old_size = _size;
+        if ( !ensure_capacity( old_size + 1, owner, external_owner ) )
+            return false;
+        parray* state = resolve_owner( owner, external_owner );
+        if ( state == nullptr )
+            return false;
+        T* d = state->resolve_data();
         if ( d == nullptr )
             return false;
-        d[_size] = value;
-        ++_size;
+        d[old_size] = value_copy;
+        state->_size = old_size + 1;
         return true;
     }
     void pop_back() noexcept
@@ -84,38 +94,55 @@ template <typename T, typename ManagerT> struct parray
     {
         if ( n > static_cast<size_t>( std::numeric_limits<uint32_t>::max() ) )
             return false;
-        return ensure_capacity( static_cast<uint32_t>( n ) );
+        parray* const external_owner = this;
+        const owner_pptr owner = pmm::pptr_from_raw<parray, ManagerT>( this );
+        return ensure_capacity( static_cast<uint32_t>( n ), owner, external_owner );
     }
     bool resize( size_t n ) noexcept
     {
         if ( n > static_cast<size_t>( std::numeric_limits<uint32_t>::max() ) )
             return false;
-        auto new_size = static_cast<uint32_t>( n );
-        if ( new_size > _size )
+        const auto new_size = static_cast<uint32_t>( n );
+        const uint32_t old_size = _size;
+        if ( new_size <= old_size )
         {
-            if ( !ensure_capacity( new_size ) )
-                return false;
-            T* d = resolve_data();
-            if ( d == nullptr )
-                return false;
-            std::memset( d + _size, 0, static_cast<size_t>( new_size - _size ) * sizeof( T ) );
+            _size = new_size;
+            return true;
         }
-        _size = new_size;
+        parray* const external_owner = this;
+        const owner_pptr owner = pmm::pptr_from_raw<parray, ManagerT>( this );
+        if ( !ensure_capacity( new_size, owner, external_owner ) )
+            return false;
+        parray* state = resolve_owner( owner, external_owner );
+        if ( state == nullptr )
+            return false;
+        T* d = state->resolve_data();
+        if ( d == nullptr )
+            return false;
+        std::memset( d + old_size, 0, static_cast<size_t>( new_size - old_size ) * sizeof( T ) );
+        state->_size = new_size;
         return true;
     }
     bool insert( size_t index, const T& value ) noexcept
     {
-        if ( index > static_cast<size_t>( _size ) )
+        if ( index > static_cast<size_t>( _size ) || _size == std::numeric_limits<uint32_t>::max() )
             return false;
-        if ( !ensure_capacity( _size + 1 ) )
+        const T value_copy = value;
+        parray* const external_owner = this;
+        const owner_pptr owner = pmm::pptr_from_raw<parray, ManagerT>( this );
+        const uint32_t old_size = _size;
+        if ( !ensure_capacity( old_size + 1, owner, external_owner ) )
             return false;
-        T* d = resolve_data();
+        parray* state = resolve_owner( owner, external_owner );
+        if ( state == nullptr )
+            return false;
+        T* d = state->resolve_data();
         if ( d == nullptr )
             return false;
-        if ( index < static_cast<size_t>( _size ) )
-            std::memmove( d + index + 1, d + index, ( static_cast<size_t>( _size ) - index ) * sizeof( T ) );
-        d[index] = value;
-        ++_size;
+        if ( index < static_cast<size_t>( old_size ) )
+            std::memmove( d + index + 1, d + index, ( static_cast<size_t>( old_size ) - index ) * sizeof( T ) );
+        d[index] = value_copy;
+        state->_size = old_size + 1;
         return true;
     }
     bool erase( size_t index ) noexcept
@@ -158,25 +185,34 @@ template <typename T, typename ManagerT> struct parray
     bool operator!=( const parray& other ) const noexcept { return !( *this == other ); }
 
   private:
-    T*   resolve_data() const noexcept { return pmm::pptr<T, ManagerT>( _data_idx ).resolve_unchecked(); }
-    bool ensure_capacity( uint32_t required ) noexcept
+    static parray* resolve_owner( owner_pptr owner, parray* external_owner ) noexcept
+    {
+        return owner.is_null() ? external_owner : owner.resolve_unchecked();
+    }
+    T* resolve_data() const noexcept { return pmm::pptr<T, ManagerT>( _data_idx ).resolve_unchecked(); }
+    bool ensure_capacity( uint32_t required, owner_pptr owner, parray* external_owner ) noexcept
     {
         if ( required <= _capacity )
             return true;
-        uint32_t new_cap = _capacity * 2;
+        const uint32_t old_size = _size;
+        const uint32_t old_capacity = _capacity;
+        const index_type old_data_idx = _data_idx;
+        uint64_t new_cap = old_capacity ? static_cast<uint64_t>( old_capacity ) * 2 : 4;
         if ( new_cap < required )
             new_cap = required;
-        if ( new_cap < 4 )
-            new_cap = 4;
-        if ( sizeof( T ) > 0 && static_cast<size_t>( new_cap ) > ( std::numeric_limits<size_t>::max )() / sizeof( T ) )
+        if ( new_cap > std::numeric_limits<uint32_t>::max() )
+            new_cap = std::numeric_limits<uint32_t>::max();
+        if ( sizeof( T ) > 0 && new_cap > ( std::numeric_limits<size_t>::max )() / sizeof( T ) )
             return false;
-        pmm::pptr<T, ManagerT> old_p( _data_idx );
-        pmm::pptr<T, ManagerT> new_p = ManagerT::template reallocate_typed<T>( old_p, static_cast<size_t>( _size ),
-                                                                               static_cast<size_t>( new_cap ) );
+        pmm::pptr<T, ManagerT> new_p = ManagerT::template reallocate_typed<T>(
+            pmm::pptr<T, ManagerT>( old_data_idx ), static_cast<size_t>( old_size ), static_cast<size_t>( new_cap ) );
         if ( new_p.is_null() )
             return false;
-        _data_idx = new_p.offset();
-        _capacity = new_cap;
+        parray* state = resolve_owner( owner, external_owner );
+        if ( state == nullptr )
+            return false;
+        state->_data_idx = new_p.offset();
+        state->_capacity = static_cast<uint32_t>( new_cap );
         return true;
     }
 };
