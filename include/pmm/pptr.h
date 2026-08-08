@@ -17,6 +17,16 @@ struct manager_index_type<ManagerT>
 {
     using type = typename ManagerT::address_traits::index_type;
 };
+inline constexpr size_t kExternalArenaOffset = static_cast<size_t>( -1 );
+template <class ManagerT> size_t arena_offset( const void* raw ) noexcept
+{
+    const auto* base = ManagerT::backend().base_ptr();
+    if ( raw == nullptr || base == nullptr )
+        return kExternalArenaOffset;
+    const auto begin = reinterpret_cast<std::uintptr_t>( base ), addr = reinterpret_cast<std::uintptr_t>( raw );
+    return addr >= begin && addr - begin < ManagerT::backend().total_size() ? static_cast<size_t>( addr - begin )
+                                                                         : kExternalArenaOffset;
+}
 }
 template <class T, class ManagerT>
     requires( !std::is_void_v<ManagerT> )
@@ -76,29 +86,22 @@ req: dr-007, qa-port-001, fr-035, if-012
 };
 template <class T, class ManagerT> pptr<T, ManagerT> pptr_from_raw( T* raw ) noexcept
 {
-    if ( raw == nullptr || !ManagerT::is_initialized() || ManagerT::backend().base_ptr() == nullptr ) return {};
-    const auto begin = reinterpret_cast<std::uintptr_t>( ManagerT::backend().base_ptr() );
-    const auto addr = reinterpret_cast<std::uintptr_t>( raw );
-    if ( addr < begin || addr - begin >= ManagerT::backend().total_size() ) return {};
-    auto p = ManagerT::template pptr_from_byte_offset<T>( static_cast<size_t>( addr - begin ) );
+    const size_t off = detail::arena_offset<ManagerT>( raw );
+    if ( off == detail::kExternalArenaOffset )
+        return {};
+    auto p = ManagerT::template pptr_from_byte_offset<T>( off );
     return p.resolve() == raw ? p : pptr<T, ManagerT>{};
 }
 namespace detail
 {
 template <class T, class ManagerT> struct relocation_owner
 {
-    static constexpr size_t external = static_cast<size_t>( -1 );
     T* raw; size_t arena_off;
-    explicit relocation_owner( T* p ) noexcept : raw( p ), arena_off( external )
-    {
-        auto* base = ManagerT::backend().base_ptr();
-        const auto begin = reinterpret_cast<std::uintptr_t>( base ), addr = reinterpret_cast<std::uintptr_t>( p );
-        if ( p && base && addr >= begin && addr - begin < ManagerT::backend().total_size() )
-            arena_off = static_cast<size_t>( addr - begin );
-    }
+    explicit relocation_owner( T* p ) noexcept : raw( p ), arena_off( arena_offset<ManagerT>( p ) ) {}
     T* get() const noexcept
     {
-        return arena_off == external ? raw : reinterpret_cast<T*>( ManagerT::backend().base_ptr() + arena_off );
+        return arena_off == kExternalArenaOffset ? raw
+                                                : reinterpret_cast<T*>( ManagerT::backend().base_ptr() + arena_off );
     }
 };
 }
