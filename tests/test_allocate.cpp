@@ -127,8 +127,7 @@ TEST_CASE( "allocate_auto_expand_after_allocated_tail_keeps_counters_consistent"
     auto first = MgrExpand::allocate_typed<std::uint8_t>();
     REQUIRE( !first.is_null() );
 
-    constexpr auto kHdrGranules = static_cast<MgrExpand::index_type>(
-        ( sizeof( pmm::Block<AT> ) + AT::granule_size - 1 ) / AT::granule_size );
+    constexpr auto kHdrGranules = pmm::detail::kBlockHeaderGranules_t<AT>;
     auto* first_blk = pmm::detail::resolve_granule_ptr<AT>(
         MgrExpand::backend().base_ptr(), static_cast<MgrExpand::index_type>( first.offset() - kHdrGranules ) );
     REQUIRE( first_blk != nullptr );
