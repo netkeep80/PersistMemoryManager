@@ -147,16 +147,10 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         if ( state == nullptr || state->_binding_id != 0 ) return false;
         char buf[detail::kForestDomainNameCapacity]{};
         if ( domain_key != nullptr && domain_key[0] != '\0' )
-        {
-            if ( !detail::pmap_write_name( buf, domain_type_hash, 'n', detail::pmap_key_hash( domain_key ), 16 ) )
-                return false;
-        }
+        { if ( !detail::pmap_write_name( buf, domain_type_hash, 'n', detail::pmap_key_hash( domain_key ), 16 ) ) return false; }
         else
-        {
-            static uint64_t seq = 1;
-            do { if ( !detail::pmap_write_name( buf, domain_type_hash, 'g', seq++, 8 ) ) return false; }
-            while ( ManagerT::has_domain( buf ) );
-        }
+        { static uint64_t seq = 1; do { if ( !detail::pmap_write_name( buf, domain_type_hash, 'g', seq++, 8 ) ) return false; }
+          while ( ManagerT::has_domain( buf ) ); }
         if ( !ManagerT::has_domain( buf ) && !ManagerT::register_domain( buf ) ) return false;
         state = owner.get();
         return state != nullptr && ( state->_binding_id = ManagerT::find_domain_by_name( buf ) ) != 0;
@@ -170,8 +164,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         detail::relocation_owner<pmap, ManagerT> owner( this );
         _binding_id = 0;
         if ( !bind_domain( nullptr ) ) return {};
-        pmap* state = owner.get();
-        return state ? forest_domain_policy( state->descriptor() ) : forest_domain_policy();
+        pmap* state = owner.get(); return state ? forest_domain_policy( state->descriptor() ) : forest_domain_policy();
     }
     forest_domain_view_policy forest_domain_view_ops() const noexcept
     {
@@ -200,16 +193,13 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
         node_pptr existing = ops.find( *key_now );
         if ( !existing.is_null() )
         {
-            const _V* val_now = val_owner.get();
-            node_type* obj = val_now ? ManagerT::template resolve<node_type>( existing ) : nullptr;
+            const _V* val_now = val_owner.get(); node_type* obj = val_now ? ManagerT::template resolve<node_type>( existing ) : nullptr;
             if ( obj == nullptr ) return {};
-            obj->value = *val_now;
-            return existing;
+            obj->value = *val_now; return existing;
         }
         node_pptr new_node = ManagerT::template allocate_typed<node_type>();
         node_type* obj = new_node.is_null() ? nullptr : ManagerT::template resolve<node_type>( new_node );
-        key_now = key_owner.get();
-        const _V* val_now = val_owner.get();
+        key_now = key_owner.get(); const _V* val_now = val_owner.get();
         if ( obj == nullptr || key_now == nullptr || val_now == nullptr )
         {
             if ( !new_node.is_null() ) ManagerT::template deallocate_typed<node_type>( new_node );
