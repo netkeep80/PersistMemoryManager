@@ -131,7 +131,7 @@
 - **Реализует:** [ur-007](03_user_requirements.md#ur-007), [feat-005](04_features.md#feat-005), [rule-008](02_business_rules.md#rule-008)
 - **Реализуется в:**
   - [pmm-detail-forestdomainregistry](../include/pmm/forest_registry.h#pmm-detail-forestdomainregistry)
-  - [forest_domain_mixin.inc](../include/pmm/forest_domain_mixin.inc)
+  - [persist_memory_manager.h](../include/pmm/persist_memory_manager.h)
 - **Проверяется в:** [test_forest_registry.cpp](../tests/test_forest_registry.cpp)
 
 ## fr-013
