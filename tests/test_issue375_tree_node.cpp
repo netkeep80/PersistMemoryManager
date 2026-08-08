@@ -10,7 +10,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "pmm_single_threaded_heap.h"
+#include "pmm/pmm_presets.h"
 
 namespace
 {
@@ -174,5 +174,54 @@ TEST_CASE( "I375-T: get_tree_* / set_tree_* reject stale pptr after deallocate",
 
     REQUIRE( BlockState::get_node_type( blk_raw ) == saved_node_type );
 
+    Mgr::destroy();
+}
+
+TEST_CASE( "I392: application NodeType remains valid across lifecycle", "[issue392][node_type]" )
+{
+    static_assert( pmm::kApplicationNodeTypeFirst == 32 );
+    static_assert( !pmm::is_known_node_type( 31 ) );
+    static_assert( pmm::is_known_node_type( 32 ) );
+    static_assert( pmm::is_known_node_type( 255 ) );
+
+    setup_clean_image();
+    auto       p = Mgr::create_typed<int>( 7 );
+    const auto t = static_cast<pmm::NodeType>( pmm::kApplicationNodeTypeFirst + 1 );
+
+    REQUIRE( Mgr::set_application_node_type( p, t ) );
+    REQUIRE( Mgr::get_node_type( p ) == t );
+    REQUIRE( pmm::is_allocated( t ) );
+    REQUIRE( pmm::is_mutable( t ) );
+    REQUIRE( pmm::can_be_deleted_from_pap( t ) );
+    REQUIRE( Mgr::resolve( p ) != nullptr );
+    REQUIRE( Mgr::verify().ok );
+
+    Mgr::pptr<int> null;
+    REQUIRE_FALSE( Mgr::set_application_node_type( null, t ) );
+    REQUIRE_FALSE( Mgr::set_application_node_type( p, pmm::NodeType::PMap ) );
+
+    // Force relocation without forcing arena expansion: keep p's immediate
+    // successor allocated, create an exact-fit destination later, pin its
+    // right neighbour, then turn that destination into a free hole.
+    auto blocker = Mgr::allocate_typed<std::byte>();
+    REQUIRE( !blocker.is_null() );
+    auto destination = Mgr::allocate_typed<int>( 128 );
+    REQUIRE( !destination.is_null() );
+    auto tail_guard = Mgr::allocate_typed<std::byte>();
+    REQUIRE( !tail_guard.is_null() );
+    Mgr::deallocate_typed( destination );
+
+    auto grown = Mgr::reallocate_typed<int>( p, 1, 128 );
+    REQUIRE( !grown.is_null() );
+    REQUIRE( grown != p );
+    REQUIRE( grown == destination );
+    REQUIRE( Mgr::get_node_type( grown ) == t );
+    REQUIRE( *grown == 7 );
+    REQUIRE( Mgr::verify().ok );
+
+    Mgr::deallocate_typed( blocker );
+    Mgr::deallocate_typed( tail_guard );
+    Mgr::destroy_typed( grown );
+    REQUIRE_FALSE( Mgr::set_application_node_type( grown, t ) );
     Mgr::destroy();
 }

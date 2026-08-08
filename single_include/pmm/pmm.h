@@ -148,66 +148,39 @@ enum class NodeType : std::uint8_t
     PMap           = 7,
     PPtr           = 8,
 };
+inline constexpr std::uint8_t kKernelNodeTypeLast       = static_cast<std::uint8_t>( NodeType::PPtr );
+inline constexpr std::uint8_t kApplicationNodeTypeFirst = 32;
 /*
 ### pmm-nodetype-helpers
 */
+constexpr bool is_application_node_type( NodeType t ) noexcept
+{
+    return static_cast<std::uint8_t>( t ) >= kApplicationNodeTypeFirst;
+}
+constexpr bool is_known_node_type( std::uint8_t v ) noexcept
+{
+    return v <= kKernelNodeTypeLast || v >= kApplicationNodeTypeFirst;
+}
 constexpr bool is_free( NodeType t ) noexcept
 {
     return t == NodeType::Free;
 }
 constexpr bool is_allocated( NodeType t ) noexcept
 {
-    switch ( t )
-    {
-    case NodeType::ManagerHeader:
-    case NodeType::Generic:
-    case NodeType::ReadOnlyLocked:
-    case NodeType::PStringView:
-    case NodeType::PString:
-    case NodeType::PArray:
-    case NodeType::PMap:
-    case NodeType::PPtr:
-        return true;
-    case NodeType::Free:
-        return false;
-    }
-    return false;
+    return t != NodeType::Free && is_known_node_type( static_cast<std::uint8_t>( t ) );
 }
 constexpr bool is_mutable( NodeType t ) noexcept
 {
-    switch ( t )
-    {
-    case NodeType::Free:
-    case NodeType::ManagerHeader:
-    case NodeType::Generic:
-    case NodeType::PString:
-    case NodeType::PArray:
-    case NodeType::PMap:
-    case NodeType::PPtr:
-        return true;
-    case NodeType::ReadOnlyLocked:
-    case NodeType::PStringView:
-        return false;
-    }
-    return false;
+    const auto v = static_cast<std::uint8_t>( t );
+    return is_application_node_type( t ) ||
+           ( v <= kKernelNodeTypeLast && t != NodeType::ReadOnlyLocked && t != NodeType::PStringView );
 }
 constexpr bool can_be_deleted_from_pap( NodeType t ) noexcept
 {
-    switch ( t )
-    {
-    case NodeType::Generic:
-    case NodeType::PStringView:
-    case NodeType::PString:
-    case NodeType::PArray:
-    case NodeType::PMap:
-    case NodeType::PPtr:
-        return true;
-    case NodeType::Free:
-    case NodeType::ManagerHeader:
-    case NodeType::ReadOnlyLocked:
-        return false;
-    }
-    return false;
+    const auto v = static_cast<std::uint8_t>( t );
+    return is_application_node_type( t ) ||
+           ( v >= static_cast<std::uint8_t>( NodeType::Generic ) && v <= kKernelNodeTypeLast &&
+             t != NodeType::ReadOnlyLocked );
 }
 constexpr bool participates_in_free_tree( NodeType t ) noexcept
 {
@@ -221,23 +194,6 @@ template <typename T> struct node_type_for
     static constexpr NodeType value = NodeType::Generic;
 };
 template <typename T> inline constexpr NodeType node_type_for_v = node_type_for<T>::value;
-constexpr bool                                  is_known_node_type( std::uint8_t v ) noexcept
-{
-    switch ( static_cast<NodeType>( v ) )
-    {
-    case NodeType::Free:
-    case NodeType::ManagerHeader:
-    case NodeType::Generic:
-    case NodeType::ReadOnlyLocked:
-    case NodeType::PStringView:
-    case NodeType::PString:
-    case NodeType::PArray:
-    case NodeType::PMap:
-    case NodeType::PPtr:
-        return true;
-    }
-    return false;
-}
 namespace detail
 {
 template <typename AT> struct BlockHeaderCoreFields
@@ -4314,6 +4270,34 @@ template <typename ManagerT> class PersistMemoryTypedApi
         void* raw = ManagerT::template raw_block_user_ptr_from_pptr<T>( p );
         ManagerT::deallocate( raw );
     }
+    template <typename T> static NodeType get_node_type( pmm::pptr<T, ManagerT> p ) noexcept
+    {
+        using thread_policy = typename ManagerT::thread_policy;
+        typename thread_policy::shared_lock_type lock( ManagerT::_mutex );
+        void* blk = ManagerT::template try_checked_block_from_pptr<T>( p );
+        if ( blk == nullptr )
+            return NodeType::Free;
+        ManagerT::_last_error = PmmError::Ok;
+        return BlockStateBase<typename ManagerT::address_traits>::get_node_type( blk );
+    }
+    template <typename T>
+    static bool set_application_node_type( pmm::pptr<T, ManagerT> p, NodeType type ) noexcept
+    {
+        if ( !pmm::is_application_node_type( type ) )
+            return false;
+        using thread_policy = typename ManagerT::thread_policy;
+        typename thread_policy::unique_lock_type lock( ManagerT::_mutex );
+        void* blk = ManagerT::template try_checked_block_from_pptr<T>( p );
+        if ( blk == nullptr )
+            return false;
+        using BlockState = BlockStateBase<typename ManagerT::address_traits>;
+        const auto current = BlockState::get_node_type( blk );
+        if ( current != NodeType::Generic && !pmm::is_application_node_type( current ) )
+            return false;
+        BlockState::set_node_type_of( blk, type );
+        ManagerT::_last_error = PmmError::Ok;
+        return true;
+    }
 /*
 #### pmm-detail-persistmemorytypedapi-reallocate_typed
 req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
@@ -4368,10 +4352,12 @@ req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
         void* blk_raw = ManagerT::template try_checked_block_from_pptr<T>( p );
         if ( blk_raw == nullptr )
             return pmm::pptr<T, ManagerT>();
+        using BlockState = BlockStateBase<address_traits>;
+        const NodeType old_node_type = BlockState::get_node_type( blk_raw );
         uint8_t*                               base          = ManagerT::_backend.base_ptr();
         detail::ManagerHeader<address_traits>* hdr           = ManagerT::get_header( base );
         index_type                             blk_idx       = ManagerT::template block_idx_from_pptr<T>( p );
-        index_type                             old_data_gran = BlockStateBase<address_traits>::get_weight( blk_raw );
+        index_type                             old_data_gran = BlockState::get_weight( blk_raw );
         if ( new_data_gran == old_data_gran )
         {
             ManagerT::_last_error = PmmError::Ok;
@@ -4424,6 +4410,8 @@ req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
             return pmm::pptr<T, ManagerT>();
         }
         assign_node_type_for<T>( new_raw );
+        if ( pmm::is_application_node_type( old_node_type ) )
+            BlockState::set_node_type_of( detail::block_at<address_traits>( base, new_idx ), old_node_type );
         pmm::pptr<T, ManagerT> new_p = ManagerT::template make_pptr_from_raw<T>( new_raw );
         if ( new_p.is_null() )
         {
@@ -4434,10 +4422,9 @@ req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
         void*  old_src = resolve_unchecked<T>( p );
         size_t copy_sz = ( new_count < old_count ? new_count : old_count ) * sizeof( T );
         std::memmove( new_dst, old_src, copy_sz );
-        void*               old_blk_raw = detail::block_at<address_traits>( base, blk_idx );
-        index_type          freed_w     = BlockStateBase<address_traits>::get_weight( old_blk_raw );
-        const pmm::NodeType nt_old      = BlockStateBase<address_traits>::get_node_type( old_blk_raw );
-        if ( pmm::is_allocated( nt_old ) && pmm::can_be_deleted_from_pap( nt_old ) )
+        void*      old_blk_raw = detail::block_at<address_traits>( base, blk_idx );
+        index_type freed_w     = BlockState::get_weight( old_blk_raw );
+        if ( pmm::is_allocated( old_node_type ) && pmm::can_be_deleted_from_pap( old_node_type ) )
         {
             auto       old_alloc  = AllocatedBlock<address_traits>::cast_from_raw( old_blk_raw );
             index_type total_gran = detail::physical_block_total_granules<address_traits>(
