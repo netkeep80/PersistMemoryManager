@@ -3382,6 +3382,16 @@ struct manager_index_type<ManagerT>
 {
     using type = typename ManagerT::address_traits::index_type;
 };
+inline constexpr size_t kExternalArenaOffset = static_cast<size_t>( -1 );
+template <class ManagerT> size_t arena_offset( const void* raw ) noexcept
+{
+    const auto* base = ManagerT::backend().base_ptr();
+    if ( raw == nullptr || base == nullptr )
+        return kExternalArenaOffset;
+    const auto begin = reinterpret_cast<std::uintptr_t>( base ), addr = reinterpret_cast<std::uintptr_t>( raw );
+    return addr >= begin && addr - begin < ManagerT::backend().total_size() ? static_cast<size_t>( addr - begin )
+                                                                         : kExternalArenaOffset;
+}
 }
 template <class T, class ManagerT>
     requires( !std::is_void_v<ManagerT> )
@@ -3441,20 +3451,23 @@ req: dr-007, qa-port-001, fr-035, if-012
 };
 template <class T, class ManagerT> pptr<T, ManagerT> pptr_from_raw( T* raw ) noexcept
 {
-    if ( raw == nullptr || !ManagerT::is_initialized() || ManagerT::backend().base_ptr() == nullptr ) return {};
-    const auto begin = reinterpret_cast<std::uintptr_t>( ManagerT::backend().base_ptr() );
-    const auto addr = reinterpret_cast<std::uintptr_t>( raw );
-    if ( addr < begin || addr - begin >= ManagerT::backend().total_size() ) return {};
-    auto p = ManagerT::template pptr_from_byte_offset<T>( static_cast<size_t>( addr - begin ) );
+    const size_t off = detail::arena_offset<ManagerT>( raw );
+    if ( off == detail::kExternalArenaOffset )
+        return {};
+    auto p = ManagerT::template pptr_from_byte_offset<T>( off );
     return p.resolve() == raw ? p : pptr<T, ManagerT>{};
 }
 namespace detail
 {
 template <class T, class ManagerT> struct relocation_owner
 {
-    T* raw; pptr<T, ManagerT> persistent;
-    explicit relocation_owner( T* p ) noexcept : raw( p ), persistent( pptr_from_raw<T, ManagerT>( p ) ) {}
-    T* get() const noexcept { return persistent ? persistent.resolve_unchecked() : raw; }
+    T* raw; size_t arena_off;
+    explicit relocation_owner( T* p ) noexcept : raw( p ), arena_off( arena_offset<ManagerT>( p ) ) {}
+    T* get() const noexcept
+    {
+        return arena_off == kExternalArenaOffset ? raw
+                                                : reinterpret_cast<T*>( ManagerT::backend().base_ptr() + arena_off );
+    }
 };
 }
 }
@@ -3947,19 +3960,6 @@ template <typename ManagerT> struct pstring
         const size_t off = static_cast<size_t>( reinterpret_cast<uintptr_t>( s ) - reinterpret_cast<uintptr_t>( p ) );
         return off <= static_cast<size_t>( _capacity ) ? off : npos;
     }
-    static size_t arena_offset( const char* s, size_t len ) noexcept
-    {
-        const auto* base = ManagerT::backend().base_ptr();
-        const size_t bytes = ManagerT::backend().total_size();
-        if ( s == nullptr || base == nullptr )
-            return npos;
-        const auto begin = reinterpret_cast<uintptr_t>( base );
-        const auto src = reinterpret_cast<uintptr_t>( s );
-        if ( src < begin || src - begin >= bytes )
-            return npos;
-        const size_t off = static_cast<size_t>( src - begin );
-        return len <= bytes - off ? off : invalid_offset;
-    }
     bool write( const char* s, size_t len, bool append_mode ) noexcept
     {
         if ( len == 0 )
@@ -3974,8 +3974,8 @@ template <typename ManagerT> struct pstring
         const size_t self_off = source_offset( s );
         if ( self_off != npos && ( self_off > size() || len > size() + 1 - self_off ) )
             return false;
-        const size_t arena_off = self_off == npos ? arena_offset( s, len ) : npos;
-        if ( arena_off == invalid_offset )
+        const size_t arena_off = self_off == npos ? detail::arena_offset<ManagerT>( s ) : npos;
+        if ( arena_off != npos && len > ManagerT::backend().total_size() - arena_off )
             return false;
         const uint32_t new_len = static_cast<uint32_t>( base + len );
         pstring* state = ensure_capacity( new_len );
@@ -4034,7 +4034,6 @@ template <typename ManagerT> struct pstring
         return raw ? state : nullptr;
     }
     static constexpr size_t npos = std::numeric_limits<size_t>::max();
-    static constexpr size_t invalid_offset = npos - 1;
 };
 template <typename ManagerT> struct node_type_for<pstring<ManagerT>>
 {
