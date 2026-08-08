@@ -286,11 +286,11 @@ TEST_CASE( "validation: corrupted node_type detected by full verify", "[test_iss
     auto p = Mgr::allocate_typed<std::uint64_t>( 4 );
     REQUIRE( !p.is_null() );
 
-    // Corrupt node_type to an invalid value.
+    // Corrupt node_type to a value reserved for future PMM kernel use.
     std::uint8_t* base    = Mgr::backend().base_ptr();
     std::size_t   usr_off = static_cast<std::size_t>( p.offset() ) * AT::granule_size;
     void*         blk_raw = base + usr_off - sizeof( pmm::Block<AT> );
-    pmm::BlockStateBase<AT>::set_node_type_of( blk_raw, static_cast<pmm::NodeType>( 0xEF ) );
+    pmm::BlockStateBase<AT>::set_node_type_of( blk_raw, static_cast<pmm::NodeType>( 31 ) );
 
     pmm::VerifyResult result = Mgr::verify();
     REQUIRE_FALSE( result.ok );
