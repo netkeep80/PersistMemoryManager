@@ -37,7 +37,7 @@ jobs:
           pip install quom
           bash scripts/generate-single-headers.sh
 
-      - name: Structural, formatting and LOC checks
+      - name: Enforce manager and generated LOC budgets
         shell: bash
         run: |
           test "$(wc -l < include/pmm/persist_memory_manager.h)" -lt 1250
@@ -45,8 +45,20 @@ jobs:
           actual=$(wc -l < single_include/pmm/pmm.h)
           echo "Single-header LOC baseline: $baseline, generated: $actual"
           test "$actual" -le "$baseline"
+
+      - name: Enforce canonical pmap and version formatting
+        shell: bash
+        run: |
           clang-format --dry-run --Werror include/pmm/pmap.h include/pmm/types.h
+
+      - name: Reject compiler-specific persistent identity
+        shell: bash
+        run: |
           ! git grep -nE '__PRETTY_FUNCTION__|__FUNCSIG__|typeid\(' -- include/pmm/pmap.h
+
+      - name: Enforce anchors and requirement traceability
+        shell: bash
+        run: |
           bash scripts/check-include-anchor-comments.sh
           python3 scripts/check-requirements-traceability.py
           python3 scripts/check-requirements-catalog.py
