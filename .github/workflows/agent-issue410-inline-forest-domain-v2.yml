@@ -1,16 +1,19 @@
 name: Agent issue410 forest registry compaction v2
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/issue-410-inline-forest-domain-v2
+      - main
+    types:
+      - opened
+      - synchronize
 
 permissions:
   contents: write
 
 jobs:
   inline-fix-test-and-regenerate:
-    if: github.actor != 'github-actions[bot]'
+    if: github.event.pull_request.head.ref == 'agent/issue-410-inline-forest-domain-v2' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
