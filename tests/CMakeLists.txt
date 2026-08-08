@@ -338,3 +338,6 @@ set_tests_properties(test_issue314_build_graph_contract PROPERTIES TIMEOUT 180)
 
 # Issue 403: embedded pstring/parray owners survive arena relocation
 pmm_add_test(test_issue403_embedded_containers test_issue403_embedded_containers.cpp)
+
+# Issue 404: pmap owners and PMM-backed inputs survive arena relocation
+pmm_add_test(test_issue404_pmap_relocation test_issue404_pmap_relocation.cpp)

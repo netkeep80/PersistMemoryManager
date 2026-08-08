@@ -3766,42 +3766,36 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
 
   private:
     index_type _binding_id;
-    bool       bind( const char* domain_key ) noexcept
-    {
-        if ( !ManagerT::is_initialized() )
-            return false;
-        char buf[detail::kForestDomainNameCapacity]{};
-        if ( domain_key != nullptr && domain_key[0] != '\0' )
-        {
-            if ( !detail::pmap_write_name( buf, domain_type_hash, 'n', detail::pmap_key_hash( domain_key ), 16 ) )
-                return false;
-        }
-        else
-        {
-            static uint64_t seq = 1;
-            do
-            {
-                if ( !detail::pmap_write_name( buf, domain_type_hash, 'g', seq++, 8 ) )
-                    return false;
-            } while ( ManagerT::has_domain( buf ) );
-        }
-        if ( !ManagerT::has_domain( buf ) && !ManagerT::register_domain( buf ) )
-            return false;
-        _binding_id = ManagerT::find_domain_by_name( buf );
-        return _binding_id != 0;
-    }
     forest_domain_descriptor descriptor() const noexcept { return forest_domain_descriptor( _binding_id ); }
 
   public:
     pmap() noexcept : _binding_id( 0 ) {}
-    explicit pmap( const char* domain_key ) noexcept : _binding_id( 0 ) { bind( domain_key ); }
-    const char*          domain_name() const noexcept { return descriptor().name(); }
-    index_type           root_index() const noexcept { return descriptor().root_index(); }
+    bool bind_domain( const char* domain_key ) noexcept
+    {
+        if ( !ManagerT::is_initialized() ) return false;
+        detail::relocation_owner<pmap, ManagerT> owner( this );
+        pmap* state = owner.get();
+        if ( state == nullptr || state->_binding_id != 0 ) return false;
+        char buf[detail::kForestDomainNameCapacity]{};
+        if ( domain_key != nullptr && domain_key[0] != '\0' )
+        { if ( !detail::pmap_write_name( buf, domain_type_hash, 'n', detail::pmap_key_hash( domain_key ), 16 ) ) return false; }
+        else
+        { static uint64_t seq = 1; do { if ( !detail::pmap_write_name( buf, domain_type_hash, 'g', seq++, 8 ) ) return false; }
+          while ( ManagerT::has_domain( buf ) ); }
+        if ( !ManagerT::has_domain( buf ) && !ManagerT::register_domain( buf ) ) return false;
+        state = owner.get();
+        return state != nullptr && ( state->_binding_id = ManagerT::find_domain_by_name( buf ) ) != 0;
+    }
+    const char* domain_name() const noexcept { return descriptor().name(); }
+    index_type  root_index() const noexcept { return descriptor().root_index(); }
     forest_domain_policy forest_domain_ops() noexcept
     {
-        if ( _binding_id == 0 || ManagerT::find_domain_by_binding_unlocked( _binding_id ) == nullptr )
-            bind( nullptr );
-        return forest_domain_policy( descriptor() );
+        if ( _binding_id != 0 && ManagerT::find_domain_by_binding_unlocked( _binding_id ) != nullptr )
+            return forest_domain_policy( descriptor() );
+        detail::relocation_owner<pmap, ManagerT> owner( this );
+        _binding_id = 0;
+        if ( !bind_domain( nullptr ) ) return forest_domain_policy();
+        pmap* state = owner.get(); return state ? forest_domain_policy( state->descriptor() ) : forest_domain_policy();
     }
     forest_domain_view_policy forest_domain_view_ops() const noexcept
     {
@@ -3821,24 +3815,29 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
 */
     node_pptr insert( const _K& key, const _V& val ) noexcept
     {
+        detail::relocation_owner<const _K, ManagerT> key_owner( &key );
+        detail::relocation_owner<const _V, ManagerT> val_owner( &val );
         auto ops = forest_domain_ops();
-        if ( ops.root_index_ptr() == nullptr )
-            return node_pptr();
-        node_pptr existing = ops.find( key );
+        if ( ops.root_index_ptr() == nullptr ) return {};
+        const _K* key_now = key_owner.get();
+        if ( key_now == nullptr ) return {};
+        node_pptr existing = ops.find( *key_now );
         if ( !existing.is_null() )
         {
-            if ( node_type* obj = ManagerT::template resolve<node_type>( existing ); obj != nullptr )
-                obj->value = val;
-            return existing;
+            const _V* val_now = val_owner.get(); node_type* obj = val_now ? ManagerT::template resolve<node_type>( existing ) : nullptr;
+            if ( obj == nullptr ) return {};
+            obj->value = *val_now; return existing;
         }
-        node_pptr  new_node = ManagerT::template allocate_typed<node_type>();
-        node_type* obj      = new_node.is_null() ? nullptr : ManagerT::template resolve<node_type>( new_node );
-        if ( obj == nullptr )
-            return node_pptr();
-        obj->key   = key;
-        obj->value = val;
-        detail::avl_init_node( new_node );
-        ops.insert( new_node );
+        node_pptr new_node = ManagerT::template allocate_typed<node_type>();
+        node_type* obj = new_node.is_null() ? nullptr : ManagerT::template resolve<node_type>( new_node );
+        key_now = key_owner.get(); const _V* val_now = val_owner.get();
+        if ( obj == nullptr || key_now == nullptr || val_now == nullptr )
+        {
+            if ( !new_node.is_null() ) ManagerT::template deallocate_typed<node_type>( new_node );
+            return {};
+        }
+        obj->key = *key_now; obj->value = *val_now;
+        detail::avl_init_node( new_node ); ops.insert( new_node );
         return new_node;
     }
     node_pptr find( const _K& key ) const noexcept { return forest_domain_view_ops().find( key ); }
