@@ -120,11 +120,9 @@ template <typename ManagerT> struct pstring
     {
         if ( required <= _capacity )
             return true;
-        const uint64_t max_cap =
-            static_cast<uint64_t>( std::numeric_limits<size_t>::max() ) <=
-                    static_cast<uint64_t>( std::numeric_limits<uint32_t>::max() )
-                ? static_cast<uint64_t>( std::numeric_limits<size_t>::max() ) - 1
-                : static_cast<uint64_t>( std::numeric_limits<uint32_t>::max() );
+        const uint64_t max_cap = std::numeric_limits<size_t>::max() < std::numeric_limits<uint32_t>::max()
+                                     ? static_cast<uint64_t>( std::numeric_limits<size_t>::max() ) - 1
+                                     : static_cast<uint64_t>( std::numeric_limits<uint32_t>::max() );
         if ( required > max_cap )
             return false;
         uint64_t cap = _capacity ? static_cast<uint64_t>( _capacity ) * 2 : 16;
