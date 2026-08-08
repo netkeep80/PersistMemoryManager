@@ -1,0 +1,69 @@
+name: Agent issue410 forest registry compaction v3
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  inline-fix-test-and-regenerate:
+    if: github.event.pull_request.head.ref == 'agent/issue-410-inline-forest-domain-v3' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/issue-410-inline-forest-domain-v3
+          fetch-depth: 0
+
+      - name: Inline legacy shard and apply asserted relocation fixes
+        run: python .github/agent_issue410_patch_v3.py
+
+      - name: Format focused regression only
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+          clang-format -i tests/test_issue410_forest_registry_relocation.cpp
+
+      - name: Regenerate canonical single header
+        shell: bash
+        run: |
+          pip install quom
+          bash scripts/generate-single-headers.sh
+
+      - name: Structural and traceability checks
+        shell: bash
+        run: |
+          test "$(wc -l < include/pmm/persist_memory_manager.h)" -lt 1500
+          ! test -e include/pmm/forest_domain_mixin.inc
+          ! grep -q 'forest_domain_mixin.inc' include/pmm/persist_memory_manager.h
+          bash scripts/check-include-anchor-comments.sh
+          python3 scripts/check-requirements-traceability.py
+          python3 scripts/check-requirements-catalog.py
+          bash scripts/check-docs-consistency.sh
+          git diff --check
+
+      - name: Build and run focused regression
+        shell: bash
+        run: |
+          cmake -S . -B build -DBUILD_TESTING=ON -DPMM_BUILD_DEMO=OFF -DPMM_BUILD_EXAMPLES=OFF -DPMM_BUILD_BENCHMARKS=OFF
+          cmake --build build --target test_issue410_forest_registry_relocation -j2
+          ctest --test-dir build -R '^test_issue410_forest_registry_relocation$' --output-on-failure
+
+      - name: Remove one-shot machinery and push canonical result
+        shell: bash
+        run: |
+          rm .github/workflows/agent-issue410-inline-forest-domain-v3.yml
+          rm .github/agent_issue410_patch_v3.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'refactor: inline and harden forest registry implementation'
+          git push origin HEAD:agent/issue-410-inline-forest-domain-v3
