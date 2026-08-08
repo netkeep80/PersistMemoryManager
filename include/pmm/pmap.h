@@ -7,6 +7,7 @@
 #include <type_traits>
 namespace pmm
 {
+template <typename ManagerT> struct pstringview;
 template <typename _K, typename _V, typename ManagerT> struct pmap;
 template <typename T> struct pmap_type_identity
 {
@@ -19,6 +20,13 @@ template <typename _K, typename _V> struct pmap_node
 };
 namespace detail
 {
+template <typename T>
+struct pmap_storage_type : std::bool_constant<std::is_trivially_copyable_v<T> && std::is_standard_layout_v<T> &&
+                                             !std::is_pointer_v<T> && !std::is_member_pointer_v<T>>
+{};
+template <typename ManagerT> struct pmap_storage_type<pstringview<ManagerT>> : std::false_type
+{};
+template <typename T> inline constexpr bool pmap_storage_type_v = pmap_storage_type<T>::value;
 constexpr uint32_t pmap_fnv1a( uint32_t h, uint64_t v, unsigned bytes ) noexcept
 {
     for ( unsigned i = 0; i < bytes; ++i, v >>= 8 )
@@ -86,6 +94,10 @@ req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, dr-010, dr-011, feat-008,
 */
 template <typename _K, typename _V, typename ManagerT> struct pmap
 {
+    static_assert( detail::pmap_storage_type_v<_K>,
+                   "pmap key must be a supported fixed-size trivial persistent representation, not a raw pointer" );
+    static_assert( detail::pmap_storage_type_v<_V>,
+                   "pmap value must be a supported fixed-size trivial persistent representation, not a raw pointer" );
     using manager_type                         = ManagerT;
     using index_type                           = typename ManagerT::index_type;
     using node_type                            = pmap_node<_K, _V>;
