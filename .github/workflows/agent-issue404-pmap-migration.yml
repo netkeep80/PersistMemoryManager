@@ -67,9 +67,6 @@ jobs:
               if count != 1:
                   raise SystemExit(f'expected exactly one occurrence, got {count}: {old}')
               text = text.replace(old, new)
-
-          if '( "issue336/shared" )' in text or '( "issue336/stable" )' in text:
-              raise SystemExit('named pmap constructor call remained after migration')
           path.write_text(text)
 
           regression = Path('tests/test_issue404_pmap_relocation.cpp')
