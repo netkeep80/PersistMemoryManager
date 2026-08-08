@@ -4411,7 +4411,7 @@ req: dr-019, fr-005, fr-006, fr-029, rule-007, ur-002
         }
         assign_node_type_for<T>( new_raw );
         if ( pmm::is_application_node_type( old_node_type ) )
-            BlockState::set_node_type_of( new_raw, old_node_type );
+            BlockState::set_node_type_of( detail::block_at<address_traits>( base, new_idx ), old_node_type );
         pmm::pptr<T, ManagerT> new_p = ManagerT::template make_pptr_from_raw<T>( new_raw );
         if ( new_p.is_null() )
         {
