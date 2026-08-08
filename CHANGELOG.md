@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [6.3.0] - 2026-08-08
+
+### Added
+- Reserve PMM `NodeType` values 32..255 for application-defined persistent semantics with checked retagging and reallocation preservation.
+
+
 ## [6.2.2] - 2026-05-11
 
 ### Added
