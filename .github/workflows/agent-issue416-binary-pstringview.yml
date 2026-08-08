@@ -40,7 +40,7 @@ jobs:
           pip install quom
           bash scripts/generate-single-headers.sh
 
-      - name: Structural, layout and LOC checks
+      - name: Structural, layout, formatting and LOC checks
         shell: bash
         run: |
           test "$(wc -l < include/pmm/persist_memory_manager.h)" -lt 1250
@@ -49,6 +49,7 @@ jobs:
           echo "Single-header LOC baseline: $baseline, generated: $actual"
           test "$actual" -le "$baseline"
           ! git grep -nE '::pstringview[[:space:]]*\(' -- tests examples demo benchmarks include ':!include/pmm/pstringview.h' ':!single_include/**'
+          clang-format --dry-run --Werror include/pmm/pstringview.h include/pmm/persist_memory_manager.h
           bash scripts/check-include-anchor-comments.sh
           python3 scripts/check-requirements-traceability.py
           python3 scripts/check-requirements-catalog.py
