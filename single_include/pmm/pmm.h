@@ -3382,6 +3382,16 @@ struct manager_index_type<ManagerT>
 {
     using type = typename ManagerT::address_traits::index_type;
 };
+inline constexpr size_t kExternalArenaOffset = static_cast<size_t>( -1 );
+template <class ManagerT> size_t arena_offset( const void* raw ) noexcept
+{
+    const auto* base = ManagerT::backend().base_ptr();
+    if ( raw == nullptr || base == nullptr )
+        return kExternalArenaOffset;
+    const auto begin = reinterpret_cast<std::uintptr_t>( base ), addr = reinterpret_cast<std::uintptr_t>( raw );
+    return addr >= begin && addr - begin < ManagerT::backend().total_size() ? static_cast<size_t>( addr - begin )
+                                                                         : kExternalArenaOffset;
+}
 }
 template <class T, class ManagerT>
     requires( !std::is_void_v<ManagerT> )
@@ -3428,12 +3438,8 @@ req: dr-007, qa-port-001, fr-035, if-012
             requires( const T& a, const T& b ) {
                 { a < b } -> std::convertible_to<bool>;
             }, "" );
-        if ( is_null() && !other.is_null() )
-            return true;
-        if ( !is_null() && other.is_null() )
-            return false;
-        if ( is_null() && other.is_null() )
-            return false;
+        if ( is_null() || other.is_null() )
+            return is_null() && !other.is_null();
         return **this < *other;
     }
     T&   operator*() const noexcept { return *ManagerT::template resolve_checked<T>( *this ); }
@@ -3443,6 +3449,27 @@ req: dr-007, qa-port-001, fr-035, if-012
     auto try_tree_node() const noexcept { return ManagerT::try_tree_node( *this ); }
     auto& tree_node_unchecked() const noexcept { return ManagerT::tree_node_unchecked( *this ); }
 };
+template <class T, class ManagerT> pptr<T, ManagerT> pptr_from_raw( T* raw ) noexcept
+{
+    const size_t off = detail::arena_offset<ManagerT>( raw );
+    if ( off == detail::kExternalArenaOffset )
+        return {};
+    auto p = ManagerT::template pptr_from_byte_offset<T>( off );
+    return p.resolve() == raw ? p : pptr<T, ManagerT>{};
+}
+namespace detail
+{
+template <class T, class ManagerT> struct relocation_owner
+{
+    T* raw; size_t arena_off;
+    explicit relocation_owner( T* p ) noexcept : raw( p ), arena_off( arena_offset<ManagerT>( p ) ) {}
+    T* get() const noexcept
+    {
+        return arena_off == kExternalArenaOffset ? raw
+                                                : reinterpret_cast<T*>( ManagerT::backend().base_ptr() + arena_off );
+    }
+};
+}
 }
 
 #include <cassert>
@@ -3471,54 +3498,35 @@ template <typename T, typename ManagerT> struct parray
     }
     ~parray() noexcept = default;
     size_t size() const noexcept { return static_cast<size_t>( _size ); }
-    bool   empty() const noexcept { return _size == 0; }
+    bool empty() const noexcept { return _size == 0; }
     size_t capacity() const noexcept { return static_cast<size_t>( _capacity ); }
-    T*     at( size_t i ) noexcept
-    {
-        if ( i >= static_cast<size_t>( _size ) )
-            return nullptr;
-        T* data = resolve_data();
-        return ( data != nullptr ) ? ( data + i ) : nullptr;
-    }
-    const T* at( size_t i ) const noexcept
-    {
-        if ( i >= static_cast<size_t>( _size ) )
-            return nullptr;
-        const T* data = resolve_data();
-        return ( data != nullptr ) ? ( data + i ) : nullptr;
-    }
-    T operator[]( size_t i ) const noexcept
-    {
-        const T* data = resolve_data();
-        return ( data != nullptr ) ? data[i] : T{};
-    }
-    T*       front() noexcept { return at( 0 ); }
+    T* at( size_t i ) noexcept { return i < size() && resolve_data() ? resolve_data() + i : nullptr; }
+    const T* at( size_t i ) const noexcept { return i < size() && resolve_data() ? resolve_data() + i : nullptr; }
+    T operator[]( size_t i ) const noexcept { const T* p = resolve_data(); return p ? p[i] : T{}; }
+    T* front() noexcept { return at( 0 ); }
     const T* front() const noexcept { return at( 0 ); }
-    T*       back() noexcept { return ( _size > 0 ) ? at( static_cast<size_t>( _size ) - 1 ) : nullptr; }
-    const T* back() const noexcept { return ( _size > 0 ) ? at( static_cast<size_t>( _size ) - 1 ) : nullptr; }
-    T*       data() noexcept { return resolve_data(); }
+    T* back() noexcept { return _size ? at( size() - 1 ) : nullptr; }
+    const T* back() const noexcept { return _size ? at( size() - 1 ) : nullptr; }
+    T* data() noexcept { return resolve_data(); }
     const T* data() const noexcept { return resolve_data(); }
-    bool     push_back( const T& value ) noexcept
+    bool push_back( const T& value ) noexcept
     {
-        if ( !ensure_capacity( _size + 1 ) )
+        if ( _size == std::numeric_limits<uint32_t>::max() )
             return false;
-        T* d = resolve_data();
+        const T copy = value;
+        const uint32_t old_size = _size;
+        parray* state = ensure_capacity( old_size + 1 );
+        T* d = state ? state->resolve_data() : nullptr;
         if ( d == nullptr )
             return false;
-        d[_size] = value;
-        ++_size;
+        d[old_size] = copy;
+        state->_size = old_size + 1;
         return true;
     }
-    void pop_back() noexcept
-    {
-        if ( _size > 0 )
-            --_size;
-    }
+    void pop_back() noexcept { if ( _size ) --_size; }
     bool set( size_t i, const T& value ) noexcept
     {
-        if ( i >= static_cast<size_t>( _size ) )
-            return false;
-        T* d = resolve_data();
+        T* d = i < size() ? resolve_data() : nullptr;
         if ( d == nullptr )
             return false;
         d[i] = value;
@@ -3526,51 +3534,49 @@ template <typename T, typename ManagerT> struct parray
     }
     bool reserve( size_t n ) noexcept
     {
-        if ( n > static_cast<size_t>( std::numeric_limits<uint32_t>::max() ) )
-            return false;
-        return ensure_capacity( static_cast<uint32_t>( n ) );
+        return n <= std::numeric_limits<uint32_t>::max() && ensure_capacity( static_cast<uint32_t>( n ) ) != nullptr;
     }
     bool resize( size_t n ) noexcept
     {
-        if ( n > static_cast<size_t>( std::numeric_limits<uint32_t>::max() ) )
+        if ( n > std::numeric_limits<uint32_t>::max() )
             return false;
-        auto new_size = static_cast<uint32_t>( n );
-        if ( new_size > _size )
+        const uint32_t next = static_cast<uint32_t>( n ), old = _size;
+        if ( next <= old )
         {
-            if ( !ensure_capacity( new_size ) )
-                return false;
-            T* d = resolve_data();
-            if ( d == nullptr )
-                return false;
-            std::memset( d + _size, 0, static_cast<size_t>( new_size - _size ) * sizeof( T ) );
+            _size = next;
+            return true;
         }
-        _size = new_size;
+        parray* state = ensure_capacity( next );
+        T* d = state ? state->resolve_data() : nullptr;
+        if ( d == nullptr )
+            return false;
+        std::memset( d + old, 0, static_cast<size_t>( next - old ) * sizeof( T ) );
+        state->_size = next;
         return true;
     }
     bool insert( size_t index, const T& value ) noexcept
     {
-        if ( index > static_cast<size_t>( _size ) )
+        if ( index > size() || _size == std::numeric_limits<uint32_t>::max() )
             return false;
-        if ( !ensure_capacity( _size + 1 ) )
-            return false;
-        T* d = resolve_data();
+        const T copy = value;
+        const uint32_t old = _size;
+        parray* state = ensure_capacity( old + 1 );
+        T* d = state ? state->resolve_data() : nullptr;
         if ( d == nullptr )
             return false;
-        if ( index < static_cast<size_t>( _size ) )
-            std::memmove( d + index + 1, d + index, ( static_cast<size_t>( _size ) - index ) * sizeof( T ) );
-        d[index] = value;
-        ++_size;
+        if ( index < old )
+            std::memmove( d + index + 1, d + index, ( static_cast<size_t>( old ) - index ) * sizeof( T ) );
+        d[index] = copy;
+        state->_size = old + 1;
         return true;
     }
     bool erase( size_t index ) noexcept
     {
-        if ( index >= static_cast<size_t>( _size ) )
-            return false;
-        T* d = resolve_data();
+        T* d = index < size() ? resolve_data() : nullptr;
         if ( d == nullptr )
             return false;
-        if ( index + 1 < static_cast<size_t>( _size ) )
-            std::memmove( d + index, d + index + 1, ( static_cast<size_t>( _size ) - index - 1 ) * sizeof( T ) );
+        if ( index + 1 < size() )
+            std::memmove( d + index, d + index + 1, ( size() - index - 1 ) * sizeof( T ) );
         --_size;
         return true;
     }
@@ -3578,12 +3584,9 @@ template <typename T, typename ManagerT> struct parray
     void free_data() noexcept
     {
         if ( _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits> )
-        {
             ManagerT::template deallocate_typed<T>( pmm::pptr<T, ManagerT>( _data_idx ) );
-            _data_idx = detail::kNullIdx_v<typename ManagerT::address_traits>;
-        }
-        _size     = 0;
-        _capacity = 0;
+        _data_idx = detail::kNullIdx_v<typename ManagerT::address_traits>;
+        _size = _capacity = 0;
     }
     bool operator==( const parray& other ) const noexcept
     {
@@ -3591,37 +3594,37 @@ template <typename T, typename ManagerT> struct parray
             return true;
         if ( _size != other._size )
             return false;
-        if ( _size == 0 )
-            return true;
         const T* a = resolve_data();
         const T* b = other.resolve_data();
-        if ( a == nullptr || b == nullptr )
-            return ( a == b );
-        return std::memcmp( a, b, static_cast<size_t>( _size ) * sizeof( T ) ) == 0;
+        return _size == 0 || ( a && b && std::memcmp( a, b, size() * sizeof( T ) ) == 0 );
     }
     bool operator!=( const parray& other ) const noexcept { return !( *this == other ); }
 
   private:
-    T*   resolve_data() const noexcept { return pmm::pptr<T, ManagerT>( _data_idx ).resolve_unchecked(); }
-    bool ensure_capacity( uint32_t required ) noexcept
+    T* resolve_data() const noexcept { return pmm::pptr<T, ManagerT>( _data_idx ).resolve_unchecked(); }
+    parray* ensure_capacity( uint32_t required ) noexcept
     {
         if ( required <= _capacity )
-            return true;
-        uint32_t new_cap = _capacity * 2;
-        if ( new_cap < required )
-            new_cap = required;
-        if ( new_cap < 4 )
-            new_cap = 4;
-        if ( sizeof( T ) > 0 && static_cast<size_t>( new_cap ) > ( std::numeric_limits<size_t>::max )() / sizeof( T ) )
-            return false;
-        pmm::pptr<T, ManagerT> old_p( _data_idx );
-        pmm::pptr<T, ManagerT> new_p = ManagerT::template reallocate_typed<T>( old_p, static_cast<size_t>( _size ),
-                                                                               static_cast<size_t>( new_cap ) );
-        if ( new_p.is_null() )
-            return false;
-        _data_idx = new_p.offset();
-        _capacity = new_cap;
-        return true;
+            return this;
+        detail::relocation_owner<parray, ManagerT> owner( this );
+        const uint32_t old_size = _size, old_cap = _capacity;
+        const index_type old_idx = _data_idx;
+        uint64_t cap = old_cap ? static_cast<uint64_t>( old_cap ) * 2 : 4;
+        if ( cap < required )
+            cap = required;
+        if ( cap > std::numeric_limits<uint32_t>::max() )
+            cap = std::numeric_limits<uint32_t>::max();
+        if ( cap > std::numeric_limits<size_t>::max() / sizeof( T ) )
+            return nullptr;
+        auto p = ManagerT::template reallocate_typed<T>( pmm::pptr<T, ManagerT>( old_idx ), old_size,
+                                                         static_cast<size_t>( cap ) );
+        parray* state = p.is_null() ? nullptr : owner.get();
+        if ( state )
+        {
+            state->_data_idx = p.offset();
+            state->_capacity = static_cast<uint32_t>( cap );
+        }
+        return state;
     }
 };
 template <typename T, typename ManagerT> struct node_type_for<parray<T, ManagerT>>
@@ -3924,8 +3927,7 @@ template <typename ManagerT> struct pstring
     void clear() noexcept
     {
         _length = 0;
-        char* p = data();
-        if ( p )
+        if ( char* p = data() )
             p[0] = '\0';
     }
     void free_data() noexcept
@@ -3937,9 +3939,7 @@ template <typename ManagerT> struct pstring
     }
     bool operator==( const char* s ) const noexcept
     {
-        if ( s == nullptr )
-            return _length == 0;
-        return compare( s, std::strlen( s ) ) == 0;
+        return s ? compare( s, std::strlen( s ) ) == 0 : _length == 0;
     }
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
     bool operator==( const pstring& other ) const noexcept
@@ -3955,14 +3955,10 @@ template <typename ManagerT> struct pstring
     size_t source_offset( const char* s ) const noexcept
     {
         const char* p = data();
-        if ( s == nullptr || p == nullptr )
+        if ( s == nullptr || p == nullptr || reinterpret_cast<uintptr_t>( s ) < reinterpret_cast<uintptr_t>( p ) )
             return npos;
-        const uintptr_t begin = reinterpret_cast<uintptr_t>( p );
-        const uintptr_t src   = reinterpret_cast<uintptr_t>( s );
-        if ( src < begin )
-            return npos;
-        const size_t offset = static_cast<size_t>( src - begin );
-        return offset <= static_cast<size_t>( _capacity ) ? offset : npos;
+        const size_t off = static_cast<size_t>( reinterpret_cast<uintptr_t>( s ) - reinterpret_cast<uintptr_t>( p ) );
+        return off <= static_cast<size_t>( _capacity ) ? off : npos;
     }
     bool write( const char* s, size_t len, bool append_mode ) noexcept
     {
@@ -3975,61 +3971,67 @@ template <typename ManagerT> struct pstring
         const size_t base = append_mode ? size() : 0;
         if ( s == nullptr || len > static_cast<size_t>( std::numeric_limits<uint32_t>::max() ) - base )
             return false;
-        const size_t offset = source_offset( s );
-        if ( offset != npos && ( offset > size() || len > size() + 1 - offset ) )
+        const size_t self_off = source_offset( s );
+        if ( self_off != npos && ( self_off > size() || len > size() + 1 - self_off ) )
+            return false;
+        const size_t arena_off = self_off == npos ? detail::arena_offset<ManagerT>( s ) : npos;
+        if ( arena_off != npos && len > ManagerT::backend().total_size() - arena_off )
             return false;
         const uint32_t new_len = static_cast<uint32_t>( base + len );
-        if ( !ensure_capacity( new_len ) )
+        pstring* state = ensure_capacity( new_len );
+        if ( state == nullptr )
             return false;
-        char* p = data();
+        char* p = state->data();
         if ( p == nullptr )
             return false;
-        if ( offset != npos )
-            s = p + offset;
+        if ( self_off != npos )
+            s = p + self_off;
+        else if ( arena_off != npos )
+            s = reinterpret_cast<const char*>( ManagerT::backend().base_ptr() ) + arena_off;
         std::memmove( p + base, s, len );
         p[new_len] = '\0';
-        _length = new_len;
+        state->_length = new_len;
         return true;
     }
     int compare( const char* rhs, size_t rhs_len ) const noexcept
     {
-        const size_t lhs_len = size();
-        const size_t common = lhs_len < rhs_len ? lhs_len : rhs_len;
+        const size_t lhs_len = size(), common = lhs_len < rhs_len ? lhs_len : rhs_len;
         const char* lhs = data();
         if ( common && ( lhs == nullptr || rhs == nullptr ) )
             return lhs ? 1 : rhs ? -1 : 0;
         const int cmp = common ? std::memcmp( lhs, rhs, common ) : 0;
-        if ( cmp )
-            return cmp;
-        return lhs_len < rhs_len ? -1 : lhs_len > rhs_len ? 1 : 0;
+        return cmp ? cmp : lhs_len < rhs_len ? -1 : lhs_len > rhs_len ? 1 : 0;
     }
-    bool ensure_capacity( uint32_t required ) noexcept
+    pstring* ensure_capacity( uint32_t required ) noexcept
     {
         if ( required <= _capacity )
-            return true;
+            return this;
+        detail::relocation_owner<pstring, ManagerT> owner( this );
+        const uint32_t old_len = _length, old_cap = _capacity;
+        const index_type old_idx = _data_idx;
         const uint64_t max_cap = std::numeric_limits<size_t>::max() < std::numeric_limits<uint32_t>::max()
                                      ? static_cast<uint64_t>( std::numeric_limits<size_t>::max() ) - 1
                                      : static_cast<uint64_t>( std::numeric_limits<uint32_t>::max() );
         if ( required > max_cap )
-            return false;
-        uint64_t cap = _capacity ? static_cast<uint64_t>( _capacity ) * 2 : 16;
+            return nullptr;
+        uint64_t cap = old_cap ? static_cast<uint64_t>( old_cap ) * 2 : 16;
         if ( cap < required )
             cap = required;
         if ( cap > max_cap )
             cap = max_cap;
         const uint32_t new_cap = static_cast<uint32_t>( cap );
-        const std::size_t old_count = has_data() ? size() + 1 : 0;
-        pmm::pptr<char, ManagerT> p = ManagerT::template reallocate_typed<char>(
-            pmm::pptr<char, ManagerT>( _data_idx ), old_count, static_cast<std::size_t>( new_cap ) + 1 );
-        if ( p.is_null() )
-            return false;
-        _data_idx = p.offset();
-        _capacity = new_cap;
-        char* raw = data();
-        if ( raw == nullptr )
-            return false;
-        raw[_length] = '\0';
-        return true;
+        const size_t old_count = old_idx == detail::kNullIdx_v<typename ManagerT::address_traits> ? 0 : old_len + 1;
+        auto p = ManagerT::template reallocate_typed<char>( pmm::pptr<char, ManagerT>( old_idx ), old_count,
+                                                            static_cast<size_t>( new_cap ) + 1 );
+        pstring* state = p.is_null() ? nullptr : owner.get();
+        if ( state == nullptr )
+            return nullptr;
+        state->_data_idx = p.offset();
+        state->_capacity = new_cap;
+        char* raw = p.resolve_unchecked();
+        if ( raw )
+            raw[old_len] = '\0';
+        return raw ? state : nullptr;
     }
     static constexpr size_t npos = std::numeric_limits<size_t>::max();
 };

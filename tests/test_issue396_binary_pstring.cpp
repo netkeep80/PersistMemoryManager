@@ -123,6 +123,42 @@ TEST_CASE( "I396: self-append survives forced backing-buffer relocation", "[issu
     destroy_string( p );
 }
 
+TEST_CASE( "I403: pstring mutation survives whole-arena relocation", "[issue403][pstring][relocation]" )
+{
+    using RelocMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 403>;
+    using RelocStr = RelocMgr::pstring;
+
+    RelocMgr::destroy();
+    REQUIRE( RelocMgr::create( 8 * 1024 ) );
+    auto p = RelocMgr::create_typed<RelocStr>();
+    REQUIRE( !p.is_null() );
+    auto* before_owner = p.resolve();
+    REQUIRE( before_owner != nullptr );
+    REQUIRE( pmm::pptr_from_raw<RelocStr, RelocMgr>( before_owner ) == p );
+
+    RelocStr external_owner;
+    REQUIRE( pmm::pptr_from_raw<RelocStr, RelocMgr>( &external_owner ).is_null() );
+
+    char payload[32 * 1024];
+    std::memset( payload, 0x5a, sizeof( payload ) );
+    const auto* before_base = RelocMgr::backend().base_ptr();
+
+    REQUIRE( before_owner->assign( payload, sizeof( payload ) ) );
+    REQUIRE( RelocMgr::backend().base_ptr() != before_base );
+
+    auto* after_owner = p.resolve();
+    REQUIRE( after_owner != nullptr );
+    REQUIRE( after_owner != before_owner );
+    REQUIRE( after_owner->size() == sizeof( payload ) );
+    REQUIRE( std::memcmp( after_owner->data(), payload, sizeof( payload ) ) == 0 );
+    REQUIRE( after_owner->c_str()[after_owner->size()] == '\0' );
+    REQUIRE( RelocMgr::verify().ok );
+
+    after_owner->free_data();
+    RelocMgr::destroy_typed( p );
+    RelocMgr::destroy();
+}
+
 TEST_CASE( "I396: invalid explicit lengths are rejected without mutation", "[issue396][pstring]" )
 {
     reset_manager();
