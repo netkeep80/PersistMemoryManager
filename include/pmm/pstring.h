@@ -66,13 +66,18 @@ template <typename ManagerT> struct pstring
         }
         if ( s == nullptr )
             return false;
+        size_t alias_offset = 0;
+        const bool aliased  = source_alias_offset( s, alias_offset );
+        if ( aliased && len > static_cast<size_t>( _capacity ) + 1 - alias_offset )
+            return false;
         const auto length = static_cast<uint32_t>( len );
         if ( !ensure_capacity( length ) )
             return false;
         char* ptr = data();
         if ( ptr == nullptr )
             return false;
-        std::memmove( ptr, s, len );
+        const char* source = aliased ? ptr + alias_offset : s;
+        std::memmove( ptr, source, len );
         ptr[len] = '\0';
         _length  = length;
         return true;
@@ -89,6 +94,10 @@ template <typename ManagerT> struct pstring
             return true;
         if ( s == nullptr || len > static_cast<size_t>( std::numeric_limits<uint32_t>::max() - _length ) )
             return false;
+        size_t alias_offset = 0;
+        const bool aliased  = source_alias_offset( s, alias_offset );
+        if ( aliased && len > static_cast<size_t>( _capacity ) + 1 - alias_offset )
+            return false;
         const uint32_t add_len = static_cast<uint32_t>( len );
         const uint32_t new_len = _length + add_len;
         if ( !ensure_capacity( new_len ) )
@@ -96,7 +105,8 @@ template <typename ManagerT> struct pstring
         char* ptr = data();
         if ( ptr == nullptr )
             return false;
-        std::memmove( ptr + _length, s, len );
+        const char* source = aliased ? ptr + alias_offset : s;
+        std::memmove( ptr + _length, source, len );
         ptr[new_len] = '\0';
         _length      = new_len;
         return true;
@@ -163,15 +173,40 @@ template <typename ManagerT> struct pstring
 
   private:
     char* resolve_data() const noexcept { return pmm::pptr<char, ManagerT>( _data_idx ).resolve_unchecked(); }
-    bool  ensure_capacity( uint32_t required ) noexcept
+    bool source_alias_offset( const char* source, size_t& offset ) const noexcept
+    {
+        offset = 0;
+        if ( source == nullptr || _data_idx == detail::kNullIdx_v<typename ManagerT::address_traits> )
+            return false;
+        const char* ptr = data();
+        if ( ptr == nullptr )
+            return false;
+        const uintptr_t begin      = reinterpret_cast<uintptr_t>( ptr );
+        const uintptr_t source_addr = reinterpret_cast<uintptr_t>( source );
+        const size_t    storage     = static_cast<size_t>( _capacity ) + 1;
+        if ( storage > std::numeric_limits<uintptr_t>::max() - begin )
+            return false;
+        const uintptr_t end = begin + storage;
+        if ( source_addr < begin || source_addr >= end )
+            return false;
+        offset = static_cast<size_t>( source_addr - begin );
+        return true;
+    }
+    bool ensure_capacity( uint32_t required ) noexcept
     {
         if ( required <= _capacity )
             return true;
-        uint32_t new_cap = _capacity * 2;
-        if ( new_cap < required )
-            new_cap = required;
-        if ( new_cap < 16 )
-            new_cap = 16;
+        if ( static_cast<uint64_t>( required ) + 1 > static_cast<uint64_t>( std::numeric_limits<size_t>::max() ) )
+            return false;
+        uint64_t candidate = ( std::max )( static_cast<uint64_t>( required ), uint64_t{ 16 } );
+        if ( _capacity != 0 )
+        {
+            const uint64_t doubled = static_cast<uint64_t>( _capacity ) * 2;
+            candidate = ( std::max )( candidate,
+                                      ( std::min )( doubled,
+                                                    static_cast<uint64_t>( std::numeric_limits<uint32_t>::max() ) ) );
+        }
+        const uint32_t            new_cap   = static_cast<uint32_t>( candidate );
         const bool                had_data  = _data_idx != detail::kNullIdx_v<typename ManagerT::address_traits>;
         const std::size_t         old_count = had_data ? static_cast<std::size_t>( _length ) + 1 : 0;
         const std::size_t         new_count = static_cast<std::size_t>( new_cap ) + 1;
@@ -179,8 +214,8 @@ template <typename ManagerT> struct pstring
         pmm::pptr<char, ManagerT> new_p = ManagerT::template reallocate_typed<char>( old_p, old_count, new_count );
         if ( new_p.is_null() )
             return false;
-        _data_idx  = new_p.offset();
-        _capacity  = new_cap;
+        _data_idx = new_p.offset();
+        _capacity = new_cap;
         char* ptr = data();
         if ( ptr == nullptr )
             return false;
