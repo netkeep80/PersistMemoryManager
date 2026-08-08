@@ -1,0 +1,39 @@
+name: Regenerate issue 415 single header
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate-and-test:
+    if: github.event.pull_request.head.ref == 'agent/issue-415-pmap-lifetime-contract' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/issue-415-pmap-lifetime-contract
+          fetch-depth: 0
+      - name: Regenerate canonical single header
+        run: |
+          pip install quom
+          bash scripts/generate-single-headers.sh
+      - name: Build pmap regression target
+        run: |
+          cmake -S . -B build -DBUILD_TESTING=ON -DPMM_BUILD_DEMO=OFF -DPMM_BUILD_EXAMPLES=OFF -DPMM_BUILD_BENCHMARKS=OFF
+          cmake --build build --target test_issue404_pmap_relocation -j2
+          ctest --test-dir build -R '^test_issue404_pmap_relocation$' --output-on-failure
+      - name: Remove one-shot workflow and push canonical result
+        run: |
+          rm .github/workflows/regen-issue415-single-header.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "chore: regenerate single header for pmap lifetime contract"
+          git push origin HEAD:agent/issue-415-pmap-lifetime-contract
