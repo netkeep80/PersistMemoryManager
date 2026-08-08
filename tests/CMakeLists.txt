@@ -142,6 +142,9 @@ pmm_add_test(test_issue188_deduplication test_issue188_deduplication.cpp)
 # ─── Тесты мутабельной персистентной строки pstring ───
 pmm_add_test(test_issue45_pstring test_issue45_pstring.cpp)
 
+# Issue 396: binary-safe, length-aware pstring regressions
+pmm_add_test(test_issue396_binary_pstring test_issue396_binary_pstring.cpp)
+
 # ─── Тесты персистентного массива parray ─────────────
 pmm_add_test(test_issue195_parray test_issue195_parray.cpp)
 
