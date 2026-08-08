@@ -117,6 +117,46 @@ TEST_CASE( "allocate_auto_expand", "[test_allocate]" )
     MgrExpand::destroy();
 }
 
+TEST_CASE( "allocate_auto_expand_after_allocated_tail_keeps_counters_consistent", "[test_allocate][issue398]" )
+{
+    using MgrExpand = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 503>;
+    using AT        = MgrExpand::address_traits;
+    using State     = pmm::BlockStateBase<AT>;
+
+    REQUIRE( MgrExpand::create( 8 * 1024 ) );
+    auto first = MgrExpand::allocate_typed<std::uint8_t>();
+    REQUIRE( !first.is_null() );
+
+    constexpr auto kHdrGranules = pmm::detail::kBlockHeaderGranules_t<AT>;
+    auto* first_blk = pmm::detail::resolve_granule_ptr<AT>(
+        MgrExpand::backend().base_ptr(), static_cast<MgrExpand::index_type>( first.offset() - kHdrGranules ) );
+    REQUIRE( first_blk != nullptr );
+
+    const auto tail_idx = State::get_next_offset( first_blk );
+    REQUIRE( tail_idx != AT::no_block );
+    auto* tail_blk = pmm::detail::resolve_granule_ptr<AT>( MgrExpand::backend().base_ptr(), tail_idx );
+    REQUIRE( tail_blk != nullptr );
+    REQUIRE( pmm::is_free( State::get_node_type( tail_blk ) ) );
+    const auto tail_total = State::get_weight( tail_blk );
+    REQUIRE( tail_total > kHdrGranules );
+
+    const auto tail_bytes = static_cast<std::size_t>( tail_total - kHdrGranules ) * AT::granule_size;
+    auto       fill_tail  = MgrExpand::allocate_typed<std::uint8_t>( tail_bytes );
+    REQUIRE( !fill_tail.is_null() );
+    REQUIRE( fill_tail.offset() == tail_idx + kHdrGranules );
+
+    const std::size_t before_expand = MgrExpand::total_size();
+    auto              after_expand  = MgrExpand::allocate_typed<std::uint8_t>();
+    REQUIRE( !after_expand.is_null() );
+    REQUIRE( MgrExpand::total_size() > before_expand );
+    REQUIRE( MgrExpand::verify().ok );
+
+    MgrExpand::deallocate_typed( first );
+    MgrExpand::deallocate_typed( fill_tail );
+    MgrExpand::deallocate_typed( after_expand );
+    MgrExpand::destroy();
+}
+
 TEST_CASE( "allocate_write_read", "[test_allocate]" )
 {
     REQUIRE( Mgr::create( 64 * 1024 ) );
