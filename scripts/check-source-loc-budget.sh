@@ -67,13 +67,13 @@ rm -f /tmp/_pmm_legacy_tree_node
 
 # Manual ensure_capacity allocate/memcpy/deallocate paths are forbidden in
 # parray/pstring; reallocate_typed is the canonical path. Extract the body of
-# `bool ensure_capacity(...) noexcept { ... }` and require reallocate_typed,
-# while forbidding allocate/deallocate/memcpy/memmove inside it.
+# `ensure_capacity(...) noexcept { ... }` regardless of return type and require
+# reallocate_typed, while forbidding allocate/deallocate/memcpy/memmove inside it.
 check_ensure_capacity_body() {
     local f="$1"
     local body
     body=$(awk '
-        /bool[[:space:]]+ensure_capacity\(/ { in_fn = 1; depth = 0 }
+        /ensure_capacity\([^;]*\)[[:space:]]*noexcept/ { in_fn = 1; depth = 0 }
         in_fn {
             print
             for ( i = 1; i <= length( $0 ); i++ ) {
