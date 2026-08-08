@@ -1,16 +1,19 @@
 name: Agent issue404 pmap migration
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/issue-404-pmap-relocation
+      - main
+    types:
+      - opened
+      - synchronize
 
 permissions:
   contents: write
 
 jobs:
   migrate-and-generate:
-    if: github.actor != 'github-actions[bot]'
+    if: github.event.pull_request.head.ref == 'agent/issue-404-pmap-relocation' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +21,7 @@ jobs:
           ref: agent/issue-404-pmap-relocation
           fetch-depth: 0
 
-      - name: Migrate named pmap constructors
+      - name: Migrate pmap API consumers and register regression
         shell: bash
         run: |
           python - <<'PY'
@@ -68,6 +71,23 @@ jobs:
           if '( "issue336/shared" )' in text or '( "issue336/stable" )' in text:
               raise SystemExit('named pmap constructor call remained after migration')
           path.write_text(text)
+
+          regression = Path('tests/test_issue404_pmap_relocation.cpp')
+          rtext = regression.read_text()
+          old_include = '#include <cstring>\n#include <type_traits>'
+          if rtext.count(old_include) != 1:
+              raise SystemExit('unexpected regression include layout')
+          regression.write_text(rtext.replace(old_include, '#include <cstring>\n#include <string_view>\n#include <type_traits>'))
+
+          cmake = Path('tests/CMakeLists.txt')
+          ctext = cmake.read_text()
+          line = 'pmm_add_test(test_issue404_pmap_relocation test_issue404_pmap_relocation.cpp)'
+          if line in ctext:
+              raise SystemExit('issue404 regression already registered')
+          marker = 'pmm_add_test(test_issue403_embedded_containers test_issue403_embedded_containers.cpp)'
+          if ctext.count(marker) != 1:
+              raise SystemExit('unexpected issue403 registration marker')
+          cmake.write_text(ctext.replace(marker, marker + '\n\n# Issue 404: pmap owners and PMM-backed inputs survive arena relocation\n' + line))
           PY
 
       - name: Install canonical single-header generator
