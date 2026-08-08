@@ -97,10 +97,31 @@ TEST_CASE( "I396: self-append survives forced backing-buffer relocation", "[issu
     const char* before = s->data();
     REQUIRE( before != nullptr );
 
-    // Occupy the block immediately following the 16-byte-capacity pstring buffer,
-    // so growing to 31 bytes cannot use the allocator's in-place growth path.
-    auto blocker = Mgr::create_typed<std::uint64_t>( 0x1122334455667788ULL );
+    // Prevent allocator::realloc_grow from consuming the backing buffer's
+    // physical next free block. Consume that exact free block completely so
+    // append must use the relocation path (expanding the arena if necessary).
+    using BlockState = pmm::BlockStateBase<Mgr::address_traits>;
+    constexpr auto kHdrGranules = static_cast<Mgr::index_type>(
+        ( sizeof( pmm::Block<Mgr::address_traits> ) + Mgr::address_traits::granule_size - 1 ) /
+        Mgr::address_traits::granule_size );
+    const auto data_idx = static_cast<Mgr::index_type>( s->_data_idx );
+    REQUIRE( data_idx > kHdrGranules );
+    auto* data_blk = pmm::detail::resolve_granule_ptr<Mgr::address_traits>(
+        Mgr::backend().base_ptr(), static_cast<Mgr::index_type>( data_idx - kHdrGranules ) );
+    REQUIRE( data_blk != nullptr );
+    const auto next_idx = BlockState::get_next_offset( data_blk );
+    REQUIRE( next_idx != Mgr::address_traits::no_block );
+    auto* next_blk = pmm::detail::resolve_granule_ptr<Mgr::address_traits>( Mgr::backend().base_ptr(), next_idx );
+    REQUIRE( next_blk != nullptr );
+    REQUIRE( pmm::is_free( BlockState::get_node_type( next_blk ) ) );
+    const auto next_total = BlockState::get_weight( next_blk );
+    REQUIRE( next_total > kHdrGranules );
+    const auto blocker_bytes = static_cast<std::size_t>( next_total - kHdrGranules ) *
+                               Mgr::address_traits::granule_size;
+    auto blocker = Mgr::allocate_typed<std::byte>( blocker_bytes );
     REQUIRE( !blocker.is_null() );
+    REQUIRE( BlockState::get_next_offset( data_blk ) == next_idx );
+    REQUIRE_FALSE( pmm::is_free( BlockState::get_node_type( next_blk ) ) );
 
     REQUIRE( s->append( s->data() + 1, 15 ) );
     REQUIRE( s->size() == 31 );
@@ -109,7 +130,7 @@ TEST_CASE( "I396: self-append survives forced backing-buffer relocation", "[issu
     REQUIRE( std::memcmp( s->data(), expected, sizeof( expected ) - 1 ) == 0 );
     REQUIRE( s->c_str()[s->size()] == '\0' );
 
-    Mgr::destroy_typed( blocker );
+    Mgr::deallocate_typed( blocker );
     destroy_string( p );
 }
 
