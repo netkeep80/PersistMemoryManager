@@ -18,8 +18,8 @@ typename Mgr::template pptr<std::uint8_t> consume_trailing_free_after( typename 
     using State = pmm::BlockStateBase<AT>;
 
     constexpr auto kHdrGranules = pmm::detail::kBlockHeaderGranules_t<AT>;
-    const auto last_idx = static_cast<typename Mgr::index_type>( last.offset() - kHdrGranules );
-    auto* last_blk = pmm::detail::resolve_granule_ptr<AT>( Mgr::backend().base_ptr(), last_idx );
+    const auto     last_idx     = static_cast<typename Mgr::index_type>( last.offset() - kHdrGranules );
+    auto*          last_blk     = pmm::detail::resolve_granule_ptr<AT>( Mgr::backend().base_ptr(), last_idx );
     REQUIRE( last_blk != nullptr );
 
     const auto tail_idx = State::get_next_offset( last_blk );
@@ -31,16 +31,15 @@ typename Mgr::template pptr<std::uint8_t> consume_trailing_free_after( typename 
     const auto tail_total = State::get_weight( tail_blk );
     REQUIRE( tail_total > kHdrGranules );
     const auto tail_bytes = static_cast<std::size_t>( tail_total - kHdrGranules ) * AT::granule_size;
-    auto filler = Mgr::template allocate_typed<std::uint8_t>( tail_bytes );
+    auto       filler     = Mgr::template allocate_typed<std::uint8_t>( tail_bytes );
     REQUIRE( !filler.is_null() );
     REQUIRE( filler.offset() == tail_idx + kHdrGranules );
     return filler;
 }
 
-template <typename Mgr>
-pmm::detail::ForestDomainRegistry<typename Mgr::address_traits>* registry() noexcept
+template <typename Mgr> pmm::detail::ForestDomainRegistry<typename Mgr::address_traits>* registry() noexcept
 {
-    using AT = typename Mgr::address_traits;
+    using AT   = typename Mgr::address_traits;
     auto* base = Mgr::backend().base_ptr();
     if ( base == nullptr )
         return nullptr;
@@ -51,8 +50,7 @@ pmm::detail::ForestDomainRegistry<typename Mgr::address_traits>* registry() noex
         base + static_cast<std::size_t>( hdr->root_offset ) * AT::granule_size );
 }
 
-template <typename Mgr>
-void clear_registry_symbol_offsets() noexcept
+template <typename Mgr> void clear_registry_symbol_offsets() noexcept
 {
     auto* reg = registry<Mgr>();
     REQUIRE( reg != nullptr );
@@ -74,12 +72,12 @@ TEST_CASE( "I410: pstringview intern preserves an arena-backed source across exp
     REQUIRE( Mgr::create( 8 * 1024 ) );
 
     constexpr char kText[] = "arena-backed-symbol";
-    auto source = Mgr::template allocate_typed<char>( sizeof( kText ) );
+    auto           source  = Mgr::template allocate_typed<char>( sizeof( kText ) );
     REQUIRE( !source.is_null() );
     std::memcpy( source.resolve(), kText, sizeof( kText ) );
     const char* source_before = source.resolve();
-    const auto* base_before = Mgr::backend().base_ptr();
-    auto filler = consume_trailing_free_after<Mgr>( source );
+    const auto* base_before   = Mgr::backend().base_ptr();
+    auto        filler        = consume_trailing_free_after<Mgr>( source );
 
     auto symbol = Mgr::pstringview::intern( source_before );
     REQUIRE( !symbol.is_null() );
@@ -98,7 +96,7 @@ TEST_CASE( "I410: pstringview intern preserves an arena-backed source across exp
 TEST_CASE( "I410: load bootstrap reacquires header and registry after relocating symbol recovery",
            "[issue410][forest-registry][relocation][reload]" )
 {
-    using Mgr = pmm::PersistMemoryManager<TightGrowthConfig, 4102>;
+    using Mgr                   = pmm::PersistMemoryManager<TightGrowthConfig, 4102>;
     constexpr const char* kFile = "test_issue410_registry_relocation.dat";
 
     Mgr::destroy();
@@ -113,13 +111,13 @@ TEST_CASE( "I410: load bootstrap reacquires header and registry after relocating
 
     auto marker = Mgr::create_typed<std::uint64_t>( 0x4102410241024102ULL );
     REQUIRE( !marker.is_null() );
-    auto filler = consume_trailing_free_after<Mgr>( marker );
+    auto       filler     = consume_trailing_free_after<Mgr>( marker );
     const auto saved_size = Mgr::backend().total_size();
     REQUIRE( pmm::save_manager<Mgr>( kFile ) );
 
     Mgr::destroy();
     REQUIRE( Mgr::create( saved_size ) );
-    const auto* load_base_before = Mgr::backend().base_ptr();
+    const auto*       load_base_before = Mgr::backend().base_ptr();
     pmm::VerifyResult load_result;
     REQUIRE( pmm::load_manager_from_file<Mgr>( kFile, load_result ) );
     REQUIRE( load_result.ok );
