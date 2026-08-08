@@ -129,8 +129,22 @@ require(profile_budgets("docs-comments-cleanup").get("max_new_docs") == 0, "docs
 for change_type in ("kernel-compaction", "kernel-hardening", "extraction-prep"):
     require_contains(
         profile(change_type).get("forbid_surfaces"),
-        {"governance", "release"},
-        f"{change_type} profile must forbid governance and release drift",
+        {"governance"},
+        f"{change_type} profile must forbid governance drift",
+    )
+    require(
+        "release" not in as_set(profile(change_type).get("forbid_surfaces")),
+        f"{change_type} profile must allow the mandatory release-fragment surface",
+    )
+    new_files = profile_new_files(change_type)
+    require_contains(
+        new_files.get("allow_classes"),
+        {"release"},
+        f"{change_type} profile must allow the release new-file class",
+    )
+    require(
+        new_files.get("max_per_class", {}).get("release") == 1,
+        f"{change_type} profile must allow exactly one release fragment",
     )
 
 require_contains(
