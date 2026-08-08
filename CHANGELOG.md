@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [6.6.0] - 2026-08-08
+
+### Fixed
+- Make persistent and embedded `pmap` binding survive whole-arena relocation, replace allocating named construction with explicit `bind_domain()`, and preserve PMM-backed key/value inputs across relocating insertions while keeping the persistent layout unchanged and the generated production header within its existing LOC baseline.
+- Return an explicit forest-domain policy object when lazy binding fails so the relocation-safe path compiles consistently on GCC, Clang, and MSVC.
+
+
 ## [6.5.0] - 2026-08-08
 
 ### Fixed
