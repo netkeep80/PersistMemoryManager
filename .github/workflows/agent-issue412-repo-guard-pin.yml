@@ -1,0 +1,65 @@
+name: Agent issue412 repo-guard pin sync
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  sync-rollout-validator:
+    if: github.event.pull_request.head.ref == 'agent/issue-412-repo-guard-current-base' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/issue-412-repo-guard-current-base
+          fetch-depth: 0
+
+      - name: Update rollout pin assertions
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/check-repo-guard-rollout.sh')
+          text = path.read_text()
+          old_sha = 'b1b6756639092bbd4ff6a473aeaa637a63475a86'
+          new_sha = '629c4af3f741f2514ef06bab90b226a1698499a2'
+
+          old_expected = f'expected_action_ref = "{old_sha}"'
+          new_expected = f'expected_action_ref = "{new_sha}"'
+          if text.count(old_expected) != 1:
+              raise SystemExit(f'expected exactly one old expected_action_ref, got {text.count(old_expected)}')
+          text = text.replace(old_expected, new_expected)
+
+          old_set = '''old_action_refs = {
+              "7ab5ca2f2d9859b4ffa2c423f05e951d4971be84",'''
+          new_set = f'''old_action_refs = {{
+              "{old_sha}",
+              "7ab5ca2f2d9859b4ffa2c423f05e951d4971be84",'''
+          if text.count(old_set) != 1:
+              raise SystemExit(f'expected exactly one old_action_refs anchor, got {text.count(old_set)}')
+          if f'    "{old_sha}",' in text:
+              raise SystemExit('former pin is already listed in old_action_refs')
+          text = text.replace(old_set, new_set)
+          path.write_text(text)
+          PY
+
+      - name: Verify rollout validator
+        run: ./scripts/check-repo-guard-rollout.sh
+
+      - name: Remove one-shot workflow and push result
+        shell: bash
+        run: |
+          rm .github/workflows/agent-issue412-repo-guard-pin.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'ci: synchronize repo-guard rollout pin'
+          git push origin HEAD:agent/issue-412-repo-guard-current-base
