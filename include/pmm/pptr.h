@@ -63,15 +63,10 @@ req: dr-007, qa-port-001, fr-035, if-012
             requires( const T& a, const T& b ) {
                 { a < b } -> std::convertible_to<bool>;
             }, "" );
-        if ( is_null() && !other.is_null() )
-            return true;
-        if ( !is_null() && other.is_null() )
-            return false;
-        if ( is_null() && other.is_null() )
-            return false;
+        if ( is_null() || other.is_null() )
+            return is_null() && !other.is_null();
         return **this < *other;
     }
-    // Resolved raw views are invalid after any arena remap; retain the pptr and resolve again.
     T&   operator*() const noexcept { return *ManagerT::template resolve_checked<T>( *this ); }
     T*   operator->() const noexcept { return ManagerT::template resolve_checked<T>( *this ); }
     T*   resolve() const noexcept { return ManagerT::template resolve_checked<T>( *this ); }
@@ -81,12 +76,10 @@ req: dr-007, qa-port-001, fr-035, if-012
 };
 template <class T, class ManagerT> pptr<T, ManagerT> pptr_from_raw( T* raw ) noexcept
 {
-    if ( raw == nullptr || !ManagerT::is_initialized() || ManagerT::backend().base_ptr() == nullptr )
-        return {};
+    if ( raw == nullptr || !ManagerT::is_initialized() || ManagerT::backend().base_ptr() == nullptr ) return {};
     const auto begin = reinterpret_cast<std::uintptr_t>( ManagerT::backend().base_ptr() );
-    const auto addr  = reinterpret_cast<std::uintptr_t>( raw );
-    if ( addr < begin || addr - begin >= ManagerT::backend().total_size() )
-        return {};
+    const auto addr = reinterpret_cast<std::uintptr_t>( raw );
+    if ( addr < begin || addr - begin >= ManagerT::backend().total_size() ) return {};
     auto p = ManagerT::template pptr_from_byte_offset<T>( static_cast<size_t>( addr - begin ) );
     return p.resolve() == raw ? p : pptr<T, ManagerT>{};
 }
@@ -94,8 +87,7 @@ namespace detail
 {
 template <class T, class ManagerT> struct relocation_owner
 {
-    T* raw;
-    pptr<T, ManagerT> persistent;
+    T* raw; pptr<T, ManagerT> persistent;
     explicit relocation_owner( T* p ) noexcept : raw( p ), persistent( pptr_from_raw<T, ManagerT>( p ) ) {}
     T* get() const noexcept { return persistent ? persistent.resolve_unchecked() : raw; }
 };
