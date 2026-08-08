@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <string_view>
 namespace pmm
 {
 template <typename ManagerT> struct pstringview;
@@ -13,6 +14,20 @@ req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, con-012, feat-008, fr-017
 */
 template <typename ManagerT> struct pstringview
 {
+  private:
+    static std::string_view c_view( const char* s ) noexcept { return s ? std::string_view( s ) : std::string_view(); }
+    static int compare_views( std::string_view lhs, std::string_view rhs ) noexcept
+    {
+        const size_t common = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
+        const int    prefix = common != 0 ? std::memcmp( lhs.data(), rhs.data(), common ) : 0;
+        if ( prefix != 0 )
+            return prefix;
+        if ( lhs.size() == rhs.size() )
+            return 0;
+        return lhs.size() < rhs.size() ? -1 : 1;
+    }
+
+  public:
     using manager_type = ManagerT;
     using index_type   = typename ManagerT::index_type;
     using psview_pptr  = typename ManagerT::template pptr<pstringview>;
@@ -34,18 +49,17 @@ template <typename ManagerT> struct pstringview
             return ManagerT::forest_domain_root_index_ptr_unlocked( domain );
         }
         static node_type* resolve_node( node_pptr p ) noexcept { return ManagerT::template resolve<node_type>( p ); }
-        static int        compare_key( const char* key, node_pptr cur ) noexcept
+        static int compare_key( std::string_view key, node_pptr cur ) noexcept
         {
-            if ( key == nullptr )
-                key = "";
             node_type* obj = resolve_node( cur );
-            return ( obj != nullptr ) ? std::strcmp( key, obj->c_str() ) : 0;
+            return obj != nullptr ? compare_views( key, obj->view() ) : 0;
         }
+        static int compare_key( const char* key, node_pptr cur ) noexcept { return compare_key( c_view( key ), cur ); }
         static bool less_node( node_pptr lhs, node_pptr rhs ) noexcept
         {
             node_type* lhs_obj = resolve_node( lhs );
             node_type* rhs_obj = resolve_node( rhs );
-            return lhs_obj != nullptr && rhs_obj != nullptr && std::strcmp( lhs_obj->c_str(), rhs_obj->c_str() ) < 0;
+            return lhs_obj != nullptr && rhs_obj != nullptr && compare_views( lhs_obj->view(), rhs_obj->view() ) < 0;
         }
         static bool validate_node( node_pptr p ) noexcept { return resolve_node( p ) != nullptr; }
     };
@@ -53,32 +67,26 @@ template <typename ManagerT> struct pstringview
     static forest_domain_policy forest_domain_ops() noexcept { return forest_domain_policy{}; }
     uint32_t                    length;
     char                        str[1];
-    explicit pstringview( const char* s ) noexcept : length( 0 ), str{ '\0' } { _interned = _intern( s ); }
-    operator psview_pptr() const noexcept { return _interned; }
-    const char* c_str() const noexcept { return str; }
-    size_t      size() const noexcept { return static_cast<size_t>( length ); }
-    bool        empty() const noexcept { return length == 0; }
-    bool        operator==( const char* s ) const noexcept
-    {
-        if ( s == nullptr )
-            return length == 0;
-        return std::strcmp( c_str(), s ) == 0;
-    }
+    pstringview() = delete;
+    const char*      c_str() const noexcept { return str; }
+    size_t           size() const noexcept { return static_cast<size_t>( length ); }
+    bool             empty() const noexcept { return length == 0; }
+    std::string_view view() const noexcept { return std::string_view( str, size() ); }
+    bool             operator==( std::string_view s ) const noexcept { return view() == s; }
+    bool             operator==( const char* s ) const noexcept { return view() == c_view( s ); }
     bool operator==( const pstringview& other ) const noexcept
     {
-        if ( this == &other )
-            return true;
-        if ( length != other.length )
-            return false;
-        return std::strcmp( str, other.str ) == 0;
+        return this == &other || ( length == other.length && view() == other.view() );
     }
+    bool operator!=( std::string_view s ) const noexcept { return !( *this == s ); }
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
     bool operator!=( const pstringview& other ) const noexcept { return !( *this == other ); }
-    bool operator<( const pstringview& other ) const noexcept { return std::strcmp( c_str(), other.c_str() ) < 0; }
+    bool operator<( const pstringview& other ) const noexcept { return compare_views( view(), other.view() ) < 0; }
 /*
 ### pmm-pstringview-intern
 */
-    static psview_pptr intern( const char* s ) noexcept { return _intern( s ); }
+    static psview_pptr intern( std::string_view s ) noexcept { return _intern( s ); }
+    static psview_pptr intern( const char* s ) noexcept { return _intern( c_view( s ) ); }
     static void        reset() noexcept
     {
         if ( !ManagerT::is_initialized() )
@@ -93,11 +101,9 @@ template <typename ManagerT> struct pstringview
         typename ManagerT::thread_policy::shared_lock_type lock( ManagerT::_mutex );
         return forest_domain_ops().root_index();
     }
-    ~pstringview() = default;
 
   private:
-    psview_pptr        _interned;
-    static psview_pptr _intern( const char* s ) noexcept
+    static psview_pptr _intern( std::string_view s ) noexcept
     {
         if ( !ManagerT::is_initialized() )
             return psview_pptr();
