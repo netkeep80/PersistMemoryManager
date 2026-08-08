@@ -200,12 +200,12 @@ TEST_CASE( "I392: application NodeType remains valid across lifecycle", "[issue3
     REQUIRE_FALSE( Mgr::set_application_node_type( null, t ) );
     REQUIRE_FALSE( Mgr::set_application_node_type( p, pmm::NodeType::PMap ) );
 
-    // Occupy the following allocation so a large grow exercises the move path
-    // on normal heap layouts. The semantic NodeType must survive either path.
+    // Occupy the following allocation so a large grow exercises the move path.
     auto blocker = Mgr::create_typed<int>( 9 );
     REQUIRE( !blocker.is_null() );
     auto grown = Mgr::reallocate_typed<int>( p, 1, 128 );
     REQUIRE( !grown.is_null() );
+    REQUIRE( grown != p );
     REQUIRE( Mgr::get_node_type( grown ) == t );
     REQUIRE( *grown == 7 );
     REQUIRE( Mgr::verify().ok );
