@@ -6,8 +6,8 @@
  *   - NodeType::Free is no longer reported as user/PAP-deletable, and
  *     deallocate() refuses to act on a Free block (defence in depth even when
  *     the deletable bit accidentally returns true).
- *   - is_allocated(NodeType) is a closed-world switch; an unknown enum value
- *     does not pretend to be allocated.
+ *   - The reserved PMM NodeType gap stays non-allocated; application-defined
+ *     values are covered by the issue #392 contract tests.
  *   - The typed allocation paths assign a logical NodeType (PStringView,
  *     PString, PArray, PMap, PPtr) instead of leaving every block as Generic.
  *   - verify catches a fabricated cached-weight corruption on a free block by
@@ -64,11 +64,11 @@ TEST_CASE( "is_allocated is closed-world: every known type maps explicitly", "[i
     static_assert( pmm::is_allocated( pmm::NodeType::PPtr ) );
 }
 
-TEST_CASE( "is_allocated rejects an unknown NodeType enum value", "[issue369][review]" )
+TEST_CASE( "is_allocated rejects a reserved NodeType enum value", "[issue369][review]" )
 {
-    constexpr auto kBogus = static_cast<pmm::NodeType>( 0xEF );
-    REQUIRE_FALSE( pmm::is_allocated( kBogus ) );
-    REQUIRE_FALSE( pmm::is_known_node_type( static_cast<std::uint8_t>( kBogus ) ) );
+    constexpr auto kReserved = static_cast<pmm::NodeType>( pmm::kApplicationNodeTypeFirst - 1 );
+    REQUIRE_FALSE( pmm::is_allocated( kReserved ) );
+    REQUIRE_FALSE( pmm::is_known_node_type( static_cast<std::uint8_t>( kReserved ) ) );
 }
 
 // ─── 2. deallocate() refuses to free a Free block ─────────────────────────────
@@ -104,7 +104,7 @@ TEST_CASE( "deallocate() of a Free-typed block is rejected even if it leaks past
     Mgr::destroy();
 }
 
-// ─── 3. Typed allocation paths assign logical NodeType ───────────────────────
+// ─── 3. Typed allocation paths assign logical NodeType ────────────────────────
 
 TEST_CASE( "allocate_typed<T> tags the block with node_type_for_v<T>", "[issue369][review][typed]" )
 {
