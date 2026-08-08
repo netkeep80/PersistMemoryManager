@@ -1,0 +1,87 @@
+name: Agent issue404 pmap migration
+
+on:
+  push:
+    branches:
+      - agent/issue-404-pmap-relocation
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-and-generate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/issue-404-pmap-relocation
+          fetch-depth: 0
+
+      - name: Migrate named pmap constructors
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('tests/test_issue153_pmap.cpp')
+          text = path.read_text()
+          replacements = [
+              (
+                  '    TestMgr::pmap<int, int>                                 named_a( "issue336/shared" );',
+                  '    TestMgr::pmap<int, int>                                 named_a;\n'
+                  '    REQUIRE( named_a.bind_domain( "issue336/shared" ) );',
+              ),
+              (
+                  '    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> named_s( "issue336/shared" );',
+                  '    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> named_s;\n'
+                  '    REQUIRE( named_s.bind_domain( "issue336/shared" ) );',
+              ),
+              (
+                  '    TestMgr::pmap<int, int> named_b( "issue336/shared" );',
+                  '    TestMgr::pmap<int, int> named_b;\n'
+                  '    REQUIRE( named_b.bind_domain( "issue336/shared" ) );',
+              ),
+              (
+                  '    TestMgr::pmap<int, Issue336TagA> ta( "issue336/stable" );',
+                  '    TestMgr::pmap<int, Issue336TagA> ta;\n'
+                  '    REQUIRE( ta.bind_domain( "issue336/stable" ) );',
+              ),
+              (
+                  '    TestMgr::pmap<int, Issue336TagB> tb( "issue336/stable" );',
+                  '    TestMgr::pmap<int, Issue336TagB> tb;\n'
+                  '    REQUIRE( tb.bind_domain( "issue336/stable" ) );',
+              ),
+              (
+                  '    TestMgr::pmap<int, Issue336TagA> ta2( "issue336/stable" );',
+                  '    TestMgr::pmap<int, Issue336TagA> ta2;\n'
+                  '    REQUIRE( ta2.bind_domain( "issue336/stable" ) );',
+              ),
+          ]
+
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected exactly one occurrence, got {count}: {old}')
+              text = text.replace(old, new)
+
+          if '( "issue336/shared" )' in text or '( "issue336/stable" )' in text:
+              raise SystemExit('named pmap constructor call remained after migration')
+          path.write_text(text)
+          PY
+
+      - name: Install canonical single-header generator
+        run: python -m pip install 'quom>=4,<5'
+
+      - name: Regenerate single headers
+        run: ./scripts/generate-single-headers.sh
+
+      - name: Remove one-shot workflow and push result
+        shell: bash
+        run: |
+          rm .github/workflows/agent-issue404-pmap-migration.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'test: migrate pmap binding consumers and regenerate header'
+          git push origin HEAD:agent/issue-404-pmap-relocation
