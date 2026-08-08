@@ -3452,9 +3452,19 @@ namespace detail
 {
 template <class T, class ManagerT> struct relocation_owner
 {
-    T* raw; pptr<T, ManagerT> persistent;
-    explicit relocation_owner( T* p ) noexcept : raw( p ), persistent( pptr_from_raw<T, ManagerT>( p ) ) {}
-    T* get() const noexcept { return persistent ? persistent.resolve_unchecked() : raw; }
+    static constexpr size_t external = static_cast<size_t>( -1 );
+    T* raw; size_t arena_off;
+    explicit relocation_owner( T* p ) noexcept : raw( p ), arena_off( external )
+    {
+        auto* base = ManagerT::backend().base_ptr();
+        const auto begin = reinterpret_cast<std::uintptr_t>( base ), addr = reinterpret_cast<std::uintptr_t>( p );
+        if ( p && base && addr >= begin && addr - begin < ManagerT::backend().total_size() )
+            arena_off = static_cast<size_t>( addr - begin );
+    }
+    T* get() const noexcept
+    {
+        return arena_off == external ? raw : reinterpret_cast<T*>( ManagerT::backend().base_ptr() + arena_off );
+    }
 };
 }
 }
