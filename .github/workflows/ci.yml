@@ -9,10 +9,15 @@ permissions:
   contents: write
 
 jobs:
-  sync-single-header:
+  sync-generated-artifacts:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Register embedded-container regression
+        run: |
+          grep -q 'test_issue403_embedded_containers' tests/CMakeLists.txt || \
+            printf '\n# Issue 403: embedded pstring/parray owners survive arena relocation\npmm_add_test(test_issue403_embedded_containers test_issue403_embedded_containers.cpp)\n' >> tests/CMakeLists.txt
 
       - name: Install quom
         run: pip install quom
@@ -20,14 +25,14 @@ jobs:
       - name: Regenerate single headers
         run: bash scripts/generate-single-headers.sh
 
-      - name: Commit generated headers
+      - name: Commit generated artifacts
         run: |
-          if git diff --quiet -- single_include/pmm; then
-            echo "single headers already up to date"
+          if git diff --quiet -- single_include/pmm tests/CMakeLists.txt; then
+            echo "generated artifacts already up to date"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add single_include/pmm
-          git commit -m "Regenerate single headers for issue 403"
+          git add single_include/pmm tests/CMakeLists.txt
+          git commit -m "Regenerate issue 403 test and single-header artifacts"
           git push
