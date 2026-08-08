@@ -11,6 +11,20 @@
 namespace
 {
 
+struct NonPersistentValue
+{
+    int value;
+    ~NonPersistentValue() {}
+};
+
+using ContractMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 4150>;
+static_assert( pmm::detail::pmap_storage_type_v<int> );
+static_assert( pmm::detail::pmap_storage_type_v<ContractMgr::pptr<int>> );
+static_assert( !pmm::detail::pmap_storage_type_v<int*> );
+static_assert( !pmm::detail::pmap_storage_type_v<NonPersistentValue> );
+using ContractMap = ContractMgr::pmap<int, ContractMgr::pptr<int>>;
+static_assert( std::is_default_constructible_v<ContractMap> );
+
 template <typename Mgr, typename T>
 typename Mgr::template pptr<std::uint8_t> consume_trailing_free_after( typename Mgr::template pptr<T> last )
 {
