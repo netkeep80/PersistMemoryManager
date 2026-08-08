@@ -89,7 +89,7 @@ template <typename ManagerT> struct pstring
         if ( s == nullptr || len > static_cast<size_t>( std::numeric_limits<uint32_t>::max() ) - base )
             return false;
         const size_t offset = source_offset( s );
-        if ( offset != npos && len > static_cast<size_t>( _capacity ) + 1 - offset )
+        if ( offset != npos && ( offset > size() || len > size() + 1 - offset ) )
             return false;
         const uint32_t new_len = static_cast<uint32_t>( base + len );
         if ( !ensure_capacity( new_len ) )
