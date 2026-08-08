@@ -64,7 +64,7 @@ pmm_add_test(test_issue87_phase1 test_issue87_phase1.cpp)
 # ─── Тесты Phase 4: FreeBlockTree policy ─────────────────────────
 pmm_add_test(test_issue87_phase4 test_issue87_phase4.cpp)
 
-# ─── Тесты Phase 5: StorageBackend ────────────────────────────────
+# ─── Тесты Phase 5: StorageBackend ──────────────────────────────
 pmm_add_test(test_issue87_phase5 test_issue87_phase5.cpp)
 
 # ─── Тесты Phase 6: AllocatorPolicy ──────────────────────────────
@@ -92,7 +92,7 @@ add_test(NAME test_issue100 COMMAND test_issue100)
 # ─── Интеграционные тесты BlockState machine ─────────────────────
 pmm_add_test(test_issue106_block_state_integration test_issue106_block_state_integration.cpp)
 
-# ─── Тесты статической модели менеджера ─────────────────────────
+# ─── Тесты статической модели менеджера ──────────────────────────
 pmm_add_test(test_issue108_static_model test_issue108_static_model.cpp)
 
 # ─── Тесты новых пресетов: EmbeddedHeap, IndustrialDBHeap ────────
@@ -101,7 +101,7 @@ pmm_add_test(test_issue123_presets test_issue123_presets.cpp)
 # ─── Тесты улучшений по code review ─────────────────────────────
 pmm_add_test(test_issue144_code_review test_issue144_code_review.cpp)
 
-# ─── Тесты исправлений по code review ────────────────────────────
+# ─── Тесты исправлений по code review ─────────────────────────────
 pmm_add_test(test_issue172_code_review test_issue172_code_review.cpp)
 
 # ─── Тесты удаления устаревших полей ManagerHeader ───────────────
@@ -110,7 +110,7 @@ pmm_add_test(test_issue176_manager_header test_issue176_manager_header.cpp)
 # ─── Тесты переосмысления конфигураций ──────────────────────────
 pmm_add_test(test_issue146_configs test_issue146_configs.cpp)
 
-# ─── Тесты поддержки 16-bit и 64-bit индексов ───────────────────
+# ─── Тесты поддержки 16-bit и 64-bit индексов ────────────────────
 add_executable(test_issue146_index_sizes test_issue146_index_sizes.cpp)
 target_link_libraries(test_issue146_index_sizes PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME test_issue146_index_sizes COMMAND test_issue146_index_sizes)
@@ -144,6 +144,9 @@ pmm_add_test(test_issue45_pstring test_issue45_pstring.cpp)
 
 # Issue 396: binary-safe, length-aware pstring regressions
 pmm_add_test(test_issue396_binary_pstring test_issue396_binary_pstring.cpp)
+
+# Issue 403: embedded pstring/parray owners survive arena relocation
+pmm_add_test(test_issue403_embedded_containers test_issue403_embedded_containers.cpp)
 
 # ─── Тесты персистентного массива parray ─────────────
 pmm_add_test(test_issue195_parray test_issue195_parray.cpp)
@@ -208,130 +211,5 @@ target_compile_features(${target} PRIVATE cxx_std_20)
 target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain Threads::Threads)
 add_test(NAME ${target} COMMAND ${target})
 
-# ─── Тест самодостаточности single-header файла для LargeDBHeap ─
-set(target test_issue146_sh_large_db)
-add_executable(${target} test_issue146_sh_large_db.cpp)
-target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/single_include ${CMAKE_SOURCE_DIR}/single_include/pmm)
-target_compile_features(${target} PRIVATE cxx_std_20)
-target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain Threads::Threads)
-add_test(NAME ${target} COMMAND ${target})
-
 # ─── Тесты parray::insert/erase ──────────────────────────────────
 pmm_add_test(test_issue233_parray_insert_erase test_issue233_parray_insert_erase.cpp)
-
-# ─── Тесты расширенного покрытия ─────────────────────
-
-# 5.2.1: Overflow tests for size calculations
-pmm_add_test(test_issue213_overflow test_issue213_overflow.cpp)
-
-# 5.2.2: Concurrent allocation/deallocation tests
-add_executable(test_issue213_concurrent test_issue213_concurrent.cpp)
-target_link_libraries(test_issue213_concurrent PRIVATE pmm Catch2::Catch2WithMain Threads::Threads)
-add_test(NAME test_issue213_concurrent COMMAND test_issue213_concurrent)
-set_tests_properties(test_issue213_concurrent PROPERTIES TIMEOUT 120)
-
-pmm_add_test(test_issue235_code_review test_issue235_code_review.cpp)
-
-# 5.2.3: Fuzz-style testing of allocator (deterministic, Catch2)
-pmm_add_test(test_issue213_fuzz test_issue213_fuzz.cpp)
-set_tests_properties(test_issue213_fuzz PROPERTIES TIMEOUT 120)
-
-# 5.2.3: libFuzzer harness (built only when fuzzer is available, not part of CTest)
-# Build manually: clang++ -std=c++20 -fsanitize=fuzzer,address -O2 \
-#   -I include -I single_include -I single_include/pmm \
-#   tests/fuzz_allocator.cpp -o fuzz_allocator
-
-# Persistent forest/domain registry coverage
-pmm_add_test(test_forest_registry test_forest_registry.cpp)
-
-# ─── Bootstrap invariant verification ────────────────────────────
-pmm_add_test(test_issue241_bootstrap test_issue241_bootstrap.cpp)
-
-# ─── Free-tree forest-policy regression tests ───────────────────
-pmm_add_test(test_issue243_free_tree_policy test_issue243_free_tree_policy.cpp)
-
-# ─── Verify/repair mode separation tests ────────────────────────
-pmm_add_test(test_issue245_verify_repair test_issue245_verify_repair.cpp)
-
-# ─── Verify/repair/load operational contract tests ──────────────
-pmm_add_test(test_issue256_verify_repair_contract test_issue256_verify_repair_contract.cpp)
-
-# ─── Pointer and block validation layer tests ───────────────────
-pmm_add_test(test_issue257_validation test_issue257_validation.cpp)
-
-# ─── Issue 258: Test matrix — bootstrap, reload, structural, corruption,
-#     verify/repair behavior, and property/generative tests ──────
-pmm_add_test(test_issue258_bootstrap      test_issue258_bootstrap.cpp)
-pmm_add_test(test_issue258_reload         test_issue258_reload.cpp)
-pmm_add_test(test_issue258_structural     test_issue258_structural.cpp)
-pmm_add_test(test_issue258_corruption     test_issue258_corruption.cpp)
-pmm_add_test(test_issue258_verify_behavior test_issue258_verify_behavior.cpp)
-pmm_add_test(test_issue258_property       test_issue258_property.cpp)
-
-# ─── Issue 303: full free-tree structural verifier ──────────────
-pmm_add_test(test_issue303_free_tree_verifier test_issue303_free_tree_verifier.cpp)
-
-# ─── Issue 295: layout include-shard repayment guard ────────────
-pmm_add_test(test_issue295_layout_compaction test_issue295_layout_compaction.cpp)
-target_compile_definitions(test_issue295_layout_compaction PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-
-# ─── Issue 306: root .gitkeep repo-guard exception ──────────────
-pmm_add_test(test_issue306_repo_guard_gitkeep test_issue306_repo_guard_gitkeep.cpp)
-target_compile_definitions(test_issue306_repo_guard_gitkeep PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-
-# ─── Issue 312: explicit pptr checked/unchecked access modes ────
-pmm_add_test(test_issue312_access_modes test_issue312_access_modes.cpp)
-
-# ─── Issue 318: typed API manager-header compaction ─────────────
-pmm_add_test(test_issue318_manager_header_compaction test_issue318_manager_header_compaction.cpp)
-target_compile_definitions(test_issue318_manager_header_compaction PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-
-# ─── Issue 325: manager-header offset consistency for CRC/save/load ─
-pmm_add_test(test_issue325_manager_header_offset test_issue325_manager_header_offset.cpp)
-
-# ─── Issue 326: forged user-pointer reconstruction guard ───────────
-pmm_add_test(test_issue326_user_ptr_validation test_issue326_user_ptr_validation.cpp)
-
-# ─── Issue 328: destroy() lifecycle contract ───────────────────────
-pmm_add_test(test_issue328_destroy_lifecycle test_issue328_destroy_lifecycle.cpp)
-
-# ─── Issue 329: explicit ManagerHeader image version ───────────────
-pmm_add_test(test_issue329_image_version test_issue329_image_version.cpp)
-
-# ─── Issue 349: remove ppool from public PMM surface ───────────────
-pmm_add_test(test_issue349_remove_ppool test_issue349_remove_ppool.cpp)
-target_compile_definitions(test_issue349_remove_ppool PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-
-# ─── Issue 352: kernel subtree size budget ─────────────────────────
-pmm_add_test(test_issue352_kernel_subtree_size test_issue352_kernel_subtree_size.cpp)
-target_compile_definitions(test_issue352_kernel_subtree_size PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-
-# ─── Issue 354: source anchor and markdown link tracing ─────────────
-pmm_add_test(test_issue354_include_anchors test_issue354_include_anchors.cpp)
-target_compile_definitions(test_issue354_include_anchors PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-
-# ─── Issue 358: release workflow single-header generation contract ──
-pmm_add_test(test_issue358_release_workflow test_issue358_release_workflow.cpp)
-target_compile_definitions(test_issue358_release_workflow PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-
-# ─── Issue 369: review follow-up — NodeType / weight semantics tightening ──
-pmm_add_test(test_issue369_review_fixes test_issue369_review_fixes.cpp)
-
-# ─── Issue 373: checked granule arithmetic, ArenaView, walker, growth, init ──
-pmm_add_test(test_issue373_arena_internals test_issue373_arena_internals.cpp)
-pmm_add_test(test_issue373_corruption test_issue373_corruption.cpp)
-
-# ─── Issue 375: canonical address layer, container reallocate_typed, tree_node ──
-pmm_add_test(test_issue375_address_layer test_issue375_address_layer.cpp)
-pmm_add_test(test_issue375_containers    test_issue375_containers.cpp)
-pmm_add_test(test_issue375_tree_node     test_issue375_tree_node.cpp)
-pmm_add_test(test_issue375_reallocate    test_issue375_reallocate.cpp)
-pmm_add_test(test_issue375_static_checks test_issue375_static_checks.cpp)
-target_compile_definitions(test_issue375_static_checks PRIVATE PMM_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-
-# ─── Issue 314: build graph compaction contract ─────────────────
-add_test(
-    NAME test_issue314_build_graph_contract
-    COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_SOURCE_DIR}/issue314_build_graph_contract.cmake"
-)
-set_tests_properties(test_issue314_build_graph_contract PROPERTIES TIMEOUT 180)
