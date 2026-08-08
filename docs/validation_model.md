@@ -78,12 +78,57 @@ Every raw/user pointer → block transition is listed below with its validation.
 |---|------|----------|-------------|------------|
 | 1 | Granule index → `Block*` | `detail::block_at<AT>()` | `idx != no_block` (assert) | Index range via `validate_block_index()` |
 | 2 | User pointer → `Block*` | `detail::header_from_ptr_t<AT>()` | null, min_addr, bounds, alignment, weight | — (already comprehensive) |
-| 3 | `pptr<T>` → `T*` | `resolve<T>()` | null, initialized, bounds | — |
+| 3 | `pptr<T>` → `T*` | `resolve<T>()` | null, initialized, bounds, allocated root | — |
 | 4 | `pptr<T>` → block raw ptr | `block_raw_ptr_from_pptr()` | Relies on [pptr](../include/pmm/pptr.h#pmm-pptr) validity | `validate_block_index()` |
-| 5 | Raw `void*` → `pptr<T>` | `make_pptr_from_raw<T>()` | Pointer provenance (allocated by us) | — |
-| 6 | Byte offset → `pptr<T>` | `pptr_from_byte_offset<T>()` | null, alignment, overflow | — |
-| 7 | Granule index → `void*` | `detail::resolve_granule_ptr<AT>()` | null-index sentinel | `validate_block_index()` |
-| 8 | `void*` → granule index | `detail::ptr_to_granule_idx<AT>()` | — | Alignment, range |
+| 5 | Exact resolved `T*` → `pptr<T>` | `pptr_from_raw<T, ManagerT>()` | image membership, byte-offset conversion, exact `resolve()` round-trip | — |
+| 6 | Allocator-owned raw `void*` → `pptr<T>` | internal `make_pptr_from_raw<T>()` | Caller proves pointer provenance | — |
+| 7 | Byte offset → `pptr<T>` | `pptr_from_byte_offset<T>()` | null, alignment, overflow | — |
+| 8 | Granule index → `void*` | `detail::resolve_granule_ptr<AT>()` | null-index sentinel | `validate_block_index()` |
+| 9 | `void*` → granule index | `detail::ptr_to_granule_idx<AT>()` | — | Alignment, range |
+
+`pptr_from_raw()` is the checked public capture operation for code that currently
+has an exact resolved allocation address and needs identity that remains usable
+after a possible arena relocation. Interior addresses and external/stack
+addresses deliberately return a null `pptr`.
+
+---
+
+## Resolved pointer lifetime
+
+A `pptr<T>` is persistent identity. A raw pointer or reference obtained by
+resolving that identity is only a view of the arena at its current base address.
+
+The following operations return ephemeral views:
+
+- `pptr<T>::resolve()` / manager `resolve<T>()`;
+- `pptr<T>::resolve_unchecked()`;
+- `pptr<T>::operator->()`;
+- `pptr<T>::operator*()`;
+- container accessors that return pointers into persistent backing storage such
+  as `pstring::data()` and `parray::data()/at()/front()/back()`.
+
+Any operation that can expand, remap, attach, load or otherwise replace the
+manager arena invalidates **all previously resolved raw views**, even when the
+referenced allocation remains alive at the same persistent offset. `HeapStorage`
+intentionally demonstrates this contract: `resize_to()` allocates a new aligned
+buffer, copies the image and releases the previous buffer.
+
+Therefore code that crosses a potentially relocating operation must retain a
+`pptr`/persistent offset and resolve again afterwards. Persistent container
+member functions that may grow backing storage follow the same rule internally:
+they capture owner identity before growth and must not dereference their old
+`this` after allocator mutation. External/stack container owners are not arena
+views and remain at their ordinary C++ address, although their persistent
+backing data must still be resolved again after growth.
+
+Raw inputs also obey this rule. If an input may refer into the arena and an
+operation can relocate it, the operation must snapshot a bounded value or save
+a stable persistent/byte offset before mutation and rebase/re-resolve the source
+afterwards. Carrying an unresolved arena pointer/reference through growth is not
+supported.
+
+Deallocation separately invalidates views to the freed allocation even when the
+arena base itself does not move.
 
 ---
 
@@ -123,7 +168,7 @@ The validation layer enforces the following invariants from `core_invariants.md`
 
 - **B1a/B1b**: `prev_offset` and `next_offset` are valid block indices or `no_block`.
 - **B2**: `weight == 0 ↔ root_offset == 0` (free block), `weight > 0 ↔ root_offset == own_idx` (allocated block).
-- **B3**: `node_type` is either `kNodeNormal` (0) or `kNodeReadOnly`.
+- **B3**: `node_type` is a known PMM kernel or application-defined value accepted by the block-state contract.
 - **E1**: Every block index used in AVL operations points to a valid block within the image.
 
 ---
@@ -132,4 +177,4 @@ The validation layer enforces the following invariants from `core_invariants.md`
 
 - Image recovery (handled by `load()` repair phase).
 - `pjson` or upper-layer object validation.
-- Thread safety (validation runs under existing lock policy).
+- Independent concurrent access while another thread can relocate the arena; that requires the scoped-access contract tracked separately by the multi-threaded access work.
