@@ -194,21 +194,27 @@ TEST_CASE( "    pmap domain binding separates identities", "[test_issue153_pmap]
     // Different _K/_V node layouts never share a binding, even under the same domain key.
     TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> syms;
     REQUIRE( std::strcmp( a_ops.name(), syms.forest_domain_ops().name() ) != 0 );
-    TestMgr::pmap<int, int>                                 named_a( "issue336/shared" );
-    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> named_s( "issue336/shared" );
+    TestMgr::pmap<int, int>                                 named_a;
+    REQUIRE( named_a.bind_domain( "issue336/shared" ) );
+    TestMgr::pmap<TestMgr::pptr<TestMgr::pstringview>, int> named_s;
+    REQUIRE( named_s.bind_domain( "issue336/shared" ) );
     REQUIRE( std::strcmp( named_a.domain_name(), named_s.domain_name() ) != 0 );
 
     // Same type + same domain key => same binding.
-    TestMgr::pmap<int, int> named_b( "issue336/shared" );
+    TestMgr::pmap<int, int> named_b;
+    REQUIRE( named_b.bind_domain( "issue336/shared" ) );
     REQUIRE( std::strcmp( named_a.domain_name(), named_b.domain_name() ) == 0 );
     REQUIRE( named_b.find( 8 ).is_null() );
     REQUIRE( !named_a.insert( 8, 80 ).is_null() );
     REQUIRE( named_b.find( 8 )->value == 80 );
 
     // Structurally identical PODs with different pinned tags do NOT collide.
-    TestMgr::pmap<int, Issue336TagA> ta( "issue336/stable" );
-    TestMgr::pmap<int, Issue336TagB> tb( "issue336/stable" );
-    TestMgr::pmap<int, Issue336TagA> ta2( "issue336/stable" );
+    TestMgr::pmap<int, Issue336TagA> ta;
+    REQUIRE( ta.bind_domain( "issue336/stable" ) );
+    TestMgr::pmap<int, Issue336TagB> tb;
+    REQUIRE( tb.bind_domain( "issue336/stable" ) );
+    TestMgr::pmap<int, Issue336TagA> ta2;
+    REQUIRE( ta2.bind_domain( "issue336/stable" ) );
     REQUIRE( std::strcmp( ta.domain_name(), tb.domain_name() ) != 0 );
     REQUIRE( std::strcmp( ta.domain_name(), ta2.domain_name() ) == 0 );
 
