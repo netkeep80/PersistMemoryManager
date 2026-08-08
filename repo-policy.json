@@ -71,6 +71,7 @@
     "kernel": ["include/**", "CMakeLists.txt"],
     "tests": ["tests/**"],
     "docs": ["docs/**", "README.md", "CONTRIBUTING.md"],
+    "requirements": ["req/**"],
     "governance": ["repo-policy.json", ".github/**", "scripts/check-*.sh"],
     "release": ["CHANGELOG.md", "changelog.d/**", "scripts/check-version-consistency.sh"],
     "generated": ["single_include/**"]
