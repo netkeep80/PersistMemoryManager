@@ -3794,7 +3794,7 @@ template <typename _K, typename _V, typename ManagerT> struct pmap
             return forest_domain_policy( descriptor() );
         detail::relocation_owner<pmap, ManagerT> owner( this );
         _binding_id = 0;
-        if ( !bind_domain( nullptr ) ) return {};
+        if ( !bind_domain( nullptr ) ) return forest_domain_policy();
         pmap* state = owner.get(); return state ? forest_domain_policy( state->descriptor() ) : forest_domain_policy();
     }
     forest_domain_view_policy forest_domain_view_ops() const noexcept
