@@ -1,0 +1,77 @@
+name: Agent issue426 typed handle identity
+
+on:
+  pull_request:
+    branches:
+      - agent/issue-415-pmap-lifetime-v2
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  identity-version-regenerate-test:
+    if: github.event.pull_request.head.ref == 'agent/issue-426-typed-handle-identity' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/issue-426-typed-handle-identity
+          fetch-depth: 0
+
+      - name: Apply typed-handle identity and image-v3 migration
+        run: python .github/agent_issue426_typed_identity.py
+
+      - name: Format changed tests only
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+          clang-format -i tests/test_issue329_image_version.cpp tests/test_issue426_pmap_type_identity.cpp
+
+      - name: Regenerate canonical single header
+        shell: bash
+        run: |
+          pip install quom
+          bash scripts/generate-single-headers.sh
+
+      - name: Structural, formatting and LOC checks
+        shell: bash
+        run: |
+          test "$(wc -l < include/pmm/persist_memory_manager.h)" -lt 1250
+          baseline=$(cat scripts/source-loc-baseline.txt)
+          actual=$(wc -l < single_include/pmm/pmm.h)
+          echo "Single-header LOC baseline: $baseline, generated: $actual"
+          test "$actual" -le "$baseline"
+          clang-format --dry-run --Werror include/pmm/pmap.h include/pmm/types.h
+          ! git grep -nE '__PRETTY_FUNCTION__|__FUNCSIG__|typeid\(' -- include/pmm/pmap.h
+          bash scripts/check-include-anchor-comments.sh
+          python3 scripts/check-requirements-traceability.py
+          python3 scripts/check-requirements-catalog.py
+          bash scripts/check-docs-consistency.sh
+          git diff --check
+
+      - name: Build identity and compatibility regressions
+        shell: bash
+        run: |
+          cmake -S . -B build -DBUILD_TESTING=ON -DPMM_BUILD_DEMO=OFF -DPMM_BUILD_EXAMPLES=OFF -DPMM_BUILD_BENCHMARKS=OFF
+          cmake --build build --target test_issue329_image_version test_issue153_pmap test_issue404_pmap_relocation test_issue426_pmap_type_identity -j2
+
+      - name: Run identity, pmap and version regressions
+        shell: bash
+        run: |
+          ctest --test-dir build -R '^(test_issue329_image_version|test_issue153_pmap|test_issue404_pmap_relocation|test_issue426_pmap_type_identity)$' --output-on-failure
+
+      - name: Remove one-shot machinery and push canonical result
+        shell: bash
+        run: |
+          rm -f .github/workflows/agent-issue426-typed-handle-identity.yml
+          rm -f .github/agent_issue426_typed_identity.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'feat: make pmap typed-handle identity collision-safe'
+          git push origin HEAD:agent/issue-426-typed-handle-identity
