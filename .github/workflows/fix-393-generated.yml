@@ -1,0 +1,45 @@
+name: One-shot issue 392 fix
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - agent/issue-392-application-node-types
+    paths:
+      - .github/workflows/fix-393-generated.yml
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/issue-392-application-node-types
+          fetch-depth: 0
+      - name: Patch canonical header
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('include/pmm/typed_manager_api.h')
+          text = path.read_text()
+          old = '            BlockState::set_node_type_of( new_raw, old_node_type );'
+          new = '            BlockState::set_node_type_of( detail::block_at<address_traits>( base, new_idx ), old_node_type );'
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'expected exactly one target, found {count}')
+          path.write_text(text.replace(old, new, 1))
+      - name: Regenerate canonical single header
+        run: |
+          python -m pip install quom
+          bash scripts/generate-single-headers.sh
+      - name: Commit clean result and remove helper
+        run: |
+          rm .github/workflows/fix-393-generated.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add include/pmm/typed_manager_api.h single_include/pmm/pmm.h .github/workflows/fix-393-generated.yml
+          git diff --cached --check
+          git commit -m "Fix application NodeType preservation on moved realloc"
+          git push origin HEAD:agent/issue-392-application-node-types
