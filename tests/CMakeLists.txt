@@ -341,3 +341,6 @@ pmm_add_test(test_issue403_embedded_containers test_issue403_embedded_containers
 
 # Issue 404: pmap owners and PMM-backed inputs survive arena relocation
 pmm_add_test(test_issue404_pmap_relocation test_issue404_pmap_relocation.cpp)
+
+# Issue 410: forest registry views survive allocation-driven arena relocation
+pmm_add_test(test_issue410_forest_registry_relocation test_issue410_forest_registry_relocation.cpp)
