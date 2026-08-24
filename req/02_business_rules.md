@@ -93,7 +93,7 @@
   - [fr-011](05_functional_requirements.md#fr-011), [fr-012](05_functional_requirements.md#fr-012), [fr-018](05_functional_requirements.md#fr-018)
   - [dr-009](06_data_requirements.md#dr-009)
   - [pmm-detail-forestdomainregistry](../include/pmm/forest_registry.h#pmm-detail-forestdomainregistry)
-  - [forest_domain_mixin.inc](../include/pmm/forest_domain_mixin.inc)
+  - [pmm-persistmemorymanager](../include/pmm/persist_memory_manager.h#pmm-persistmemorymanager)
 
 ## rule-009
 
