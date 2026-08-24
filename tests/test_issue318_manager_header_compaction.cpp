@@ -91,5 +91,9 @@ TEST_CASE( "issue318: typed API lives in one normal header module", "[issue318][
     REQUIRE( typed_header.find( ".inl" ) == std::string::npos );
     REQUIRE( typed_header.find( ".ipp" ) == std::string::npos );
 
-    REQUIRE( count_lines( manager_header ) < 1250 );
+    // Issue #390 collapsed the forest_domain and verify_repair textual include
+    // shards back into this header, so the compaction budget reflects the
+    // shard-free module. It stays well under the 1500-line hard file-size limit
+    // enforced by CI, preserving the issue #318 "compact single module" intent.
+    REQUIRE( count_lines( manager_header ) < 1400 );
 }
