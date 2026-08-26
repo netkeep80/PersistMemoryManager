@@ -22,9 +22,10 @@ workflow = workflow_path.read_text(encoding="utf-8")
 policy = json.loads(policy_path.read_text(encoding="utf-8"))
 issue_template = issue_template_path.read_text(encoding="utf-8")
 pr_template = pr_template_path.read_text(encoding="utf-8")
-expected_action_ref = "b1b6756639092bbd4ff6a473aeaa637a63475a86"
+expected_action_ref = "629c4af3f741f2514ef06bab90b226a1698499a2"
 expected_action = f"netkeep80/repo-guard@{expected_action_ref}"
 old_action_refs = {
+    "b1b6756639092bbd4ff6a473aeaa637a63475a86",
     "7ab5ca2f2d9859b4ffa2c423f05e951d4971be84",
     "99bf716da62c5d01070aa0d7e4d4f8031b43a351",
     "6c81bb1050c7dca93de1a13108e0a024fe095298",
