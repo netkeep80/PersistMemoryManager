@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [6.8.0] - 2026-08-27
+
+### Fixed
+- Reject `pmap` key/value types that are not trivially-copyable standard-layout raw persistent representations, including raw and member pointers, so unsupported non-trivial C++ object lifetimes cannot enter the current allocation/deallocation path while persistent `pptr` handles remain supported.
+
+
 ## [6.7.0] - 2026-08-27
 
 ### Fixed
