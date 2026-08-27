@@ -4592,7 +4592,7 @@ template <typename C> struct config_logging_policy<C, std::void_t<typename C::lo
 template <typename ConfigT = CacheManagerConfig, size_t InstanceId = 0>
 /*
 ## pmm-persistmemorymanager
-req: feat-001, if-008, con-004, con-005, if-009, con-009, dr-002, dr-008, dr-018, fr-004, fr-007, fr-008, fr-009, fr-010, fr-011, fr-015, fr-021, fr-022, fr-032, qa-compat-001, qa-perf-002, qa-rec-001, qa-rel-002, qa-thread-001, qa-thread-002, rule-006, sys-001, sys-005
+req: feat-001, if-008, con-004, con-005, if-009, con-009, dr-002, dr-008, dr-018, fr-004, fr-007, fr-008, fr-009, fr-010, fr-011, fr-012, fr-015, fr-021, fr-022, fr-032, qa-compat-001, qa-perf-002, qa-rec-001, qa-rel-002, qa-thread-001, qa-thread-002, rule-006, rule-008, sys-001, sys-005
 */
 class PersistMemoryManager : public detail::PersistMemoryTypedApi<PersistMemoryManager<ConfigT, InstanceId>>
 {
@@ -5402,6 +5402,7 @@ static bool register_domain_unlocked( const char* name, uint8_t flags, uint8_t b
 {
     if ( !detail::forest_domain_name_fits( name ) )
         return false;
+    detail::relocation_owner<const char, manager_type> name_owner( name );
     forest_registry* reg = forest_registry_root_unlocked();
     if ( reg == nullptr )
         return false;
@@ -5414,7 +5415,8 @@ static bool register_domain_unlocked( const char* name, uint8_t flags, uint8_t b
         if ( existing->symbol_offset == 0 )
         {
             pptr<pstringview> symbol = intern_symbol_unlocked( name );
-            existing                 = find_domain_by_name_unlocked( name );
+            name                     = name_owner.get();
+            existing                 = name != nullptr ? find_domain_by_name_unlocked( name ) : nullptr;
             if ( existing != nullptr && !symbol.is_null() )
                 existing->symbol_offset = symbol.offset();
         }
@@ -5446,6 +5448,7 @@ static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
 {
     if ( s == nullptr )
         s = "";
+    detail::relocation_owner<const char, manager_type> source( s );
     auto symbol_policy = pstringview::forest_domain_ops();
     if ( symbol_policy.root_index_ptr() == nullptr )
         return pptr<pstringview>();
@@ -5457,6 +5460,12 @@ static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
     void*    raw        = allocate_unlocked( alloc_size );
     if ( raw == nullptr )
         return pptr<pstringview>();
+    s = source.get();
+    if ( s == nullptr )
+    {
+        deallocate_unlocked( raw );
+        return pptr<pstringview>();
+    }
     pptr<pstringview> new_node   = make_pptr_from_raw<pstringview>( raw );
     void*             public_raw = raw_user_ptr_from_pptr( new_node );
     if ( public_raw == nullptr )
@@ -5488,16 +5497,22 @@ static bool bootstrap_system_symbols_unlocked() noexcept
     forest_registry* reg = forest_registry_root_unlocked();
     if ( reg == nullptr )
         return false;
-    for ( uint16_t i = 0; i < reg->domain_count; ++i )
+    const uint16_t domain_count = reg->domain_count;
+    for ( uint16_t i = 0; i < domain_count; ++i )
     {
-        if ( reg->domains[i].name[0] == '\0' )
+        reg = forest_registry_root_unlocked();
+        if ( reg == nullptr || i >= reg->domain_count )
+            return false;
+        if ( reg->domains[i].name[0] == '\0' || reg->domains[i].symbol_offset != 0 )
             continue;
-        if ( reg->domains[i].symbol_offset != 0 )
-            continue;
+        const index_type binding_id = reg->domains[i].binding_id;
         pptr<pstringview> symbol = intern_symbol_unlocked( reg->domains[i].name );
         if ( symbol.is_null() )
             return false;
-        reg->domains[i].symbol_offset = symbol.offset();
+        forest_domain* rec = find_domain_by_binding_unlocked( binding_id );
+        if ( rec == nullptr )
+            return false;
+        rec->symbol_offset = symbol.offset();
     }
     return true;
 }
@@ -5533,30 +5548,14 @@ static bool bootstrap_forest_registry_unlocked() noexcept
     get_header( _backend.base_ptr() )->root_offset =
         detail::ptr_to_granule_idx<address_traits>( _backend.base_ptr(), reg );
     if ( !register_domain_unlocked( detail::kSystemDomainFreeTree, detail::kForestDomainFlagSystem,
-                                    detail::kForestBindingFreeTree, 0 ) )
-    {
-        _last_error = PmmError::BackendError;
-        return false;
-    }
-    if ( !register_domain_unlocked( detail::kSystemDomainSymbols, detail::kForestDomainFlagSystem,
-                                    detail::kForestBindingDirectRoot, 0 ) )
-    {
-        _last_error = PmmError::BackendError;
-        return false;
-    }
-    if ( !register_domain_unlocked( detail::kSystemDomainRegistry, detail::kForestDomainFlagSystem,
-                                    detail::kForestBindingDirectRoot, get_header( _backend.base_ptr() )->root_offset ) )
-    {
-        _last_error = PmmError::BackendError;
-        return false;
-    }
-    if ( !register_domain_unlocked( detail::kServiceNameDomainRoot, detail::kForestDomainFlagSystem,
-                                    detail::kForestBindingDirectRoot, 0 ) )
-    {
-        _last_error = PmmError::BackendError;
-        return false;
-    }
-    if ( !bootstrap_system_symbols_unlocked() )
+                                     detail::kForestBindingFreeTree, 0 ) ||
+         !register_domain_unlocked( detail::kSystemDomainSymbols, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, 0 ) ||
+         !register_domain_unlocked( detail::kSystemDomainRegistry, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, get_header( _backend.base_ptr() )->root_offset ) ||
+         !register_domain_unlocked( detail::kServiceNameDomainRoot, detail::kForestDomainFlagSystem,
+                                    detail::kForestBindingDirectRoot, 0 ) ||
+         !bootstrap_system_symbols_unlocked() )
     {
         _last_error = PmmError::BackendError;
         return false;
@@ -5571,33 +5570,20 @@ static bool validate_bootstrap_invariants_unlocked() noexcept
     if ( base == nullptr )
         return false;
     const auto* hdr = get_header_c( base );
-    if ( hdr->magic != kMagic )
-        return false;
-    if ( hdr->image_version != detail::kCurrentImageVersion )
-        return false;
-    if ( hdr->total_size != _backend.total_size() )
-        return false;
-    if ( hdr->granule_size != static_cast<uint16_t>( address_traits::granule_size ) )
+    if ( hdr->magic != kMagic || hdr->image_version != detail::kCurrentImageVersion ||
+         hdr->total_size != _backend.total_size() ||
+         hdr->granule_size != static_cast<uint16_t>( address_traits::granule_size ) )
         return false;
     const forest_registry* reg = forest_registry_root_unlocked();
-    if ( reg == nullptr )
-        return false;
-    if ( reg->magic != detail::kForestRegistryMagic )
-        return false;
-    if ( reg->version != detail::kForestRegistryVersion )
-        return false;
-    if ( reg->domain_count < 4 )
+    if ( reg == nullptr || reg->magic != detail::kForestRegistryMagic ||
+         reg->version != detail::kForestRegistryVersion || reg->domain_count < 4 )
         return false;
     static constexpr const char* kRequired[] = { detail::kSystemDomainFreeTree, detail::kSystemDomainSymbols,
                                                  detail::kSystemDomainRegistry, detail::kServiceNameDomainRoot };
     for ( const char* name : kRequired )
     {
         const forest_domain* rec = find_domain_by_name_unlocked( name );
-        if ( rec == nullptr )
-            return false;
-        if ( ( rec->flags & detail::kForestDomainFlagSystem ) == 0 )
-            return false;
-        if ( rec->symbol_offset == 0 )
+        if ( rec == nullptr || ( rec->flags & detail::kForestDomainFlagSystem ) == 0 || rec->symbol_offset == 0 )
             return false;
     }
     const forest_domain* free_rec = find_domain_by_name_unlocked( detail::kSystemDomainFreeTree );
@@ -5616,6 +5602,7 @@ static bool validate_bootstrap_invariants_unlocked() noexcept
 static bool validate_or_bootstrap_forest_registry_unlocked() noexcept
 {
     detail::ManagerHeader<address_traits>* hdr = get_header( _backend.base_ptr() );
+    const index_type registry_root = hdr->root_offset;
     if ( forest_registry_root_unlocked() != nullptr )
     {
         if ( !register_domain_unlocked( detail::kSystemDomainFreeTree, detail::kForestDomainFlagSystem,
@@ -5626,7 +5613,7 @@ static bool validate_or_bootstrap_forest_registry_unlocked() noexcept
                                         pstringview::forest_domain_ops().root_index() ) )
             return false;
         if ( !register_domain_unlocked( detail::kSystemDomainRegistry, detail::kForestDomainFlagSystem,
-                                        detail::kForestBindingDirectRoot, hdr->root_offset ) )
+                                        detail::kForestBindingDirectRoot, registry_root ) )
             return false;
         if ( !register_domain_unlocked( detail::kServiceNameDomainRoot, detail::kForestDomainFlagSystem,
                                         detail::kForestBindingDirectRoot, 0 ) )
@@ -5750,7 +5737,6 @@ static const char* pstringview_c_str_unlocked( pptr<pstringview> p ) noexcept
         return nullptr;
     return static_cast<const char*>( raw ) + offsetof( pstringview, str );
 }
-
 static void verify_image_unlocked( VerifyResult& result ) noexcept
 {
     result.mode                                       = RecoveryMode::Verify;
