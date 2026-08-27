@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [6.7.0] - 2026-08-27
+
+### Fixed
+- Remove the legacy forest-domain source shard and make canonical registry/symbol recovery rebase arena-backed names and reacquire registry/header views across allocation-driven arena relocation, while preserving bidirectional source-anchor/requirements traceability and existing manager/single-header LOC budgets; regenerate the committed single header and add focused relocation, compaction, and anchor regressions without a replacement shard.
+
+
 ## [6.6.1] - 2026-08-26
 
 ### Fixed
