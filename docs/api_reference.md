@@ -690,11 +690,33 @@ allocated block in PAP containing a key-value pair. The built-in AVL slot of the
 `left_offset`, `right_offset`, `parent_offset`, `avl_height`) serves as the AVL tree links
 (no separate node allocations). Inserting a duplicate key updates the existing value.
 
+`pmap` stores `_K` and `_V` bytes directly in PMM-managed relocatable persistent storage;
+it is not a general owning C++ container for arbitrary host objects. The executable gate is
+`pmm::detail::pmap_storage_type<T>` / `pmap_storage_type_v<T>`. By default it accepts only
+trivially copyable, standard-layout fixed-size representations and explicitly rejects raw
+and member pointers; PMM may specialize the trait to reject representations that cannot be
+copied by value safely. Raw host pointers, owning STL containers, virtual/polymorphic
+objects, and types whose validity depends on process-local addresses are not valid direct
+persistent key/value representations.
+
+A deliberate exception is `pstringview`: after its transient constructor state was removed,
+the C++ header type is standard-layout and trivially copyable, but the persisted string is a
+variable-length header+tail representation. Copying `pstringview` by value copies only the
+fixed C++ object and not its persistent tail, so `pmap_storage_type_v<pstringview<ManagerT>>`
+is explicitly false. Store `pptr<pstringview>` instead. Persistent handles such as `pptr<T>`
+are the intended fixed-size representation for referring to richer or variable-length
+persistent objects.
+
+The storage/lifetime trait is not a recursive proof of semantic or address-independent type
+identity. Collision-safe persisted identity for typed handles is a separate #426/#433
+contract; satisfying the storage trait alone does not make two typed handles semantically
+distinct.
+
 [pmap](../include/pmm/pmap.h#pmm-pmap) is a typed facade over the canonical forest-domain protocol. Its AVL root is stored
 in a manager domain binding under `container/pmap/<type>/<binding>`, not in the [pmap](../include/pmm/pmap.h#pmm-pmap)
 object. The object stores only the domain identity, so separate map objects and different
 `_K`/`_V` node layouts do not share a root unless they are copied from the same facade or
-constructed with the same named domain key.
+bound to the same named domain key.
 
 The `<type>` segment is a deterministic fingerprint derived from `sizeof`, `alignof`, and
 standard `<type_traits>` categories — **not** from compiler-specific spellings such as
@@ -717,20 +739,31 @@ Mgr::pmap<int, int> map;
 map.insert(42, 100);
 ```
 
-**Key type requirements:** `_K` must support `operator<` and `operator==`.
+**Key type requirements:** `_K` must satisfy the persistent storage requirement above and
+support `operator<` and `operator==`. `_V` must satisfy the same persistent storage
+requirement.
 
 ### Root binding
 
 ```cpp
 const char* domain_name() const noexcept; // actual registry domain name; empty until bound
 index_type root_index() const noexcept;   // current domain root; 0 = empty map
+bool bind_domain(const char* domain_key) noexcept; // stable named domain; one-time binding
 ```
 
-### Constructors
+### Constructor
 
 ```cpp
-pmap() noexcept;                          // generates an independent domain on first mutable access
-explicit pmap(const char* domain_key) noexcept; // stable named domain when ManagerT is initialized
+pmap() noexcept; // unbound facade; first mutable access may generate an independent domain
+```
+
+Use `bind_domain()` after default construction when a stable named domain is required:
+
+```cpp
+Mgr::pmap<int, int> map;
+if (!map.bind_domain("users")) {
+    // binding failed or map was already bound
+}
 ```
 
 ### Methods
@@ -808,20 +841,24 @@ assert(map.empty());
 Mgr::destroy();
 ```
 
-**Using [pstringview](../include/pmm/pstringview.h#pmm-pstringview) as a key:**
+**Using a persistent `pstringview` handle as a key:**
 ```cpp
 using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig>;
 Mgr::create(64 * 1024);
 
-Mgr::pmap<Mgr::pstringview, int> dict;
-Mgr::pptr<Mgr::pstringview> key = Mgr::pstringview("hello");
-dict.insert(*key, 42);
+using Key = Mgr::pptr<Mgr::pstringview>;
+Mgr::pmap<Key, int> dict;
+Key key = Mgr::pstringview("hello");
+dict.insert(key, 42);
 
-auto p = dict.find(*key);
+auto p = dict.find(key);
 assert(!p.is_null() && p->value == 42);
 
 Mgr::destroy();
 ```
+
+By-value `Mgr::pstringview` is intentionally rejected by the pmap storage trait; use the
+fixed-size `pptr<pstringview>` handle as shown above.
 
 ---
 
@@ -976,10 +1013,10 @@ struct FreeBlockView {
 | `CacheManagerConfig` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | 25% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Single-threaded cache |
 | `PersistentDataConfig` | [SharedMutexLock](../include/pmm/config.h#pmm-config-sharedmutexlock) | 25% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Multi-threaded persistent storage |
 | `EmbeddedManagerConfig` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | 50% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Embedded systems |
-| `IndustrialDBConfig` | [SharedMutexLock](../include/pmm/config.h#pmm-config-sharedmutexlock) | 100% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Industrial databases |
+| `IndustrialDBConfig` | [SharedMutexLock](../include/pmm/config.h#pmm-config-nolock) | 100% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Industrial databases |
 | `EmbeddedStaticConfig<N>` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | — | [StaticStorage](../include/pmm/static_storage.h#pmm-staticstorage) | 32-bit | Embedded without heap, fixed pool |
-| `SmallEmbeddedStaticConfig<N>` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | — | [StaticStorage](../include/pmm/static_storage.h#pmm-staticstorage) | 16-bit | Tiny embedded, up to ~1 MB |
-| `LargeDBConfig` | [SharedMutexLock](../include/pmm/config.h#pmm-config-sharedmutexlock) | 100% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 64-bit | Petabyte-scale databases |
+| `SmallEmbeddedStaticConfig<N>` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | — | 16-bit | Tiny embedded, up to ~1 MB |
+| `LargeDBHeap` | [SharedMutexLock](../include/pmm/config.h#pmm-sharedmutexlock) | 100% | 64-bit | Petabyte-scale databases |
 
 ---
 
