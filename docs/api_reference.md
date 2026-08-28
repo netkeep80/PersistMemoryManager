@@ -1013,10 +1013,10 @@ struct FreeBlockView {
 | `CacheManagerConfig` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | 25% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Single-threaded cache |
 | `PersistentDataConfig` | [SharedMutexLock](../include/pmm/config.h#pmm-config-sharedmutexlock) | 25% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Multi-threaded persistent storage |
 | `EmbeddedManagerConfig` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | 50% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Embedded systems |
-| `IndustrialDBConfig` | [SharedMutexLock](../include/pmm/config.h#pmm-config-nolock) | 100% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Industrial databases |
+| `IndustrialDBConfig` | [SharedMutexLock](../include/pmm/config.h#pmm-config-sharedmutexlock) | 100% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 32-bit | Industrial databases |
 | `EmbeddedStaticConfig<N>` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | — | [StaticStorage](../include/pmm/static_storage.h#pmm-staticstorage) | 32-bit | Embedded without heap, fixed pool |
-| `SmallEmbeddedStaticConfig<N>` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | — | 16-bit | Tiny embedded, up to ~1 MB |
-| `LargeDBHeap` | [SharedMutexLock](../include/pmm/config.h#pmm-sharedmutexlock) | 100% | 64-bit | Petabyte-scale databases |
+| `SmallEmbeddedStaticConfig<N>` | [NoLock](../include/pmm/config.h#pmm-config-nolock) | — | [StaticStorage](../include/pmm/static_storage.h#pmm-staticstorage) | 16-bit | Tiny embedded, up to ~1 MB |
+| `LargeDBConfig` | [SharedMutexLock](../include/pmm/config.h#pmm-config-sharedmutexlock) | 100% | [HeapStorage](../include/pmm/heap_storage.h#pmm-heapstorage) | 64-bit | Petabyte-scale databases |
 
 ---
 
