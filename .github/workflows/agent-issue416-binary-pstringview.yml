@@ -3,7 +3,7 @@ name: Agent issue416 binary pstringview
 on:
   pull_request:
     branches:
-      - agent/issue-410-inline-forest-domain-v3
+      - main
     types:
       - opened
       - synchronize
@@ -29,7 +29,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-format
-          files=$(git diff --name-only origin/agent/issue-410-inline-forest-domain-v3 -- 'tests/*.cpp')
+          files=$(git diff --name-only origin/main -- 'tests/*.cpp')
           if [ -n "$files" ]; then
             clang-format -i $files
           fi
