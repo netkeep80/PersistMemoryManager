@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- changelog-insert-here -->
 
+## [6.8.0] - 2026-08-27
+
+### Fixed
+- Reject `pmap` key/value types that are not trivially-copyable standard-layout raw persistent representations, including raw and member pointers, so unsupported non-trivial C++ object lifetimes cannot enter the current allocation/deallocation path while persistent `pptr` handles remain supported.
+
+
+## [6.7.0] - 2026-08-27
+
+### Fixed
+- Remove the legacy forest-domain source shard and make canonical registry/symbol recovery rebase arena-backed names and reacquire registry/header views across allocation-driven arena relocation, while preserving bidirectional source-anchor/requirements traceability and existing manager/single-header LOC budgets; regenerate the committed single header and add focused relocation, compaction, and anchor regressions without a replacement shard.
+
+
+## [6.6.1] - 2026-08-26
+
+### Fixed
+- Pin PMM's blocking repo-guard check to the immutable revision that evaluates long-lived pull requests against the current trusted base branch head rather than a stale PR base snapshot, while preserving blocking enforcement, read-only workflow permissions, and the executable rollout invariant that rejects the superseded pin.
+
+
 ## [6.6.0] - 2026-08-08
 
 ### Fixed
