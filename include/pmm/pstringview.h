@@ -16,16 +16,6 @@ template <typename ManagerT> struct pstringview
 {
   private:
     static std::string_view c_view( const char* s ) noexcept { return s ? std::string_view( s ) : std::string_view(); }
-    static int compare_views( std::string_view lhs, std::string_view rhs ) noexcept
-    {
-        const size_t common = lhs.size() < rhs.size() ? lhs.size() : rhs.size();
-        const int    prefix = common != 0 ? std::memcmp( lhs.data(), rhs.data(), common ) : 0;
-        if ( prefix != 0 )
-            return prefix;
-        if ( lhs.size() == rhs.size() )
-            return 0;
-        return lhs.size() < rhs.size() ? -1 : 1;
-    }
 
   public:
     using manager_type = ManagerT;
@@ -52,14 +42,14 @@ template <typename ManagerT> struct pstringview
         static int compare_key( std::string_view key, node_pptr cur ) noexcept
         {
             node_type* obj = resolve_node( cur );
-            return obj != nullptr ? compare_views( key, obj->view() ) : 0;
+            return obj != nullptr ? key.compare( obj->view() ) : 0;
         }
         static int compare_key( const char* key, node_pptr cur ) noexcept { return compare_key( c_view( key ), cur ); }
         static bool less_node( node_pptr lhs, node_pptr rhs ) noexcept
         {
             node_type* lhs_obj = resolve_node( lhs );
             node_type* rhs_obj = resolve_node( rhs );
-            return lhs_obj != nullptr && rhs_obj != nullptr && compare_views( lhs_obj->view(), rhs_obj->view() ) < 0;
+            return lhs_obj != nullptr && rhs_obj != nullptr && lhs_obj->view().compare( rhs_obj->view() ) < 0;
         }
         static bool validate_node( node_pptr p ) noexcept { return resolve_node( p ) != nullptr; }
     };
@@ -81,7 +71,7 @@ template <typename ManagerT> struct pstringview
     bool operator!=( std::string_view s ) const noexcept { return !( *this == s ); }
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
     bool operator!=( const pstringview& other ) const noexcept { return !( *this == other ); }
-    bool operator<( const pstringview& other ) const noexcept { return compare_views( view(), other.view() ) < 0; }
+    bool operator<( const pstringview& other ) const noexcept { return view().compare( other.view() ) < 0; }
 /*
 ### pmm-pstringview-intern
 */
