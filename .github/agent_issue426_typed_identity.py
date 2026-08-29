@@ -70,7 +70,6 @@ inline uint64_t pmap_key_hash( const char* key ) noexcept
     return h;
 }''',
     '''template <typename T> inline constexpr bool pmap_storage_type_v = pmap_storage_type<T>::value;
-// clang-format off
 template <typename T> inline constexpr const char* pmap_pptr_tag_v = nullptr;
 template <typename Pointee, typename ManagerT> inline constexpr const char* pmap_pptr_tag_v<pptr<Pointee, ManagerT>> = pmap_type_identity<Pointee>::tag;
 template <typename T> inline constexpr bool pmap_has_stable_identity_v = pmap_pptr_tag_v<T> == nullptr || pmap_pptr_tag_v<T>[0] != '\\0';
@@ -83,8 +82,7 @@ template <typename T> constexpr uint32_t pmap_type_fp() noexcept {
     for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\\0'; ++t ) h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
     return h;
 }
-inline uint64_t pmap_key_hash( const char* key ) noexcept { uint64_t h = 14695981039346656037ull; for ( ; key != nullptr && *key != '\\0'; ++key ) h = ( h ^ static_cast<uint8_t>( *key ) ) * 1099511628211ull; return h; }
-// clang-format on''',
+inline uint64_t pmap_key_hash( const char* key ) noexcept { uint64_t h = 14695981039346656037ull; for ( ; key != nullptr && *key != '\\0'; ++key ) h = ( h ^ static_cast<uint8_t>( *key ) ) * 1099511628211ull; return h; }''',
     "identity/hash replacement",
 )
 
