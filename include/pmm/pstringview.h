@@ -64,7 +64,7 @@ template <typename ManagerT> struct pstringview
     std::string_view view() const noexcept { return std::string_view( str, size() ); }
     bool             operator==( std::string_view s ) const noexcept { return view() == s; }
     bool             operator==( const char* s ) const noexcept { return view() == c_view( s ); }
-    bool             operator==( const pstringview& other ) const noexcept { return this == &other || view() == other.view(); }
+    bool             operator==( const pstringview& other ) const noexcept { return view() == other.view(); }
     bool operator!=( std::string_view s ) const noexcept { return !( *this == s ); }
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
     bool operator!=( const pstringview& other ) const noexcept { return !( *this == other ); }
