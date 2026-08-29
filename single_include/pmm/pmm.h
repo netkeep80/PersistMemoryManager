@@ -1043,7 +1043,7 @@ struct FreeBlockView
 namespace detail
 {
 inline constexpr uint8_t kLegacyUnversionedImageVersion = 0;
-inline constexpr uint8_t kCurrentImageVersion           = 2;
+inline constexpr uint8_t kCurrentImageVersion           = 3;
 inline constexpr bool    is_supported_image_version( uint8_t image_version ) noexcept
 {
     return image_version == kCurrentImageVersion;
@@ -3644,6 +3644,7 @@ template <typename T> struct pmap_type_identity
 {
     static constexpr const char* tag = "";
 };
+template <typename ManagerT> struct pmap_type_identity<pstringview<ManagerT>> { static constexpr const char* tag = "pmm/pstringview/v1"; };
 template <typename _K, typename _V> struct pmap_node
 {
     _K key;
@@ -3658,17 +3659,28 @@ struct pmap_storage_type : std::bool_constant<std::is_trivially_copyable_v<T> &&
 template <typename ManagerT> struct pmap_storage_type<pstringview<ManagerT>> : std::false_type
 {};
 template <typename T> inline constexpr bool pmap_storage_type_v = pmap_storage_type<T>::value;
-constexpr uint32_t pmap_fnv1a( uint32_t h, uint64_t v, unsigned bytes ) noexcept
+template <typename T> inline constexpr const char* pmap_pptr_tag_v     = nullptr;
+template <typename Pointee, typename ManagerT>
+inline constexpr const char* pmap_pptr_tag_v<pptr<Pointee, ManagerT>> = pmap_type_identity<Pointee>::tag;
+template <typename T>
+inline constexpr bool pmap_has_stable_identity_v = pmap_pptr_tag_v<T> == nullptr || pmap_pptr_tag_v<T>[0] != '\0';
+constexpr uint32_t    pmap_fnv1a( uint32_t h, uint64_t v, unsigned bytes ) noexcept
 {
     for ( unsigned i = 0; i < bytes; ++i, v >>= 8 )
-    {
-        h ^= static_cast<uint8_t>( v & 0xffull );
-        h *= 16777619u;
-    }
+        h = ( h ^ static_cast<uint8_t>( v & 0xffull ) ) * 16777619u;
     return h;
 }
 template <typename T> constexpr uint32_t pmap_type_fp() noexcept
 {
+    constexpr const char* tag = pmap_pptr_tag_v<T>;
+    if constexpr ( tag != nullptr )
+    {
+        static_assert( pmap_has_stable_identity_v<T>, "pmap typed handle requires stable pointee identity" );
+        uint32_t h = 0x749ed278u;
+        for ( const char* t = tag; *t != '\0'; ++t )
+            h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
+        return h;
+    }
     const uint64_t traits =
         ( uint64_t{ std::is_integral_v<T> } << 0 ) | ( uint64_t{ std::is_floating_point_v<T> } << 1 ) |
         ( uint64_t{ std::is_signed_v<T> } << 2 ) | ( uint64_t{ std::is_unsigned_v<T> } << 3 ) |
@@ -3687,29 +3699,21 @@ inline uint64_t pmap_key_hash( const char* key ) noexcept
 {
     uint64_t h = 14695981039346656037ull;
     for ( ; key != nullptr && *key != '\0'; ++key )
-    {
-        h ^= static_cast<uint8_t>( *key );
-        h *= 1099511628211ull;
-    }
+        h = ( h ^ static_cast<uint8_t>( *key ) ) * 1099511628211ull;
     return h;
 }
 inline bool pmap_write_name( char ( &out )[kForestDomainNameCapacity], uint32_t type_fp, char kind, uint64_t value,
                              unsigned value_hex_digits ) noexcept
 {
-    constexpr const char* kPrefix = "container/pmap/";
-    const unsigned        needed  = 15 + 8 + 1 + 1 + value_hex_digits + 1;
-    if ( needed > kForestDomainNameCapacity )
+    if ( 15 + 8 + 1 + 1 + value_hex_digits + 1 > kForestDomainNameCapacity )
         return false;
     size_t p = 0;
-    for ( const char* s = kPrefix; *s != '\0'; ++s )
+    for ( const char* s = "container/pmap/"; *s != '\0'; ++s )
         out[p++] = *s;
     auto put_hex = [&]( uint64_t v, unsigned digits )
     {
         for ( unsigned i = digits; i-- > 0; )
-        {
-            const uint8_t nib = static_cast<uint8_t>( ( v >> ( i * 4 ) ) & 0x0full );
-            out[p++]          = static_cast<char>( nib < 10 ? ( '0' + nib ) : ( 'a' + ( nib - 10 ) ) );
-        }
+            out[p++] = "0123456789abcdef"[( v >> ( i * 4 ) ) & 0x0full];
     };
     put_hex( type_fp, 8 );
     out[p++] = '/';
