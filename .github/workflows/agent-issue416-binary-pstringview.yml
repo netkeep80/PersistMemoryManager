@@ -24,7 +24,7 @@ jobs:
       - name: Apply binary interning and migrate consumers
         run: python .github/agent_issue416_binary_pstringview.py
 
-      - name: Format changed tests only
+      - name: Format changed sources
         shell: bash
         run: |
           sudo apt-get update
@@ -33,6 +33,7 @@ jobs:
           if [ -n "$files" ]; then
             clang-format -i $files
           fi
+          clang-format -i include/pmm/pstringview.h include/pmm/persist_memory_manager.h
 
       - name: Regenerate canonical single header
         shell: bash
