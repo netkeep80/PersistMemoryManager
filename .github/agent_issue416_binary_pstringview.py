@@ -88,10 +88,6 @@ new = r'''static pptr<pstringview> intern_symbol_unlocked( std::string_view s ) 
         return pptr<pstringview>();
     symbol_policy.insert( new_node );
     return new_node;
-}
-static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
-{
-    return intern_symbol_unlocked( s != nullptr ? std::string_view( s ) : std::string_view{} );
 }'''
 
 if manager.count(old) != 1:
