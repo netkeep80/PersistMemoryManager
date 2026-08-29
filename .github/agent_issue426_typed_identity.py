@@ -24,10 +24,7 @@ pmap = replace_once(
 {
     static constexpr const char* tag = "";
 };
-template <typename ManagerT> struct pmap_type_identity<pstringview<ManagerT>>
-{
-    static constexpr const char* tag = "pmm/pstringview/v1";
-};''',
+template <typename ManagerT> struct pmap_type_identity<pstringview<ManagerT>> { static constexpr const char* tag = "pmm/pstringview/v1"; };''',
     "pstringview stable tag insertion point",
 )
 
@@ -55,14 +52,14 @@ template <typename T> constexpr uint32_t pmap_type_fp() noexcept
     h          = pmap_fnv1a( h, sizeof( T ), 8 );
     h          = pmap_fnv1a( h, alignof( T ), 8 );
     h          = pmap_fnv1a( h, traits, 8 );
-    for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\\0'; ++t )
+    for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\0'; ++t )
         h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
     return h;
 }
 inline uint64_t pmap_key_hash( const char* key ) noexcept
 {
     uint64_t h = 14695981039346656037ull;
-    for ( ; key != nullptr && *key != '\\0'; ++key )
+    for ( ; key != nullptr && *key != '\0'; ++key )
     {
         h ^= static_cast<uint8_t>( *key );
         h *= 1099511628211ull;
@@ -72,17 +69,17 @@ inline uint64_t pmap_key_hash( const char* key ) noexcept
     '''template <typename T> inline constexpr bool pmap_storage_type_v = pmap_storage_type<T>::value;
 template <typename T> inline constexpr const char* pmap_pptr_tag_v = nullptr;
 template <typename Pointee, typename ManagerT> inline constexpr const char* pmap_pptr_tag_v<pptr<Pointee, ManagerT>> = pmap_type_identity<Pointee>::tag;
-template <typename T> inline constexpr bool pmap_has_stable_identity_v = pmap_pptr_tag_v<T> == nullptr || pmap_pptr_tag_v<T>[0] != '\\0';
+template <typename T> inline constexpr bool pmap_has_stable_identity_v = pmap_pptr_tag_v<T> == nullptr || pmap_pptr_tag_v<T>[0] != '\0';
 constexpr uint32_t pmap_fnv1a( uint32_t h, uint64_t v, unsigned bytes ) noexcept { for ( unsigned i = 0; i < bytes; ++i, v >>= 8 ) h = ( h ^ static_cast<uint8_t>( v & 0xffull ) ) * 16777619u; return h; }
 template <typename T> constexpr uint32_t pmap_type_fp() noexcept {
     constexpr const char* tag = pmap_pptr_tag_v<T>;
-    if constexpr ( tag != nullptr ) { static_assert( pmap_has_stable_identity_v<T>, "pmap typed handle requires stable pointee identity" ); uint32_t h = 0x749ed278u; for ( const char* t = tag; *t != '\\0'; ++t ) h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 ); return h; }
+    if constexpr ( tag != nullptr ) { static_assert( pmap_has_stable_identity_v<T>, "pmap typed handle requires stable pointee identity" ); uint32_t h = 0x749ed278u; for ( const char* t = tag; *t != '\0'; ++t ) h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 ); return h; }
     const uint64_t traits = ( uint64_t{ std::is_integral_v<T> } << 0 ) | ( uint64_t{ std::is_floating_point_v<T> } << 1 ) | ( uint64_t{ std::is_signed_v<T> } << 2 ) | ( uint64_t{ std::is_unsigned_v<T> } << 3 ) | ( uint64_t{ std::is_pointer_v<T> } << 4 ) | ( uint64_t{ std::is_class_v<T> } << 5 ) | ( uint64_t{ std::is_enum_v<T> } << 6 ) | ( uint64_t{ std::is_trivially_copyable_v<T> } << 7 ) | ( uint64_t{ std::is_standard_layout_v<T> } << 8 );
     uint32_t h = 2166136261u; h = pmap_fnv1a( h, sizeof( T ), 8 ); h = pmap_fnv1a( h, alignof( T ), 8 ); h = pmap_fnv1a( h, traits, 8 );
-    for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\\0'; ++t ) h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
+    for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\0'; ++t ) h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
     return h;
 }
-inline uint64_t pmap_key_hash( const char* key ) noexcept { uint64_t h = 14695981039346656037ull; for ( ; key != nullptr && *key != '\\0'; ++key ) h = ( h ^ static_cast<uint8_t>( *key ) ) * 1099511628211ull; return h; }''',
+inline uint64_t pmap_key_hash( const char* key ) noexcept { uint64_t h = 14695981039346656037ull; for ( ; key != nullptr && *key != '\0'; ++key ) h = ( h ^ static_cast<uint8_t>( *key ) ) * 1099511628211ull; return h; }''',
     "identity/hash replacement",
 )
 
@@ -93,7 +90,7 @@ pmap = replace_once(
     if ( needed > kForestDomainNameCapacity )
         return false;
     size_t p = 0;
-    for ( const char* s = kPrefix; *s != '\\0'; ++s )
+    for ( const char* s = kPrefix; *s != '\0'; ++s )
         out[p++] = *s;
     auto put_hex = [&]( uint64_t v, unsigned digits )
     {
@@ -106,7 +103,7 @@ pmap = replace_once(
     '''    if ( 15 + 8 + 1 + 1 + value_hex_digits + 1 > kForestDomainNameCapacity )
         return false;
     size_t p = 0;
-    for ( const char* s = "container/pmap/"; *s != '\\0'; ++s )
+    for ( const char* s = "container/pmap/"; *s != '\0'; ++s )
         out[p++] = *s;
     auto put_hex = [&]( uint64_t v, unsigned digits )
     {
