@@ -22,7 +22,21 @@ jobs:
           fetch-depth: 0
 
       - name: Apply typed-handle identity and image-v3 migration
-        run: python .github/agent_issue426_typed_identity.py
+        id: apply
+        shell: bash
+        run: |
+          set -o pipefail
+          python .github/agent_issue426_typed_identity.py 2>&1 | tee .github/issue426-apply-diagnostic.txt
+
+      - name: Persist apply diagnostic on failure
+        if: failure() && steps.apply.outcome == 'failure'
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/issue426-apply-diagnostic.txt
+          git commit -m 'ci: record issue426 apply diagnostic'
+          git push origin HEAD:agent/issue-426-typed-handle-identity
 
       - name: Format changed product and tests
         shell: bash
@@ -93,6 +107,7 @@ jobs:
           rm -f .github/workflows/agent-issue426-typed-handle-identity.yml
           rm -f .github/agent_issue426_typed_identity.py
           rm -f .github/issue426-loc-diagnostic.txt
+          rm -f .github/issue426-apply-diagnostic.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
