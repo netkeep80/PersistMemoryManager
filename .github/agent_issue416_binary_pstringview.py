@@ -104,6 +104,7 @@ cmake_path.write_text(
 )
 
 constructor = re.compile(r"(\b[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*::pstringview)\s*\(")
+alias_decl = re.compile(r"\busing\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*[^;\n]*\bpstringview\s*<[^;\n]+>\s*;")
 roots = [Path("tests"), Path("examples"), Path("demo"), Path("benchmarks")]
 replaced = 0
 remaining = []
@@ -114,18 +115,28 @@ for root in roots:
         if path.suffix not in {".cpp", ".h", ".hpp"}:
             continue
         text = path.read_text()
+        aliases = alias_decl.findall(text)
         updated, count = constructor.subn(r"\1::intern(", text)
-        if count:
+        replaced += count
+        for alias in aliases:
+            alias_constructor = re.compile(rf"\b{re.escape(alias)}\s*\(")
+            updated, alias_count = alias_constructor.subn(f"{alias}::intern(", updated)
+            replaced += alias_count
+        if updated != text:
             path.write_text(updated)
-            replaced += count
 for root in roots:
     if not root.exists():
         continue
     for path in root.rglob("*"):
         if path.suffix not in {".cpp", ".h", ".hpp"}:
             continue
-        for match in constructor.finditer(path.read_text()):
+        text = path.read_text()
+        for match in constructor.finditer(text):
             remaining.append(f"{path}:{match.group(0)}")
+        for alias in alias_decl.findall(text):
+            alias_constructor = re.compile(rf"\b{re.escape(alias)}\s*\(")
+            for match in alias_constructor.finditer(text):
+                remaining.append(f"{path}:{match.group(0)}")
 if replaced == 0:
     raise SystemExit("no legacy pstringview constructor consumers were migrated")
 if remaining:
