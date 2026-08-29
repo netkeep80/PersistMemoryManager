@@ -100,7 +100,7 @@ TEST_CASE( "I312: SmallAddressTraits interned symbols use canonical public pptrs
     auto domain_id = SmallMgr::find_domain_by_name( "app/issue312" );
     REQUIRE( domain_id != 0 );
 
-    SmallMgr::pptr<SmallMgr::pstringview> symbol = SmallMgr::pstringview( "app/issue312" );
+    SmallMgr::pptr<SmallMgr::pstringview> symbol = SmallMgr::pstringview::intern( "app/issue312" );
     REQUIRE( !symbol.is_null() );
     REQUIRE( SmallMgr::resolve_checked( symbol ) != nullptr );
     REQUIRE( symbol->c_str() == std::string( "app/issue312" ) );

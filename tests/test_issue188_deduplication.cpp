@@ -69,13 +69,13 @@ TEST_CASE( "pstringview_no_regression", "[test_issue188_deduplication]" )
     Mgr::create( 64 * 1024 );
     Str::reset();
 
-    Mgr::pptr<Str> p1 = Str( "hello" );
+    Mgr::pptr<Str> p1 = Str::intern( "hello" );
     REQUIRE( !p1.is_null() );
 
-    Mgr::pptr<Str> p2 = Str( "hello" );
+    Mgr::pptr<Str> p2 = Str::intern( "hello" );
     REQUIRE( p1 == p2 ); // interning: same string = same pptr
 
-    Mgr::pptr<Str> p3 = Str( "world" );
+    Mgr::pptr<Str> p3 = Str::intern( "world" );
     REQUIRE( !p3.is_null() );
     REQUIRE( p1 != p3 );
 

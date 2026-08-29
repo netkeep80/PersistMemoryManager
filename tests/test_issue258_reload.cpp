@@ -181,7 +181,7 @@ TEST_CASE( "reload: pstringview content survives save/load", "[issue258][reload]
 
     REQUIRE( Mgr1::create( arena ) );
 
-    Mgr1::pptr<Mgr1::pstringview> psv = Mgr1::pstringview( "test_interned_string" );
+    Mgr1::pptr<Mgr1::pstringview> psv = Mgr1::pstringview::intern( "test_interned_string" );
     REQUIRE( !psv.is_null() );
     auto psv_offset = psv.offset();
 
@@ -192,7 +192,7 @@ TEST_CASE( "reload: pstringview content survives save/load", "[issue258][reload]
     pmm::VerifyResult result;
     REQUIRE( pmm::load_manager_from_file<Mgr2>( kFile, result ) );
 
-    Mgr2::pptr<Mgr2::pstringview> psv2 = Mgr2::pstringview( "test_interned_string" );
+    Mgr2::pptr<Mgr2::pstringview> psv2 = Mgr2::pstringview::intern( "test_interned_string" );
     REQUIRE( !psv2.is_null() );
     REQUIRE( psv2.offset() == psv_offset );
 

@@ -43,11 +43,11 @@ TEST_CASE( "forest registry bootstraps system domains", "[test_forest_registry]"
     REQUIRE( ForestMgr::get_domain_root_offset( pmm::detail::kServiceNameDomainRoot ) == 0 );
 
     ForestMgr::pptr<ForestMgr::pstringview> symbols_domain_symbol =
-        ForestMgr::pstringview( pmm::detail::kSystemDomainSymbols );
+        ForestMgr::pstringview::intern( pmm::detail::kSystemDomainSymbols );
     ForestMgr::pptr<ForestMgr::pstringview> free_domain_symbol =
-        ForestMgr::pstringview( pmm::detail::kSystemDomainFreeTree );
+        ForestMgr::pstringview::intern( pmm::detail::kSystemDomainFreeTree );
     ForestMgr::pptr<ForestMgr::pstringview> registry_symbol =
-        ForestMgr::pstringview( pmm::detail::kSystemDomainRegistry );
+        ForestMgr::pstringview::intern( pmm::detail::kSystemDomainRegistry );
     REQUIRE( !symbols_domain_symbol.is_null() );
     REQUIRE( !free_domain_symbol.is_null() );
     REQUIRE( !registry_symbol.is_null() );
@@ -87,14 +87,15 @@ TEST_CASE( "forest registry persists user domains and root", "[test_forest_regis
     REQUIRE( beta_id != 0 );
     REQUIRE( alpha_id != beta_id );
 
-    ForestPersistMgr::pptr<ForestPersistMgr::pstringview> alpha_symbol = ForestPersistMgr::pstringview( "app/alpha" );
+    ForestPersistMgr::pptr<ForestPersistMgr::pstringview> alpha_symbol =
+        ForestPersistMgr::pstringview::intern( "app/alpha" );
     REQUIRE( !alpha_symbol.is_null() );
     REQUIRE( ForestPersistMgr::find_domain_by_symbol( alpha_symbol ) == alpha_id );
 
     auto free_root_before = ForestPersistMgr::get_domain_root_offset( pmm::detail::kSystemDomainFreeTree );
     REQUIRE( free_root_before != 0 );
     ForestPersistMgr::pptr<ForestPersistMgr::pstringview> registry_type_before =
-        ForestPersistMgr::pstringview( pmm::detail::kSystemTypeForestRegistry );
+        ForestPersistMgr::pstringview::intern( pmm::detail::kSystemTypeForestRegistry );
     REQUIRE( !registry_type_before.is_null() );
 
     REQUIRE( pmm::save_manager<ForestPersistMgr>( filename ) );
@@ -121,7 +122,7 @@ TEST_CASE( "forest registry persists user domains and root", "[test_forest_regis
     REQUIRE( *beta_after == 22 );
 
     ForestPersistMgr::pptr<ForestPersistMgr::pstringview> alpha_symbol_after =
-        ForestPersistMgr::pstringview( "app/alpha" );
+        ForestPersistMgr::pstringview::intern( "app/alpha" );
     REQUIRE( !alpha_symbol_after.is_null() );
     REQUIRE( ForestPersistMgr::get_domain_root_offset( alpha_symbol_after ) == alpha_offset );
 
@@ -135,12 +136,12 @@ TEST_CASE( "forest registry persists user domains and root", "[test_forest_regis
     REQUIRE( ForestPersistMgr::pstringview::root_index() != 0 );
 
     ForestPersistMgr::pptr<ForestPersistMgr::pstringview> registry_type_after =
-        ForestPersistMgr::pstringview( pmm::detail::kSystemTypeForestRegistry );
+        ForestPersistMgr::pstringview::intern( pmm::detail::kSystemTypeForestRegistry );
     REQUIRE( !registry_type_after.is_null() );
     REQUIRE( ForestPersistMgr::find_domain_by_symbol(
-                 ForestPersistMgr::pstringview( pmm::detail::kSystemDomainSymbols ) ) != 0 );
+                 ForestPersistMgr::pstringview::intern( pmm::detail::kSystemDomainSymbols ) ) != 0 );
     REQUIRE( ForestPersistMgr::find_domain_by_symbol(
-                 ForestPersistMgr::pstringview( pmm::detail::kSystemDomainRegistry ) ) != 0 );
+                 ForestPersistMgr::pstringview::intern( pmm::detail::kSystemDomainRegistry ) ) != 0 );
 
     ForestPersistMgr::destroy();
     std::remove( filename );

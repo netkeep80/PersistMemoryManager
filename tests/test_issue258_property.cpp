@@ -296,7 +296,7 @@ TEST_CASE( "property: mixed alloc/dealloc and pstringview ops", "[issue258][prop
         {
             // Intern a string
             std::string                 s   = "prop_test_" + std::to_string( round );
-            Mgr::pptr<Mgr::pstringview> psv = Mgr::pstringview( s.c_str() );
+            Mgr::pptr<Mgr::pstringview> psv = Mgr::pstringview::intern( s.c_str() );
             // pstringview may fail if OOM, that's OK
             (void)psv;
         }
