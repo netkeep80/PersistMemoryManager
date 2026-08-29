@@ -15,8 +15,8 @@
  *
  * Simple API (key requirement):
  *  @code
- *    Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview("hello");
- *    Mgr::pptr<Mgr::pstringview> p2 = Mgr::pstringview("hello");
+ *    Mgr::pptr<Mgr::pstringview> p = Mgr::pstringview::intern("hello");
+ *    Mgr::pptr<Mgr::pstringview> p2 = Mgr::pstringview::intern("hello");
  *    assert(p == p2);  // true — deduplication via built-in AVL tree
  *  @endcode
  *
@@ -56,7 +56,7 @@ TEST_CASE( "    intern non-empty string", "[test_issue151_pstringview]" )
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p = TestMgr::pstringview( "hello" );
+    TestMgr_pptr_psv p = TestMgr::pstringview::intern( "hello" );
     REQUIRE( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -77,7 +77,7 @@ TEST_CASE( "    intern empty string", "[test_issue151_pstringview]" )
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p = TestMgr::pstringview( "" );
+    TestMgr_pptr_psv p = TestMgr::pstringview::intern( "" );
     REQUIRE( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -98,8 +98,8 @@ TEST_CASE( "    intern nullptr == intern empty", "[test_issue151_pstringview]" )
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p_null  = TestMgr::pstringview( nullptr );
-    TestMgr_pptr_psv p_empty = TestMgr::pstringview( "" );
+    TestMgr_pptr_psv p_null  = TestMgr::pstringview::intern( nullptr );
+    TestMgr_pptr_psv p_empty = TestMgr::pstringview::intern( "" );
 
     REQUIRE( !p_null.is_null() );
     REQUIRE( !p_empty.is_null() );
@@ -121,8 +121,8 @@ TEST_CASE( "    same string → same pptr", "[test_issue151_pstringview]" )
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p1 = TestMgr::pstringview( "world" );
-    TestMgr_pptr_psv p2 = TestMgr::pstringview( "world" );
+    TestMgr_pptr_psv p1 = TestMgr::pstringview::intern( "world" );
+    TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( "world" );
 
     REQUIRE( !p1.is_null() );
     REQUIRE( !p2.is_null() );
@@ -140,8 +140,8 @@ TEST_CASE( "    different strings → different pptrs", "[test_issue151_pstringv
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p_hello = TestMgr::pstringview( "hello" );
-    TestMgr_pptr_psv p_world = TestMgr::pstringview( "world" );
+    TestMgr_pptr_psv p_hello = TestMgr::pstringview::intern( "hello" );
+    TestMgr_pptr_psv p_world = TestMgr::pstringview::intern( "world" );
 
     REQUIRE( !p_hello.is_null() );
     REQUIRE( !p_world.is_null() );
@@ -164,9 +164,9 @@ TEST_CASE( "    equality via interning guarantee", "[test_issue151_pstringview]"
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv pa = TestMgr::pstringview( "key" );
-    TestMgr_pptr_psv pb = TestMgr::pstringview( "key" );
-    TestMgr_pptr_psv pc = TestMgr::pstringview( "other" );
+    TestMgr_pptr_psv pa = TestMgr::pstringview::intern( "key" );
+    TestMgr_pptr_psv pb = TestMgr::pstringview::intern( "key" );
+    TestMgr_pptr_psv pc = TestMgr::pstringview::intern( "other" );
 
     REQUIRE( ( !pa.is_null() && !pb.is_null() && !pc.is_null() ) );
 
@@ -197,7 +197,7 @@ TEST_CASE( "    embedded string block permanently locked", "[test_issue151_pstri
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p = TestMgr::pstringview( "locked_test" );
+    TestMgr_pptr_psv p = TestMgr::pstringview::intern( "locked_test" );
     REQUIRE( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -228,7 +228,7 @@ TEST_CASE( "    pstringview block permanently locked", "[test_issue151_pstringvi
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p = TestMgr::pstringview( "psview_lock" );
+    TestMgr_pptr_psv p = TestMgr::pstringview::intern( "psview_lock" );
     REQUIRE( !p.is_null() );
 
     TestPsv* psv = p.resolve();
@@ -264,9 +264,9 @@ TEST_CASE( "    AVL tree via built-in TreeNode fields", "[test_issue151_pstringv
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     // Insert strings in sorted order to test AVL balance.
-    TestMgr_pptr_psv p_a = TestMgr::pstringview( "alpha" );
-    TestMgr_pptr_psv p_b = TestMgr::pstringview( "beta" );
-    TestMgr_pptr_psv p_c = TestMgr::pstringview( "gamma" );
+    TestMgr_pptr_psv p_a = TestMgr::pstringview::intern( "alpha" );
+    TestMgr_pptr_psv p_b = TestMgr::pstringview::intern( "beta" );
+    TestMgr_pptr_psv p_c = TestMgr::pstringview::intern( "gamma" );
 
     REQUIRE( ( !p_a.is_null() && !p_b.is_null() && !p_c.is_null() ) );
 
@@ -274,9 +274,9 @@ TEST_CASE( "    AVL tree via built-in TreeNode fields", "[test_issue151_pstringv
     REQUIRE( TestPsv::root_index() != static_cast<TestMgr::index_type>( 0 ) );
 
     // Re-interning returns the same pptr (deduplication via AVL tree search).
-    REQUIRE( static_cast<TestMgr_pptr_psv>( TestMgr::pstringview( "alpha" ) ) == p_a );
-    REQUIRE( static_cast<TestMgr_pptr_psv>( TestMgr::pstringview( "beta" ) ) == p_b );
-    REQUIRE( static_cast<TestMgr_pptr_psv>( TestMgr::pstringview( "gamma" ) ) == p_c );
+    REQUIRE( static_cast<TestMgr_pptr_psv>( TestMgr::pstringview::intern( "alpha" ) ) == p_a );
+    REQUIRE( static_cast<TestMgr_pptr_psv>( TestMgr::pstringview::intern( "beta" ) ) == p_b );
+    REQUIRE( static_cast<TestMgr_pptr_psv>( TestMgr::pstringview::intern( "gamma" ) ) == p_c );
 
     TestMgr::destroy();
     TestPsv::reset();
@@ -296,7 +296,7 @@ TEST_CASE( "    AVL root tracked by persistent symbol domain", "[test_issue151_p
     TestPsv::reset();
     REQUIRE( TestPsv::root_index() == static_cast<TestMgr::index_type>( 0 ) );
 
-    TestMgr::pstringview( "test_root" );
+    TestMgr::pstringview::intern( "test_root" );
 
     // After intern — root is non-null.
     REQUIRE( TestPsv::root_index() != static_cast<TestMgr::index_type>( 0 ) );
@@ -322,8 +322,8 @@ TEST_CASE( "    forest-domain descriptor drives symbol dictionary", "[test_issue
     REQUIRE( Domain::root_index() == TestPsv::root_index() );
     REQUIRE( TestMgr::get_domain_root_offset( Domain::name() ) == TestPsv::root_index() );
 
-    TestMgr_pptr_psv alpha = TestMgr::pstringview( "descriptor_alpha" );
-    TestMgr_pptr_psv beta  = TestMgr::pstringview( "descriptor_beta" );
+    TestMgr_pptr_psv alpha = TestMgr::pstringview::intern( "descriptor_alpha" );
+    TestMgr_pptr_psv beta  = TestMgr::pstringview::intern( "descriptor_beta" );
     REQUIRE( ( !alpha.is_null() && !beta.is_null() ) );
 
     auto ops = TestPsv::forest_domain_ops();
@@ -354,7 +354,7 @@ TEST_CASE( "    multiple distinct strings stored", "[test_issue151_pstringview]"
     TestMgr_pptr_psv ptrs[N];
     for ( std::size_t i = 0; i < N; i++ )
     {
-        ptrs[i] = TestMgr::pstringview( strings[i] );
+        ptrs[i] = TestMgr::pstringview::intern( strings[i] );
         REQUIRE( !ptrs[i].is_null() );
     }
 
@@ -374,7 +374,7 @@ TEST_CASE( "    multiple distinct strings stored", "[test_issue151_pstringview]"
     // Re-interning returns the same pptr
     for ( std::size_t i = 0; i < N; i++ )
     {
-        TestMgr_pptr_psv p2 = TestMgr::pstringview( strings[i] );
+        TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( strings[i] );
         REQUIRE( p2 == ptrs[i] );
     }
 
@@ -395,7 +395,7 @@ TEST_CASE( "    20 strings with AVL balancing", "[test_issue151_pstringview]" )
     for ( int i = 0; i < 20; i++ )
     {
         std::snprintf( buf, sizeof( buf ), "string_%02d", i );
-        ptrs[i] = TestMgr::pstringview( buf );
+        ptrs[i] = TestMgr::pstringview::intern( buf );
         REQUIRE( !ptrs[i].is_null() );
     }
 
@@ -403,7 +403,7 @@ TEST_CASE( "    20 strings with AVL balancing", "[test_issue151_pstringview]" )
     for ( int i = 0; i < 20; i++ )
     {
         std::snprintf( buf, sizeof( buf ), "string_%02d", i );
-        TestMgr_pptr_psv p2 = TestMgr::pstringview( buf );
+        TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( buf );
         REQUIRE( p2 == ptrs[i] );
         const TestPsv* psv = ptrs[i].resolve();
         REQUIRE( psv != nullptr );
@@ -425,9 +425,9 @@ TEST_CASE( "    operator< lexicographic ordering", "[test_issue151_pstringview]"
     TestPsv::reset();
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
-    TestMgr_pptr_psv p_a = TestMgr::pstringview( "apple" );
-    TestMgr_pptr_psv p_b = TestMgr::pstringview( "banana" );
-    TestMgr_pptr_psv p_c = TestMgr::pstringview( "cherry" );
+    TestMgr_pptr_psv p_a = TestMgr::pstringview::intern( "apple" );
+    TestMgr_pptr_psv p_b = TestMgr::pstringview::intern( "banana" );
+    TestMgr_pptr_psv p_c = TestMgr::pstringview::intern( "cherry" );
 
     REQUIRE( ( !p_a.is_null() && !p_b.is_null() && !p_c.is_null() ) );
 
@@ -460,7 +460,7 @@ TEST_CASE( "    reset() clears singleton for test isolation", "[test_issue151_ps
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     // First session
-    TestMgr_pptr_psv p1 = TestMgr::pstringview( "session1" );
+    TestMgr_pptr_psv p1 = TestMgr::pstringview::intern( "session1" );
     REQUIRE( !p1.is_null() );
 
     // Destroy and recreate manager, reset singleton
@@ -470,7 +470,7 @@ TEST_CASE( "    reset() clears singleton for test isolation", "[test_issue151_ps
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     // Second session: singleton was reset, creates a new AVL tree
-    TestMgr_pptr_psv p2 = TestMgr::pstringview( "session2" );
+    TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( "session2" );
     REQUIRE( !p2.is_null() );
     REQUIRE( std::strcmp( p2->c_str(), "session2" ) == 0 );
 
@@ -507,7 +507,7 @@ TEST_CASE( "    intern std::string basic", "[test_issue151_pstringview]" )
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     std::string      s = "hello_stdstring";
-    TestMgr_pptr_psv p = TestMgr::pstringview( s.c_str() );
+    TestMgr_pptr_psv p = TestMgr::pstringview::intern( s.c_str() );
     REQUIRE( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -531,8 +531,8 @@ TEST_CASE( "    intern std::string deduplication", "[test_issue151_pstringview]"
 
     std::string      s1 = "deduplicated";
     std::string      s2 = "deduplicated"; // same value, different object
-    TestMgr_pptr_psv p1 = TestMgr::pstringview( s1.c_str() );
-    TestMgr_pptr_psv p2 = TestMgr::pstringview( s2.c_str() );
+    TestMgr_pptr_psv p1 = TestMgr::pstringview::intern( s1.c_str() );
+    TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( s2.c_str() );
 
     REQUIRE( ( !p1.is_null() && !p2.is_null() ) );
     REQUIRE( p1 == p2 ); // Same pptr — deduplication works
@@ -549,7 +549,7 @@ TEST_CASE( "    intern empty std::string", "[test_issue151_pstringview]" )
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     std::string      empty_str;
-    TestMgr_pptr_psv p = TestMgr::pstringview( empty_str.c_str() );
+    TestMgr_pptr_psv p = TestMgr::pstringview::intern( empty_str.c_str() );
     REQUIRE( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -570,7 +570,7 @@ TEST_CASE( "    intern std::string with spaces and special chars", "[test_issue1
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     std::string      s = "hello world! 123 @#$%";
-    TestMgr_pptr_psv p = TestMgr::pstringview( s.c_str() );
+    TestMgr_pptr_psv p = TestMgr::pstringview::intern( s.c_str() );
     REQUIRE( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -580,7 +580,7 @@ TEST_CASE( "    intern std::string with spaces and special chars", "[test_issue1
 
     // Same value again → same pptr
     std::string      s2 = "hello world! 123 @#$%";
-    TestMgr_pptr_psv p2 = TestMgr::pstringview( s2.c_str() );
+    TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( s2.c_str() );
     REQUIRE( p == p2 );
 
     TestMgr::destroy();
@@ -599,7 +599,7 @@ TEST_CASE( "    intern long std::string (>255 chars)", "[test_issue151_pstringvi
     long_str[0]   = 'S';
     long_str[511] = 'E';
 
-    TestMgr_pptr_psv p = TestMgr::pstringview( long_str.c_str() );
+    TestMgr_pptr_psv p = TestMgr::pstringview::intern( long_str.c_str() );
     REQUIRE( !p.is_null() );
 
     const TestPsv* psv = p.resolve();
@@ -608,7 +608,7 @@ TEST_CASE( "    intern long std::string (>255 chars)", "[test_issue151_pstringvi
     REQUIRE( std::string( psv->c_str() ) == long_str );
 
     // Deduplication also works for long strings
-    TestMgr_pptr_psv p2 = TestMgr::pstringview( long_str.c_str() );
+    TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( long_str.c_str() );
     REQUIRE( p == p2 );
 
     TestMgr::destroy();
@@ -628,7 +628,7 @@ TEST_CASE( "    intern multiple std::strings", "[test_issue151_pstringview]" )
     std::vector<TestMgr_pptr_psv> ptrs;
     for ( const auto& s : strings )
     {
-        TestMgr_pptr_psv p = TestMgr::pstringview( s.c_str() );
+        TestMgr_pptr_psv p = TestMgr::pstringview::intern( s.c_str() );
         REQUIRE( !p.is_null() );
         ptrs.push_back( p );
     }
@@ -650,7 +650,7 @@ TEST_CASE( "    intern multiple std::strings", "[test_issue151_pstringview]" )
     // Re-interning via std::string returns the same pptr
     for ( std::size_t i = 0; i < strings.size(); ++i )
     {
-        TestMgr_pptr_psv p2 = TestMgr::pstringview( strings[i].c_str() );
+        TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( strings[i].c_str() );
         REQUIRE( p2 == ptrs[i] );
     }
 
@@ -669,9 +669,9 @@ TEST_CASE( "    compare pstringview with std::string", "[test_issue151_pstringvi
     std::string sb = "banana";
     std::string sc = "cherry";
 
-    TestMgr_pptr_psv pa = TestMgr::pstringview( sa.c_str() );
-    TestMgr_pptr_psv pb = TestMgr::pstringview( sb.c_str() );
-    TestMgr_pptr_psv pc = TestMgr::pstringview( sc.c_str() );
+    TestMgr_pptr_psv pa = TestMgr::pstringview::intern( sa.c_str() );
+    TestMgr_pptr_psv pb = TestMgr::pstringview::intern( sb.c_str() );
+    TestMgr_pptr_psv pc = TestMgr::pstringview::intern( sc.c_str() );
 
     REQUIRE( ( !pa.is_null() && !pb.is_null() && !pc.is_null() ) );
 
@@ -716,12 +716,12 @@ TEST_CASE( "    intern runtime-built std::string (concatenation)", "[test_issue1
     std::string suffix = "value";
     std::string s      = prefix + suffix; // "key_value" — built at runtime
 
-    TestMgr_pptr_psv p1 = TestMgr::pstringview( s.c_str() );
+    TestMgr_pptr_psv p1 = TestMgr::pstringview::intern( s.c_str() );
     REQUIRE( !p1.is_null() );
 
     // Same string built independently → same pptr
     std::string      s2 = std::string( "key_" ) + std::string( "value" );
-    TestMgr_pptr_psv p2 = TestMgr::pstringview( s2.c_str() );
+    TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( s2.c_str() );
     REQUIRE( p1 == p2 );
 
     const TestPsv* psv = p1.resolve();
@@ -744,7 +744,7 @@ TEST_CASE( "    intern std::string with numeric content (std::to_string)", "[tes
     for ( int i = 0; i < 10; ++i )
     {
         std::string      s = std::to_string( i );
-        TestMgr_pptr_psv p = TestMgr::pstringview( s.c_str() );
+        TestMgr_pptr_psv p = TestMgr::pstringview::intern( s.c_str() );
         REQUIRE( !p.is_null() );
         ptrs.push_back( p );
     }
@@ -753,7 +753,7 @@ TEST_CASE( "    intern std::string with numeric content (std::to_string)", "[tes
     for ( int i = 0; i < 10; ++i )
     {
         std::string      s  = std::to_string( i );
-        TestMgr_pptr_psv p2 = TestMgr::pstringview( s.c_str() );
+        TestMgr_pptr_psv p2 = TestMgr::pstringview::intern( s.c_str() );
         REQUIRE( p2 == ptrs[static_cast<std::size_t>( i )] );
 
         const TestPsv* psv = p2.resolve();
@@ -773,23 +773,23 @@ TEST_CASE( "    interleaved const char* and std::string interns", "[test_issue15
     REQUIRE( TestMgr::create( 64 * 1024 ) );
 
     // Intern via const char* first
-    TestMgr_pptr_psv p_cstr = TestMgr::pstringview( "mixed" );
+    TestMgr_pptr_psv p_cstr = TestMgr::pstringview::intern( "mixed" );
     REQUIRE( !p_cstr.is_null() );
 
     // Intern same value via std::string — must return same pptr
     std::string      str   = "mixed";
-    TestMgr_pptr_psv p_str = TestMgr::pstringview( str.c_str() );
+    TestMgr_pptr_psv p_str = TestMgr::pstringview::intern( str.c_str() );
     REQUIRE( !p_str.is_null() );
     REQUIRE( p_cstr == p_str );
 
     // Intern a different value via std::string
     std::string      other   = "other_value";
-    TestMgr_pptr_psv p_other = TestMgr::pstringview( other.c_str() );
+    TestMgr_pptr_psv p_other = TestMgr::pstringview::intern( other.c_str() );
     REQUIRE( !p_other.is_null() );
     REQUIRE( p_cstr != p_other );
 
     // Intern that different value via const char* — must equal p_other
-    TestMgr_pptr_psv p_other2 = TestMgr::pstringview( "other_value" );
+    TestMgr_pptr_psv p_other2 = TestMgr::pstringview::intern( "other_value" );
     REQUIRE( p_other == p_other2 );
 
     TestMgr::destroy();

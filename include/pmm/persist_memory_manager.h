@@ -899,24 +899,28 @@ static bool register_domain_unlocked( const char* name, uint8_t flags, uint8_t b
     reg->domains[reg->domain_count++] = rec;
     return true;
 }
-static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
+static pptr<pstringview> intern_symbol_unlocked( std::string_view s ) noexcept
 {
-    if ( s == nullptr )
-        s = "";
-    detail::relocation_owner<const char, manager_type> source( s );
+    constexpr size_t data_offset = offsetof( pstringview, str );
+    if ( s.size() > static_cast<size_t>( ( std::numeric_limits<uint32_t>::max )() ) ||
+         s.size() > ( std::numeric_limits<size_t>::max )() - data_offset - 1 )
+        return pptr<pstringview>();
+    const size_t byte_length = s.size();
+    const char*  source_ptr  = s.data() != nullptr ? s.data() : "";
+    detail::relocation_owner<const char, manager_type> source( source_ptr );
     auto symbol_policy = pstringview::forest_domain_ops();
     if ( symbol_policy.root_index_ptr() == nullptr )
         return pptr<pstringview>();
     pptr<pstringview> found = symbol_policy.find( s );
     if ( !found.is_null() )
         return found;
-    uint32_t len        = static_cast<uint32_t>( std::strlen( s ) );
-    size_t   alloc_size = offsetof( pstringview, str ) + static_cast<size_t>( len ) + 1;
-    void*    raw        = allocate_unlocked( alloc_size );
+    const uint32_t len        = static_cast<uint32_t>( byte_length );
+    const size_t   alloc_size = data_offset + byte_length + 1;
+    void*          raw        = allocate_unlocked( alloc_size );
     if ( raw == nullptr )
         return pptr<pstringview>();
-    s = source.get();
-    if ( s == nullptr )
+    source_ptr = source.get();
+    if ( source_ptr == nullptr && byte_length != 0 )
     {
         deallocate_unlocked( raw );
         return pptr<pstringview>();
@@ -929,8 +933,10 @@ static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
         return pptr<pstringview>();
     }
     std::memcpy( public_raw, &len, sizeof( len ) );
-    char* str_dst = static_cast<char*>( public_raw ) + offsetof( pstringview, str );
-    std::memcpy( str_dst, s, static_cast<size_t>( len ) + 1 );
+    char* str_dst = static_cast<char*>( public_raw ) + data_offset;
+    if ( byte_length != 0 )
+        std::memcpy( str_dst, source_ptr, byte_length );
+    str_dst[byte_length] = '\0';
     detail::avl_init_node( new_node );
     if ( !lock_block_permanent_unlocked( public_raw ) )
         return pptr<pstringview>();

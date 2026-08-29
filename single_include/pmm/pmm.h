@@ -4055,6 +4055,7 @@ template <typename ManagerT> struct node_type_for<pstring<ManagerT>>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <string_view>
 namespace pmm
 {
 template <typename ManagerT> struct pstringview;
@@ -4064,6 +4065,10 @@ req: feat-003, fr-007, fr-008, fr-029, ur-003, dr-007, con-012, feat-008, fr-017
 */
 template <typename ManagerT> struct pstringview
 {
+  private:
+    static std::string_view c_view( const char* s ) noexcept { return s ? std::string_view( s ) : std::string_view(); }
+
+  public:
     using manager_type = ManagerT;
     using index_type   = typename ManagerT::index_type;
     using psview_pptr  = typename ManagerT::template pptr<pstringview>;
@@ -4085,18 +4090,17 @@ template <typename ManagerT> struct pstringview
             return ManagerT::forest_domain_root_index_ptr_unlocked( domain );
         }
         static node_type* resolve_node( node_pptr p ) noexcept { return ManagerT::template resolve<node_type>( p ); }
-        static int        compare_key( const char* key, node_pptr cur ) noexcept
+        static int compare_key( std::string_view key, node_pptr cur ) noexcept
         {
-            if ( key == nullptr )
-                key = "";
             node_type* obj = resolve_node( cur );
-            return ( obj != nullptr ) ? std::strcmp( key, obj->c_str() ) : 0;
+            return obj != nullptr ? key.compare( obj->view() ) : 0;
         }
+        static int compare_key( const char* key, node_pptr cur ) noexcept { return compare_key( c_view( key ), cur ); }
         static bool less_node( node_pptr lhs, node_pptr rhs ) noexcept
         {
             node_type* lhs_obj = resolve_node( lhs );
             node_type* rhs_obj = resolve_node( rhs );
-            return lhs_obj != nullptr && rhs_obj != nullptr && std::strcmp( lhs_obj->c_str(), rhs_obj->c_str() ) < 0;
+            return lhs_obj != nullptr && rhs_obj != nullptr && lhs_obj->view().compare( rhs_obj->view() ) < 0;
         }
         static bool validate_node( node_pptr p ) noexcept { return resolve_node( p ) != nullptr; }
     };
@@ -4104,32 +4108,23 @@ template <typename ManagerT> struct pstringview
     static forest_domain_policy forest_domain_ops() noexcept { return forest_domain_policy{}; }
     uint32_t                    length;
     char                        str[1];
-    explicit pstringview( const char* s ) noexcept : length( 0 ), str{ '\0' } { _interned = _intern( s ); }
-    operator psview_pptr() const noexcept { return _interned; }
-    const char* c_str() const noexcept { return str; }
-    size_t      size() const noexcept { return static_cast<size_t>( length ); }
-    bool        empty() const noexcept { return length == 0; }
-    bool        operator==( const char* s ) const noexcept
-    {
-        if ( s == nullptr )
-            return length == 0;
-        return std::strcmp( c_str(), s ) == 0;
-    }
-    bool operator==( const pstringview& other ) const noexcept
-    {
-        if ( this == &other )
-            return true;
-        if ( length != other.length )
-            return false;
-        return std::strcmp( str, other.str ) == 0;
-    }
+    pstringview() = delete;
+    const char*      c_str() const noexcept { return str; }
+    size_t           size() const noexcept { return static_cast<size_t>( length ); }
+    bool             empty() const noexcept { return length == 0; }
+    std::string_view view() const noexcept { return std::string_view( str, size() ); }
+    bool             operator==( std::string_view s ) const noexcept { return view() == s; }
+    bool             operator==( const char* s ) const noexcept { return view() == c_view( s ); }
+    bool             operator==( const pstringview& other ) const noexcept { return view() == other.view(); }
+    bool operator!=( std::string_view s ) const noexcept { return !( *this == s ); }
     bool operator!=( const char* s ) const noexcept { return !( *this == s ); }
     bool operator!=( const pstringview& other ) const noexcept { return !( *this == other ); }
-    bool operator<( const pstringview& other ) const noexcept { return std::strcmp( c_str(), other.c_str() ) < 0; }
+    bool operator<( const pstringview& other ) const noexcept { return view().compare( other.view() ) < 0; }
 /*
 ### pmm-pstringview-intern
 */
-    static psview_pptr intern( const char* s ) noexcept { return _intern( s ); }
+    static psview_pptr intern( std::string_view s ) noexcept { return _intern( s ); }
+    static psview_pptr intern( const char* s ) noexcept { return _intern( c_view( s ) ); }
     static void        reset() noexcept
     {
         if ( !ManagerT::is_initialized() )
@@ -4144,11 +4139,9 @@ template <typename ManagerT> struct pstringview
         typename ManagerT::thread_policy::shared_lock_type lock( ManagerT::_mutex );
         return forest_domain_ops().root_index();
     }
-    ~pstringview() = default;
 
   private:
-    psview_pptr        _interned;
-    static psview_pptr _intern( const char* s ) noexcept
+    static psview_pptr _intern( std::string_view s ) noexcept
     {
         if ( !ManagerT::is_initialized() )
             return psview_pptr();
@@ -5456,24 +5449,28 @@ static bool register_domain_unlocked( const char* name, uint8_t flags, uint8_t b
     reg->domains[reg->domain_count++] = rec;
     return true;
 }
-static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
+static pptr<pstringview> intern_symbol_unlocked( std::string_view s ) noexcept
 {
-    if ( s == nullptr )
-        s = "";
-    detail::relocation_owner<const char, manager_type> source( s );
+    constexpr size_t data_offset = offsetof( pstringview, str );
+    if ( s.size() > static_cast<size_t>( ( std::numeric_limits<uint32_t>::max )() ) ||
+         s.size() > ( std::numeric_limits<size_t>::max )() - data_offset - 1 )
+        return pptr<pstringview>();
+    const size_t byte_length = s.size();
+    const char*  source_ptr  = s.data() != nullptr ? s.data() : "";
+    detail::relocation_owner<const char, manager_type> source( source_ptr );
     auto symbol_policy = pstringview::forest_domain_ops();
     if ( symbol_policy.root_index_ptr() == nullptr )
         return pptr<pstringview>();
     pptr<pstringview> found = symbol_policy.find( s );
     if ( !found.is_null() )
         return found;
-    uint32_t len        = static_cast<uint32_t>( std::strlen( s ) );
-    size_t   alloc_size = offsetof( pstringview, str ) + static_cast<size_t>( len ) + 1;
-    void*    raw        = allocate_unlocked( alloc_size );
+    const uint32_t len        = static_cast<uint32_t>( byte_length );
+    const size_t   alloc_size = data_offset + byte_length + 1;
+    void*          raw        = allocate_unlocked( alloc_size );
     if ( raw == nullptr )
         return pptr<pstringview>();
-    s = source.get();
-    if ( s == nullptr )
+    source_ptr = source.get();
+    if ( source_ptr == nullptr && byte_length != 0 )
     {
         deallocate_unlocked( raw );
         return pptr<pstringview>();
@@ -5486,8 +5483,10 @@ static pptr<pstringview> intern_symbol_unlocked( const char* s ) noexcept
         return pptr<pstringview>();
     }
     std::memcpy( public_raw, &len, sizeof( len ) );
-    char* str_dst = static_cast<char*>( public_raw ) + offsetof( pstringview, str );
-    std::memcpy( str_dst, s, static_cast<size_t>( len ) + 1 );
+    char* str_dst = static_cast<char*>( public_raw ) + data_offset;
+    if ( byte_length != 0 )
+        std::memcpy( str_dst, source_ptr, byte_length );
+    str_dst[byte_length] = '\0';
     detail::avl_init_node( new_node );
     if ( !lock_block_permanent_unlocked( public_raw ) )
         return pptr<pstringview>();

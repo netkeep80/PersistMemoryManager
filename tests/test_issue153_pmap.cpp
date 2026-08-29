@@ -480,9 +480,9 @@ TEST_CASE( "    pmap<pptr<pstringview>, int> for named persistent objects", "[te
     REQUIRE( TestMgr::create( 256 * 1024 ) );
 
     // Intern keys — returns pptr<pstringview>
-    auto pk1 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview( "alpha" ) );
-    auto pk2 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview( "beta" ) );
-    auto pk3 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview( "gamma" ) );
+    auto pk1 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview::intern( "alpha" ) );
+    auto pk2 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview::intern( "beta" ) );
+    auto pk3 = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview::intern( "gamma" ) );
 
     REQUIRE( ( !pk1.is_null() && !pk2.is_null() && !pk3.is_null() ) );
 
@@ -503,7 +503,7 @@ TEST_CASE( "    pmap<pptr<pstringview>, int> for named persistent objects", "[te
     REQUIRE( found3->value == 3 );
 
     // Re-intern same strings → same pptr (deduplication) → same values found
-    auto pk1b = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview( "alpha" ) );
+    auto pk1b = static_cast<TestMgr::pptr<TestMgr::pstringview>>( TestMgr::pstringview::intern( "alpha" ) );
     REQUIRE( pk1b == pk1 ); // same pptr (deduplication)
 
     auto found1b = map.find( pk1b );

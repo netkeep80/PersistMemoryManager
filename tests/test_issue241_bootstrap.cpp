@@ -39,15 +39,15 @@ TEST_CASE( "bootstrap invariants hold after create(size)", "[issue241]" )
 
     // 5. System symbol names are interned
     BootstrapMgr::pptr<BootstrapMgr::pstringview> free_sym =
-        BootstrapMgr::pstringview( pmm::detail::kSystemDomainFreeTree );
+        BootstrapMgr::pstringview::intern( pmm::detail::kSystemDomainFreeTree );
     BootstrapMgr::pptr<BootstrapMgr::pstringview> sym_sym =
-        BootstrapMgr::pstringview( pmm::detail::kSystemDomainSymbols );
+        BootstrapMgr::pstringview::intern( pmm::detail::kSystemDomainSymbols );
     BootstrapMgr::pptr<BootstrapMgr::pstringview> reg_sym =
-        BootstrapMgr::pstringview( pmm::detail::kSystemDomainRegistry );
+        BootstrapMgr::pstringview::intern( pmm::detail::kSystemDomainRegistry );
     BootstrapMgr::pptr<BootstrapMgr::pstringview> type_reg =
-        BootstrapMgr::pstringview( pmm::detail::kSystemTypeForestRegistry );
+        BootstrapMgr::pstringview::intern( pmm::detail::kSystemTypeForestRegistry );
     BootstrapMgr::pptr<BootstrapMgr::pstringview> type_psv =
-        BootstrapMgr::pstringview( pmm::detail::kSystemTypePstringview );
+        BootstrapMgr::pstringview::intern( pmm::detail::kSystemTypePstringview );
     REQUIRE( !free_sym.is_null() );
     REQUIRE( !sym_sym.is_null() );
     REQUIRE( !reg_sym.is_null() );
@@ -114,11 +114,11 @@ TEST_CASE( "bootstrap invariants hold after save/load", "[issue241]" )
     // Symbol dictionary survived persistence
     REQUIRE( BootstrapPersist::pstringview::root_index() != 0 );
     BootstrapPersist::pptr<BootstrapPersist::pstringview> free_sym_after =
-        BootstrapPersist::pstringview( pmm::detail::kSystemDomainFreeTree );
+        BootstrapPersist::pstringview::intern( pmm::detail::kSystemDomainFreeTree );
     BootstrapPersist::pptr<BootstrapPersist::pstringview> sym_sym_after =
-        BootstrapPersist::pstringview( pmm::detail::kSystemDomainSymbols );
+        BootstrapPersist::pstringview::intern( pmm::detail::kSystemDomainSymbols );
     BootstrapPersist::pptr<BootstrapPersist::pstringview> reg_sym_after =
-        BootstrapPersist::pstringview( pmm::detail::kSystemDomainRegistry );
+        BootstrapPersist::pstringview::intern( pmm::detail::kSystemDomainRegistry );
     REQUIRE( !free_sym_after.is_null() );
     REQUIRE( !sym_sym_after.is_null() );
     REQUIRE( !reg_sym_after.is_null() );

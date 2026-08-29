@@ -98,15 +98,15 @@ TEST_CASE( "I416: C-string convenience delegates to explicit-length identity", "
     REQUIRE( Mgr::create( 128 * 1024 ) );
 
     constexpr char text[] = "ordinary-utf8-~-/";
-    auto cstr = Mgr::pstringview::intern( text );
-    auto view = Mgr::pstringview::intern( std::string_view( text, sizeof( text ) - 1 ) );
+    auto           cstr   = Mgr::pstringview::intern( text );
+    auto           view   = Mgr::pstringview::intern( std::string_view( text, sizeof( text ) - 1 ) );
     REQUIRE( !cstr.is_null() );
     REQUIRE( cstr == view );
     REQUIRE( cstr->view() == std::string_view( text, sizeof( text ) - 1 ) );
 
-    const char utf8[] = { static_cast<char>( 0xd0 ), static_cast<char>( 0x9f ), static_cast<char>( 0xd1 ),
-                          static_cast<char>( 0x80 ), static_cast<char>( 0xd0 ), static_cast<char>( 0xb8 ) };
-    auto unicode = Mgr::pstringview::intern( std::string_view( utf8, sizeof( utf8 ) ) );
+    const char utf8[]  = { static_cast<char>( 0xd0 ), static_cast<char>( 0x9f ), static_cast<char>( 0xd1 ),
+                           static_cast<char>( 0x80 ), static_cast<char>( 0xd0 ), static_cast<char>( 0xb8 ) };
+    auto       unicode = Mgr::pstringview::intern( std::string_view( utf8, sizeof( utf8 ) ) );
     REQUIRE( !unicode.is_null() );
     REQUIRE( unicode->size() == sizeof( utf8 ) );
     REQUIRE( std::memcmp( unicode->c_str(), utf8, sizeof( utf8 ) ) == 0 );
@@ -123,7 +123,7 @@ TEST_CASE( "I416: explicit-length arena source survives relocation", "[issue416]
     REQUIRE( Mgr::create( 8 * 1024 ) );
 
     constexpr char bytes[] = { 'r', '\0', 'v', 'm' };
-    auto source = Mgr::template allocate_typed<char>( sizeof( bytes ) );
+    auto           source  = Mgr::template allocate_typed<char>( sizeof( bytes ) );
     REQUIRE( !source.is_null() );
     std::memcpy( source.resolve(), bytes, sizeof( bytes ) );
     const char* source_before = source.resolve();
@@ -147,9 +147,9 @@ TEST_CASE( "I416: explicit-length arena source survives relocation", "[issue416]
 
 TEST_CASE( "I416: binary symbol identity survives persistence reload", "[issue416][pstringview][persistence]" )
 {
-    using Mgr                   = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 4164>;
-    constexpr const char* kFile = "test_issue416_pstringview_binary.dat";
-    const char            bytes[] = { 'p', '\0', '~', '/', 'x' };
+    using Mgr                      = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 4164>;
+    constexpr const char*  kFile   = "test_issue416_pstringview_binary.dat";
+    const char             bytes[] = { 'p', '\0', '~', '/', 'x' };
     const std::string_view key( bytes, sizeof( bytes ) );
 
     Mgr::destroy();

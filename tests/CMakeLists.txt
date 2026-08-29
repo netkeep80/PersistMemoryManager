@@ -344,3 +344,6 @@ pmm_add_test(test_issue404_pmap_relocation test_issue404_pmap_relocation.cpp)
 
 # Issue 410: forest registry views survive allocation-driven arena relocation
 pmm_add_test(test_issue410_forest_registry_relocation test_issue410_forest_registry_relocation.cpp)
+
+# Issue 416: length-aware, embedded-NUL-safe pstringview identity
+pmm_add_test(test_issue416_pstringview_binary test_issue416_pstringview_binary.cpp)
