@@ -29,7 +29,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-format
-          clang-format -i --lines=12:94 include/pmm/pmap.h
+          clang-format -i --lines=31:73 include/pmm/pmap.h
           clang-format -i include/pmm/types.h tests/test_issue329_image_version.cpp tests/test_issue426_pmap_type_identity.cpp
 
       - name: Regenerate canonical single header
