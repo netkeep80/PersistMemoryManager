@@ -46,6 +46,8 @@ jobs:
           actual=$(wc -l < single_include/pmm/pmm.h)
           echo "Single-header LOC baseline: $baseline, generated: $actual"
           if [ "$actual" -gt "$baseline" ]; then
+            echo '--- issue426 pmap product diff at LOC failure ---'
+            git diff -- include/pmm/pmap.h include/pmm/types.h
             printf 'baseline=%s\nactual=%s\noverflow=%s\n' "$baseline" "$actual" "$((actual-baseline))" > .github/issue426-loc-diagnostic.txt
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
