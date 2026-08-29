@@ -3,7 +3,7 @@ name: Agent issue426 typed handle identity
 on:
   pull_request:
     branches:
-      - agent/issue-415-pmap-lifetime-v2
+      - main
     types:
       - opened
       - synchronize
@@ -24,12 +24,12 @@ jobs:
       - name: Apply typed-handle identity and image-v3 migration
         run: python .github/agent_issue426_typed_identity.py
 
-      - name: Format changed tests only
+      - name: Format changed product and tests
         shell: bash
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-format
-          clang-format -i tests/test_issue329_image_version.cpp tests/test_issue426_pmap_type_identity.cpp
+          clang-format -i include/pmm/pmap.h include/pmm/types.h tests/test_issue329_image_version.cpp tests/test_issue426_pmap_type_identity.cpp
 
       - name: Regenerate canonical single header
         shell: bash
