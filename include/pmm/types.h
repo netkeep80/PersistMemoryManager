@@ -93,7 +93,7 @@ struct FreeBlockView
 namespace detail
 {
 inline constexpr uint8_t kLegacyUnversionedImageVersion = 0;
-inline constexpr uint8_t kCurrentImageVersion           = 2;
+inline constexpr uint8_t kCurrentImageVersion           = 3;
 inline constexpr bool    is_supported_image_version( uint8_t image_version ) noexcept
 {
     return image_version == kCurrentImageVersion;

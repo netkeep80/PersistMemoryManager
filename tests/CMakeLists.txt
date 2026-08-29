@@ -344,3 +344,6 @@ pmm_add_test(test_issue404_pmap_relocation test_issue404_pmap_relocation.cpp)
 
 # Issue 410: forest registry views survive allocation-driven arena relocation
 pmm_add_test(test_issue410_forest_registry_relocation test_issue410_forest_registry_relocation.cpp)
+
+# Issue 426: stable typed-handle pmap identity and image-v3 persistence
+pmm_add_test(test_issue426_pmap_type_identity test_issue426_pmap_type_identity.cpp)

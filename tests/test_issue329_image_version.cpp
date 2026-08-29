@@ -17,6 +17,7 @@ using VersionMgr       = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 3290
 using VersionLoadMgr   = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 32902>;
 using VersionVerifyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 32903>;
 using VersionLegacyMgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 32904>;
+using VersionV2Mgr     = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 32905>;
 
 } // namespace
 
@@ -26,8 +27,8 @@ TEST_CASE( "issue329: ManagerHeader exposes a persisted image version", "[issue3
 
     static_assert( std::is_same_v<decltype( Header::image_version ), std::uint8_t>,
                    "ManagerHeader::image_version must be a persisted version byte" );
-    static_assert( pmm::detail::kCurrentImageVersion >= 2,
-                   "Issue #367 bumps the persisted image version to 2 (or later) to break legacy compatibility" );
+    static_assert( pmm::detail::kCurrentImageVersion == 3,
+                   "Issue #426 deliberately advances typed-handle pmap semantics to image version 3" );
     static_assert( sizeof( Header ) == 64,
                    "Adding an explicit image version must preserve the default ManagerHeader size" );
 }
@@ -62,6 +63,26 @@ TEST_CASE( "issue329: load rejects an unsupported image version", "[issue329][lo
     REQUIRE( result.entries[0].action == pmm::DiagnosticAction::Aborted );
     REQUIRE( result.entries[0].expected == pmm::detail::kCurrentImageVersion );
     REQUIRE( result.entries[0].actual == static_cast<std::uint8_t>( pmm::detail::kCurrentImageVersion + 1 ) );
+}
+
+TEST_CASE( "issue426: image version 2 is rejected after typed-handle identity break", "[issue329][issue426][load]" )
+{
+    VersionV2Mgr::destroy();
+    REQUIRE( VersionV2Mgr::create( 64 * 1024 ) );
+    VersionV2Mgr::destroy();
+
+    auto* hdr = pmm::detail::manager_header_at<pmm::DefaultAddressTraits>( VersionV2Mgr::backend().base_ptr() );
+    hdr->image_version = 2;
+
+    VersionV2Mgr::clear_error();
+    pmm::VerifyResult result;
+    REQUIRE_FALSE( VersionV2Mgr::load( result ) );
+    REQUIRE( VersionV2Mgr::last_error() == pmm::PmmError::UnsupportedImageVersion );
+    REQUIRE( result.entry_count == 1 );
+    REQUIRE( result.entries[0].expected == 3 );
+    REQUIRE( result.entries[0].actual == 2 );
+    REQUIRE_FALSE( pmm::detail::image_version_requires_migration( 2 ) );
+    VersionV2Mgr::destroy();
 }
 
 TEST_CASE( "issue329/issue367: legacy unversioned images are rejected, not migrated", "[issue329][issue367][load]" )

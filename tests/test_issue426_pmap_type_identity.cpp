@@ -82,7 +82,7 @@ TEST_CASE( "I426: distinct typed handles cannot share named or generated pmap do
 TEST_CASE( "I426: pjson-shaped typed-handle map keeps distinct key and value semantics",
            "[issue426][pmap][identity][pjson-shape]" )
 {
-    using Mgr = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 4262>;
+    using Mgr        = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 4262>;
     using PjsonShape = Mgr::pmap<Mgr::pptr<Mgr::pstringview>, Mgr::pptr<issue426::PayloadA>>;
     using OtherShape = Mgr::pmap<Mgr::pptr<Mgr::pstringview>, Mgr::pptr<issue426::PayloadB>>;
 
@@ -102,8 +102,8 @@ TEST_CASE( "I426: pjson-shaped typed-handle map keeps distinct key and value sem
 TEST_CASE( "I426: typed-handle pmap domain identity survives v3 persistence reload",
            "[issue426][pmap][identity][persistence]" )
 {
-    using Mgr  = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 4263>;
-    using MapA = Mgr::pmap<int, Mgr::pptr<issue426::PayloadA>>;
+    using Mgr                   = pmm::PersistMemoryManager<pmm::CacheManagerConfig, 4263>;
+    using MapA                  = Mgr::pmap<int, Mgr::pptr<issue426::PayloadA>>;
     constexpr const char* kFile = "test_issue426_type_identity.dat";
 
     Mgr::destroy();
@@ -115,8 +115,8 @@ TEST_CASE( "I426: typed-handle pmap domain identity survives v3 persistence relo
     payload->value = 0x4263426342634263ULL;
     REQUIRE( !before.insert( 7, payload ).is_null() );
     const std::string domain_before( before.domain_name() );
-    const auto payload_offset = payload.offset();
-    const auto saved_size = Mgr::backend().total_size();
+    const auto        payload_offset = payload.offset();
+    const auto        saved_size     = Mgr::backend().total_size();
     REQUIRE( pmm::save_manager<Mgr>( kFile ) );
 
     Mgr::destroy();
