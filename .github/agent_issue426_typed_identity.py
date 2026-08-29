@@ -23,33 +23,16 @@ if pmap.count(old) != 1:
 pmap = pmap.replace(old, new)
 
 old = '''template <typename T> inline constexpr bool pmap_storage_type_v = pmap_storage_type<T>::value;
-constexpr uint32_t pmap_fnv1a'''
-new = '''template <typename T> inline constexpr bool pmap_storage_type_v = pmap_storage_type<T>::value;
-template <typename T> struct pmap_pptr_identity
+constexpr uint32_t pmap_fnv1a( uint32_t h, uint64_t v, unsigned bytes ) noexcept
 {
-    static constexpr bool value = false;
-};
-template <typename Pointee, typename ManagerT> struct pmap_pptr_identity<pptr<Pointee, ManagerT>>
-{
-    static constexpr bool value = true;
-    using pointee_type = Pointee;
-};
-template <typename T> constexpr bool pmap_has_stable_identity() noexcept
-{
-    if constexpr ( pmap_pptr_identity<T>::value )
+    for ( unsigned i = 0; i < bytes; ++i, v >>= 8 )
     {
-        const char* tag = pmap_type_identity<typename pmap_pptr_identity<T>::pointee_type>::tag;
-        return tag != nullptr && tag[0] != '\\0';
+        h ^= static_cast<uint8_t>( v & 0xffull );
+        h *= 16777619u;
     }
-    return true;
+    return h;
 }
-template <typename T> inline constexpr bool pmap_has_stable_identity_v = pmap_has_stable_identity<T>();
-constexpr uint32_t pmap_fnv1a'''
-if pmap.count(old) != 1:
-    raise SystemExit(f"typed handle identity trait insertion point count={pmap.count(old)}")
-pmap = pmap.replace(old, new)
-
-old = '''template <typename T> constexpr uint32_t pmap_type_fp() noexcept
+template <typename T> constexpr uint32_t pmap_type_fp() noexcept
 {
     const uint64_t traits =
         ( uint64_t{ std::is_integral_v<T> } << 0 ) | ( uint64_t{ std::is_floating_point_v<T> } << 1 ) |
@@ -64,9 +47,41 @@ old = '''template <typename T> constexpr uint32_t pmap_type_fp() noexcept
     for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\\0'; ++t )
         h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
     return h;
-}'''
-new = '''template <typename T> constexpr uint32_t pmap_type_fp() noexcept
+}
+inline uint64_t pmap_key_hash( const char* key ) noexcept
 {
+    uint64_t h = 14695981039346656037ull;
+    for ( ; key != nullptr && *key != '\\0'; ++key )
+    {
+        h ^= static_cast<uint8_t>( *key );
+        h *= 1099511628211ull;
+    }
+    return h;
+}'''
+new = '''template <typename T> inline constexpr bool pmap_storage_type_v = pmap_storage_type<T>::value;
+template <typename T> inline constexpr const char* pmap_pptr_tag_v = nullptr;
+template <typename Pointee, typename ManagerT>
+inline constexpr const char* pmap_pptr_tag_v<pptr<Pointee, ManagerT>> = pmap_type_identity<Pointee>::tag;
+template <typename T> inline constexpr bool pmap_has_stable_identity_v =
+    pmap_pptr_tag_v<T> == nullptr || pmap_pptr_tag_v<T>[0] != '\\0';
+constexpr uint32_t pmap_fnv1a( uint32_t h, uint64_t v, unsigned bytes ) noexcept
+{
+    for ( unsigned i = 0; i < bytes; ++i, v >>= 8 )
+        h = ( h ^ static_cast<uint8_t>( v & 0xffull ) ) * 16777619u;
+    return h;
+}
+template <typename T> constexpr uint32_t pmap_type_fp() noexcept
+{
+    constexpr const char* pptr_tag = pmap_pptr_tag_v<T>;
+    if constexpr ( pptr_tag != nullptr )
+    {
+        static_assert( pmap_has_stable_identity_v<T>,
+                       "pmap typed handle requires a stable pmap_type_identity tag for its pointee type" );
+        uint32_t h = 0x749ed278u; // FNV-1a("pmm/pptr/v1")
+        for ( const char* t = pptr_tag; *t != '\\0'; ++t )
+            h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
+        return h;
+    }
     const uint64_t traits =
         ( uint64_t{ std::is_integral_v<T> } << 0 ) | ( uint64_t{ std::is_floating_point_v<T> } << 1 ) |
         ( uint64_t{ std::is_signed_v<T> } << 2 ) | ( uint64_t{ std::is_unsigned_v<T> } << 3 ) |
@@ -77,35 +92,48 @@ new = '''template <typename T> constexpr uint32_t pmap_type_fp() noexcept
     h          = pmap_fnv1a( h, sizeof( T ), 8 );
     h          = pmap_fnv1a( h, alignof( T ), 8 );
     h          = pmap_fnv1a( h, traits, 8 );
-    if constexpr ( pmap_pptr_identity<T>::value )
-    {
-        for ( const char* m = "pmm/pptr/v1"; *m != '\\0'; ++m )
-            h = pmap_fnv1a( h, static_cast<uint8_t>( *m ), 1 );
-        using pointee_type = typename pmap_pptr_identity<T>::pointee_type;
-        for ( const char* t = pmm::pmap_type_identity<pointee_type>::tag; t != nullptr && *t != '\\0'; ++t )
-            h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
-    }
-    else
-        for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\\0'; ++t )
-            h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
+    for ( const char* t = pmm::pmap_type_identity<T>::tag; t != nullptr && *t != '\\0'; ++t )
+        h = pmap_fnv1a( h, static_cast<uint8_t>( *t ), 1 );
+    return h;
+}
+inline uint64_t pmap_key_hash( const char* key ) noexcept
+{
+    uint64_t h = 14695981039346656037ull;
+    for ( ; key != nullptr && *key != '\\0'; ++key )
+        h = ( h ^ static_cast<uint8_t>( *key ) ) * 1099511628211ull;
     return h;
 }'''
 if pmap.count(old) != 1:
-    raise SystemExit(f"pmap_type_fp replacement count={pmap.count(old)}")
+    raise SystemExit(f"compact identity/hash replacement count={pmap.count(old)}")
 pmap = pmap.replace(old, new)
 
-old = '''    static_assert( detail::pmap_storage_type_v<_V>,
-                   "pmap value must be a supported fixed-size trivial persistent representation, not a raw pointer" );
-    using manager_type'''
-new = '''    static_assert( detail::pmap_storage_type_v<_V>,
-                   "pmap value must be a supported fixed-size trivial persistent representation, not a raw pointer" );
-    static_assert( detail::pmap_has_stable_identity_v<_K>,
-                   "pmap typed-handle key requires a stable pmap_type_identity tag for its pointee type" );
-    static_assert( detail::pmap_has_stable_identity_v<_V>,
-                   "pmap typed-handle value requires a stable pmap_type_identity tag for its pointee type" );
-    using manager_type'''
+old = '''    constexpr const char* kPrefix = "container/pmap/";
+    const unsigned        needed  = 15 + 8 + 1 + 1 + value_hex_digits + 1;
+    if ( needed > kForestDomainNameCapacity )
+        return false;
+    size_t p = 0;
+    for ( const char* s = kPrefix; *s != '\\0'; ++s )
+        out[p++] = *s;
+    auto put_hex = [&]( uint64_t v, unsigned digits )
+    {
+        for ( unsigned i = digits; i-- > 0; )
+        {
+            const uint8_t nib = static_cast<uint8_t>( ( v >> ( i * 4 ) ) & 0x0full );
+            out[p++]          = static_cast<char>( nib < 10 ? ( '0' + nib ) : ( 'a' + ( nib - 10 ) ) );
+        }
+    };'''
+new = '''    if ( 15 + 8 + 1 + 1 + value_hex_digits + 1 > kForestDomainNameCapacity )
+        return false;
+    size_t p = 0;
+    for ( const char* s = "container/pmap/"; *s != '\\0'; ++s )
+        out[p++] = *s;
+    auto put_hex = [&]( uint64_t v, unsigned digits )
+    {
+        for ( unsigned i = digits; i-- > 0; )
+            out[p++] = "0123456789abcdef"[( v >> ( i * 4 ) ) & 0x0full];
+    };'''
 if pmap.count(old) != 1:
-    raise SystemExit(f"pmap stable identity assertion insertion point count={pmap.count(old)}")
+    raise SystemExit(f"compact pmap name writer replacement count={pmap.count(old)}")
 pmap_path.write_text(pmap.replace(old, new))
 
 types = types_path.read_text()
